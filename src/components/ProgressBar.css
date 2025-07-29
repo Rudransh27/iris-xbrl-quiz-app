@@ -1,0 +1,15 @@
+/* ProgressBar.css */
+.quiz-progress-container {
+  flex: 1;
+  height: 8px;
+  background-color: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 12px;
+}
+
+.quiz-progress-bar {
+  height: 100%;
+  background-color: #2196f3;
+  transition: width 0.3s ease-in-out;
+}

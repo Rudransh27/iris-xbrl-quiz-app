@@ -1,0 +1,6 @@
+/* Make it responsive */
+@media (max-width: 576px) {
+  .badge {
+    font-size: 0.8rem;
+  }
+}

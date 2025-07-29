@@ -1,0 +1,104 @@
+    /* --- Navbar Layout --- */
+    .navbar1 {
+        width: 100%; /* Changed from 100vw to 100% for better responsiveness within parent containers */
+        background: var(--bg-navbar); /* Use theme variable for background */
+        box-shadow: var(--shadow-navbar); /* Use theme variable for shadow */
+        padding: var(--spacing-sm) var(--spacing-lg); /* Consistent padding */
+        display: flex;
+        align-items: center;
+        justify-content: space-between; /* Space out branding, links, and toggle */
+        min-height: 60px; /* Minimum height for better appearance */
+        transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth theme transition */
+        position: sticky;
+        top: 0;
+        z-index: 50000;
+    }
+
+    .navbar__link {
+        text-decoration: none; /* Remove underline from branding link */
+        color: inherit; /* Inherit color from parent */
+    }
+
+    .navbar__branding {
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar__logo {
+        height: auto;
+        width: 90px; /* Keep consistent logo size */
+        margin-right: var(--spacing-sm); /* Space between logo and name (if name is used) */
+        margin-left: 15px;
+    }
+
+    .navbar__name {
+        font-weight: 700; /* Use bold font weight */
+        font-size: 1.6rem; /* Slightly smaller for balance */
+        color: var(--brand-dark); /* Use dark navy/light grey for name */
+        letter-spacing: 0.5px;
+        /* Font family from previous code, keep if you're using it globally */
+        font-family: 'Anek Malayalam', 'Montserrat', sans-serif;
+        transition: color 0.3s ease; /* Smooth theme transition */
+    }
+
+    /* --- Navigation Links --- */
+    .navbar__nav-links {
+        display: flex;
+        gap: var(--spacing-lg); /* Space between nav items */
+
+        /* Responsive: Hide on small screens, can use a hamburger menu later */
+        @media (max-width: 768px) {
+            display: none; /* For simplicity, hide on mobile. Implement hamburger menu for production */
+        }
+    }
+
+    .nav-item {
+        text-decoration: none;
+        color: var(--text-primary); /* Use theme variable for text color */
+        font-weight: 500;
+        font-size: 1.1em;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .nav-item:hover {
+        background-color: rgba(var(--brand-secondary), 0.1); /* Subtle background on hover */
+        color: var(--brand-secondary); /* Darker text color on hover */
+    }
+
+    /* --- Theme Toggle Button --- */
+    .navbar__theme-toggle {
+        display: flex;
+        align-items: center;
+
+    }
+
+    .theme-toggle-btn {
+        background: none;
+        border: none;
+        color: var(--text-primary); /* Icon color */
+        cursor: pointer;
+        padding: var(--spacing-xs);
+        border-radius: 50%; /* Circular button */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        margin-right: 20px;
+    }
+
+    .theme-toggle-btn:hover {
+        background-color: rgba(var(--brand-secondary), 0.1); /* Subtle hover effect */
+        color: var(--brand-secondary); /* Highlight icon on hover */
+    }
+
+    /* --- Responsive Adjustments for Navbar --- */
+    @media (max-width: 768px) {
+        .navbar {
+            padding: var(--spacing-sm) var(--spacing-md);
+        }
+        .navbar__logo {
+            width: 75px; /* Smaller logo on mobile */
+        }
+    }
