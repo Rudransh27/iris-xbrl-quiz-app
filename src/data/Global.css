@@ -1,4 +1,55 @@
+/* --- Global Variables for Theming (Light and Dark) --- */
+:root {
+  /* Light Theme Defaults */
+  --background-color: #f8f9fa;
+  --card-background: #ffffff;
+  --text-color: #212529;
+  --heading-color: #000000;
+  --muted-text-color: #495057;
+  --border-color: #e9ecef;
+  --shadow-color-card: rgba(0, 0, 0, 0.05);
+  --shadow-color-topbar: rgba(0, 0, 0, 0.04);
+  --primary-blue-gradient-start: #007bff;
+  --primary-blue-gradient-end: #00c6ff;
+  --secondary-accent-color: #6f42c1;
+  --code-bg: #2b2f3a;
+  --code-text: #abb2bf;
+  --explanation-bg: #e8f5e9;
+  --explanation-border: #4caf50;
+  --explanation-text: #2e7d32;
+  --correct-bg: #28a745;
+  --correct-border: #218838;
+  --correct-text: #ffffff;
+  --incorrect-bg: #dc3545;
+  --incorrect-border: #c82333;
+  --incorrect-text: #ffffff;
+}
 
+/* Dark Theme Overrides */
+body.dark-theme {
+  --background-color: #1a1a2e;
+  --card-background: #232946;
+  --text-color: #e9ecef;
+  --heading-color: #ffffff;
+  --muted-text-color: #adb5bd;
+  --border-color: #3b3f54;
+  --shadow-color-card: rgba(0, 0, 0, 0.45);
+  --shadow-color-topbar: rgba(0, 0, 0, 0.35);
+  --primary-blue-gradient-start: #00c6ff;
+  --primary-blue-gradient-end: #007bff;
+  --secondary-accent-color: #8a6cda;
+  --code-bg: #1e222d;
+  --code-text: #d0d7e4;
+  --explanation-bg: #3a5c4a;
+  --explanation-border: #6cb870;
+  --explanation-text: #d0f0d0;
+  --correct-bg: #218838;
+  --correct-border: #28a745;
+  --correct-text: #ffffff;
+  --incorrect-bg: #c82333;
+  --incorrect-border: #dc3545;
+  --incorrect-text: #ffffff;
+}
 
 /* --- General Body and Container Styles --- */
 body {

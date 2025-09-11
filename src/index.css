@@ -1,0 +1,116 @@
+/* src/index.css */
+
+/* Add these two lines to fix the unwanted space issue */
+html, body {
+  overflow-x: hidden;
+}
+
+body {
+  /* ... rest of your body styles ... */
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure box-sizing is consistent across all elements */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+body {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+
+/* --- Light Theme Defaults (Applies by default) --- */
+:root {
+    /* Primary Brand Colors (Navy Family) */
+    --brand-primary: #003366;
+    --brand-secondary: #1A4B83;
+    --brand-tertiary: #2C5B97;
+    --brand-dark: #001F3F;
+
+    /* Accent Color (Complementary) */
+    --accent-teal: #00BCD4;
+    --accent-teal-darker: #00A3B5;
+
+    /* Text Colors */
+    --text-primary: #223255;
+    --text-secondary: #38424f;
+    --text-light: #FFFFFF;
+    --text-link: var(--brand-secondary);
+    --text-link-hover: var(--brand-primary);
+
+    /* Backgrounds */
+    --bg-page: #F0F2F5;
+    --bg-card-light: #F8FBFF;
+    --bg-card-white: #FFFFFF;
+    --bg-navbar: var(--bg-card-white);
+    --bg-button-light: #EFEFEF;
+
+    /* Borders & Shadows */
+    --border-light: #E0E0E0;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+    --shadow-md: 0 6px 24px rgba(44,72,109,0.07);
+    --shadow-lg: 0 12px 30px rgba(44,72,109,0.1);
+    --shadow-navbar: 0 2px 12px rgba(44,72,109,0.05);
+
+    /* Specific to quiz component (re-use global if possible) */
+    --selected-bg: #D0DCE7;
+    --selected-border: var(--brand-primary);
+    --correct-answer: #4CAF50;
+    --wrong-answer: #F44336;
+}
+
+/* --- Dark Theme Overrides (Applied when body has 'dark-theme' class) --- */
+body.dark-theme {
+    /* Primary Brand Colors (Adapted for Dark Mode) */
+    --brand-primary: #4DD0E1;
+    --brand-secondary: #00BCD4;
+    --brand-tertiary: #00A3B5;
+    --brand-dark: #E0E0E0;
+
+    /* Accent Color (Complementary) */
+    --accent-teal: #9CCC65;
+    --accent-teal-darker: #8BC34A;
+
+    /* Text Colors */
+    --text-primary: #E0E0E0;
+    --text-secondary: #A0A0A0;
+    --text-light: #1A1A1A;
+    --text-link: var(--brand-primary);
+    --text-link-hover: var(--brand-secondary);
+
+    /* Backgrounds */
+    --bg-page: #1A1A2E;
+    --bg-card-light: #2A2A4A;
+    --bg-card-white: #22223D;
+    --bg-navbar: #22223D;
+    --bg-button-light: #3A3A5A;
+
+    /* Borders & Shadows */
+    --border-light: #3A3A5A;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+    --shadow-md: 0 6px 24px rgba(0,0,0,0.4);
+    --shadow-lg: 0 12px 30px rgba(0,0,0,0.5);
+    --shadow-navbar: 0 2px 12px rgba(0,0,0,0.2);
+
+    /* Specific to quiz component overrides for dark theme */
+    --selected-bg: #3A3A5A;
+    --selected-border: var(--brand-primary);
+    --correct-answer: #66BB6A;
+    --wrong-answer: #FF7070;
+}
