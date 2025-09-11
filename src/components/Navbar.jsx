@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { MdLightMode, MdDarkMode } from 'react-icons/md';
 import './Navbar.css';
-import irisLogo from '../assets/IRIS-logo_CMYK.svg';
+import irisLogo from '../assets/irislogo.svg';
 import AuthContext from '../context/AuthContext';
 import ConfirmationModal from './ConfirmationModal'; // Import the new modal component
 

@@ -5,7 +5,7 @@ import { Form, Button, Card, Spinner, Alert, InputGroup } from "react-bootstrap"
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Eye, EyeSlash } from "react-bootstrap-icons"; // for password toggle
 import AuthContext from "../../context/AuthContext";
-import irisLogo from "../../assets/IRIS-Logo_CMYK.svg";
+import irisLogo from "../../assets/irislogo.svg";
 import "../../pages/Auth.css";
 
 const AuthCard = () => {
