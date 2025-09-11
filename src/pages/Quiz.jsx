@@ -1,228 +1,418 @@
 // src/pages/Quiz.jsx
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useLayoutEffect, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import "./Quiz.css";
 import LearningCard from "../components/LearningCard";
 import QuizCard from "../components/QuizCard";
 import CodeCard from "../components/CodeCard";
-import TopBar from "../components/TopBar";
-import * as validators from "../utils/validators";
-import { Progress } from 'antd';
 import QuizResults from "../components/QuizResults";
+import { Progress } from "antd";
+import api from "../admin/services/api";
+import AuthContext from "../context/AuthContext";
+import * as validators from "../utils/validators";
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
-const TEMP_QUIZ_IMAGE = "https://via.placeholder.com/600x200/3949ab/ffffff?text=Quiz+Question+Image";
+const Quiz = () => {
+  const { moduleId, topicId } = useParams();
+  const navigate = useNavigate();
+  const { user, updateUserXP, refreshUser } = useContext(AuthContext);
 
-const Quiz = ({ content, onComplete }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [score, setScore] = useState(0);
-  const [quizFinished, setQuizFinished] = useState(false);
-  const [userCodeAnswer, setUserCodeAnswer] = useState("");
-  const [answered, setAnswered] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(null);
-  const [validationError, setValidationError] = useState(null);
-  const [chances, setChances] = useState(5);
+  const [quizState, setQuizState] = useState({
+    content: null,
+    loading: true,
+    currentIndex: 0,
+    selectedOption: null,
+    userCodeAnswer: "",
+    answered: false,
+    isCorrect: null,
+    validationError: null,
+    score: 0,
+    chances: 5,
+    quizFinished: false,
+    topicXP: 0, // XP earned in this topic
+  });
 
-  const current = content[currentIndex];
-  // Calculate total number of *gradable* questions (quiz or code)
-  const totalQuizQuestions = content.filter(item => item.type === 'quiz' || item.type === 'code').length;
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
-  // Calculate the progress based on ALL content items for the progress bar
-  const progressPercent = ((currentIndex + 1) / content.length) * 100;
+  useEffect(() => {
+    const fetchTopicContent = async () => {
+      try {
+        const topicData = await api.getTopic(topicId);
+        if (topicData?.cards) {
+          setQuizState((prev) => ({
+            ...prev,
+            content: topicData.cards,
+            loading: false,
+          }));
+        } else {
+          console.error("No cards found in topic data.");
+          setQuizState((prev) => ({ ...prev, loading: false }));
+          navigate(`/modules/${moduleId}/topics`);
+        }
+      } catch (error) {
+        console.error("Failed to fetch topic content:", error);
+        setQuizState((prev) => ({ ...prev, loading: false }));
+        navigate(`/modules/${moduleId}/topics`);
+      }
+    };
 
-  const showPrev = currentIndex > 0;
+    if (topicId) {
+      fetchTopicContent();
+    }
+  }, [topicId, moduleId, navigate]);
 
-  const resetCardState = () => {
-    setAnswered(false);
-    setIsCorrect(null);
-    setSelectedOption(null);
-    setUserCodeAnswer("");
-    setValidationError(null);
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [quizState.currentIndex]);
+
+  const getResetCardState = () => ({
+    selectedOption: null,
+    userCodeAnswer: "",
+    answered: false,
+    isCorrect: null,
+    validationError: null,
+  });
+
+  const handleTopicCompletion = async (earnedXP) => {
+    try {
+      // Call backend API to mark topic completed and award XP
+      const res = await api.topicCompleted(topicId, moduleId, earnedXP);
+
+      // Update global XP immediately
+      if (res.xpAdded) {
+        updateUserXP(user.xp + res.xpAdded);
+      }
+
+      // Refresh user progress to unlock next topic
+      await refreshUser();
+
+    } catch (err) {
+      console.error("Failed to mark topic as completed:", err);
+    }
   };
 
-  const handleAction = () => {
-    if (current["type"] === "knowledge") {
-      if (currentIndex < content.length - 1) {
-        setCurrentIndex((idx) => idx + 1);
-        resetCardState();
-      } else {
-        // If it's the last knowledge card, and there are no quiz/code cards after it,
-        // then the quiz is finished. Otherwise, it will continue to the next item.
-        const remainingGradable = content.slice(currentIndex + 1).filter(item => item.type === 'quiz' || item.type === 'code').length;
-        if (remainingGradable === 0) {
-            setQuizFinished(true);
-        } else {
-            setCurrentIndex((idx) => idx + 1);
-            resetCardState();
-        }
+  const handleAction = async () => {
+    const currentCard = quizState.content[quizState.currentIndex];
+    let xpAwarded = 0;
+    const isLastCard = quizState.currentIndex === quizState.content.length - 1;
+
+    // Knowledge card gives 1 XP automatically
+    if (quizState.answered || currentCard.card_type === "knowledge") {
+      if (currentCard.card_type === "knowledge") {
+        xpAwarded = 1;
       }
+
+      try {
+        await api.recordCardCompletion(
+          currentCard._id,
+          topicId,
+          moduleId,
+          true,
+          xpAwarded
+        );
+
+        let newTopicXP = quizState.topicXP + xpAwarded;
+
+        if (isLastCard) {
+          // Topic finished, update backend & global XP
+          await handleTopicCompletion(newTopicXP);
+
+          setQuizState((prev) => ({
+            ...prev,
+            quizFinished: true,
+            topicXP: newTopicXP,
+          }));
+        } else {
+          setQuizState((prev) => ({
+            ...prev,
+            currentIndex: prev.currentIndex + 1,
+            ...getResetCardState(),
+            topicXP: newTopicXP,
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to record card completion:", err);
+      }
+
       return;
     }
 
-    // Handle quiz and code questions
-    if (!answered) {
-      let correct = false;
+    // Handle quiz and code card logic
+    let correct = false;
+    let error = null;
 
-      if (current["type"] === "quiz") {
-        correct = selectedOption === current["correctIndex"];
-      } else if (current["type"] === "code") {
-        if (current["validator"] && validators[current["validator"]]) {
-          const validation = validators[current["validator"]](userCodeAnswer);
-          correct = validation.isCorrect;
-          if (!correct) setValidationError(validation.error);
-          else setValidationError(null);
-        } else if (current["correctAnswer"]) {
-          correct = userCodeAnswer
-            .toLowerCase()
-            .includes(current["correctAnswer"].toLowerCase());
+    if (currentCard.card_type === "quiz") {
+      correct = quizState.selectedOption === currentCard.content.correctIndex;
+      if (correct) xpAwarded = 5;
+    } else if (currentCard.card_type === "code") {
+      try {
+        const validatorFunction = validators[currentCard.content.validator];
+        if (validatorFunction) {
+          const validationResult = validatorFunction(quizState.userCodeAnswer);
+          correct = validationResult.isCorrect;
+          error = validationResult.error;
+          if (correct) xpAwarded = 10;
+        } else {
+          error = `Validator function '${currentCard.content.validator}' not found.`;
         }
-      }
-
-      setIsCorrect(correct);
-      setAnswered(true);
-
-      if (correct) {
-        setScore((prev) => prev + 1);
-      } else {
-        setChances((prev) => Math.max(prev - 1, 0));
-      }
-    } else { // If already answered, move to next or finish
-      if (currentIndex < content.length - 1) {
-        setCurrentIndex((idx) => idx + 1);
-        resetCardState();
-      } else {
-        // If it's the last quiz/code card, set quizFinished to true
-        setQuizFinished(true);
+      } catch (err) {
+        console.error("Validation error:", err);
+        error = "An error occurred during validation.";
       }
     }
+
+    // Record card completion
+    try {
+      await api.recordCardCompletion(
+        currentCard._id,
+        topicId,
+        moduleId,
+        correct,
+        xpAwarded
+      );
+    } catch (err) {
+      console.error("Failed to record progress:", err);
+    }
+
+    setQuizState((prev) => {
+      let newContent = [...prev.content];
+      let newChances = prev.chances;
+      let newScore = prev.score;
+      let newTopicXP = prev.topicXP;
+
+      if (!correct) {
+        newChances = Math.max(prev.chances - 1, 0);
+        newContent.push(currentCard); // retry
+      } else {
+        newScore++;
+        newTopicXP += xpAwarded;
+      }
+
+      const topicFinished = isLastCard;
+
+      if (topicFinished) {
+        // Topic completed
+        handleTopicCompletion(newTopicXP);
+        return {
+          ...prev,
+          isCorrect: correct,
+          answered: true,
+          validationError: error,
+          score: newScore,
+          chances: newChances,
+          topicXP: newTopicXP,
+          quizFinished: true,
+        };
+      }
+
+      return {
+        ...prev,
+        isCorrect: correct,
+        answered: true,
+        validationError: error,
+        score: newScore,
+        chances: newChances,
+        topicXP: newTopicXP,
+        content: newContent,
+      };
+    });
   };
 
   const handlePrev = () => {
-    if (!showPrev) return;
-    setCurrentIndex((idx) => idx - 1);
-    resetCardState();
-  };
-
-  const handleExit = () => {
-    const confirmExit = window.confirm(
-      "Are you sure you want to leave the quest? Your progress will not be counted."
-    );
-    if (confirmExit) {
-      onComplete(false);
+    if (quizState.currentIndex > 0) {
+      setQuizState((prev) => ({
+        ...prev,
+        currentIndex: prev.currentIndex - 1,
+        ...getResetCardState(),
+      }));
     }
   };
 
-  // Render QuizResults component if quiz is finished
-  if (quizFinished) {
+   const handleExit = () => {
+        Swal.fire({ // Use Swal.fire for confirmation
+            title: 'Are you sure you want to leave?',
+            text: "Your progress will not be counted.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, leave!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                navigate(`/modules/${moduleId}/topics`);
+            }
+        });
+    };
+
+
+  const handleReturnFromResults = () => {
+    navigate(`/modules/${moduleId}/topics`);
+  };
+
+  if (quizState.loading) {
+    return <div className="loading-state">Loading topic content...</div>;
+  }
+
+  if (!quizState.content || quizState.content.length === 0) {
+    return (
+      <div className="text-white text-center">
+        No content found for this topic.
+        <button
+          onClick={() => navigate(`/modules/${moduleId}/topics`)}
+          className="btn btn-secondary mt-3"
+        >
+          Return to Topic Trail
+        </button>
+      </div>
+    );
+  }
+
+  const current = quizState.content[quizState.currentIndex];
+  const totalQuizQuestions = quizState.content.filter(
+    (item) => item.card_type === "quiz" || item.card_type === "code"
+  ).length;
+  const progressPercent =
+    ((quizState.currentIndex + 1) / quizState.content.length) * 100;
+
+  if (quizState.quizFinished) {
     return (
       <QuizResults
-        score={score}
-        totalQuestions={totalQuizQuestions} // Pass the filtered total here
-        onReturn={() => onComplete(true)}
+        score={quizState.score}
+        totalQuestions={totalQuizQuestions}
+        onReturn={handleReturnFromResults}
+        xp={quizState.topicXP}
       />
     );
   }
 
-  // Render the quiz content if not finished
+  const isInputProvided =
+    (current.card_type === "quiz" && quizState.selectedOption !== null) ||
+    (current.card_type === "code" && quizState.userCodeAnswer.trim() !== "");
+
+  const isButtonDisabled =
+    !quizState.answered &&
+    current.card_type !== "knowledge" &&
+    !isInputProvided;
+
+  const buttonText =
+    quizState.answered || current.card_type === "knowledge"
+      ? quizState.currentIndex === quizState.content.length - 1
+        ? "Finish"
+        : "Continue"
+      : "Check";
+
   return (
     <div className="quiz-container">
+      <div className="bg-shape-1"></div>
+      <div className="bg-shape-2"></div>
+
       <div className="top-fixed-elements">
         <div className="quiz-status-bar1">
           <button className="exit-button" onClick={handleExit} title="Exit">
             ×
           </button>
-
           <div className="quiz-progress-container">
             <Progress
               percent={Math.round(progressPercent)}
-              strokeColor="linear-gradient(90deg, var(--primary-blue-gradient-start) 0%, var(--primary-blue-gradient-end) 100%)"
+              strokeColor={{
+                from: "var(--primary-blue-gradient-start)",
+                to: "var(--primary-blue-gradient-end)",
+              }}
               strokeWidth={19}
               showInfo={false}
             />
           </div>
-
+          <div
+            className="xp-container"
+            aria-label={`You have ${quizState.topicXP} XP`}
+          >
+            <span className="xp-icon">💫</span>
+            <span className="xp-count">{quizState.topicXP}</span>
+          </div>
           <div
             className="chances-container"
-            aria-label={`You have ${chances} chances left`}
+            aria-label={`You have ${quizState.chances} chances left`}
           >
             <span className="heart-icon">❤️</span>
-            <span className="chances-count">{chances}</span>
+            <span className="chances-count">{quizState.chances}</span>
           </div>
         </div>
       </div>
 
-      {/* Card Content */}
-      {current["type"] === "knowledge" && (
+      {current.card_type === "knowledge" && (
         <LearningCard
-          title={current["title"]}
-          text={current["text"]}
-          image={current["image"]}
-          imageSize={current["imageSize"] || "small"}
+          title={current.content.title}
+          text={current.content.text}
+          image={current.imageUrl}
+          imageSize={current.content.imageSize || "small"}
+          cardId={current._id}
+          topicId={topicId}
+          moduleId={moduleId}
         />
       )}
 
-      {current["type"] === "quiz" && (
+      {current.card_type === "quiz" && (
         <QuizCard
-          question={current["question"]}
-          options={current["options"]}
-          correctIndex={current["correctIndex"]}
-          selectedOption={selectedOption}
-          onSelect={setSelectedOption}
-          answered={answered}
-          isCorrect={isCorrect}
-          quizImage={TEMP_QUIZ_IMAGE}
+          question={current.content.question}
+          options={current.content.options}
+          correctIndex={current.content.correctIndex}
+          selectedOption={quizState.selectedOption}
+          onSelect={(index) =>
+            setQuizState((prev) => ({ ...prev, selectedOption: index }))
+          }
+          answered={quizState.answered}
+          isCorrect={quizState.isCorrect}
+          explanation={current.content.explanation}
+          quizImage={current.imageUrl}
         />
       )}
 
-      {current["type"] === "code" && (
+      {current.card_type === "code" && (
         <CodeCard
-          title={current["title"]}
-          taxonomyCode={current["taxonomy"]}
-          instanceCode={current["code"]}
-          question={current["question"]}
-          explanation={answered && isCorrect ? current["explanation"] : null}
-          userAnswer={userCodeAnswer}
-          onAnswer={answered ? () => {} : setUserCodeAnswer}
-          validationError={validationError}
-          isCorrect={isCorrect}
+          title={current.content.title}
+          taxonomyCode={current.content.taxonomy}
+          instanceCode={current.content.code}
+          question={current.content.question}
+          explanation={
+            quizState.answered && quizState.isCorrect
+              ? current.content.explanation
+              : null
+          }
+          hint={current.content.hint}
+          userAnswer={quizState.userCodeAnswer}
+          onAnswer={
+            quizState.answered
+              ? () => {}
+              : (code) =>
+                  setQuizState((prev) => ({ ...prev, userCodeAnswer: code }))
+          }
+          validationError={quizState.validationError}
+          isCorrect={quizState.isCorrect}
+          cardId={current._id}
+          topicId={topicId}
+          moduleId={moduleId}
         />
       )}
 
       <div className="nav-buttons">
-        {showPrev && (
-          <button className="nav-button" onClick={handlePrev}>
-            Back
+        {quizState.currentIndex > 0 && (
+          <button className="nav-button prev-button" onClick={handlePrev}>
+            Previous
           </button>
         )}
-
-        {/* Conditional rendering for the main action button */}
-        {(
-          (current["type"] === "quiz" && selectedOption !== null) ||
-          (current["type"] === "code" && userCodeAnswer.trim()) ||
-          (current["type"] === "knowledge" && currentIndex < content.length - 1) // Only show continue for knowledge if not the last item
-        ) && (
-          <button className="nav-button" onClick={handleAction}>
-            {current["type"] === "knowledge"
-              ? "Continue"
-              : answered
-              ? "Continue"
-              : "Check"}
-          </button>
-        )}
-
-        {/* 'Finish' button for the last knowledge card IF no gradable questions follow it */}
-        {current["type"] === "knowledge" && currentIndex === content.length - 1 && totalQuizQuestions === 0 && (
-            <button className="nav-button" onClick={() => setQuizFinished(true)}>
-                Finish
-            </button>
-        )}
-
-        {/* This condition ensures the last gradable question (quiz/code) gets a "Finish" or "Continue" button
-            after being answered, even if it's the very last item in content. */}
-        {current["type"] !== "knowledge" && answered && currentIndex === content.length - 1 && (
-             <button className="nav-button" onClick={() => setQuizFinished(true)}>
-                Finish
-            </button>
-        )}
+        <button
+          className="nav-button continue-button"
+          onClick={handleAction}
+          disabled={isButtonDisabled}
+        >
+          {buttonText}
+        </button>
       </div>
     </div>
   );

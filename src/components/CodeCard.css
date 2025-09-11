@@ -1,0 +1,127 @@
+/* src/components/CodeCard.css */
+.code-card {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 8px var(--shadow-color);
+  padding: var(--spacing-lg);
+  margin-top: calc(var(--spacing-lg) * 2);
+  position: relative;
+  border: 1px solid var(--border-color);
+}
+
+.code-card h3 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+}
+
+.code-snippet {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: var(--spacing-md);
+  position: relative;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.code-snippet h6 {
+  background-color: #f1f1f1;
+  padding: var(--spacing-sm);
+  margin: 0;
+  border-bottom: 1px solid var(--border-color);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: bold;
+}
+
+.copy-button {
+  position: absolute;
+  right: var(--spacing-sm);
+  top: var(--spacing-sm);
+  z-index: 10;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-button:hover {
+  background: var(--primary-color);
+  opacity: 0.9;
+}
+
+.error-msg {
+  color: var(--incorrect-color);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.ace-editor-container {
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ace-editor-container.correct {
+  border-color: var(--correct-color);
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25);
+}
+
+.ace-editor-container.error {
+  border-color: var(--incorrect-color);
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+
+.ace-editor-container:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.code-card-title {
+  text-align: center; /* Centers the heading only */
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+}
+
+.hint-container {
+  text-align: right;
+  margin-bottom: 10px;
+}
+
+.hint-button {
+  background-color: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 15px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.hint-button:hover {
+  background-color: #34495e;
+}
+
+.code-hint {
+  margin-top: 3px;
+  background-color: white;
+  border: 1px solid white;
+  color: #2c3e50;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 17px;
+}

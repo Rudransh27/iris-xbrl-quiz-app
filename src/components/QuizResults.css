@@ -1,0 +1,217 @@
+/* src/components/QuizResults.css */
+:root {
+    /* Modern Color Palette */
+    --primary-gradient-start: #4A90E2;
+    /* A vibrant blue */
+    --primary-gradient-end: #63B8FF;
+    /* A lighter, softer blue */
+    --secondary-color: #A0C4FF;
+    /* A light blue for accents */
+    --text-color: #333;
+    /* Dark grey for readability */
+    --light-text-color: #555;
+    --background-light: #F8F9FA;
+    /* Light background for the page */
+    --card-background: #FFFFFF;
+    /* White for the card */
+    --border-color: #E0E0E0;
+    /* Light grey border */
+    --shadow-light: rgba(0, 0, 0, 0.08);
+    --shadow-medium: rgba(0, 0, 0, 0.15);
+    /* Chart Colors (match JS, or define here and use CSS variables in JS) */
+    --chart-correct-color: #4CAF50;
+    /* Green */
+    --chart-incorrect-color: #FF5733;
+    /* Red-Orange */
+    /* Font Families */
+    --heading-font: 'Poppins', sans-serif;
+    --body-font: 'Roboto', sans-serif;
+}
+
+/* Base Styles for the container */
+.quiz-complete-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+    font-family: var(--body-font);
+    color: var(--text-color);
+    position: relative;
+    /* For background effects */
+    overflow: hidden;
+    /* Hide any overflow from background elements */
+}
+
+/* Modern Card Design */
+.modern-card-design {
+    background: var(--card-background);
+    border-radius: 20px;
+    /* More rounded corners */
+    box-shadow: 0 15px 30px var(--shadow-medium);
+    /* Deeper, softer shadow */
+    padding: 40px;
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    transform: translateY(0);
+    /* Base for animation */
+    animation: slideIn 0.8s ease-out forwards;
+    position: relative;
+    z-index: 10;
+    /* Ensure card is above background shapes */
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Title and Summary */
+.results-title {
+    font-family: var(--heading-font);
+    font-size: 2.8rem;
+    /* Larger, more impactful title */
+    color: var(--primary-gradient-start);
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 3px var(--shadow-light);
+}
+
+.results-summary {
+    font-size: 1.2rem;
+    color: var(--light-text-color);
+    margin-bottom: 30px;
+}
+
+.score-highlight {
+    color: var(--chart-correct-color);
+    font-weight: bold;
+}
+
+.total-highlight {
+    color: var(--primary-gradient-start);
+    font-weight: bold;
+}
+
+/* Chart Specific Styles */
+.chart-container {
+    margin-bottom: 30px;
+    animation: fadeIn 1.2s ease-out 0.4s forwards;
+    /* Delayed fade in for chart */
+    opacity: 0;
+    /* Start invisible */
+}
+
+.chart-center-label {
+    font-size: 2.5rem;
+    /* Even larger for central percentage */
+    font-weight: bold;
+    fill: var(--text-color);
+    /* Use theme text color */
+    animation: pulse 1.5s infinite alternate;
+    /* Subtle pulse animation */
+}
+
+@keyframes pulse {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.05);
+    }
+}
+
+/* No questions message */
+.no-questions-message {
+    font-size: 1.1rem;
+    color: var(--light-text-color);
+    margin-top: 30px;
+}
+
+/* Modern Button */
+.modern-button {
+    background: linear-gradient(90deg, #6A11CB 0%, #2575FC 100%);
+    /* Purple to Blue gradient */
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.modern-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+    filter: brightness(1.1);
+    /* Slightly brighter on hover */
+}
+
+.modern-button:active {
+    transform: translateY(0);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .modern-card-design {
+        padding: 30px 20px;
+        border-radius: 15px;
+    }
+
+    .results-title {
+        font-size: 2.2rem;
+    }
+
+    .results-summary {
+        font-size: 1rem;
+    }
+
+    .chart-center-label {
+        font-size: 2rem;
+    }
+
+    .modern-button {
+        padding: 12px 25px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modern-card-design {
+        margin: 10px;
+    }
+
+    .results-title {
+        font-size: 1.8rem;
+    }
+
+    .chart-center-label {
+        font-size: 1.8rem;
+    }
+}

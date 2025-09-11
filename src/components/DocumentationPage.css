@@ -1,0 +1,428 @@
+/* src/components/DocumentationPage.css */
+
+/* --- CSS Variables for Easy Theming --- */
+:root {
+    --color-primary: #1e88e5; /* A vibrant blue for links and buttons */
+    --color-primary-hover: #1565c0;
+    --color-text-dark: #212529; /* Main body text */
+    --color-text-muted: #6c757d; /* Subtitles and secondary text */
+    --color-background: #f8f9fa; /* Light gray background */
+    --color-surface: #ffffff; /* White for cards, sidebar */
+    --color-border: #e9ecef;
+    --color-code-bg: #2d2d2d;
+    --color-code-text: #f8f8f2;
+    --color-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --color-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+    --transition-speed: 0.2s;
+}
+
+/* --- Base Styles --- */
+* {
+    box-sizing: border-box;
+}
+
+
+
+/* --- Main Layout Container --- */
+.doc-page-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* --- Sidebar Styling --- */
+.doc-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 900;
+    padding: 2rem 1.5rem;
+    transition: transform 0.3s ease-in-out;
+
+    -ms-overflow-style: none; /* for IE and Edge */
+    scrollbar-width: none;     /* for Firefox */
+}
+
+/* Hide scrollbar in WebKit browsers (Chrome, Safari) */
+.doc-sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+.doc-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.doc-sidebar-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.doc-close-sidebar-btn {
+    display: none; /* Hidden on desktop */
+}
+
+.doc-sidebar-nav {
+    margin-top: 1rem;
+}
+
+.list-nested {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.doc-card-link {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    text-decoration: none;
+    color: var(--color-text-dark);
+    font-size: 0.95rem;
+    font-weight: 400;
+    border-radius: 6px;
+    border-left: 3px solid transparent;
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+.doc-card-link:hover {
+    background-color: var(--color-background);
+    color: var(--color-primary);
+}
+
+.doc-card-link.active {
+    background-color: var(--color-primary);
+    color: var(--color-surface);
+    font-weight: 600;
+    border-left-color: var(--color-primary);
+    box-shadow: var(--color-shadow-sm);
+}
+
+.doc-card-link.active:hover {
+    background-color: var(--color-primary-hover);
+}
+
+/* --- Main Content Area --- */
+.doc-main-content {
+    flex-grow: 1;
+    min-width: 0;
+    padding: 3rem;
+}
+
+.doc-documentation-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.doc-back-to-module-btn-desktop {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    margin-bottom: 2rem;
+    font-weight: 600;
+    transition: text-decoration var(--transition-speed);
+}
+
+.doc-back-to-module-btn-desktop:hover {
+    text-decoration: underline;
+}
+
+.doc-documentation-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.doc-documentation-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    margin-bottom: 2rem;
+}
+
+/* --- Markdown Body Styling --- */
+.doc-markdown-body h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.5rem;
+}
+
+.doc-markdown-body h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+}
+
+.doc-markdown-body p,
+.doc-markdown-body ul,
+.doc-markdown-body ol {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--color-text-dark);
+    margin-bottom: 1.5rem;
+}
+
+.doc-markdown-body pre {
+    background-color: var(--color-code-bg) !important;
+    color: var(--color-code-text);
+    padding: 1.5rem;
+    border-radius: 8px;
+    width: 100%;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    -webkit-overflow-scrolling: touch;
+}
+
+.doc-markdown-body code {
+    background-color: rgba(135, 131, 120, 0.15);
+    color: #eb5757;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: var(--font-mono);
+}
+
+.doc-card-image {
+    max-width: 100%;
+    max-height: 400px;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: var(--color-shadow-sm);
+    margin: 2rem auto;
+    display: block;
+    object-fit: contain;
+}
+
+/* --- Navigation Buttons --- */
+.doc-navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 2rem;
+    gap: 1rem;
+}
+
+.doc-nav-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.7rem 1.25rem;
+    background-color: #f1f3f5;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--color-text-dark);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all var(--transition-speed);
+    flex-grow: 0;
+    width: auto;
+    max-width: 200px;
+}
+
+.doc-nav-btn:hover {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-surface);
+    box-shadow: var(--color-shadow-sm);
+    transform: translateY(-2px);
+}
+
+.doc-nav-btn.doc-prev-btn {
+    justify-content: flex-start;
+}
+
+.doc-nav-btn.doc-next-btn {
+    justify-content: flex-end;
+    text-align: right;
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-surface);
+}
+
+.doc-nav-btn.doc-next-btn:hover {
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+}
+
+.doc-nav-btn span {
+    display: block;
+    line-height: 1.4;
+}
+
+/* --- Mobile Specific Styles --- */
+.doc-mobile-header {
+    display: none;
+}
+.doc-sidebar-overlay {
+    display: none;
+}
+
+@media (max-width: 992px) {
+    .doc-page-container {
+        flex-direction: column;
+    }
+
+    .doc-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 300px;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        padding-top: 4rem;
+    }
+
+    .doc-sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .doc-sidebar-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: var(--color-surface);
+        border-bottom: 1px solid var(--color-border);
+        padding: 1rem 1.5rem;
+        z-index: 1001;
+    }
+    
+    .doc-close-sidebar-btn {
+        display: block;
+        font-size: 2rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--color-text-muted);
+    }
+
+    .doc-main-content {
+        padding: 1.5rem 1rem;
+        padding-top: 5rem;
+    }
+
+    .doc-mobile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 64px;
+        background-color: var(--color-surface);
+        box-shadow: var(--color-shadow-sm);
+        z-index: 999;
+        padding: 0 1rem;
+    }
+
+    .doc-back-to-module-btn-mobile {
+        background: none;
+        border: none;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--color-primary);
+        cursor: pointer;
+    }
+
+    .doc-sidebar-toggle-btn {
+        background: none;
+        border: none;
+        padding: 0.5rem;
+        cursor: pointer;
+        position: relative;
+        z-index: 1002;
+    }
+    
+    .doc-toggle-icon {
+        width: 24px;
+        height: 2px;
+        background-color: var(--color-text-dark);
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+    
+    .doc-toggle-icon::before,
+    .doc-toggle-icon::after {
+        content: '';
+        position: absolute;
+        width: 24px;
+        height: 2px;
+        background-color: var(--color-text-dark);
+        transition: transform 0.3s ease, top 0.3s ease;
+    }
+    
+    .doc-toggle-icon::before {
+        top: -8px;
+    }
+    
+    .doc-toggle-icon::after {
+        top: 8px;
+    }
+
+    .doc-sidebar-toggle-btn.open .doc-toggle-icon {
+        background-color: transparent;
+    }
+
+    .doc-sidebar-toggle-btn.open .doc-toggle-icon::before {
+        transform: rotate(45deg);
+        top: 0;
+    }
+    
+    .doc-sidebar-toggle-btn.open .doc-toggle-icon::after {
+        transform: rotate(-45deg);
+        top: 0;
+    }
+
+    .doc-sidebar-overlay {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 950;
+    }
+    
+    .doc-back-to-module-btn-desktop {
+        display: none;
+    }
+    
+    .doc-navigation-buttons {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .doc-nav-btn {
+        flex-grow: 0;
+    }
+}

@@ -1,0 +1,94 @@
+/* src/components/QuizCard.css */
+.question-card {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 8px var(--shadow-color);
+  padding: var(--spacing-lg);
+  margin-top: calc(var(--spacing-lg) * 5);
+  position: relative;
+  border: 1px solid var(--border-color);
+  overflow: visible;
+}
+
+/* Updated positioning and size for Tom */
+.tom-img {
+  position: absolute;
+  top: -55px;
+  left: -55px;
+  width: 100px;
+  opacity: 0.9;
+  z-index: 1; /* Z-index increased to be above the header */
+}
+
+.quiz-question-text {
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+.option-button {
+  padding: var(--spacing-md);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--card-bg);
+  color: black;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.option-button:hover {
+  background-color: #f1f1f1;
+  border-color: var(--primary-color);
+}
+
+.option-button.selected {
+  border-color: var(--primary-color);
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.option-button.correct {
+  background-color: var(--correct-color);
+  color: white;
+  border-color: var(--correct-color);
+}
+
+.option-button.incorrect {
+  background-color: var(--incorrect-color);
+  color: white;
+  border-color: var(--incorrect-color);
+}
+
+.quiz-explanation {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background-color: #f1f1f1;
+  border-left: 4px solid var(--primary-color);
+  border-radius: 4px;
+}
+
+.quiz-explanation h4 {
+  margin-top: 0;
+  color: var(--primary-color);
+}
+
+.quiz-question-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin-bottom: var(--spacing-md);
+  border-radius: 8px;
+}

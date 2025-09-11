@@ -1,6 +1,9 @@
+// src/components/QuizCard.jsx
+// (no changes needed)
+
 import React from "react";
-import tomImg from "../assets/tom.png"; // Your existing Tom image
-import "../pages/Quiz.css"; // Ensure Quiz.css styles are applied
+import tomImg from "../assets/tom.png";
+import "./QuizCard.css"; 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -12,13 +15,11 @@ const QuizCard = ({
   onSelect,
   answered,
   isCorrect,
-  quizImage, // Add quizImage prop here
+  quizImage,
+  explanation,
 }) => (
   <div className="question-card">
-    {/* Display the quizImage if provided */}
-    {/* {quizImage && <img src={quizImage} alt="Quiz visual aid" className="quiz-question-image" />} */}
-
-    {/* Your existing Tom image */}
+    {quizImage && <img src={quizImage} alt="Quiz visual aid" className="quiz-question-image" />}
     <img src={tomImg} alt="Tom" className="tom-img" />
 
     <div className="quiz-question-text markdown-body">
@@ -39,7 +40,7 @@ const QuizCard = ({
           <button
             key={idx}
             className={className}
-            onClick={() => !answered && onSelect(idx)}
+            onClick={() => onSelect(idx)}
             disabled={answered}
           >
             {option}
@@ -47,26 +48,15 @@ const QuizCard = ({
         );
       })}
     </div>
-    {/* Feedback image after checking - commented out as in your provided code */}
-    {/* {answered && (
-      <div className="quiz-feedback-img-area">
-        {isCorrect ? (
-          <img
-            src={happyJerryImg}
-            alt="Jerry is happy!"
-            className="feedback-img"
-            style={{ marginTop: "1rem", maxHeight: 100 }}
-          />
-        ) : (
-          <img
-            src={caughtJerryImg}
-            alt="Jerry was caught by Tom!"
-            className="feedback-img"
-            style={{ marginTop: "1rem", maxHeight: 100 }}
-          />
-        )}
+
+    {answered && explanation && (
+      <div className="quiz-explanation">
+        <h4>Explanation:</h4>
+        <div className="markdown-body">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{explanation}</ReactMarkdown>
+        </div>
       </div>
-    )} */}
+    )}
   </div>
 );
 

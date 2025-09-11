@@ -1,0 +1,198 @@
+
+
+/* --- General Body and Container Styles --- */
+body {
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.5;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  overflow-x: hidden;
+}
+
+.quiz-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* --- Fixed Top Elements Container --- */
+.top-fixed-elements {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 15px 5%;
+  /* background: rgba(0, 0, 0, 0.4); */
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  /* box-shadow: 0 2px 10px var(--shadow-color-topbar); */
+}
+
+.quiz-status-bar1 {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.exit-button {
+  font-size: 2rem;
+  color: #fff;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0 10px;
+  transition: color 0.3s ease;
+}
+
+.exit-button:hover {
+  color: var(--primary-blue-gradient-end);
+}
+
+.chances-container {
+  display: flex;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text-color);
+  background: var(--card-background);
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.heart-icon {
+  margin-right: 4px;
+}
+
+/* --- ProgressBar --- */
+.quiz-progress-container {
+  flex-grow: 1;
+  height: 8px;
+  background-color: var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 20px;
+  max-width: 600px;
+}
+
+.quiz-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-blue-gradient-start) 0%, var(--primary-blue-gradient-end) 100%);
+  transition: width 0.3s ease-in-out;
+  border-radius: 4px;
+}
+
+/* --- Theme Toggle Button --- */
+.theme-toggle {
+  background: var(--card-background);
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px var(--shadow-color-topbar);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+  color: var(--text-color);
+}
+
+.theme-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px var(--shadow-color-topbar);
+}
+
+/* --- Card Base Styles (Shared) --- */
+.quiz-card {
+  background-color: var(--card-background);
+  border-radius: 18px;
+  padding: 2rem;
+  box-shadow: 0 8px 30px var(--shadow-color-card);
+  width: 100%;
+  max-width: 900px;
+  position: relative;
+  margin-top: 6rem;
+  margin-bottom: 6rem;
+  box-sizing: border-box;
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out, background-color 0.4s ease;
+}
+
+.quiz-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 45px var(--shadow-color-card);
+}
+
+/* Character images */
+.jerry-img {
+  position: absolute;
+  width: 80px;
+  top: -40px;
+  right: 20px;
+  z-index: 1;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25));
+  transition: transform 0.3s ease;
+}
+
+.quiz-card:hover .jerry-img {
+  transform: translateY(-5px);
+}
+
+/* --- Navigation Buttons --- */
+.nav-buttons {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  width: 100%;
+  max-width: 700px;
+  margin-top: 2rem;
+}
+
+.nav-button {
+  padding: 1rem 2rem;
+  font-weight: 600;
+  font-size: 1rem;
+  background: linear-gradient(90deg, var(--primary-blue-gradient-start) 0%, var(--primary-blue-gradient-end) 70%, var(--secondary-accent-color) 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.25);
+  transition: all 0.3s ease;
+  flex-grow: 1;
+  max-width: 200px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nav-button:hover {
+  background: linear-gradient(90deg, var(--primary-blue-gradient-end) 0%, var(--primary-blue-gradient-start) 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 123, 255, 0.35);
+}
+
+/* --- Media Queries for Responsiveness --- */
+@media (max-width: 768px) {
+  .quiz-container { padding: 1.5rem 0.8rem; }
+  .quiz-card { max-width: 95%; padding: 1.5rem; margin-top: 5rem; margin-bottom: 5rem; }
+  .top-fixed-elements { padding: 15px 20px; }
+  .nav-buttons { gap: 1rem; }
+  .nav-button { max-width: 48%; padding: 0.8rem 1.2rem; font-size: 0.9rem; }
+  .jerry-img { width: 70px; top: -35px; right: 15px; }
+  .quiz-progress-container { max-width: 400px; }
+  .chances-container { font-size: 1rem; padding: 4px 10px; }
+}
+
+@media (max-width: 480px) {
+  .nav-buttons { flex-direction: column; }
+  .nav-button { max-width: 100%; }
+}

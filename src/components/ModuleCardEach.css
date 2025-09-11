@@ -1,0 +1,163 @@
+/* src/components/ModuleCardEach.css */
+
+:root {
+  --primary-color: #0f256e;
+  --secondary-color: #22C55E;
+  --text-dark: #333333;
+  --bg-white: #ffffff;
+  --border-color: #e0e0e0;
+  --shadow-light: rgba(0, 0, 0, 0.05);
+
+  /* New card colors */
+  --ifile-card-bg: #e3f2fd; /* Light blue */
+  --ideal-card-bg: #fffde7; /* Light yellow */
+  --carbon-card-bg: #e8f5e9; /* Light green */
+
+  /* New tag colors */
+  --ifile-badge-color: #1a237e;
+  --ideal-badge-color: #f57f17;
+  --carbon-badge-color: #2e7d32;
+}
+
+.module-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: 0 4px 10px var(--shadow-light);
+  max-width: 400px;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+  min-height: 200px;
+  max-height: 400px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.module-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px var(--shadow-light);
+  cursor: pointer;
+}
+
+/* Department-specific card colors are now the primary background */
+.ifile {
+  background-color: var(--ifile-card-bg);
+}
+.ideal {
+  background-color: var(--ideal-card-bg);
+}
+.carbon {
+  background-color: var(--carbon-card-bg);
+}
+
+/* Image container and content */
+.module-card__image-container {
+  width: 100%;
+  height: 150px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-color);
+  /* The department-specific background color now shows here by default */
+}
+.module-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Updated overlay for smilies - inherits background from parent */
+.module-card__no-image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5rem;
+  color: #777;
+  z-index: 1;
+  /* Removed specific background color to inherit the department-specific color */
+}
+
+.module-card__content {
+  padding: 1.5rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.module-card__badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  letter-spacing: normal;
+  margin-bottom: 0.75rem;
+  align-self: flex-start;
+}
+/* Specific badge colors */
+.ifile .module-card__badge {
+  background-color: var(--ifile-card-bg);
+  color: var(--ifile-badge-color);
+  border: 1px solid var(--ifile-badge-color);
+}
+.ideal .module-card__badge {
+  background-color: var(--ideal-card-bg);
+  color: var(--ideal-badge-color);
+  border: 1px solid var(--ideal-badge-color);
+}
+.carbon .module-card__badge {
+  background-color: var(--carbon-card-bg);
+  color: var(--carbon-badge-color);
+  border: 1px solid var(--carbon-badge-color);
+}
+.module-card__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+.module-card__description {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .module-card__title {
+    font-size: 1rem;
+  }
+  .module-card__description {
+    font-size: 0.85rem;
+  }
+}
+
+.module-card__button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.module-card__button:hover {
+  background-color: #0c1c4f;
+}

@@ -1,26 +1,17 @@
-import React, { useState } from "react";
-import "../pages/Quiz.css"; // Ensure your CSS is still imported
+// src/components/CodeCard.jsx
+
+import React, { useState, useEffect } from "react";
+import "./CodeCard.css";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
-// --- Import AceEditor and its dependencies ---
 import AceEditor from "react-ace";
-
-// Import a mode for XML (essential for syntax highlighting)
 import "ace-builds/src-noconflict/mode-xml";
-
-// Import a theme (choose one that fits your overall design)
-// For light mode:
 import "ace-builds/src-noconflict/theme-github";
-// For dark mode (if you want it to match oneDark from Prism):
-import "ace-builds/src-noconflict/theme-monokai"; // Monokai is a popular dark theme
-// You can dynamically choose themes based on your 'theme' state if needed.
-
-// Import necessary extensions for features like autocomplete if desired
-import "ace-builds/src-noconflict/ext-language_tools"; // For basic autocompletion
-
+import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-noconflict/ext-language_tools";
+import api from "../admin/services/api"; // Import the API service
 
 const CodeCard = ({
   title,
@@ -28,18 +19,46 @@ const CodeCard = ({
   instanceCode,
   question,
   explanation,
+  hint,
   onAnswer,
   userAnswer,
   validationError,
   isCorrect,
+  cardId, // New prop
+  topicId, // New prop
+  moduleId, // New prop
 }) => {
   const [copySuccessTax, setCopySuccessTax] = useState(false);
   const [copySuccessInst, setCopySuccessInst] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+  const [attemptLogged, setAttemptLogged] = useState(false); // New state to prevent multiple logs
 
-  // You might want to get the current theme from a context or prop if it's dynamic
-  // For now, let's assume you're managing it globally in body class
   const currentTheme = document.body.classList.contains('dark-theme') ? 'monokai' : 'github';
 
+  // Log the code card attempt when the user answers correctly or incorrectly
+  useEffect(() => {
+    const recordAttempt = async () => {
+      // Only log if the card is answered (correctly or incorrectly)
+      if (isCorrect !== null && !attemptLogged) {
+        try {
+          await api.post("/progress/card-completed", {
+            cardId,
+            topicId,
+            moduleId,
+            isCorrect,
+          });
+          console.log(
+            `Code card attempt recorded. Card ID: ${cardId}, Correct: ${isCorrect}`
+          );
+          setAttemptLogged(true); // Mark the attempt as logged
+        } catch (error) {
+          console.error("Failed to record code card completion:", error);
+        }
+      }
+    };
+
+    recordAttempt();
+  }, [isCorrect, cardId, topicId, moduleId, attemptLogged]);
 
   const handleCopy = (text, which) => {
     if (!navigator.clipboard) {
@@ -77,24 +96,16 @@ const CodeCard = ({
     },
   };
 
+  const toggleHint = () => {
+    setShowHint(!showHint);
+  };
+
   return (
     <div className="code-card">
-      <h3>{title}</h3>
-
-      {/* Taxonomy Code Block (remains SyntaxHighlighter for display) */}
+      <h3 className="code-card-title">{title}</h3>
       {taxonomyCode && (
-        <div
-          className="code-snippet"
-          style={{ position: "relative", maxHeight: 300, overflowY: "auto", marginBottom: 16 }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              right: 10,
-              top: 10,
-              zIndex: 10,
-            }}
-          >
+        <div className="code-snippet">
+          <div className="copy-button-container">
             <button
               className="copy-button"
               onClick={() => handleCopy(taxonomyCode, "taxonomy")}
@@ -111,20 +122,9 @@ const CodeCard = ({
         </div>
       )}
 
-      {/* Instance Code Block (remains SyntaxHighlighter for display) */}
       {instanceCode && (
-        <div
-          className="code-snippet"
-          style={{ position: "relative", maxHeight: 400, overflowY: "auto", marginBottom: 16 }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              right: 10,
-              top: 10,
-              zIndex: 10,
-            }}
-          >
+        <div className="code-snippet">
+          <div className="copy-button-container">
             <button
               className="copy-button"
               onClick={() => handleCopy(instanceCode, "instance")}
@@ -134,7 +134,7 @@ const CodeCard = ({
               {copySuccessInst ? "Copied!" : "Copy"}
             </button>
           </div>
-          <h6>📄 Instance XML (To be Edited)</h6>
+          <h6>📄 XML (To be Edited)</h6>
           <SyntaxHighlighter language="xml" style={oneDark} showLineNumbers>
             {instanceCode}
           </SyntaxHighlighter>
@@ -149,36 +149,43 @@ const CodeCard = ({
         </div>
       </div>
 
-      {/* --- REPLACE TEXTAREA WITH ACE EDITOR --- */}
+      <div className="hint-container">
+        {hint && isCorrect === false && (
+          <button className="hint-button" onClick={toggleHint}>
+            <span role="img" aria-label="bulb icon">💡</span> Hint
+          </button>
+        )}
+      </div>
+
+      {showHint && (
+        <div className="knowledge-content markdown-body code-hint">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
+            {hint}
+          </ReactMarkdown>
+        </div>
+      )}
+
       <AceEditor
-        mode="xml" // Set the language mode
-        theme={currentTheme} // Use the chosen theme
+        mode="xml"
+        theme={currentTheme}
         name="code_editor"
         editorProps={{ $blockScrolling: true }}
         setOptions={{
-          enableBasicAutocompletion: true, // Enable basic autocompletion
-          enableLiveAutocompletion: false, // Live autocompletion (can be resource-intensive)
-          enableSnippets: true, // Enable code snippets
-          showLineNumbers: true, // Show line numbers
-          tabSize: 2, // Set tab size
-          // Add more options as needed (e.g., wrap, readOnly)
+          enableBasicAutocompletion: true,
+          enableLiveAutocompletion: false,
+          enableSnippets: true,
+          showLineNumbers: true,
+          tabSize: 2,
         }}
         value={userAnswer || ""}
-        onChange={onAnswer} // AceEditor passes the new value directly
-        width="100%" // Take full width of parent
-        height="200px" // Set a default height, adjust as needed
-        readOnly={isCorrect} // Make read-only when correct
-        style={{
-            marginTop: "10px",
-            borderRadius: "8px",
-            border: `1px solid ${isCorrect ? "green" : validationError ? "red" : "var(--border-color)"}`,
-            // We'll manage border color via internal style based on props
-            // AceEditor wraps itself in a div, so some styles like border might need !important
-            // or specific targeting in CSS if you want to override Ace's defaults.
-        }}
+        onChange={onAnswer}
+        width="100%"
+        height="200px"
+        readOnly={isCorrect !== null}
+        className={`ace-editor-container ${
+          isCorrect === true ? "correct" : isCorrect === false ? "error" : ""
+        }`}
       />
-      {/* End Ace Editor */}
-
 
       {validationError && (
         <p className="error-msg">
@@ -186,7 +193,7 @@ const CodeCard = ({
         </p>
       )}
 
-      {isCorrect && explanation && (
+      {isCorrect === true && explanation && (
         <div className="knowledge-content markdown-body code-explanation">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
             {explanation}

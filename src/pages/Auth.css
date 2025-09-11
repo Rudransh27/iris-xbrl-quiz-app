@@ -1,0 +1,149 @@
+/* src/pages/Auth.css */
+
+/* This class styles the main content area.
+   It needs to take up the available vertical space between the Navbar and Footer. */
+.auth-page-main-content {
+  flex-grow: 1; /* Allows this div to take up available space */
+  display: flex;
+  justify-content: center; /* Centers content horizontally */
+  align-items: center; /* Centers content vertically */
+  padding: 20px; /* Add some padding around the centered card */
+  background-color: #fafafa; /* A light, neutral background */
+}
+
+/* This wrapper is crucial for centering the card itself within the flex container. */
+.auth-card-wrapper {
+  width: 100%;
+  max-width: 400px; /* Maximum width of the card on larger screens */
+  display: flex;
+  justify-content: center;
+}
+
+/* Styling for the AuthCard component itself */
+.auth-card {
+  width: 100%; /* Make card take full width of its wrapper */
+  border: 1px solid #dbdbdb; /* Subtle border, like Instagram */
+  border-radius: 8px; /* Slightly rounded corners */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Softer shadow */
+  background-color: #fff;
+  padding: 30px 40px; /* Adjust padding for card content */
+}
+
+/* Dynamic Title & Subtitle */
+.auth-card h1 {
+  font-size: 1.8rem; /* Slightly smaller header */
+  font-weight: 600;
+  color: #262626; /* Darker text for headings */
+  margin-bottom: 0.5rem;
+}
+
+.auth-card p {
+  font-size: 0.95rem; /* Slightly smaller subtitle */
+  color: #8e8e8e; /* Muted text color */
+  margin-bottom: 1.5rem;
+}
+
+/* Form Inputs */
+.auth-card .form-control {
+  background-color: #fafafa;
+  border: 1px solid #dbdbdb;
+  border-radius: 5px;
+  padding: 12px 15px; /* Slightly more padding */
+  font-size: 14px;
+  height: 48px; /* Consistent height for input fields */
+}
+
+.auth-card .form-control:focus {
+  border-color: #a8a8a8;
+  box-shadow: none;
+}
+
+/* Primary Button */
+.auth-card .btn-primary {
+  background-color: #0095f6; /* Instagram blue */
+  border-color: #0095f6;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 5px;
+  padding: 10px;
+  height: 42px; /* Button height */
+}
+
+.auth-card .btn-primary:hover {
+  background-color: #0077b5;
+  border-color: #0077b5;
+}
+
+/* Separator for "or" */
+.auth-card .or-separator {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #8e8e8e;
+  font-size: 13px;
+}
+
+.auth-card .or-separator hr {
+  flex-grow: 1;
+  border: none;
+  height: 1px;
+  background-color: #dbdbdb;
+  margin: 0 10px;
+}
+
+.auth-card .or-separator span {
+  padding: 0 10px;
+}
+
+/* Footer links for toggling between login/signup */
+.auth-card .auth-footer-actions {
+  font-size: 14px;
+  margin-top: 25px;
+}
+
+.auth-card .auth-footer-actions a.auth-link {
+  color: #0095f6;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-card .auth-footer-actions a.auth-link:hover {
+  text-decoration: underline;
+}
+
+/* Forgot Password Link */
+.auth-card .auth-link-forgot {
+  font-size: 13px;
+  margin-top: 15px;
+  text-align: center;
+}
+
+/* --- LOGO SIZE CHANGE --- */
+/* Ensure the logo is smaller and centered */
+.auth-card .auth-logo-img { /* Changed selector to match AuthCard.jsx */
+  max-width: 100px; /* Reduced from 120px for an even smaller logo */
+  height: auto;
+  margin-bottom: 20px; /* Adjusted margin */
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .auth-page-main-content {
+    padding: 15px;
+  }
+  .auth-card-wrapper {
+    max-width: 90%; /* Card takes more width on small screens */
+  }
+  .auth-card {
+    padding: 25px 30px;
+  }
+  .auth-card h1 {
+    font-size: 1.6rem;
+  }
+  .auth-card p {
+    font-size: 0.9rem;
+  }
+  .auth-card .auth-logo-img { /* Ensure logo size adjustment on small screens */
+    max-width: 80px;
+  }
+}

@@ -1,59 +1,85 @@
-import React from "react";
+// src/components/LearningCard.jsx
+
+import React, { useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"; // Import Prism
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism"; // Make sure to import from 'styles/prism'
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import jerryImg from "../assets/jerry-cheese.png";
-import "../pages/Quiz.css";
+import api from '../admin/services/api'; // Import the API service
+import "./LearningCard.css";
 
-const LearningCard = ({ title, text, image, imageSize }) => {
-  // Custom renderer for fenced code blocks with syntax highlighting
-  const components = {
-    code({ node, inline, className, children, ...props }) {
-      const match = /language-(\w+)/.exec(className || "");
-      const lang = match ? match[1] : null; // Extract the language from the className
+const components = {
+    code({ node, inline, className, children, ...props }) {
+        const match = /language-(\w+)/.exec(className || "");
+        const lang = match ? match[1] : null;
 
-      return !inline && match ? (
-        <SyntaxHighlighter
-          style={oneDark}
-          language={lang || "plaintext"} // <--- FIX IS HERE: Use the detected language or a fallback
-          PreTag="div"
-          showLineNumbers={false} // Set true if you want line numbers
-          wrapLines={true}
-          {...props}
-        >
-          {String(children).replace(/\n$/, "")}
-        </SyntaxHighlighter>
-      ) : (
-        <code className={className} {...props}>
-          {children}
-        </code>
-      );
-    },
-  };
+        return !inline && match ? (
+            <SyntaxHighlighter
+                style={oneDark}
+                language={lang || "plaintext"}
+                PreTag="div"
+                showLineNumbers={false}
+                wrapLines={true}
+                {...props}
+            >
+                {String(children).replace(/\n$/, "")}
+            </SyntaxHighlighter>
+        ) : (
+            <code className={className} {...props}>
+                {children}
+            </code>
+        );
+    },
+};
 
-  return (
-    <div className="knowledge-card">
-      <img src={jerryImg} alt="Jerry mascot" className="jerry-img" />
-      <div className="knowledge-text">
-        <h3 className="knowledge-title">{title}</h3>
+const LearningCard = ({ title, text, image, imageSize, cardId, topicId, moduleId }) => {
+    
+    // Use an effect hook to log the card completion
+    useEffect(() => {
+        const recordCompletion = async () => {
+            try {
+                // This API call is made as soon as the card is rendered
+                await api.post('/progress/card-completed', {
+                    cardId,
+                    topicId,
+                    moduleId,
+                    isCorrect: null, // knowledge cards don't have a correct/incorrect state
+                                xpEarned: 1 // Add XP earned for learning cards
+                });
+                console.log(`Knowledge card ${cardId} completion recorded with 2 XP.`);
+            } catch (error) {
+                console.error("Failed to record card completion:", error);
+            }
+        };
 
-        {image && (
-          <img
-            src={image}
-            alt=""
-            className={`card-img1 card-img-${imageSize || "small"}`}
-          />
-        )}
+        if (cardId && topicId && moduleId) {
+            recordCompletion();
+        }
+    }, [cardId, topicId, moduleId]); // Re-run effect if these IDs change
 
-        <div className="knowledge-content markdown-body">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-            {text}
-          </ReactMarkdown>
-        </div>
-      </div>
-    </div>
-  );
+    return (
+        <div className="knowledge-card">
+            <img src={jerryImg} alt="Jerry mascot" className="jerry-img" />
+            <div className="knowledge-text">
+                <h3 className="knowledge-title">{title}</h3>
+
+                {image && (
+                    <img
+                        src={image}
+                        alt=""
+                        className={`card-img1 card-img-${imageSize || "small"}`}
+                    />
+                )}
+
+                <div className="knowledge-content markdown-body">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+                        {text}
+                    </ReactMarkdown>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default LearningCard;

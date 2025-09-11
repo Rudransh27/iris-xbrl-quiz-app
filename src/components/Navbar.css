@@ -1,104 +1,288 @@
-    /* --- Navbar Layout --- */
-    .navbar1 {
-        width: 100%; /* Changed from 100vw to 100% for better responsiveness within parent containers */
-        background: var(--bg-navbar); /* Use theme variable for background */
-        box-shadow: var(--shadow-navbar); /* Use theme variable for shadow */
-        padding: var(--spacing-sm) var(--spacing-lg); /* Consistent padding */
-        display: flex;
+
+/* Base styles for the light theme */
+.light-theme {
+  --bg-color: var(--bg-white);
+  --text-color: var(--text-dark);
+  --icon-color: var(--text-dark);
+}
+
+/* Styles for the dark theme */
+.dark-theme {
+  --bg-color: #1a1a1a;
+  --text-color: #f5f5f5;
+  --icon-color: var(--text-color);
+}
+
+.navbar-complete {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  padding: 1rem 2rem;
+  background-color: var(--bg-color);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+  font-family: 'Poppins', sans-serif;
+  transition: background-color 0.3s ease;
+}
+
+.navbar__branding {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 0.5rem;
+}
+
+.navbar__logo {
+  height: 40px;
+}
+
+.navbar__links {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.nav-item {
+  text-decoration: none;
+  font-weight: 500;
+  color: var(--text-color);
+  font-size: 1rem;
+  position: relative;
+  transition: color 0.3s ease;
+  padding: 0.5rem 0;
+}
+
+.nav-item::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 0;
+  height: 2px;
+  background-color: var(--secondary-color);
+  transition: width 0.3s ease;
+}
+
+.nav-item:hover {
+  color: var(--primary-color);
+}
+.nav-item:hover::after {
+  width: 100%;
+}
+
+.nav-item.active {
+  color: var(--active-link-color);
+  font-weight: 600;
+}
+.nav-item.active::after {
+  width: 100%;
+  background-color: var(--active-link-color);
+}
+
+.navbar__actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--icon-color);
+  padding: 0.5rem;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  color: var(--primary-color);
+}
+
+.hamburger-menu {
+  display: none;
+  cursor: pointer;
+  font-size: 1.8rem;
+  color: var(--text-color);
+  padding: 0.5rem;
+}
+
+.mobile-only-actions {
+  display: none;
+}
+
+/* Button styles for Login/Logout */
+.nav-item-button {
+  padding: 0.5rem 1.0rem; /* Increased padding */
+  border-radius: 50px; /* Fully rounded button */
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+/* Specific styling for desktop buttons based on theme */
+.light-theme .desktop-login-btn {
+  background-color: var(--nav-button-bg-light);
+  color: var(--nav-button-text-light);
+  border: 1px solid var(--primary-color);
+}
+.light-theme .desktop-login-btn:hover {
+  background-color: var(--nav-button-hover-bg-light);
+  color: var(--nav-button-hover-text-light);
+}
+
+.dark-theme .desktop-login-btn {
+  background-color: var(--nav-button-bg-dark);
+  color: var(--nav-button-text-dark);
+  border: 1px solid var(--nav-button-text-dark);
+}
+.dark-theme .desktop-login-btn:hover {
+  background-color: var(--nav-button-hover-bg-dark);
+  color: var(--nav-button-hover-text-dark);
+}
+
+.desktop-logout-btn {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border: 1px solid var(--primary-color);
+}
+.desktop-logout-btn:hover {
+  background-color: transparent;
+  color: var(--primary-color);
+}
+
+.xp-container {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+}
+
+.xp-container:hover {
+    color: var(--secondary-color);
+}
+
+.xp-text {
+    white-space: nowrap;
+}
+
+.mobile-only-xp {
+    display: none;
+  }
+
+
+/* Responsive styles */
+@media (max-width: 768px) {
+
+   .xp-container {
+        display: none;
+    }
+    
+    /* Display the mobile-only XP counter within the mobile menu */
+    .mobile-only-xp {
+        display: flex; /* Ensure it's a flexbox to align the icon and text */
         align-items: center;
-        justify-content: space-between; /* Space out branding, links, and toggle */
-        min-height: 60px; /* Minimum height for better appearance */
-        transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth theme transition */
-        position: sticky;
-        top: 0;
-        z-index: 50000;
+        gap: 5px; /* Adjust spacing */
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-color);
+        padding: 0.75rem 0;
+    }
+    
+    /* Make the mobile menu items fill the width */
+    .nav-item,
+    .mobile-only-xp {
+        width: 100%;
+        text-align: center;
     }
 
-    .navbar__link {
-        text-decoration: none; /* Remove underline from branding link */
-        color: inherit; /* Inherit color from parent */
-    }
 
-    .navbar__branding {
-        display: flex;
-        align-items: center;
-    }
+  .navbar-complete {
+    padding: 0.8rem 1.5rem;
+  }
+  .navbar__branding {
+    gap: 0.3rem;
+  }
+  .navbar__logo {
+    height: 35px;
+  }
 
-    .navbar__logo {
-        height: auto;
-        width: 90px; /* Keep consistent logo size */
-        margin-right: var(--spacing-sm); /* Space between logo and name (if name is used) */
-        margin-left: 15px;
-    }
+  .navbar__links {
+    position: fixed; /* Use fixed for full-screen menu */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    flex-direction: column;
+    padding: 2rem;
+    box-shadow: none; /* No shadow for full-screen menu */
+    justify-content: center;
+    align-items: center;
+    transform: translateX(100%);
+    transition: transform 0.4s ease-in-out;
+    gap: 1.5rem;
+  }
+  .navbar__links--open {
+    transform: translateX(0);
+  }
+  .hamburger-menu {
+    display: block;
+  }
 
-    .navbar__name {
-        font-weight: 700; /* Use bold font weight */
-        font-size: 1.6rem; /* Slightly smaller for balance */
-        color: var(--brand-dark); /* Use dark navy/light grey for name */
-        letter-spacing: 0.5px;
-        /* Font family from previous code, keep if you're using it globally */
-        font-family: 'Anek Malayalam', 'Montserrat', sans-serif;
-        transition: color 0.3s ease; /* Smooth theme transition */
-    }
+  /* Hide desktop buttons and theme toggle on mobile */
+  .desktop-only-theme,
+  .desktop-login-btn,
+  .desktop-logout-btn {
+    display: none;
+  }
+  
+  /* Show mobile-specific actions */
+  .mobile-only-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 2rem;
+    width: 100%;
+  }
 
-    /* --- Navigation Links --- */
-    .navbar__nav-links {
-        display: flex;
-        gap: var(--spacing-lg); /* Space between nav items */
-
-        /* Responsive: Hide on small screens, can use a hamburger menu later */
-        @media (max-width: 768px) {
-            display: none; /* For simplicity, hide on mobile. Implement hamburger menu for production */
-        }
-    }
-
-    .nav-item {
-        text-decoration: none;
-        color: var(--text-primary); /* Use theme variable for text color */
-        font-weight: 500;
-        font-size: 1.1em;
-        padding: 8px 12px;
-        border-radius: 6px;
-        transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    .nav-item:hover {
-        background-color: rgba(var(--brand-secondary), 0.1); /* Subtle background on hover */
-        color: var(--brand-secondary); /* Darker text color on hover */
-    }
-
-    /* --- Theme Toggle Button --- */
-    .navbar__theme-toggle {
-        display: flex;
-        align-items: center;
-
-    }
-
-    .theme-toggle-btn {
-        background: none;
-        border: none;
-        color: var(--text-primary); /* Icon color */
-        cursor: pointer;
-        padding: var(--spacing-xs);
-        border-radius: 50%; /* Circular button */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.3s ease, color 0.3s ease;
-        margin-right: 20px;
-    }
-
-    .theme-toggle-btn:hover {
-        background-color: rgba(var(--brand-secondary), 0.1); /* Subtle hover effect */
-        color: var(--brand-secondary); /* Highlight icon on hover */
-    }
-
-    /* --- Responsive Adjustments for Navbar --- */
-    @media (max-width: 768px) {
-        .navbar {
-            padding: var(--spacing-sm) var(--spacing-md);
-        }
-        .navbar__logo {
-            width: 75px; /* Smaller logo on mobile */
-        }
-    }
+  /* Mobile button and theme toggle styling */
+  .nav-item-button,
+  .mobile-theme-btn {
+    width: 100%;
+    font-size: 1.2rem;
+    padding: 0.75rem 0;
+    border-radius: 0;
+    text-align: center;
+    background-color: transparent;
+    color: var(--text-color);
+    border: none;
+    transition: all 0.3s ease;
+  }
+  .mobile-theme-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--text-color);
+  }
+  .mobile-theme-btn:hover,
+  .mobile-login-btn:hover,
+  .mobile-logout-btn:hover {
+    background-color: var(--hover-color);
+    color: var(--primary-color);
+  }
+}

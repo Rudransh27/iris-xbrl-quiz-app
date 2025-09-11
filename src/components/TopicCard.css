@@ -1,0 +1,147 @@
+/* src/components/TopicCard.css */
+
+.topic-card-horizontal {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    max-width: 500px;
+    height: 120px; /* CHANGED: Reduced height for a more compact card */
+    background: white; /* Ensures the card is opaque */
+    border: 2px solid transparent;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 1; /* Ensures card is above background shapes */
+}
+
+.topic-card-horizontal:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.topic-card-horizontal.department-file { border-color: #4CAF50; }
+.topic-card-horizontal.department-carbon { border-color: #2196F3; }
+.topic-card-horizontal.department-ideal { border-color: #FFC107; }
+
+.topic-card-horizontal.locked {
+    pointer-events: none;
+    opacity: 0.7;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+}
+.topic-card-horizontal.current {
+    transform: scale(1.01);
+}
+.topic-card-horizontal.done {
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+.topic-card-img-wrap {
+    position: relative;
+    flex: 0 0 40%;
+    height: 100%;
+    min-width: 0;
+    background: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-sizing: border-box;
+    border-radius: 10px 0 0 10px;
+    transition: background-color 0.4s ease;
+}
+
+.topic-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+    filter: saturate(1.05) brightness(1.02);
+}
+
+.topic-card-img-placeholder {
+  font-size: 2em; /* CHANGED: Smaller smiley to fit */
+  color: #666;
+}
+
+.topic-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px 0 0 12px;
+}
+
+.topic-card-overlay-lock {
+    font-size: 1.8em; /* CHANGED: Smaller lock icon */
+    color: white;
+    opacity: 1;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+}
+
+.topic-card-text {
+    flex: 0 0 60%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 15px 0 15px; /* CHANGED: Reduced padding for a tighter fit */
+    background: none;
+    position: relative;
+    z-index: 1;
+}
+
+.topic-card-title {
+    color: #1e3a8a;
+    font-weight: 600;
+    font-size: 1em; /* CHANGED: Smaller font size */
+    line-height: 1.3;
+    transition: color 0.4s ease;
+    margin: 0 0 5px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+.topic-card-description {
+    font-size: 0.8em; /* CHANGED: Smaller font size */
+    color: #666;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+@media (max-width: 580px) {
+    .topic-card-horizontal {
+        height: 100px;
+    }
+    .topic-card-img-wrap {
+        flex: 0 0 35%;
+    }
+    .topic-card-text {
+        flex: 0 0 65%;
+        padding: 0 10px;
+    }
+    .topic-card-title {
+        font-size: 0.9em;
+    }
+    .topic-card-description {
+        font-size: 0.7em;
+    }
+    .topic-card-overlay-lock {
+        font-size: 1.5em;
+    }
+}

@@ -1,262 +1,193 @@
-/* --- Global Variables (Assuming they are defined or copied from Quiz.css) --- */
-/*
-:root {
-    --background-color: #f8f9fa;
-    --card-background: #ffffff;
-    --text-color: #212529;
-    --heading-color: #000000;
-    --muted-text-color: #495057;
-    --border-color: #e9ecef;
-    --shadow-color-card: rgba(0, 0, 0, 0.05);
-    --primary-blue-gradient-start: #007bff;
-    --primary-blue-gradient-end: #00c6ff;
-    --secondary-accent-color: #6f42c1;
+
+.hero-banner-complete {
+  position: relative;
+  width: 100%;
+  min-height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+  background-color: var(--bg-white);
+  font-family: 'Poppins', sans-serif;
+  padding: 4rem 2rem;
 }
 
-body.dark-theme {
-    --background-color: #1a1a2e;
-    --card-background: #232946;
-    --text-color: #e9ecef;
-    --heading-color: #ffffff;
-    --muted-text-color: #adb5bd;
-    --border-color: #3b3f54;
-    --shadow-color-card: rgba(0, 0, 0, 0.45);
-    --primary-blue-gradient-start: #00c6ff;
-    --primary-blue-gradient-end: #007bff;
-    --secondary-accent-color: #8a6cda;
-}
-*/
-
-/* --- Hero Section Layout --- */
-.homepage-hero {
-    display: flex;
-    background: var(--card-background);
-    border-radius: 18px;
-    max-width: 1120px;
-    margin: 48px auto 0 auto;
-    box-shadow: 0 8px 30px var(--shadow-color-card);
-    min-height: 400px; /* Still good for desktop */
-    align-items: stretch;
-    overflow: hidden;
-    transition: background-color 0.4s ease, box-shadow 0.4s ease;
-    /* Added for consistent spacing on very wide screens */
-    padding: 0; /* Remove any default padding that might interfere */
+.hero-banner__background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(15, 37, 110, 0.05) 0%, rgba(255, 255, 255, 0) 25%);
+  z-index: 1;
 }
 
-/* --- Left (Image) Area --- */
-.hero-left {
-    flex: 1 1 44%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 36px 24px;
-    min-width: 320px; /* Prevents squishing on desktop */
-    min-height: 340px; /* Ensures a good height on desktop */
-    position: relative;
-    border-radius: 18px 0 0 18px;
-    overflow: hidden;
-    background: linear-gradient(135deg, var(--background-color) 0%, var(--border-color) 100%);
-    transition: background 0.4s ease, border-radius 0.3s ease; /* Add border-radius transition */
+/* Updated creative background design to place shapes in the surrounding area */
+.creative-shapes-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
 }
 
-/* Center the cycling image exactly vertically and horizontally */
-.cycle-img-center {
-    width: 100%;
-    height: 100%;
-    min-height: 280px; /* Ensure some height for images */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    /* Remove padding if you had any here that might push images */
-    padding: 0;
+/* Individual shape styles and positioning */
+.shape-pattern {
+  position: absolute;
+  opacity: 0.5;
 }
 
-/* --- Images for process and Tom & Jerry --- */
-.cycle-img {
-    display: block;
-    max-width: 90%; /* Allows image to shrink */
-    max-height: 320px; /* Limits max height */
-    height: auto; /* Ensures aspect ratio is maintained */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border-radius: 14px;
-    /* margin: 0 auto; - not strictly needed with absolute positioning and transform */
-    background: var(--card-background);
-    object-fit: contain; /* Ensures entire image fits within bounds */
-    position: absolute;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%); /* Centering trick */
-    opacity: 1;
-    transition: background-color 0.4s ease;
-    filter: saturate(1.05) brightness(1.02);
+.shape-circle {
+  width: 150px;
+  height: 150px;
+  background-color: var(--light-blue-shade);
+  border-radius: 50%;
+  animation: pulse 10s infinite ease-in-out;
 }
 
-body.dark-theme .cycle-img {
-    filter: saturate(1.05) brightness(0.9);
+.shape-square {
+  width: 120px;
+  height: 120px;
+  background-color: var(--light-green-shade);
+  transform: rotate(45deg);
+  animation: pulse 12s infinite ease-in-out reverse;
 }
 
-.pop-cycle {
-    animation: popFromCenter 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* More bouncy ease-out */
+.shape-triangle {
+  width: 150px;
+  height: 150px;
+  background-color: var(--light-pink-shade);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  animation: pulse 11s infinite ease-in-out;
 }
 
-@keyframes popFromCenter {
-    0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.7); } /* Start smaller */
-    70%  { opacity: 1; transform: translate(-50%,-50%) scale(1.05); } /* Overshoot more */
-    100% { opacity: 1; transform: translate(-50%,-50%) scale(1); } /* Settle */
+/* Specific positioning for each shape to keep them away from the center text */
+.creative-shapes-container .shape-pattern:nth-child(1) { top: 5%; left: 10%; }
+.creative-shapes-container .shape-pattern:nth-child(2) { top: 20%; right: 5%; }
+.creative-shapes-container .shape-pattern:nth-child(3) { top: 50%; left: 0%; }
+.creative-shapes-container .shape-pattern:nth-child(4) { bottom: 10%; right: 15%; }
+.creative-shapes-container .shape-pattern:nth-child(5) { bottom: 5%; left: 20%; }
+.creative-shapes-container .shape-pattern:nth-child(6) { top: 60%; right: 0%; }
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
-
-/* --- Right (Banner) Area --- */
-.hero-right {
-    flex: 1 1 56%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 48px 44px 44px 36px;
-    min-width: 260px;
-    text-align: left;
-    align-items: flex-start; /* Keep this for desktop: aligns content to the start (left) */
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
 }
 
-.hero-banner {
-    font-size: 2.6rem;
-    font-weight: 700;
-    color: var(--heading-color);
-    margin-bottom: 1.2rem;
-    letter-spacing: -1px;
-    line-height: 1.2;
-    transition: color 0.4s ease;
-    max-width: 100%; /* Ensure text wraps */
-    text-wrap: balance; /* Modern text wrapping for better readability */
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
 }
 
-.hero-right p {
-    font-size: 1.18rem;
-    color: var(--muted-text-color);
-    margin-bottom: 2rem;
-    line-height: 1.6;
-    max-width: 36em;
-    transition: color 0.4s ease;
+/* New styling for the brand and underline */
+.iris-brand-color {
+  color: var(--secondary-color);
 }
 
-.herocard__btn {
-    background: linear-gradient(90deg, var(--primary-blue-gradient-start) 0%, var(--primary-blue-gradient-end) 70%, var(--secondary-accent-color) 100%);
-    color: white;
-    font-weight: 600;
-    font-size: 1.05rem;
-    padding: 0.8em 2em;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.25);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    letter-spacing: 0.04em;
-    outline: none;
-    position: relative;
-    overflow: hidden;
-    width: fit-content;
-    align-self: flex-start;
-    text-transform: uppercase;
-    /* Modern button aesthetics */
-    min-width: 180px; /* Ensure decent tap target size */
-    touch-action: manipulation; /* Improves responsiveness on touch devices */
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-dark);
+  font-weight: 500;
+  position: relative;
 }
 
-.herocard__btn:hover, .herocard__btn:focus {
-    background: linear-gradient(90deg, var(--primary-blue-gradient-end) 0%, var(--primary-blue-gradient-start) 100%);
-    transform: translateY(-3px); /* Slightly more pronounced lift */
-    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4); /* More pronounced shadow */
+.iris-underline {
+  position: relative;
+  display: inline-block;
+  color: var(--primary-color);
 }
 
-.herocard__btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 10px rgba(0, 123, 255, 0.2);
+.iris-underline::after,
+.iris-underline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  background-color: var(--primary-color);
+  border-radius: 5px;
+  opacity: 0.8;
 }
 
-/* --- Responsive Layout Adjustments --- */
-
-/* Tablet and Smaller Desktops (e.g., up to 900px) */
-@media (max-width: 900px) {
-    .homepage-hero {
-        flex-direction: column;
-        min-height: auto;
-        margin-top: 24px;
-        max-width: 90vw;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .hero-left {
-        border-radius: 18px 18px 0 0;
-        padding: 30px 20px;
-        min-height: 280px;
-        background: var(--background-color);
-    }
-    .hero-right {
-        min-width: unset;
-        padding: 30px 24px;
-        text-align: center; /* Centers text */
-        align-items: center; /* CENTERS FLEX ITEMS (INCLUDING THE BUTTON) */
-    }
-    .herocard__btn {
-        width: auto; /* Allow button to take up available width based on content */
-        max-width: 70%;
-        align-self: center; /* OVERRIDE: Center the button horizontally on mobile */
-    }
-    .hero-banner {
-        font-size: 2.2rem;
-        margin-bottom: 1rem;
-    }
-    .hero-right p {
-        font-size: 1.05rem;
-        margin-bottom: 1.8rem;
-    }
+.iris-underline::before {
+  bottom: 0px;
+  height: 3px;
 }
 
-/* Small Mobile Devices (e.g., up to 600px) */
-@media (max-width: 600px) {
-    .homepage-hero {
-        margin-top: 16px; /* Smaller top margin on very small screens */
-        max-width: 95vw; /* More edge padding */
-    }
-    .hero-left {
-        padding: 20px 15px; /* Tighter padding for images */
-        min-height: 220px; /* Smaller height for images */
-    }
-    .cycle-img {
-        max-width: 95%; /* Images take up more available space */
-    }
-    .hero-right {
-        padding: 24px 20px; /* Tighter padding for text content */
-    }
-    .hero-banner {
-        font-size: 1.8rem; /* Further scale down heading */
-        letter-spacing: -0.5px; /* Adjust letter spacing */
-    }
-    .hero-right p {
-        font-size: 0.95rem; /* Further scale down paragraph */
-    }
-    .herocard__btn {
-        font-size: 0.9rem; /* Smaller button font */
-        padding: 0.7em 1.2em; /* Smaller button padding */
-        min-width: 160px; /* Maintain minimum width for tap target */
-    }
+.iris-underline::after {
+  bottom: -6px;
+  height: 2px;
 }
 
-/* Very Small Devices (e.g., iPhone SE in portrait) */
-@media (max-width: 360px) {
-    .hero-banner {
-        font-size: 1.6rem;
-        line-height: 1.3;
-    }
-    .hero-right p {
-        font-size: 0.9rem;
-    }
-    .herocard__btn {
-        font-size: 0.85rem;
-        padding: 0.6em 1em;
-        min-width: 140px;
-    }
-    .hero-left {
-        min-height: 200px;
-    }
+.hero-description {
+  font-size: 1rem;
+  color: #666;
+  margin: 1.5rem 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.search-bar-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.search-input {
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  width: 100%;
+  max-width: 450px;
+  transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.search-btn {
+  padding: 1rem 2rem;
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-btn:hover {
+  background-color: var(--secondary-color);
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+  .hero-title { font-size: 2.5rem; }
+  .hero-subtitle { font-size: 1rem; }
+  .search-bar-container { flex-direction: column; }
+  .search-input, .search-btn { width: 100%; max-width: none; }
+  
+  /* Make shapes smaller on mobile to keep them in the surrounding */
+  .shape-circle, .shape-square, .shape-triangle {
+    width: 80px;
+    height: 80px;
+  }
 }

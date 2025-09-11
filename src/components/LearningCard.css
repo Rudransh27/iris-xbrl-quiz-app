@@ -1,0 +1,55 @@
+/* src/components/LearningCard.css */
+.knowledge-card {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 8px var(--shadow-color);
+  padding: var(--spacing-lg);
+  margin-top: calc(var(--spacing-lg) * 5);
+  position: relative;
+  border: 1px solid var(--border-color);
+  overflow: visible;
+}
+
+/* Updated positioning and size for Jerry */
+.jerry-img {
+  position: absolute;
+  top: -45px;
+  right: -45px;
+  width: 100px;
+  opacity: 0.9;
+  z-index: 1; /* Z-index increased to be above the header */
+}
+
+/* This container will hold the text and keep it left-aligned */
+.knowledge-text-container {
+  text-align: left;
+}
+
+.knowledge-title {
+  text-align: center;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Center images by applying `display: block` and `margin: 0 auto` */
+.card-img1 {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 0 auto var(--spacing-md) auto;
+}
+
+.card-img-small {
+  display: block;
+  max-width: 300px;
+  margin: 0 auto var(--spacing-md) auto;
+}
+
+.card-img-medium {
+  display: block;
+  max-width: 500px;
+  margin: 0 auto var(--spacing-md) auto;
+}

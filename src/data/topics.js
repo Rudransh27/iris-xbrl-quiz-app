@@ -7,6 +7,7 @@ import shirtImg from "../assets/tshirt.png";
 import instanceTax from "../assets/instance-taxonomy.png";
 import xbrlWorking from "../assets/HOW-DOES-XBRL-WORK.webp";
 import instanceImg from "../assets/instance.png";
+import taxonomyImg from "../assets/linkbases.png"
 export const topics = [
   {
     id: 1,
@@ -650,7 +651,7 @@ There are **three types** of periods you’ll see in XBRL:
   },
   {
     id: 3,
-    title: "Validating Instance Doc.",
+    title: "Validating Instance Document",
     summary: "Dive into XBRL specification, XML schemas, and tagging rules.",
     image: xbrlImg,
     content: [
@@ -1044,7 +1045,7 @@ Let’s dive in! 🚀
   },
   {
     id: 5,
-    title: "XBRL Filing and Validation",
+    title: "XBRL Taxonomies",
     summary: "Prepare filings and validate reports effectively.",
     image: xbrlImg,
     content: [
@@ -1095,6 +1096,8 @@ Let’s dive in! 🚀
   {
     "type": "knowledge",
     "title": "🧩 What are XBRL Linkbases?",
+    "image":taxonomyImg,
+    "imageSize":"large",
     "text": "While the XBRL Schema (XSD) defines the basic concepts, **Linkbases** are separate XML files that **add meaning and define relationships** between these concepts. 🔗\n\n" +
             "Imagine schema elements as **puzzle pieces** 🧩. On their own, they are just shapes. Linkbases are the **picture on the box** 🖼️ that shows how all the pieces fit together to form a complete and understandable report.\n\n" +
             "They tell you:\n" +
@@ -1357,12 +1360,22 @@ Let’s dive in! 🚀
             "- `<link:reference>`: Defines the details of the external reference. It can contain various sub-elements like `<ref:Standard>`, `<ref:Paragraph>`, `<ref:URI>`, etc.\n" +
             "- `<link:referenceArc>`: Connects the concept (from `<link:loc>`) to its reference (to `<link:reference>`).\n" +
             "  - `xlink:arcrole=\"http://www.xbrl.org/2003/arcrole/concept-reference\"`: This arcrole signifies that a concept is defined or supported by a reference. 🔗"
-  }
+  },
+  {
+  "type": "code",
+  "title": "📄 Activity: Cite the Source!",
+  "taxonomy": "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"\n           xmlns:xbrli=\"http://www.xbrl.org/2003/instance\"\n           xmlns:ex=\"http://example.com/taxonomy\"\n           targetNamespace=\"http://example.com/taxonomy\"\n           elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\">\n  <xs:element name=\"Revenue\" type=\"xbrli:monetaryItemType\" substitutionGroup=\"xbrli:item\"/>\n</xs:schema>",
+  "code": "<link:referenceLink xmlns:link=\"http://www.xbrl.org/2003/linkbase\"\n                            xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n                            xmlns:ref=\"http://www.xbrl.org/2003/ref\"\n                            xmlns:ex=\"http://example.com/taxonomy\"\n                            xlink:type=\"extended\"\n                            xlink:role=\"http://www.xbrl.org/2003/role/referenceLinkbase\">\n  <link:loc xlink:href=\"../taxonomy.xsd#ex_Revenue\" xlink:type=\"locator\" xlink:label=\"loc_Revenue\"/>\n\n  \n  <link:reference xlink:role=\"http://www.xbrl.org/2003/role/reference\" xlink:type=\"resource\">\n    <ref:Standard>[STANDARD_VALUE]</ref:Standard>\n    <ref:Paragraph>[PARAGRAPH_VALUE]</ref:Paragraph>\n  </link:reference>\n\n  <link:referenceArc xlink:from=\"loc_Revenue\" xlink:to=\"[REFERENCE_LABEL]\"\n                       xlink:arcrole=\"http://www.xbrl.org/2003/arcrole/concept-reference\" xlink:type=\"arc\"/>\n\n</link:referenceLink>",
+  "question": "💡 **Your Task:** You need to add a reference to the concept `ex:Revenue`.\n\n**Scenario:** The definition for `Revenue` comes from **IFRS 15, Paragraph 10**.\n\n**Task:** Replace the sample `<link:reference>` XML snippet. Make sure to include both the `Standard` and `Paragraph` details.\n\n- The concept's locator is `loc_Revenue`.\n- The `link:reference` resource itself needs an `xlink:label` (e.g., `ref_RevenueIFRS15`).\n- The `Standard` is `IFRS 15`.\n- The `Paragraph` is `10`.\n- The `link:referenceArc` needs to link `loc_Revenue` to your reference's label.\n\n**Here’s how to complete this activity:**\n1.  **Locate the `` comment** in the XML code block.\n2.  **Replace the sample `<link:reference>` element and adjust the `link:referenceArc` directly below the comment.**\n    * **For the `<link:reference>`:**\n        * Add an `xlink:label` (e.g., `ref_RevenueIFRS15`).\n        * Set the content of `<ref:Standard>` to `IFRS 15`.\n        * Set the content of `<ref:Paragraph>` to `10`.\n    * **For the `<link:referenceArc>`:**\n        * Ensure `xlink:from` points to `loc_Revenue`.\n        * Ensure `xlink:to` points to the `xlink:label` you assigned to your `link:reference` (e.g., `ref_RevenueIFRS15`).\n        * The `xlink:arcrole` should be `http://www.xbrl.org/2003/arcrole/concept-reference` (already provided).\n        * The `xlink:type` should be `arc` (already provided).\n\n✏️ **Edit the XML above** to correctly cite the source for `Revenue`.",
+  "hint": "The `link:reference` element is a resource, so it needs an `xlink:label`. The `link:referenceArc` then links your concept (`xlink:from`) to that reference resource (`xlink:to`). Remember to fill in the `ref:Standard` and `ref:Paragraph` values.",
+  "validator": "validateReferencePart1",
+  "explanation": "✅ **Correct Solution:**\n\n```xml\n<link:referenceLink xmlns:link=\"[http://www.xbrl.org/2003/linkbase](http://www.xbrl.org/2003/linkbase)\"\n                            xmlns:xlink=\"[http://www.w3.org/1999/xlink](http://www.w3.org/1999/xlink)\"\n                            xmlns:ref=\"[http://www.xbrl.org/2003/ref](http://www.xbrl.org/2003/ref)\"\n                            xmlns:ex=\"[http://example.com/taxonomy](http://example.com/taxonomy)\"\n                            xlink:type=\"extended\"\n                            xlink:role=\"[http://www.xbrl.org/2003/role/referenceLinkbase](http://www.xbrl.org/2003/role/referenceLinkbase)\">\n  <link:loc xlink:href=\"../taxonomy.xsd#ex_Revenue\" xlink:type=\"locator\" xlink:label=\"loc_Revenue\"/>\n\n  <link:reference xlink:role=\"[http://www.xbrl.org/2003/role/reference](http://www.xbrl.org/2003/role/reference)\" xlink:type=\"resource\" xlink:label=\"ref_RevenueIFRS15\">\n    <ref:Standard>IFRS 15</ref:Standard>\n    <ref:Paragraph>10</ref:Paragraph>\n  </link:reference>\n\n  <link:referenceArc xlink:from=\"loc_Revenue\" xlink:to=\"ref_RevenueIFRS15\"\n                       xlink:arcrole=\"[http://www.xbrl.org/2003/arcrole/concept-reference](http://www.xbrl.org/2003/arcrole/concept-reference)\" xlink:type=\"arc\"/>\n\n</link:referenceLink>\n```\n\n**Explanation:**\n\n- The `<link:reference>` resource is defined with `xlink:label=\"ref_RevenueIFRS15\"`, which allows it to be linked.\n- Inside the `<link:reference>`, the `<ref:Standard>` and `<ref:Paragraph>` elements are correctly populated with the provided information.\n- The `xlink:role` and `xlink:type` attributes for the reference resource are standard.\n- The `<link:referenceArc>` properly links `loc_Revenue` (`xlink:from`) to the `ref_RevenueIFRS15` (`xlink:to`) using the `http://www.xbrl.org/2003/arcrole/concept-reference` arcrole, establishing the reference for the `Revenue` concept."
+}
 ]
   },
   {
     id: 6,
-    title: "Advanced Topics",
+    title: "XML Basics: Understanding XBRL",
     summary:
       "Learn Inline XBRL, dimensions, formula linkbases, and automation.",
     image: xbrlImg,
@@ -1639,6 +1652,7 @@ Let’s dive in! 🚀
             "**XSD in XBRL:**\n" +
             "XBRL Taxonomies are fundamentally defined using XML Schema (`.xsd`) files. These schema files define all the financial and business concepts (like 'Assets', 'Revenue', 'NetIncomeLoss') that can be reported. The data types (monetary, date, text) for these concepts are also defined within the schema. This ensures that XBRL reports use consistent definitions and types, making them reliable and comparable. It's the backbone of XBRL's structure. 🏗️"
   },
+  
   {
     "type": "knowledge",
     "title": "🔗 `xsi:schemaLocation`: Connecting XML to its Schema",

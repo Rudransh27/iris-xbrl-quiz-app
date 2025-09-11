@@ -1,0 +1,127 @@
+:root {
+  --primary-color: #0f256e;
+  --secondary-color: #22C55E;
+  --text-light: #ffffff;
+  --footer-bg-dark: #071336;
+  --footer-text-secondary: #a0a8b9;
+  --link-hover-color: #22C55E;
+}
+
+.site-footer {
+  background-color: var(--footer-bg-dark);
+  color: var(--footer-text-secondary);
+  padding: 4rem 2rem;
+  font-family: Arial, sans-serif;
+}
+
+.footer-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 3rem; /* Equal space between sections */
+}
+
+.footer-section {
+  flex: 1; /* Ensures each section takes an equal share of the available space */
+  min-width: 200px;
+  margin-bottom: 2rem;
+}
+
+.footer-heading {
+  color: var(--text-light);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.footer-section p {
+  margin: 0 0 0.5rem 0;
+  line-height: 1.6;
+}
+
+.footer-link,
+.footer-link-main {
+  color: var(--footer-text-secondary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-link-main {
+  font-weight: 600;
+  color: var(--text-light);
+  font-size: 1.1rem;
+}
+
+.footer-link:hover,
+.footer-link-main:hover {
+  color: var(--link-hover-color);
+}
+
+.footer-section ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 0.75rem;
+}
+
+.footer-section ul li a {
+  color: var(--footer-text-secondary);
+  text-decoration: none;
+}
+
+.footer-section ul li a:hover {
+  color: var(--link-hover-color);
+}
+
+.social-icons {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.social-icons a {
+  color: var(--footer-text-secondary);
+  font-size: 1.6rem;
+  transition: color 0.3s ease;
+}
+
+.social-icons a:hover {
+  color: var(--link-hover-color);
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(160, 168, 185, 0.2);
+  text-align: center;
+  padding-top: 1rem; /* Reduced padding-top */
+  margin-top: 1.5rem; /* Reduced margin-top */
+  font-size: 0.9rem;
+  color: var(--footer-text-secondary);
+}
+
+.company-description, .subsidiary-list {
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .footer-section {
+    min-width: 100%;
+  }
+
+  .social-icons {
+    justify-content: center;
+  }
+}

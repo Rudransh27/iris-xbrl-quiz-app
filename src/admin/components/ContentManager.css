@@ -1,0 +1,18 @@
+/* src/admin/components/ContentManager.css */
+
+.page-title {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.back-button {
+  color: var(--secondary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.back-button:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}

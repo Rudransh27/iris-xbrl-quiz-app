@@ -1,72 +1,66 @@
-import React, { useEffect, useState } from "react";
-import processImg from "../assets/xbrlfunction.png";
-import tomAndJerryImg from "../assets/tomandjerry.jpg";
-import { useNavigate } from "react-router-dom";
-import "./HeroEntryCard.css"; // Ensure this path is correct
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './HeroEntryCard.css';
+import { FaSearch } from 'react-icons/fa';
 
 export default function HeroEntryCard() {
+  // State to store the search term
+  const [searchTerm, setSearchTerm] = useState('');
+  // Hook for programmatic navigation
   const navigate = useNavigate();
-  const [showProcess, setShowProcess] = useState(true);
-  const [showTomJerry, setShowTomJerry] = useState(false);
 
-  useEffect(() => {
-    let timers = [];
-
-    function runCycle() {
-      setShowProcess(true);
-      setShowTomJerry(false);
-
-      // After 3.5s, hide process image and show Tom & Jerry
-      timers.push(setTimeout(() => {
-        setShowProcess(false);
-        setShowTomJerry(true);
-      }, 3500)); // Adjusted from 5000ms
-
-      // After another 3.5s, hide Tom & Jerry and restart the cycle
-      timers.push(setTimeout(() => {
-        setShowTomJerry(false);
-        // No need to setShowProcess(true) here, it's done at the start of runCycle
-        runCycle();
-      }, 7000)); // Adjusted from 7000ms (5000+2000), total cycle time for each image should roughly align
-
+  // Function to handle the search action
+  const handleSearch = () => {
+    if (searchTerm.trim()) {
+      // Navigates to the /modules page with the search term as a query parameter
+      navigate(`/modules?search=${encodeURIComponent(searchTerm.trim())}`);
     }
+  };
 
-    runCycle();
-    return () => timers.forEach(clearTimeout);
-  }, []);
-
-  const handleStartJourney = () => {
-    navigate("/world"); // Navigate to the /world route
+  // Allows search on 'Enter' key press
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   return (
-    <div className="homepage-hero">
-      <div className="hero-left">
-        <div className="cycle-img-center">
-          {showProcess && (
-            <img
-              src={processImg}
-              alt="Raw data transforms to XBRL"
-              className="cycle-img pop-cycle"
-              key="process"
-            />
-          )}
-          {showTomJerry && (
-            <img
-              src={tomAndJerryImg}
-              alt="Tom & Jerry"
-              className="cycle-img pop-cycle"
-              key="tj"
-            />
-          )}
-        </div>
+    <div className="hero-banner-complete">
+      <div className="hero-banner__background-overlay"></div>
+      
+      {/* New creative shapes container */}
+      <div className="creative-shapes-container">
+        <div className="shape-pattern"><div className="shape-circle"></div></div>
+        <div className="shape-pattern"><div className="shape-square"></div></div>
+        <div className="shape-pattern"><div className="shape-triangle"></div></div>
+        <div className="shape-pattern"><div className="shape-circle"></div></div>
+        <div className="shape-pattern"><div className="shape-square"></div></div>
+        <div className="shape-pattern"><div className="shape-triangle"></div></div>
       </div>
-      <div className="hero-right">
-        <h1 className="hero-banner">The easiest way to learn XBRL!</h1>
-        <p>
-          Follow Tom & Jerry on a fun, interactive XBRL journey.
+      
+      <div className="hero-content">
+        <h1 className="hero-title">
+          IRIS Onboard
+        </h1>
+        <p className="hero-subtitle">
+          Your Personalized Path to Success at <span className="iris-brand-color">Iris Business Services Limited.</span>
         </p>
-        <button className="herocard__btn" onClick={handleStartJourney}>Start Your Journey</button>
+        <p className="hero-description">
+          Explore a rich variety of courses with interactive quizzes and hands-on code editors, designed to help you master our products and services. Discover your unique learning path now!
+        </p>
+        <div className="search-bar-container">
+          <input 
+            type="text" 
+            className="search-input" 
+            placeholder="Search courses"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <button className="search-btn" onClick={handleSearch}>
+            <FaSearch />
+          </button>
+        </div>
       </div>
     </div>
   );

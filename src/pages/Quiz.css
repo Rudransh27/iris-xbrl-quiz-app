@@ -1,931 +1,205 @@
-/* --- Global Variables (Assuming they are defined in Quiz.css or a shared variables.css) --- */
-/* If not, ensure these are available globally or copy them from Quiz.css */
-/*
+/* src/pages/Quiz.css */
 :root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
     --background-color: #f8f9fa;
-    --card-background: #ffffff;
-    --text-color: #212529;
-    --heading-color: #000000;
-    --muted-text-color: #495057;
-    --border-color: #e9ecef;
-    --shadow-color-card: rgba(0, 0, 0, 0.05);
+    --card-bg: #ffffff;
+    --text-color: #343a40;
+    --border-color: #e2e8f0;
+    --shadow-color: rgba(0, 0, 0, 0.05);
+    --correct-color: #28a745;
+    --incorrect-color: #dc3545;
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-size-base: 16px;
+    --font-size-lg: 1.25rem;
+    --font-size-sm: 0.875rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --primary-blue-gradient-start: #007bff;
+    --primary-blue-gradient-end: #00c6ff;
 }
 
-body.dark-theme {
-    --background-color: #1a1a2e;
-    --card-background: #232946;
-    --text-color: #e9ecef;
-    --heading-color: #ffffff;
-    --muted-text-color: #adb5bd;
-    --border-color: #3b3f54;
-    --shadow-color-card: rgba(0, 0, 0, 0.45);
-}
-*/
-
-/* Root variables for themes */
-:root {
-    /* Light Theme Defaults (Vibrant Blue for general UI, Neutral for Quiz) */
-    --background-color: #f8f9fa; /* Very light, almost white background */
-    --card-background: #ffffff; /* Pure white cards */
-    --text-color: #212529; /* Darker gray, almost black for main text (improved readability) */
-    --heading-color: #000000; /* Pure black for headings in light theme */
-    --muted-text-color: #495057; /* Slightly darker muted text (improved readability) */
-    --border-color: #e9ecef; /* Very light border */
-    --shadow-color-card: rgba(0, 0, 0, 0.05); /* Very subtle shadow */
-    --shadow-color-topbar: rgba(0, 0, 0, 0.04);
-
-    /* Vibrant Blue Palette for general UI (progress bar, main buttons) */
-    --primary-blue-gradient-start: #007bff; /* Vibrant Blue for buttons/accents */
-    --primary-blue-gradient-end: #00c6ff; /* Lighter blue for gradient */
-    --secondary-accent-color: #6f42c1; /* Purple for subtle accent (e.g., in gradients) */
-
-    /* QUIZ OPTIONS: Neutral/Simple colors, NO BLUE, smaller dimensions */
-    --option-bg-default: #ffffff; /* White background for options */
-    --option-border-default: #d8dce2; /* Light gray border for options */
-    --option-text-default: var(--text-color); /* Dark text */
-
-    --option-bg-hover: #f0f0f0; /* Slightly darker gray on hover */
-    --option-border-hover: #b0b5bd; /* Medium gray border on hover */
-
-    /* Light Theme: A clear light gray for selected option */
-    --selected-option-bg: #e6e6e6; /* A clear, light gray for selected background */
-    --selected-option-border: #a0a0a0; /* A darker gray for selected border */
-    --selected-option-text: var(--text-color); /* Keep dark text for contrast in light mode */
-
-    /* Darker Green/Red for feedback with white text */
-    --correct-bg: #28a745; /* Darker, standard green */
-    --correct-border: #218838;
-    --correct-text: #ffffff; /* White text for contrast on dark green */
-
-    --incorrect-bg: #dc3545; /* Darker, standard red */
-    --incorrect-border: #c82333;
-    --incorrect-text: #ffffff; /* White text for contrast on dark red */
-
-    --code-bg: #2b2f3a; /* Dark blue-gray for code blocks (consistent across themes) */
-    --code-text: #abb2bf;
-    --code-border: #4a4f5f;
-    --code-button-bg: #4a5059;
-    --code-button-text: #e0e6f0;
-    --explanation-bg: #e8f5e9;
-    --explanation-border: #4CAF50;
-    --explanation-text: #2e7d32;
-
-    /* Exclusive Content Card specific colors */
-    --exclusive-card-bg: #f0f7ff; /* Lighter blue background */
-    --exclusive-card-border: #a7d9f7;
-    --exclusive-badge-bg: #007bff; /* Primary blue for badge */
-    --exclusive-badge-text: #ffffff;
-    --exclusive-cta-bg: linear-gradient(90deg, #00c6ff 0%, #007bff 100%); /* Blue gradient for CTA */
-}
-
-/* Dark Theme Overrides */
-body.dark-theme {
-    --background-color: #1a1a2e; /* Deep space blue-black */
-    --card-background: #232946; /* Slightly lighter deep blue */
-    --text-color: #e9ecef; /* Bright off-white text */
-    --heading-color: #ffffff; /* PURE WHITE for ALL headings in dark theme */
-    --muted-text-color: #adb5bd; /* Muted light gray */
-    --border-color: #3b3f54; /* Darker border */
-    --shadow-color-card: rgba(0, 0, 0, 0.45); /* More pronounced shadows */
-    --shadow-color-topbar: rgba(0, 0, 0, 0.35);
-
-    /* Dark Theme Vibrant Blue Palette for general UI */
-    --primary-blue-gradient-start: #00c6ff; /* Lighter blue for dark theme primary */
-    --primary-blue-gradient-end: #007bff; /* Darker blue for dark theme gradient end */
-    --secondary-accent-color: #8a6cda; /* Lighter purple accent for dark theme */
-
-    /* CORRECTED: Distinct neutral gray for selected option in Dark Mode with white text */
-    --option-bg-default: #2c3453; /* Darker gray background for options */
-    --option-border-default: #4e5772; /* Darker gray border for options */
-    --option-text-default: var(--text-color); /* Light text */
-
-    --option-bg-hover: #3d4665;
-    --option-border-hover: #6a7695;
-
-    --selected-option-bg: #414a6b; /* **Crucially, a noticeably lighter gray than default dark option background** */
-    --selected-option-border: #8088a8; /* A more distinct border */
-    --selected-option-text: #ffffff; /* **Pure white text for maximum contrast** */
-
-    /* Darker Green/Red for feedback with white text in Dark Mode */
-    --correct-bg: #218838; /* Slightly darker green for dark mode */
-    --correct-border: #28a745;
-    --correct-text: #ffffff; /* White text for contrast on dark green */
-
-    --incorrect-bg: #c82333; /* Slightly darker red for dark mode */
-    --incorrect-border: #dc3545;
-    --incorrect-text: #ffffff; /* White text for contrast on dark red */
-
-    --code-bg: #1e222d; /* Slightly darker than card background for code */
-    --code-text: #d0d7e4;
-    --code-border: #5a6078;
-    --code-button-bg: #3a404c;
-    --code-button-text: #e0e6f0;
-    --explanation-bg: #3a5c4a;
-    --explanation-border: #6cb870;
-    --explanation-text: #d0f0d0;
-
-    /* Exclusive Content Card specific colors for Dark Theme */
-    --exclusive-card-bg: #2a335a;
-    --exclusive-card-border: #4f587d;
-    --exclusive-badge-bg: #007bff; /* Primary blue for badge (stays same) */
-    --exclusive-badge-text: #ffffff;
-    --exclusive-cta-bg: linear-gradient(90deg, #007bff 0%, #00c6ff 100%); /* Blue gradient for CTA (stays same) */
-}
-
-
-/* --- General Body and Container Styles --- */
 body {
-    margin: 0;
-    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    font-family: var(--font-family);
     background-color: var(--background-color);
     color: var(--text-color);
-    line-height: 1.5;
-    transition: background-color 0.4s ease, color 0.4s ease;
-    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
 .quiz-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
     width: 100%;
-    padding: 2rem 1rem;
+    max-width: 900px;
+    padding: var(--spacing-md);
     box-sizing: border-box;
-    background-color: var(--background-color);
-    position: relative;
-    z-index: 0;
 }
 
-/* --- Fixed Top Elements Container --- */
+.loading-state {
+    font-size: var(--font-size-lg);
+    color: var(--text-color);
+    text-align: center;
+}
+
 .top-fixed-elements {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    /* max-width: 700px; Default for all screen sizes if not overridden */
-    /* REMOVED: position: sticky; */
-    /* REMOVED: top: 0; */
-    z-index: 100;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-    margin-bottom: 2rem;
-    /* ADDED: Reduced width for larger screens */
-    /* width: calc(100% - 2rem); Small width from edges */
-    /* max-width: 600px; Slightly smaller max-width */
-    margin-left: auto;
-    margin-right: auto;
+    box-sizing: border-box;
+    z-index: 1000;
+    background: var(--background-color);
 }
 
-/* --- Status Bar --- */
 .quiz-status-bar1 {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    width: 100%;
-    padding: 8px 10px; /* Slightly reduced padding */
-    border-radius: 12px;
-    box-sizing: border-box;
-    backdrop-filter: blur(8px);
-    margin-bottom: 10px;
+    align-items: center;
+    gap: var(--spacing-md);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
 }
 
-body.dark-theme .quiz-status-bar {
-    background-color: rgba(35, 41, 70, 0.9);
-}
-
-
-.exit-button1 {
-    font-size: 18px; /* Slightly smaller font */
+.exit-button {
+    background: none;
     border: none;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-color);
     cursor: pointer;
-    padding: 5px 5px; /* Slightly smaller padding */
-    color: var(--muted-text-color);
-    transition: color 0.2s ease-in-out;
+    transition: transform 0.2s;
 }
 
 .exit-button:hover {
-    color: var(--incorrect-border);
+    transform: scale(1.1);
+}
+
+.quiz-progress-container {
+    flex-grow: 1;
 }
 
 .chances-container {
     display: flex;
     align-items: center;
-    font-size: 24px; /* Slightly smaller font */
-    color: var(--incorrect-border);
-    font-weight: 500;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-lg);
+    font-weight: bold;
 }
+
 .heart-icon {
-    margin-right: 4px;
-    font-size: 24px; /* Slightly smaller icon */
+    font-size: 1.5em;
+    color: var(--incorrect-color);
 }
 
-/* --- Theme Toggle Button --- */
-.theme-toggle {
-    background: var(--card-background);
-    border: none;
-    cursor: pointer;
-    font-size: 16px; /* Slightly smaller font */
-    padding: 7px 10px; /* Slightly smaller padding */
-    border-radius: 8px;
-    box-shadow: 0 2px 8px var(--shadow-color-topbar);
-    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
-    margin-right: 0;
-    align-self: flex-end;
-    color: var(--text-color);
-}
-
-.theme-toggle:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px var(--shadow-color-topbar);
-}
-.theme-toggle:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 4px var(--shadow-color-topbar);
-}
-
-
-/* --- ProgressBar --- */
-/* --- ProgressBar --- */
-.quiz-progress-container {
-    flex: 1; /* Allows it to take available space in a flex container */
-    height: 6px; /* Reduced height for a sleeker look */
-    background-color: var(--border-color); /* The 'trail' or unprogressed part */
-    border-radius: 3px; /* Half of height for rounded caps */
-    overflow: hidden; /* Ensures the inner bar stays within bounds */
-    margin: 0 10px; /* Spacing from other elements in the top bar */
-    width: 100%; /* Occupy full width of its parent flex item */
-    max-width: 400px; /* **Desktop:** Max width to prevent it from getting too wide */
-}
-
-.quiz-progress-bar {
-    height: 100%; /* Take full height of its container */
-    background: linear-gradient(90deg, var(--primary-blue-gradient-start) 0%, var(--primary-blue-gradient-end) 100%); /* Vibrant blue gradient */
-    transition: width 0.3s ease-in-out; /* Smooth transition for progress updates */
-    border-radius: 3px; /* Inherit rounded caps */
-}
-
-
-/* --- Media Queries for Responsiveness (adjusting progress bar specific to screen sizes) --- */
-
-@media (max-width: 768px) {
-    .quiz-progress-container {
-        /* On smaller screens (tablets/larger phones), allow it to be a bit wider */
-        max-width: 90%; /* Adjust as needed, e.g., 90% of parent's width */
-        margin: 0 5px; /* Reduce horizontal margin to utilize space */
-    }
-}
-
-@media (max-width: 480px) {
-    .quiz-progress-container {
-        /* On very small mobile screens, let it expand almost fully */
-        max-width: 95%; /* Make it wider for mobile to be more prominent */
-        margin: 0; /* Remove horizontal margin to maximize space */
-    }
-}
-
-
-/* --- Card Base Styles (Learning, Quiz, Code) --- */
-.knowledge-card, .question-card, .code-card {
-    background-color: var(--card-background);
-    border-radius: 18px;
-    padding: 2rem;
-    box-shadow: 0 8px 30px var(--shadow-color-card);
-    width: 100%; /* Default to 100% for responsiveness */
-    max-width: 700px; /* Default max-width for smaller cards (quiz/code) */
-    position: relative;
-    margin-bottom: 2rem;
-    text-align: center;
-    box-sizing: border-box;
-    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out, background-color 0.4s ease;
-}
-
-/* Specific adjustment for knowledge-card only */
-.knowledge-card {
-    width: 80%; /* Targeted width for knowledge cards */
-    max-width: 900px; /* Increased max-width for knowledge cards on large screens */
-    /* You can adjust max-width further if 80% makes it too wide on super-large monitors */
-}
-
-
-.knowledge-card:hover, .question-card:hover, .code-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 45px var(--shadow-color-card);
-}
-
-
-/* --- Knowledge Card Specifics --- */
-.knowledge-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--heading-color); /* Will be black in light, white in dark */
-    text-align: center;
-}
-.knowledge-content {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    text-align: left;
-    color: var(--muted-text-color);
-}
-
-/* Image styling adjustments */
-.card-img1 {
-    margin: 1rem auto;
-    display: block;
-    border-radius: 12px;
-    object-fit: contain;
-    filter: saturate(1.1) brightness(1.05);
-}
-body.dark-theme .card-img1 {
-    filter: saturate(1.1) brightness(0.85);
-}
-
-.card-img-small { width: 35%; float: right; margin-left: 1rem; }
-.card-img-special { width: 100%; float: none; margin-left: auto; margin-right: auto; }
-.card-img-large { width: 65%; max-width: 400px; float: none; margin-left: auto; margin-right: auto; }
-
-/* Character images */
-.tom-img, .jerry-img {
-    position: absolute;
-    width: 75px;
-    top: -40px;
-    z-index: 1;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25));
-}
-.tom-img { left: -35px; }
-.jerry-img { right: -35px; }
-
-
-/* --- Quiz Card Specifics (4x1 Layout & Top Image) --- */
-
-/* New style for the question text */
-.quiz-question-text {
-    font-size: 1.25rem; /* Slightly larger for emphasis */
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--heading-color); /* This will ensure it's white in dark theme */
-    text-align: center;
-    line-height: 1.4;
-}
-
-.quiz-question-image {
-    max-width: 100%;
-    max-height: 200px;
-    object-fit: contain;
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
-    filter: saturate(1.1);
-}
-body.dark-theme .quiz-question-image {
-    filter: saturate(1.1) brightness(0.85);
-}
-
-.options-grid {
-    display: grid;
-    grid-template-columns: 1fr; /* 4x1: Single column */
-    gap: 0.5rem; /* Slightly reduced gap */
-    margin-top: 1.5rem;
-    width: 100%;
-}
-
-.option-button {
+/* New XP Container Styles */
+.xp-container {
     display: flex;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-    width: 100%;
-    padding: 0.5rem 0.7rem; /* REDUCED PADDING for smaller button */
-    border: 1px solid var(--option-border-default); /* Neutral border */
-    border-radius: 8px; /* Slightly less rounded for a more compact look */
-    background-color: var(--option-bg-default); /* Neutral background */
-    font-weight: 500;
-    font-size: 0.8rem; /* REDUCED FONT SIZE for smaller button */
-    color: var(--option-text-default); /* Default dark text */
-    transition: all 0.2s ease;
-    cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-    min-height: 45px; /* REDUCED MIN-HEIGHT for smaller button */
-}
-.option-button:hover:not(:disabled) {
-    border-color: var(--option-border-hover);
-    background-color: var(--option-bg-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-lg);
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.2);
+    /* Subtle white background */
+    padding: 5px 10px;
+    border-radius: 20px;
 }
 
-/* Selected Option Styling - Neutral Look, now with clear distinction */
-.option-button.selected {
-    background-color: var(--selected-option-bg); /* Now a distinct gray */
-    border-color: var(--selected-option-border); /* Now a distinct border */
-    color: var(--selected-option-text); /* Ensures good contrast in both themes */
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-    font-weight: 600;
+.xp-icon {
+    font-size: 1.5em;
+    /* Slightly larger icon */
+    color: gold;
+    /* Yellow/gold color for XP */
 }
 
-/* Darker Green/Red Feedback with White Text */
-.option-button.correct {
-    background: var(--correct-bg); /* Dark green */
-    border: 1px solid var(--correct-border);
-    color: var(--correct-text); /* White text for contrast */
-    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
-}
-.option-button.incorrect {
-    background: var(--incorrect-bg); /* Dark red */
-    border: 1px solid var(--incorrect-border);
-    color: var(--incorrect-text); /* White text for contrast */
-    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
-}
-.option-button:disabled { opacity: 0.7; cursor: not-allowed; }
-
-
-/* --- Code Card Specifics --- */
-.code-card h3 {
-    margin-top: 0;
-    margin-bottom: 1.2rem;
-    font-size: 1.5rem;
-    color: var(--heading-color); /* Will be black in light, white in dark */
-    font-weight: 600;
-    text-align: center;
+.xp-count {
+    color: var(--color-white);
+    /* Ensure text is white */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    /* Add text shadow for better readability */
 }
 
-.code-snippet {
-    background: var(--code-bg);
-    color: var(--code-text);
-    padding: 1.5rem;
-    border-radius: 10px;
-    font-family: 'Fira Code', monospace;
-    overflow-x: auto;
-    font-size: 0.85rem;
-    margin: 1.5rem 0;
-    position: relative;
-    box-shadow: inset 0 2px 8px rgba(0,0,0,0.25);
-}
-
-/* Copy button for code snippets */
-.code-snippet .copy-button {
-    padding: 6px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    border-radius: 6px;
-    border: 1px solid var(--code-border);
-    background-color: var(--code-button-bg);
-    color: var(--code-button-text);
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-.code-snippet .copy-button:hover {
-    background-color: #555c6b;
-    border-color: #8890a8;
-}
-
-.code-snippet h6 {
-    color: var(--code-text);
-    font-size: 0.75rem;
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    text-align: left;
-    position: absolute;
-    top: 10px;
-    left: 15px;
-    z-index: 10;
-}
-
-.code-question {
-    font-weight: 500;
-    margin: 1.2rem 0 1rem;
-    color: var(--text-color);
-    text-align: left;
-}
-
-.code-answer {
-    width: calc(100% - 24px);
-    padding: 10px;
-    margin-top: 1.5rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-family: 'Fira Code', monospace;
-    background: var(--card-background);
-    min-height: 130px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
-    color: var(--text-color);
-}
-.code-answer:focus {
-    outline: none;
-    border-color: var(--primary-blue-gradient-start);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-}
-
-
-.error-msg {
-    color: var(--incorrect-border) !important;
-    font-size: 0.85rem;
-    margin-top: 0.6em;
-    text-align: left;
-    font-weight: 500;
-}
-
-.code-explanation {
-    background: var(--explanation-bg);
-    border-left: 4px solid var(--explanation-border);
-    padding: 1.2rem 1.5rem;
-    margin-top: 1.5rem;
-    border-radius: 10px;
-    color: var(--explanation-text);
-    font-size: 0.95rem;
-    text-align: left;
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
-}
-
-
-/* --- Navigation Buttons (Retain Blue Gradient) --- */
 .nav-buttons {
     display: flex;
-    gap: 1rem;
-    justify-content: center;
-    width: 100%;
-    max-width: 700px;
-    margin-top: 1.5rem;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: var(--spacing-lg);
 }
+
+.prev-button {
+    margin-right: auto;
+}
+
 .nav-button {
-    padding: 0.7rem 1.5rem;
-    font-weight: 600;
-    font-size: 0.95rem;
-    background: linear-gradient(90deg, var(--primary-blue-gradient-start) 0%, var(--primary-blue-gradient-end) 70%, var(--secondary-accent-color) 100%);
-    color: white;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-lg);
+    font-weight: bold;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 3px 10px rgba(0, 123, 255, 0.25);
-    transition: all 0.3s ease;
-    flex-grow: 1;
-    max-width: 160px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.nav-button:hover {
-    background: linear-gradient(90deg, var(--primary-blue-gradient-end) 0%, var(--primary-blue-gradient-start) 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(0, 123, 255, 0.3);
-}
-.nav-button:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 4px rgba(0, 123, 255, 0.15);
-}
-
-
-/* --- Quest Complete Screen (Retain Blue) --- */
-.quiz-container h2 {
-    font-size: 2rem;
-    color: var(--primary-blue-gradient-start);
-    margin-bottom: 1.5rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-}
-.quiz-container p {
-    font-size: 1.1rem;
-    color: var(--muted-text-color);
-    margin-bottom: 2rem;
-}
-.quiz-container button {
-    padding: 0.7rem 1.3rem;
-    font-size: 1rem;
-    font-weight: 600;
-    background: linear-gradient(90deg, var(--primary-blue-gradient-start) 0%, var(--primary-blue-gradient-end) 100%);
+    transition: all 0.2s ease-in-out;
+    background: var(--primary-color);
     color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 3px 10px rgba(0, 123, 255, 0.25);
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
 }
-.quiz-container button:hover {
-    /* background: linear-gradient(90deg, var(--primary-blue-gradient-end) 0%, var(--primary-blue-gradient-start) 100%); */
+
+.nav-button:disabled {
+    background: var(--secondary-color);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.nav-button:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(0, 123, 255, 0.3);
+    box-shadow: 0 4px 6px var(--shadow-color);
 }
 
-
-/* --- Markdown Body (General Text within cards) --- */
 .markdown-body {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
     line-height: 1.6;
-    color: var(--muted-text-color);
-    padding: 0.3rem;
-    text-align: left;
-}
-.markdown-body h1, .markdown-body h2, .markdown-body h3 {
-    font-weight: 600;
-    margin-top: 1.2rem;
-    margin-bottom: 0.8rem;
-    color: var(--heading-color); /* Will be black in light, white in dark */
-    text-align: left;
-    line-height: 1.2;
-}
-.markdown-body p { margin-bottom: 0.8rem; }
-.markdown-body ul { padding-left: 1.4rem; margin-bottom: 0.8rem; }
-.markdown-body li { margin-bottom: 0.5rem; }
-.markdown-body strong { font-weight: 600; color: var(--text-color); }
-.markdown-body a {
-    color: var(--primary-blue-gradient-start);
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-.markdown-body a:hover { text-decoration: underline; }
-
-/* Syntax Highlighter in Markdown */
-.markdown-body pre {
-    background: var(--code-bg) !important;
-    border-radius: 8px;
-    padding: 1rem !important;
-    overflow-x: auto;
-    font-size: 0.8rem;
-    margin: 1rem 0;
-    box-shadow: inset 0 1px 4px rgba(0,0,0,0.2);
-}
-.markdown-body code {
-    background-color: var(--border-color);
-    border-radius: 4px;
-    padding: 2px 5px;
-    font-family: 'Fira Code', monospace;
-    font-size: 0.8rem;
     color: var(--text-color);
 }
 
-/* Specific styling for TopBar title (assuming it has a class like top-bar-title) */
-.top-bar-title {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--heading-color); /* Will be black in light, white in dark */
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-sm);
 }
 
-/* --- Exclusive Content Card Styling (Retain Blue) --- */
-.exclusive-content-card {
-    background-color: var(--exclusive-card-bg);
-    border: 1px solid var(--exclusive-card-border);
-    border-radius: 18px;
-    padding: 1.8rem;
-    box-shadow: 0 8px 30px rgba(0, 123, 255, 0.1);
-    width: 100%;
-    max-width: 700px;
-    margin-top: 3rem;
-    text-align: center;
-    position: relative;
+.markdown-body p {
+    margin-bottom: var(--spacing-md);
+}
+
+.ant-progress-outer {
+    margin-right: 0 !important;
+}
+
+html.full-screen-mode,
+html.full-screen-mode body {
+    height: 100%;
     overflow: hidden;
-    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out, background-color 0.4s ease;
-}
-
-.exclusive-content-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 45px rgba(0, 123, 255, 0.2);
-}
-
-.exclusive-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background-color: var(--exclusive-badge-bg);
-    color: var(--exclusive-badge-text);
-    padding: 5px 12px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.exclusive-content-card h4 {
-    font-size: 1.8rem;
-    color: var(--heading-color); /* Will be black in light, white in dark */
-    font-weight: 700;
-    margin-bottom: 0.8rem;
-    letter-spacing: 0.02em;
-}
-
-.exclusive-content-card p {
-    font-size: 0.95rem;
-    color: var(--muted-text-color);
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-    max-width: 85%;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.exclusive-content-card .cta-button {
-    padding: 0.9rem 2.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    background: var(--exclusive-cta-bg);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 198, 255, 0.3);
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.exclusive-content-card .cta-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 198, 255, 0.4);
-}
-
-/* Optional: Icon/Image at the top of the exclusive card */
-.exclusive-content-card .icon-img {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 1rem;
-    filter: drop-shadow(0 4px 10px rgba(0, 123, 255, 0.2));
 }
 
 
-/* --- Media Queries for Responsiveness --- */
-@media (max-width: 1024px) { /* New breakpoint for larger tablets/smaller laptops */
-    .knowledge-card {
-        width: 90%; /* Adjust knowledge card width for medium screens */
-        max-width: 800px;
+
+/* Optional: Animation for XP gain */
+@keyframes pulseXp {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
     }
 }
 
-@media (max-width: 768px) {
-    .quiz-container {
-        padding: 1.5rem 0.8rem;
-    }
-    /* Revert knowledge-card to default smaller max-width on smaller screens */
-    .knowledge-card, .question-card, .code-card, .nav-buttons, .exclusive-content-card {
-        max-width: 95%; /* Keep 95% width for all cards on smaller screens */
-        padding: 1.5rem;
-    }
-    /* Adjusted top-fixed-elements for smaller screens */
-    .top-fixed-elements {
-        max-width: 95%;
-        width: 100%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .nav-buttons {
-        flex-direction: row;
-        gap: 0.8rem;
-    }
-    .nav-button {
-        max-width: 45%;
-    }
-    .knowledge-title, .code-card h3 {
-        font-size: 1.4rem;
-    }
-    .knowledge-content, .code-question, .code-answer, .code-explanation, .markdown-body {
-        font-size: 0.9rem;
-    }
-    .option-button {
-        font-size: 0.75rem; /* Further reduction for smaller screens */
-        padding: 0.4rem 0.6rem;
-        min-height: 40px; /* Further reduction for smaller screens */
-    }
-    .card-img-small {
-        width: 50%;
-    }
-    .tom-img, .jerry-img {
-        width: 60px;
-        top: -30px;
-    }
-    .tom-img { left: -25px; }
-    .jerry-img { right: -25px; }
-    .exclusive-content-card h4 {
-        font-size: 1.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .quiz-status-bar {
-        padding: 6px 10px; /* Even smaller padding */
-    }
-    .chances-container {
-        font-size: 13px; /* Even smaller font */
-    }
-    .heart-icon {
-        font-size: 15px; /* Even smaller icon */
-    }
-    .theme-toggle {
-        font-size: 15px;
-        padding: 5px 8px;
-    }
-    .knowledge-title, .code-card h3 {
-        font-size: 1.3rem;
-    }
-    .knowledge-content, .code-question, .code-answer, .code-explanation, .markdown-body {
-        font-size: 0.85rem;
-    }
-    .option-button {
-        font-size: 0.72rem; /* Even smaller font */
-        padding: 0.3rem 0.4rem;
-        min-height: 35px; /* Even smaller min-height */
-    }
-    .card-img-small {
-        width: 60%;
-        float: none;
-        margin: 0.5rem auto;
-    }
-    .options-grid {
-        grid-template-columns: 1fr;
-    }
-    .exclusive-content-card {
-        padding: 1.2rem;
-    }
-    .exclusive-content-card h4 {
-        font-size: 1.3rem;
-    }
-    .exclusive-content-card .cta-button {
-        font-size: 0.9rem;
-        padding: 0.7rem 1.8rem;
-    }
-}
-
-.quiz-complete-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center; /* Center vertically */
-    min-height: 100vh; /* Take full viewport height */
-    width: 100%;
-    padding: 2rem 1rem;
-    box-sizing: border-box;
-    background-color: var(--background-color); /* Inherit theme background */
-    color: var(--text-color); /* Inherit theme text color */
-}
-
-.quiz-complete-card {
-    background-color: var(--card-background);
-    border-radius: 18px;
-    padding: 2rem;
-    box-shadow: 0 8px 30px var(--shadow-color-card);
-    width: 100%;
-    max-width: 600px; /* Max width for the results card */
-    text-align: center;
-    box-sizing: border-box;
-    transition: background-color 0.4s ease, box-shadow 0.3s ease;
-}
-
-.quiz-complete-card h2 {
-    font-size: 2.2rem;
-    color: var(--primary-blue-gradient-start); /* Use your primary blue */
-    margin-bottom: 1.5rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-}
-
-.quiz-complete-card p {
-    font-size: 1.2rem;
-    color: var(--muted-text-color);
-    margin-bottom: 2rem;
-}
-
-/* Reusing the complete-screen-button for consistency */
-.quiz-complete-card {
-    /* Styles are already defined in your CSS, just ensure it's applied */
-    margin-top: 2rem; /* Add some space above the button */
-    display: block; /* Make it a block element to take full width */
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.complete-screen-button {
-    margin-top: 13px;
-    padding: 10px 16px;
-    border-radius: 14px;
-    background: linear-gradient(90deg, #00c6ff 0%, #007bff 100%);
-    color: white;
-    border: none;
-}
-
-/* Media Queries for QuizResults card responsiveness */
-@media (max-width: 768px) {
-    .quiz-complete-card {
-        padding: 1.5rem;
-        max-width: 90%;
-    }
-    .quiz-complete-card h2 {
-        font-size: 1.8rem;
-    }
-    .quiz-complete-card p {
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .quiz-complete-card {
-        padding: 1rem;
-        max-width: 95%;
-    }
-    .quiz-complete-card h2 {
-        font-size: 1.5rem;
-    }
-    .quiz-complete-card p {
-        font-size: 0.95rem;
-    }
+.xp-container.gained {
+    animation: pulseXp 0.5s ease-out forwards;
 }

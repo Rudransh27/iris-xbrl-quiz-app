@@ -1,0 +1,225 @@
+/* src/components/ModuleDetail.css */
+
+/* --- Root Variables --- */
+:root {
+  --detail-shape-red: rgba(255, 99, 132, 0.3);
+  --detail-shape-yellow: rgba(255, 206, 86, 0.3);
+  --primary-color: #1e3a8a;
+  --text-dark: #333;
+  --text-gray: #666;
+  --bg-white: #ffffff;
+  --bg-light-gray: #f9fafb;
+  --border-color: #e5e7eb;
+}
+
+/* --- Base Styles (Desktop-first) --- */
+.module-detail-page {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  font-family: 'Arial', sans-serif;
+  min-height: 80vh;
+  overflow: hidden;
+}
+
+.module-detail-background-shapes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.detail-shape {
+  position: absolute;
+  opacity: 0.6;
+  animation: float 15s infinite ease-in-out;
+}
+
+.shape--circle-red {
+  width: 250px;
+  height: 250px;
+  background-color: var(--detail-shape-red);
+  border-radius: 50%;
+  top: 10%;
+  left: -5%;
+  animation-delay: 0s;
+}
+
+.shape--square-yellow {
+  width: 200px;
+  height: 200px;
+  background-color: var(--detail-shape-yellow);
+  transform: rotate(45deg);
+  bottom: 5%;
+  right: -5%;
+  animation-delay: 3s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
+}
+
+.back-btn {
+  position: relative;
+  z-index: 1;
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  padding: 0;
+  font-weight: 600;
+}
+
+.module-detail-content-wrapper {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 5rem;
+  align-items: flex-start;
+}
+
+.module-detail-left {
+  flex: 1;
+}
+
+.module-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.module-description {
+  font-size: 1.1rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.content-heading {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+}
+
+.topics-table {
+  border-radius: 12px;
+  background-color: var(--bg-white);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.topic-item {
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.topic-item:hover,
+.topic-item.expanded {
+  background-color: var(--bg-light-gray);
+  color: var(--primary-color);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.topic-item.expanded .topic-icon {
+  transform: rotate(90deg);
+}
+
+.topic-icon {
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  margin-right: 0.75rem;
+  font-weight: bold;
+  transition: transform 0.2s ease;
+}
+
+.topic-title {
+  flex-grow: 1;
+}
+
+.module-detail-right {
+  width: 40%;
+  flex-shrink: 0;
+  margin-top: -3rem; /* Moves the card up by 3rem */
+}
+
+.knowledge-cards-list-wrapper {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.topic-item.expanded + .knowledge-cards-list-wrapper {
+  max-height: 2000px;
+}
+
+.knowledge-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-left: 2rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-left: 2px solid var(--border-color);
+}
+
+.knowledge-card-link {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text-dark);
+  transition: all 0.2s ease;
+}
+
+.knowledge-card-link:hover {
+  background-color: var(--bg-light-gray);
+}
+
+/* --- Media Queries for Responsiveness --- */
+
+@media (max-width: 768px) {
+  .module-detail-page {
+    padding: 2rem 1rem;
+  }
+
+  .module-detail-content-wrapper {
+    flex-direction: column-reverse;
+    gap: 2rem;
+  }
+
+  .module-detail-left,
+  .module-detail-right {
+    width: 100%;
+    flex-shrink: 1;
+  }
+
+  .module-detail-right {
+    margin-top: 0; /* Remove the negative margin on mobile */
+  }
+
+  .module-title {
+    font-size: 2rem;
+  }
+
+  .content-heading {
+    font-size: 1.2rem;
+  }
+}
