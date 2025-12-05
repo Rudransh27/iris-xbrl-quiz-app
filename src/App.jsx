@@ -20,6 +20,7 @@ import './App.css';
 // Import ToastContainer and its CSS
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import EmailVerificationPage from "./components/EmailVerificationPage";
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = React.useContext(AuthContext);
@@ -73,6 +74,7 @@ export default function App() {
           <Route path="/login" element={<Layout><AuthPage /></Layout>} />
           <Route path="/register" element={<Layout><AuthPage /></Layout>} />
 
+          <Route path="/verify-email/:token" element={<Layout><EmailVerificationPage /></Layout>} />
           <Route path="/forgot-password" element={<Layout><ForgotPassword /></Layout>} />
           <Route path="/reset-password/:token" element={<Layout><ResetPassword /></Layout>} />
 
