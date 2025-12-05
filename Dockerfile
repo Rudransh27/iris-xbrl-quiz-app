@@ -1,20 +1,20 @@
-FROM node:22 AS build
+# FROM node:22 AS build
 
-WORKDIR /app
+# WORKDIR /app
 
-# 🔹 Limit Node memory inside container
-ENV NODE_OPTIONS="--max_old_space_size=512"
+# # 🔹 Limit Node memory inside container
+# ENV NODE_OPTIONS="--max_old_space_size=512"
 
-# 🔹 Limit Vite workers to reduce RAM usage
-ENV VITE_CJS_WORKERS=1
+# # 🔹 Limit Vite workers to reduce RAM usage
+# ENV VITE_CJS_WORKERS=1
 
-COPY package*.json ./
-RUN npm ci
+# COPY package*.json ./
+# RUN npm ci
 
-COPY . .
+# COPY . .
 
-# 🔹 Build with limited threads
-RUN npm run build -- --maxWorkers=1
+# # 🔹 Build with limited threads
+# RUN npm run build
 
 FROM nginx:alpine
 
