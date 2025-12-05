@@ -9,7 +9,7 @@ ENV NODE_OPTIONS="--max_old_space_size=512"
 ENV VITE_CJS_WORKERS=1
 
 COPY package*.json ./
-RUN npm install --production
+RUN npm ci
 
 COPY . .
 
