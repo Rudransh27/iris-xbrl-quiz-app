@@ -1,0 +1,5 @@
+/* DashboardLayout.css */
+.shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; transition: 0.3s; }
+.shell.collapsed { grid-template-columns: 70px 1fr; }
+.sidebar { background: #0F0D1F; color: white; overflow: hidden; }
+.content { background: #f8fafc; padding: 24px; overflow-y: auto; }

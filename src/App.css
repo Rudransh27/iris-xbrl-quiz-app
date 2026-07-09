@@ -1,1 +1,81 @@
-/* src/index.css */ /* Add these two lines to fix the unwanted space issue */ html, body { overflow-x: hidden; } body { /* ... rest of your body styles ... */ font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background-color: var(--bg-page); /* This will be overridden by dark-theme */ color: var(--text-primary);     /* This will be overridden by dark-theme */ line-height: 1.6; transition: background-color 0.3s ease, color 0.3s ease; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; } /* Ensure box-sizing is consistent across all elements */ *, *::before, *::after { box-sizing: border-box; } /* Hide scrollbar for Chrome, Safari and Opera */ body::-webkit-scrollbar { display: none; } /* Hide scrollbar for IE, Edge and Firefox */ body { -ms-overflow-style: none; /* IE and Edge */ scrollbar-width: none; /* Firefox */ } /* --- Light Theme Defaults (Applies by default) --- */ :root { /* ... light theme variables ... */ --bg-page: #F0F2F5; --text-primary: #223255; --card-background: #FFFFFF; /* Add this if not present */ --heading-color: #223255;    /* Add this if not present */ --text-color: #223255;       /* Add this if not present */ } /* --- Dark Theme Overrides (Applied when body has 'dark-theme' class) --- */ body.dark-theme { /* ... dark theme variables ... */ --bg-page: #1A1A2E; --text-primary: #E0E0E0; --card-background: #22223D; /* Add this for dark theme card background */ --heading-color: #E0E0E0;    /* Add this for dark theme heading color */ --text-color: #E0E0E0;       /* Add this for dark theme text color */ }
+/* src/App.css or src/index.css */
+
+/* ☀️ LIGHT MODE: CRISP TECH-MARITIME AUTHORITY */
+:root, [data-theme="light"] {
+  /* Canvas Backdrops - Clean bright honeydew paper canvas */
+  --bg-global-canvas: #f1faee;     
+  --bg-tactile-cards: #ffffff;
+  
+  /* Primary Popping Banners */
+  --bg-hud-banner: #457b9d;        /* Cerulean Blue (Deep layout baseline anchor) */
+  --bg-daily-read: #e63946;        /* Punch Red (High-impact energetic headline deck) */
+  
+  /* 3D Tactile Extrusion Edges */
+  --border-tactile: #e2eaf0;
+  --border-hud-tactile: #2d5873;   /* Deepened Cerulean shadow edge */
+  --border-daily-tactile: #b31e2a; /* Deepened Punch Red shadow edge */
+  
+  /* 🟢 OPTIMIZED TEXT CONTRAST LOGIC (LIGHT MODE) */
+  --text-primary: #1d3557;         /* Oxford Navy (Elite legibility, zero glare) */
+  --text-secondary: #457b9d;       /* Cerulean Blue sub-headers */
+  --text-inverse: #ffffff;         /* Crisp white text over dark background banners */
+  
+  /* Sidebar Links, Active Nodes & Item Hovers */
+  --curriculum-icon-bg: rgba(69, 123, 157, 0.12); /* Cerulean Tint */
+  --curriculum-icon-text: #457b9d;
+  --curriculum-hover: #a8dadc;     /* Frosted Blue hover interaction splash */
+  --stat-row-border: #e6eef5;
+  
+  /* Badges & Progress Targets */
+  --badge-progress-bg: #a8dadc;    /* Frosted Blue */
+  --badge-progress-text: #1d3557;
+  --badge-completed-bg: rgba(69, 123, 157, 0.15); /* Muted Tech Cerulean */
+  --badge-completed-text: #1d3557;
+}
+
+/* 🌙 DARK MODE: DEEP OBSIDIAN SUB-RADAR MATRIX */
+[data-theme="dark"] {
+  /* Canvas Backdrops - Pure Oxford Navy depth shield */
+  --bg-global-canvas: #0b1320;     
+  --bg-tactile-cards: #132237;     /* Frosted deep navy sheet panels */
+  
+  /* Primary Popping Banners (Rich, deeper saturation for night view comfort) */
+  --bg-hud-banner: #1d3557;        /* Oxford Navy core banner */
+  --bg-daily-read: #8a1721;        /* Deep Crimson Punch Red */
+  
+  /* 3D Tactile Edges */
+  --border-tactile: #1b2d47;
+  --border-hud-tactile: #0f1f34;
+  --border-daily-tactile: #540b12;
+  
+  /* 🔴 OPTIMIZED TEXT CONTRAST LOGIC (DARK MODE) */
+  --text-primary: #f1faee;         /* Honeydew high visibility off-white */
+  --text-secondary: #a8dadc;       /* Frosted Blue sub-text */
+  --text-inverse: #ffffff;         /* Crisp white over dark dark mode layers */
+  
+  /* Sidebar Links & Item Hovers */
+  --curriculum-icon-bg: rgba(168, 218, 220, 0.15);
+  --curriculum-icon-text: #a8dadc;
+  --curriculum-hover: #192a42;
+  --stat-row-border: #15243a;
+  
+  /* Badges & Progress Targets */
+  --badge-progress-bg: rgba(168, 218, 220, 0.15); /* Frosted Blue Glow */
+  --badge-progress-text: #a8dadc;
+  --badge-completed-bg: rgba(69, 123, 157, 0.2); /* Cerulean Glow */
+  --badge-completed-text: #8ec3e3;
+}
+
+/* =========================================================================
+   🎯 GLOBAL ROOT RESETS & INTERACTION SWITCH ENGINES
+   ========================================================================= */
+html, body, #root {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  overflow-x: hidden;
+  background-color: var(--bg-global-canvas) !important; 
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

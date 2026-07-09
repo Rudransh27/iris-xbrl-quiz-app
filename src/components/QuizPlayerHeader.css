@@ -1,0 +1,145 @@
+/* src/components/QuizPlayerHeader.css */
+
+:root {
+  --amber-gold: #ffbe0bff;
+  --blaze-orange: #fb5607ff;
+  --neon-pink: #ff006eff;
+  --blue-violet: #8338ecff;
+  --azure-blue: #3a86ffff;
+  --duo-green: #58cc02;
+
+  --duo-snow: #ffffff;
+  --duo-gray-plate: #f7f9fa;
+  --duo-border: #e5e5e5;
+  --duo-text-dark: #3c3c3c;
+  --duo-text-slate: #5e6c75;
+}
+
+.quiz-top-player-header-shell {
+  width: 100%;
+  height: 72px;
+  background-color: var(--duo-snow);
+  border-bottom: 2px solid var(--duo-border);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 100;
+  font-family: "Nunito", system-ui, sans-serif;
+}
+
+.quiz-header-alignment-container {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ================= ❌ CLOSE NAVIGATION DISMISSAL ACTION ================= */
+.quiz-header-exit-trigger {
+  background-color: transparent;
+  border: none;
+  color: #afafaf;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 50%;
+  transition: all 0.1s ease;
+}
+
+.quiz-header-exit-trigger:hover {
+  color: var(--duo-text-dark);
+  background-color: var(--duo-gray-plate);
+}
+
+/* ================= 📊 3D CHUNKY PROGRESS BEAM CONTROLLERS ================= */
+.quiz-header-progress-viewport {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.quiz-header-progress-base-rail {
+  flex: 1;
+  height: 16px;
+  background-color: var(--duo-border);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.quiz-header-progress-fluid-beam {
+  height: 100%;
+  background-color: var(--duo-green);
+  border-radius: 20px;
+  position: relative;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Playful inner highlight layer tracking along the beam */
+.quiz-header-progress-fluid-shine {
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  right: 6px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+}
+
+.quiz-header-step-counter {
+  font-size: 11.5px;
+  font-weight: 900;
+  color: var(--duo-text-slate);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* ================= 💫 TACTILE DATA OVERVIEW BADGES ================= */
+.quiz-header-stat-capsule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 2px solid var(--duo-border);
+  border-bottom-width: 4px; /* Chunky flat card bottom look */
+  border-radius: 14px;
+  background-color: var(--duo-snow);
+}
+
+.stat-vector-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.text-gold-accent { color: var(--amber-gold); }
+.text-red-accent  { color: #ff4b4b; }
+
+.quiz-stat-count-string {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--duo-text-dark);
+}
+
+.stat-lbl-dim {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--duo-text-slate);
+  letter-spacing: 0.3px;
+}
+
+/* Interactive Color-Fused Hue Tints */
+.xp-node-tint { background-color: #fffdf0; border-color: #ffe89e; }
+.life-node-tint { background-color: #fff5f5; border-color: #ffcccc; }
+
+@media (max-width: 640px) {
+  .quiz-header-step-counter { display: none; }
+  .quiz-header-alignment-container { gap: 12px; }
+  .quiz-header-stat-capsule { padding: 6px 10px; }
+}

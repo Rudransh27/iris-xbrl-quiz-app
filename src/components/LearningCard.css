@@ -1,55 +1,107 @@
 /* src/components/LearningCard.css */
+
+:root {
+  --duo-snow: #ffffff;
+  --duo-border: #e5e5e5;
+  --duo-text-dark: #3c3c3c;
+  --duo-text-slate: #5e6c75;
+  --azure-blue: #3a86ff;
+}
+
 .knowledge-card {
-  background-color: var(--card-bg);
-  border-radius: 12px;
-  box-shadow: 0 4px 8px var(--shadow-color);
-  padding: var(--spacing-lg);
-  margin-top: calc(var(--spacing-lg) * 5);
-  position: relative;
-  border: 1px solid var(--border-color);
-  overflow: visible;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: "Nunito", system-ui, sans-serif;
+  margin: 12px 0;
 }
 
-/* Updated positioning and size for Jerry */
-.jerry-img {
+/* ================= 💬 PREMIUM 3D CHAT CARD OVERRIDE ================= */
+.knowledge-text {
+  width: 100%;
+  background-color: var(--duo-snow);
+  border: 2px solid var(--duo-border);
+  border-bottom: 5px solid var(--duo-border); /* Tactile 3D lift ridge */
+  border-radius: 24px;
+  padding: 24px;
+  position: relative; /* Gives context coordinate mappings to the mascot element */
+  box-sizing: border-box;
+}
+
+/* 🎯 FIXED: Absolute anchoring loops targeting the internal top-right edge boundaries */
+.jerry-img-top-right {
   position: absolute;
-  top: -45px;
-  right: -45px;
-  width: 100px;
-  opacity: 0.9;
-  z-index: 1; /* Z-index increased to be above the header */
+  top: 16px;
+  right: 16px;
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  z-index: 10;
+  animation: duoPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards;
 }
 
-/* This container will hold the text and keep it left-aligned */
-.knowledge-text-container {
-  text-align: left;
-}
-
+/* Adjust padding-right on title to prevent text overlapping Jerry's avatar space */
 .knowledge-title {
-  text-align: center;
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  color: var(--primary-color);
-  margin-bottom: var(--spacing-md);
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--duo-text-dark);
+  margin: 0 0 14px 0;
+  padding-right: 64px; /* Creates explicit buffer window space */
+  letter-spacing: -0.5px;
+  line-height: 1.3;
 }
 
-/* Center images by applying `display: block` and `margin: 0 auto` */
+/* ================= 🖼️ EMBEDDED GRAPHICS BLOCKS ================= */
+.card-image-viewport-wrapper {
+  width: 100%;
+  border: 2px solid var(--duo-border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  background-color: #f7f9fa;
+}
+
 .card-img1 {
   display: block;
-  width: 100%;
+  max-width: 100%;
   height: auto;
-  border-radius: 8px;
-  margin: 0 auto var(--spacing-md) auto;
+  object-fit: cover;
 }
 
-.card-img-small {
-  display: block;
-  max-width: 300px;
-  margin: 0 auto var(--spacing-md) auto;
+.card-img-small  { max-height: 140px; margin: 0 auto; }
+.card-img-medium { max-height: 240px; }
+.card-img-large  { max-height: 380px; width: 100%; }
+
+/* ================= 📄 MD MARKDOWN CONTENT ARENAS ================= */
+.knowledge-content {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--duo-text-slate);
+  line-height: 1.6;
 }
 
-.card-img-medium {
-  display: block;
-  max-width: 500px;
-  margin: 0 auto var(--spacing-md) auto;
+.knowledge-content p {
+  margin: 0 0 12px 0;
+}
+.knowledge-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Prism syntax formatting block sheets */
+.knowledge-content pre {
+  background-color: #182730 !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  margin: 12px 0 !important;
+  overflow-x: auto;
+}
+
+.knowledge-content code {
+  font-family: var(--bs-font-monospace), monospace;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+@keyframes duoPopIn {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }

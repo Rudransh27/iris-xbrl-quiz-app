@@ -1,15 +1,15 @@
 // ProgressBar.jsx
 import React from "react";
-import "./ProgressBar.css"; // Still include this, we'll update its content
+import "./ProgressBar.css"; 
 
 const ProgressBar = ({ percent }) => {
   return (
-    // Use the class names defined in Quiz.css for consistency
+    /* 🎯 FIXED: Containers and fill nodes mapped strictly to match CSS selectors */
     <div className="quiz-progress-bar-container">
       <div
-        className="quiz-progress-fill" // This is the filling part of the bar
+        className="quiz-progress-fill" 
         role="progressbar"
-        style={{ width: `${percent}%` }}
+        style={{ width: `${Math.max(3, percent)}%` }} /* 3% minimum taaki starting me bhi bar halki si visible rahe */
         aria-valuenow={percent}
         aria-valuemin="0"
         aria-valuemax="100"

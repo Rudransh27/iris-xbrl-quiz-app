@@ -1,0 +1,303 @@
+/* src/admin/CurriculumBuilder.css */
+
+.iris-curriculum-builder-workspace {
+  background-color: #fafbfe; /* Elegant website canvas bright light backdrop */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.min-vh-custom {
+  min-height: calc(100vh - 74px);
+}
+
+.border-bottom-slate {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* =========================================================================
+   📁 COLUMN 1: LEFT SIDEBAR WORKSPACE HOUSING (Duolingo Style Panel)
+   ========================================================================= */
+.cb-sidebar-panel-container {
+  background-color: #ffffff;
+  border-right: 1px solid #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 74px;
+  height: calc(100vh - 74px);
+  z-index: 100;
+
+}
+
+.cb-sidebar-header {
+  padding: 20px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  background-color: #ffffff;
+}
+
+.cb-sidebar-header h5 {
+  font-size: 1rem;
+  letter-spacing: -0.2px;
+}
+
+.cb-sidebar-scroller-track {
+  flex-grow: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.cb-sidebar-scroller-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Curriculum Accordion Tree Customizations */
+.cb-accordion-item {
+  border: none !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  background-color: #ffffff !important;
+}
+
+.cb-accordion-root .accordion-button {
+  background-color: #ffffff !important;
+  color: #334155 !important;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 14px 16px;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.cb-accordion-root .accordion-button:not(.collapsed) {
+  background-color: rgba(15, 37, 110, 0.03) !important;
+  color: #0f256e !important;
+}
+
+.cb-module-title-text {
+  max-width: 82%;
+  display: inline-block;
+  text-align: left;
+}
+
+/* Inner Topic elements inside nested drawer blocks list loggers */
+.cb-sidebar-inline-trigger-strip {
+  background-color: #f8fafc;
+}
+
+.cb-btn-ghost-action {
+  background: none !important;
+  border: 1px dashed #cbd5e1 !important;
+  color: #64748b !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cb-btn-ghost-action:hover {
+  border-color: #0f256e !important;
+  color: #0f256e !important;
+  background-color: #ffffff !important;
+}
+
+.cb-topic-list-group .cb-topic-list-item {
+  border: none !important;
+  border-bottom: 1px solid #f8fafc !important;
+  padding: 11px 16px 11px 20px !important;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: #475569 !important;
+  background-color: #ffffff !important;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.cb-topic-title-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+  display: inline-block;
+}
+
+/* 💙 Blue Selection Highlights System */
+.cb-topic-list-item:hover {
+  background-color: rgba(15, 37, 110, 0.04) !important;
+  color: #0f256e !important;
+}
+
+.cb-topic-list-item.active-node-selected {
+  background-color: rgba(15, 37, 110, 0.06) !important;
+  color: #0f256e !important;
+  font-weight: 700 !important;
+  padding-left: 24px !important; /* Expansion animation effect mapping */
+}
+
+.active-dot-marker {
+  width: 4px;
+  height: 4px;
+  background-color: #0f256e;
+  border-radius: 50%;
+  position: absolute;
+  left: 10px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.cb-topic-list-item.active-node-selected .active-dot-marker {
+  opacity: 1;
+}
+
+/* Inline action round circular icons */
+.cb-inline-action-btn-primary {
+  background-color: rgba(15, 37, 110, 0.06) !important;
+  color: #0f256e !important;
+  border: none !important;
+  border-radius: 6px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.cb-inline-action-btn-primary:hover {
+  background-color: #0f256e !important;
+  color: #ffffff !important;
+}
+
+/* =========================================================================
+   📦 COLUMN 2: MAIN WORKSPACE ENGINE (YouTube Studio Grid List Canvas)
+   ========================================================================= */
+.cb-workspace-main-canvas {
+  flex-grow: 1;
+  height: calc(100vh - 74px);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.cb-breadcrumb-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.5px;
+}
+
+.cb-main-topic-heading-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.cb-workspace-subtitle-label {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* 🎯 THE SPECIFICATION: Main container grid item boxes get crisp 12px curves borders */
+.cb-resource-item-card {
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 12px !important; /* Premium curved profile boundary alignment */
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cb-resource-item-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 37, 110, 0.03) !important;
+  border-color: #94a3b8 !important;
+}
+
+/* Avatars colored code based matching dynamic resource types tracking modules */
+.cb-card-icon-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cb-card-icon-avatar.type-knowledge { background-color: rgba(34, 197, 94, 0.1); color: #16a34a; }
+.cb-card-icon-avatar.type-video { background-color: rgba(239, 68, 68, 0.1); color: #dc2626; }
+.cb-card-icon-avatar.type-quiz { background-color: rgba(234, 179, 8, 0.1); color: #ca8a04; }
+.cb-card-icon-avatar.type-code { background-color: rgba(59, 130, 246, 0.1); color: #2563eb; }
+
+.cb-card-title-text {
+  font-size: 0.95rem;
+  letter-spacing: -0.1px;
+}
+
+/* 🎯 STRICLY INSTAGRAM: Action items menus inside dropdown sliders options */
+.cb-dropdown-menu-slate {
+  border-radius: 0px !important; /* ❌ Sharp flat rectangular corners mapping */
+  border: 1px solid #cbd5e1 !important;
+  padding: 4px 0 !important;
+}
+
+.cb-dropdown-trigger-icon-btn:hover {
+  background-color: #f1f5f9 !important;
+  border-radius: 50%;
+}
+
+/* Polymorphic pills dynamic typography labels mappings context codes logs */
+.cb-polymorphic-type-badge {
+  font-size: 0.65rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  padding: 5px 10px !important;
+  border-radius: 4px !important;
+}
+.cb-polymorphic-type-badge.label-knowledge { background-color: #e2fbe8 !important; color: #1e8a3e !important; }
+.cb-polymorphic-type-badge.label-video { background-color: #fde8e8 !important; color: #e02424 !important; }
+.cb-polymorphic-type-badge.label-quiz { background-color: #fef3c7 !important; color: #d97706 !important; }
+.cb-polymorphic-type-badge.label-code { background-color: #e1f5fe !important; color: #0288d1 !important; }
+
+/* Empty state layout configurations checks placeholders elements wrapper bounds */
+.cb-empty-state-card {
+  border-radius: 12px !important;
+  border: 1px dashed #cbd5e1 !important;
+}
+
+.cb-btn-primary {
+  background-color: #0f256e !important;
+  border-color: #0f256e !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 0.88rem;
+  height: 38px;
+  padding: 6px 16px;
+  border-radius: 6px !important;
+}
+.cb-btn-primary:hover {
+  opacity: 0.92;
+}
+
+.cb-loading-state-placeholder {
+  min-height: 300px;
+}
+
+/* Entrance fade-in motion trigger */
+.animate-fade-in {
+  animation: cbEntranceFrame 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes cbEntranceFrame {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================================
+   📱 CRASH-PROOF BREAKPOINT MATRIX RESPONSIVE OVERRIDES
+   ========================================================================= */
+@media (max-width: 767px) {
+  .cb-sidebar-panel-container {
+    position: relative;
+    top: 0;
+    height: auto;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #cbd5e1;
+  }
+  .cb-workspace-main-canvas {
+    height: auto;
+    width: 100%;
+  }
+}

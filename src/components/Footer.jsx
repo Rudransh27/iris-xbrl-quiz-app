@@ -1,52 +1,76 @@
+// src/components/Footer.jsx
 import React from 'react';
 import './Footer.css';
 import { FaFacebook, FaTwitter, FaLinkedin, FaYoutube } from 'react-icons/fa';
 
 export default function Footer() {
   return (
-    <footer className="site-footer">
-      <div className="footer-container">
-        <div className="footer-section company-info">
-          <h3 className="footer-heading">IRIS Business</h3>
-          <p className="footer-text">
-            <a href="https://irisbusiness.com/" className="footer-link-main">
-              www.irisbusiness.com
+    <footer className="duo-site-footer">
+      <div className="duo-footer-container">
+        
+        {/* Company Cluster */}
+        <div className="duo-footer-section company-info">
+          <h3 className="duo-footer-heading">IRIS RegTech</h3>
+          <p className="duo-footer-text-link">
+            <a href="https://irisbusiness.com/" target="_blank" rel="noopener noreferrer">
+              www.irisregtech.com
             </a>
           </p>
-          <p className="company-description">
-            Leading provider of software, data, and services for financial and business reporting.
+          <p className="duo-company-description">
+            Leading provider of software, data formats, and services for global financial and compliance business reporting.
           </p>
         </div>
 
-        <div className="footer-section products">
-          <h3 className="footer-heading">Our Products</h3>
-          <ul>
-            <li><a href="http://irisifile.com/" target="_blank" className="footer-link">iFile</a></li>
-            <li><a href="https://iriscarbon.com/" target="_blank" className="footer-link">Carbon</a></li>
-            <li><a href="https://irisbusiness.com/iris-ideal/" target="_blank" className="footer-link">iDEAL</a></li>
+        {/* Products Link Cluster */}
+        <div className="duo-footer-section products">
+          <h3 className="duo-footer-heading">Our Products</h3>
+          <ul className="duo-footer-ul">
+            <li>
+              <a href="http://irisifile.com/" target="_blank" rel="noopener noreferrer" className="product-link link-azure">iFile</a>
+            </li>
+            <li>
+              <a href="https://iriscarbon.com/" target="_blank" rel="noopener noreferrer" className="product-link link-pink">Carbon</a>
+            </li>
+            <li>
+              <a href="https://irisbusiness.com/iris-ideal/" target="_blank" rel="noopener noreferrer" className="product-link link-gold">iDEAL</a>
+            </li>
           </ul>
         </div>
         
-        <div className="footer-section contact-and-subsidiaries">
-          <h3 className="footer-heading">Contact</h3>
-          <p>022 6723 1000</p>
-          <p><a href="mailto:hello@irisbusiness.com" className="footer-link">hello@irisbusiness.com</a></p>
-         
+        {/* Contact Cluster */}
+        <div className="duo-footer-section contact">
+          <h3 className="duo-footer-heading">Contact Us</h3>
+          <p className="duo-contact-node">022 6723 1000</p>
+          <p className="duo-contact-node">
+            <a href="mailto:hello@irisbusiness.com">hello@irisbusiness.com</a>
+          </p>
         </div>
         
-        <div className="footer-section social-media">
-          <h3 className="footer-heading">Follow Us</h3>
-          <p className="social-text">Stay connected and follow us on social media for the latest updates and news.</p>
-          <div className="social-icons">
-             <a href="https://www.linkedin.com/company/iris-business-services-limited/" target="_blank" rel="noopener noreferrer"><FaLinkedin /></a>
-            <a href="https://twitter.com/XBRL_IRIS" target="_blank" rel="noopener noreferrer"><FaTwitter /></a>
-            <a href="https://www.facebook.com/IRISBusinessServicesLimited" target="_blank" rel="noopener noreferrer"><FaFacebook /></a>
-            <a href="https://www.youtube.com/@IrisbusinessXBRL" target="_blank" rel="noopener noreferrer"><FaYoutube /></a>
+        {/* Social Media Connected Links */}
+        <div className="duo-footer-section social-media">
+          <h3 className="duo-footer-heading">Follow Along</h3>
+          <p className="duo-social-text">Stay connected with our global circles for updates and news release logs.</p>
+          <div className="duo-social-icons">
+            <a href="https://www.linkedin.com/company/iris-business-services-limited/" target="_blank" rel="noopener noreferrer" className="duo-social-btn social-linkedin">
+              <FaLinkedin />
+            </a>
+            <a href="https://twitter.com/XBRL_IRIS" target="_blank" rel="noopener noreferrer" className="duo-social-btn social-twitter">
+              <FaTwitter />
+            </a>
+            <a href="https://www.facebook.com/IRISBusinessServicesLimited" target="_blank" rel="noopener noreferrer" className="duo-social-btn social-facebook">
+              <FaFacebook />
+            </a>
+            <a href="https://www.youtube.com/@IrisbusinessXBRL" target="_blank" rel="noopener noreferrer" className="duo-social-btn social-youtube">
+              <FaYoutube />
+            </a>
           </div>
         </div>
+
       </div>
-      <div className="footer-bottom">
-        <p>© {new Date().getFullYear()} IRIS Business. All Rights Reserved.</p>
+
+      {/* Bottom Legal Band */}
+      <div className="duo-footer-bottom text-center">
+        <p>© {new Date().getFullYear()} IRIS Business Services. Made with Orbit Engine.</p>
       </div>
     </footer>
   );

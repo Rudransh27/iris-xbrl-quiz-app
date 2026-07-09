@@ -1,23 +1,22 @@
+// src/components/HeroEntryCard.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HeroEntryCard.css';
 import { FaSearch } from 'react-icons/fa';
+import { StarFill } from 'react-bootstrap-icons'; // Swapped for Fill variant for pop
 
 export default function HeroEntryCard() {
-  // State to store the search term
   const [searchTerm, setSearchTerm] = useState('');
-  // Hook for programmatic navigation
   const navigate = useNavigate();
 
-  // Function to handle the search action
   const handleSearch = () => {
     if (searchTerm.trim()) {
-      // Navigates to the /modules page with the search term as a query parameter
-      navigate(`/modules?search=${encodeURIComponent(searchTerm.trim())}`);
+      navigate(`/orbit?search=${encodeURIComponent(searchTerm.trim())}`);
+    } else {
+      navigate('/orbit');
     }
   };
 
-  // Allows search on 'Enter' key press
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
       handleSearch();
@@ -25,42 +24,38 @@ export default function HeroEntryCard() {
   };
 
   return (
-    <div className="hero-banner-complete">
-      <div className="hero-banner__background-overlay"></div>
-      
-      {/* New creative shapes container */}
-      <div className="creative-shapes-container">
-        <div className="shape-pattern"><div className="shape-circle"></div></div>
-        <div className="shape-pattern"><div className="shape-square"></div></div>
-        <div className="shape-pattern"><div className="shape-triangle"></div></div>
-        <div className="shape-pattern"><div className="shape-circle"></div></div>
-        <div className="shape-pattern"><div className="shape-square"></div></div>
-        <div className="shape-pattern"><div className="shape-triangle"></div></div>
-      </div>
-      
-      <div className="hero-content">
-        <h1 className="hero-title">
-          IRIS Onboard
-        </h1>
-        <p className="hero-subtitle">
-          Your Personalized Path to Success at <span className="iris-brand-color">Iris Business Services Limited.</span>
-        </p>
-        <p className="hero-description">
-          Explore a rich variety of courses with interactive quizzes and hands-on code editors, designed to help you master our products and services. Discover your unique learning path now!
-        </p>
-        <div className="search-bar-container">
-          <input 
-            type="text" 
-            className="search-input" 
-            placeholder="Search courses"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          <button className="search-btn" onClick={handleSearch}>
-            <FaSearch />
-          </button>
+    <div className="simple-vibrant-hero-container">
+      <div className="simple-hero-wrapper simple-split-layout">
+        
+        {/* ================= LEFT SIDE: GAMIFIED PORTAL ================= */}
+        <div className="simple-text-panel">
+          <div className="simple-badge">
+            <StarFill className="simple-star-icon" /> START LEARNING
+          </div>
+          
+          <h1 className="simple-hero-title">
+            Welcome to <br />
+            <span className="simple-brand-text">IRIS Orbit</span>
+          </h1>
+          
+          <p className="simple-hero-subtitle">
+            Your friendly path to learning new skills. Explore modules, track your daily progress, and unlock achievements!
+          </p>
+
+          
         </div>
+
+        {/* ================= RIGHT SIDE: GAMIFIED GRAPHIC ================= */}
+        <div className="simple-graphic-panel">
+          <div className="chunky-planet-core">
+            <div className="chunky-ring ring-vibrant-1"></div>
+            <div className="chunky-ring ring-vibrant-2"></div>
+            <div className="chunky-inner-core">
+              <span>ORBIT</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

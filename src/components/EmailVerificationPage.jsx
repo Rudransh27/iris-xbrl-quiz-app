@@ -1,27 +1,34 @@
-import React, { useState, useEffect } from 'react';
+// src/pages/EmailVerificationPage.jsx
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Spinner, Card, Alert } from 'react-bootstrap';
+import { ShieldCheck, ExclamationTriangle, CheckCircleFill } from 'react-bootstrap-icons';
+import irisLogo from '../assets/irislogo.svg';
+import '../pages/Auth.css'; // Synced perfectly to global authentication theme
 
-// ⚠️ IMPORTANT: Set your backend API base URL
+// ⚠️ API configuration bounds preserved
 const API_BASE_URL = 'http://localhost:5000/api/auth'; 
 
 const EmailVerificationPage = () => {
-    // 1. Get the token from the URL
     const { token } = useParams();
     
-    const [verificationStatus, setVerificationStatus] = useState('Verifying...');
+    const [verificationStatus, setVerificationStatus] = useState('Verifying your verification token...');
     const [loading, setLoading] = useState(true);
     const [success, setSuccess] = useState(false);
 
+    useLayoutEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
     useEffect(() => {
         if (!token) {
-            setVerificationStatus('Error: Verification token not found.');
+            setVerificationStatus('Verification link token not found. Please return to the registration screen.');
             setLoading(false);
             return;
         }
 
         const verifyEmail = async () => {
             try {
-                // 2. Call the backend API using the token with fetch()
                 const response = await fetch(`${API_BASE_URL}/verify-email/${token}`, {
                     method: 'GET',
                     headers: {
@@ -32,19 +39,17 @@ const EmailVerificationPage = () => {
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    setVerificationStatus('✅ Success! Your email has been verified. You can now log in.');
+                    setVerificationStatus('Success! Your corporate email address has been verified. Workspace activation complete.');
                     setSuccess(true);
                 } else {
-                    // Handle server errors (e.g., 400 for expired token)
-                    const errorMessage = data.message || 'Verification failed. Invalid response from server.';
-                    setVerificationStatus(`❌ ${errorMessage}`);
+                    const errorMessage = data.message || 'Verification failed. The execution link may have expired.';
+                    setVerificationStatus(`${errorMessage}`);
                     setSuccess(false);
                 }
 
             } catch (error) {
-                // Handle network errors
-                console.error("Network or parsing error:", error);
-                setVerificationStatus(`❌ Network error: Could not reach the server.`);
+                console.error("Network or parsing error data streams:", error);
+                setVerificationStatus('Network context error: Server cluster unreachable. Check routing paths.');
                 setSuccess(false);
             } finally {
                 setLoading(false);
@@ -54,39 +59,77 @@ const EmailVerificationPage = () => {
         verifyEmail();
     }, [token]);
 
-    const getStatusStyle = () => {
-        if (loading) return 'text-blue-500';
-        if (success) return 'text-green-600';
-        return 'text-red-600';
-    };
-
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="p-8 bg-white shadow-xl rounded-lg text-center max-w-md w-full">
-                <h1 className="text-2xl font-bold mb-4">Email Verification</h1>
+        <div className="auth-page-main-content"> {/* Centers everything on the bright background canvas floor */}
+            <div className="insta-style-wrapper"> {/* Keeps exactly 350px width constraints mapping */}
                 
-                <p className={`text-lg font-semibold ${getStatusStyle()} mb-6`}>
-                    {verificationStatus}
-                </p>
+                {/* 📦 TOP BOX: SECURE NODE VERIFICATION FRAME */}
+                <Card className="auth-card border-0">
+                  <Card.Body className="d-flex flex-column align-items-center">
+                    
+                    {/* Clean Corporate Brand Logo */}
+                    <div className="text-center mb-1">
+                      <img src={irisLogo} alt="Iris Logo" className="auth-logo-img" />
+                    </div>
 
-                {loading && (
-                    <div className="loader border-t-4 border-blue-500 rounded-full w-10 h-10 animate-spin mx-auto mb-6"></div>
-                )}
+                    <h1 className="text-center mb-3 fs-4 fw-bold text-dark">Email Activation</h1>
 
-                {!loading && success && (
-                    <Link 
-                        to="/login" 
-                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300"
-                    >
-                        Go to Login
+                    {/* Dynamic Graphic Status Node Indicator */}
+                    <div className="my-3 text-center">
+                        {loading && <Spinner animation="border" style={{ color: '#0f256e' }} />}
+                        {!loading && success && <CheckCircleFill size={44} className="text-success" />}
+                        {!loading && !success && <ExclamationTriangle size={44} className="text-danger" />}
+                    </div>
+
+                    {/* Dynamic State Alert Text Stream */}
+                    <div className="w-100 mt-2">
+                        {loading && (
+                            <Alert variant="info" className="auth-alert-compact text-center">
+                                {verificationStatus}
+                            </Alert>
+                        )}
+                        {!loading && success && (
+                            <Alert variant="success" className="auth-alert-compact text-center mb-4">
+                                {verificationStatus}
+                            </Alert>
+                        )}
+                        {!loading && !success && (
+                            <Alert variant="danger" className="auth-alert-compact text-center mb-4">
+                                {verificationStatus}
+                            </Alert>
+                        )}
+                    </div>
+
+                    {/* Primary Redirect Switch Action Button Block */}
+                    {!loading && success && (
+                        <Link 
+                            to="/login" 
+                            className="btn btn-primary w-100 text-decoration-none d-flex align-items-center justify-content-center fw-bold"
+                            style={{ height: '36px' }}
+                        >
+                            Continue to Log In
+                        </Link>
+                    )}
+
+                    {!loading && !success && (
+                        <p className="text-center text-muted m-0 mt-2" style={{ fontSize: '13px', lineSpacing: '1.4' }}>
+                            Please request a new validation link node or complete registration configurations again.
+                        </p>
+                    )}
+
+                  </Card.Body>
+                </Card>
+
+                {/* 📦 BOTTOM SEPARATED BOX: TWIN ACTION SLAT */}
+                <div className="auth-isolated-switch-box text-center p-3">
+                  <span className="auth-switch-card-text">
+                    Need help?{" "}
+                    <Link to="/register" className="auth-switch-trigger-btn text-decoration-none">
+                      Return to Sign Up
                     </Link>
-                )}
-                
-                {!loading && !success && (
-                    <p className="text-gray-500 mt-4">
-                        Please re-register or request a new verification link.
-                    </p>
-                )}
+                  </span>
+                </div>
+
             </div>
         </div>
     );

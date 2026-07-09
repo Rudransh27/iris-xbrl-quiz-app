@@ -1,0 +1,108 @@
+/* src/components/OrbitDashboard/SlidingPuzzleWidget.css
+   Compact, self-contained "retention toy" — deliberately small footprint so
+   it never competes with the dashboard's real content for attention. */
+
+.orbit-puzzle {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius-lg, 14px);
+  background: var(--orbit-surface);
+  border: 1.5px solid var(--orbit-border);
+  box-shadow: var(--orbit-shadow-sm);
+  transition: box-shadow 0.4s ease, border-color 0.4s ease;
+}
+
+.orbit-puzzle--solved {
+  border-color: var(--amber-glow);
+  box-shadow: 0 0 0 1px var(--amber-glow), 0 0 24px 4px var(--amber-glow-muted);
+}
+
+.orbit-puzzle__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.orbit-puzzle__title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--orbit-text-muted);
+}
+
+.orbit-puzzle__solved-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--amber-glow-dark);
+}
+
+.orbit-puzzle__reshuffle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--orbit-text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.orbit-puzzle__reshuffle:hover {
+  background: var(--orbit-canvas);
+  color: var(--amber-glow-dark);
+}
+
+.orbit-puzzle__moves {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--orbit-text-muted);
+  opacity: 0.8;
+}
+
+/* Sized purely via CSS (not a JS px constant) so it scales smoothly on any
+   viewport with zero image distortion: background-size/background-position
+   on each tile are already percentage-based, so shrinking this container
+   shrinks the image slices proportionally instead of clipping/stretching
+   them. The 138px floor keeps individual tiles (container/3) at ~46px —
+   comfortably above the 44px touch-target minimum even on the narrowest
+   phones. */
+.orbit-puzzle__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: clamp(138px, 46vw, 210px);
+  height: clamp(138px, 46vw, 210px);
+  gap: 2px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--orbit-canvas);
+  flex-shrink: 0;
+  /* Tap-to-slide only (no drag gesture) — disabling other touch gestures on
+     the grid itself prevents an accidental page-scroll/zoom hijack mid-tap. */
+  touch-action: manipulation;
+}
+
+.orbit-puzzle__tile {
+  cursor: pointer;
+  border-radius: 3px;
+  background-repeat: no-repeat;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease;
+}
+
+.orbit-puzzle__tile:active {
+  transform: scale(0.97);
+}
+
+.orbit-puzzle__blank {
+  background: var(--orbit-canvas);
+}

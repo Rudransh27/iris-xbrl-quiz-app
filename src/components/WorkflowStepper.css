@@ -1,0 +1,200 @@
+/* src/components/WorkflowStepper.css */
+
+:root {
+  --amber-gold: #ffbe0bff;
+  --blaze-orange: #fb5607ff;
+  --neon-pink: #ff006eff;
+  --blue-violet: #8338ecff;
+  --azure-blue: #3a86ffff;
+
+  --duo-white: #ffffff;
+  --duo-gray-bg: #f7f9fa;
+  --duo-line-border: #e5e5e5;
+  --duo-dark-text: #3c3c3c;
+  --duo-slate-text: #5e6c75;
+}
+
+.duo-stepper-section {
+  width: 100%;
+  background-color: var(--duo-white);
+  border-top: 2px solid var(--duo-line-border);
+  padding: 64px 24px;
+  box-sizing: border-box;
+  font-family: "Nunito", system-ui, sans-serif;
+}
+
+.duo-stepper-wrapper {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ================= STEPPER HEADERS ================= */
+.duo-stepper-header {
+  margin-bottom: 56px;
+}
+
+.stepper-main-title {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--duo-dark-text);
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+}
+
+.stepper-main-subtitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--duo-slate-text);
+  max-width: 580px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* ================= HORIZONTAL CLEAN GRID ================= */
+.duo-stepper-rail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+
+@media (max-width: 920px) {
+  .duo-stepper-rail-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+.duo-step-node {
+  background-color: var(--duo-white);
+  border: 2px solid var(--duo-line-border);
+  border-bottom: 5px solid var(--duo-line-border); /* Chunky, solid light gray 3D border base */
+  border-radius: 20px;
+  padding: 32px 24px 24px 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+/* ================= DESIGN ACCENT OVERRIDES (On Hover or Node Status) ================= */
+.duo-step-node:hover {
+  transform: translateY(-2px);
+}
+
+/* Azure Blue Track Settings */
+.accent-blue:hover {
+  border-color: var(--azure-blue);
+  border-bottom-color: #1a62d6;
+}
+.accent-blue .duo-step-icon, 
+.accent-blue .duo-step-counter {
+  color: var(--azure-blue);
+}
+
+/* Neon Pink Track Settings */
+.accent-pink:hover {
+  border-color: var(--neon-pink);
+  border-bottom-color: #b3004b;
+}
+.accent-pink .duo-step-icon, 
+.accent-pink .duo-step-counter {
+  color: var(--neon-pink);
+}
+
+/* Amber Gold Track Settings */
+.accent-gold:hover {
+  border-color: var(--amber-gold);
+  border-bottom-color: #e0a300;
+}
+.accent-gold .duo-step-icon, 
+.accent-gold .duo-step-counter {
+  color: #d69800; /* Darker variant of gold for clean text contrast on white */
+}
+
+/* ================= INTERNAL STRUCTURAL LAYOUTS ================= */
+.duo-step-circle-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: var(--duo-gray-bg);
+  border: 2px solid var(--duo-line-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.duo-step-icon {
+  font-size: 24px;
+  transition: color 0.15s ease;
+}
+
+/* Small Counter Sub-badge circle layout */
+.duo-step-counter {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 22px;
+  height: 22px;
+  background-color: var(--duo-white);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--duo-line-border);
+  transition: all 0.15s ease;
+}
+
+.duo-step-node:hover .duo-step-counter {
+  border-color: currentColor;
+}
+
+/* Typography Scales */
+.duo-step-text-content h4 {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--duo-dark-text);
+  margin: 0 0 10px 0;
+}
+
+.duo-step-text-content p {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--duo-slate-text);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* ================= DIRECTION CONNECTOR RAIL ARROWS ================= */
+.duo-rail-arrow-connector {
+  position: absolute;
+  right: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--duo-text-slate);
+  background-color: var(--duo-white);
+  border: 2px solid var(--duo-line-border);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  opacity: 0.7;
+}
+
+.duo-step-node:hover .duo-rail-arrow-connector {
+  opacity: 1;
+  border-color: currentColor;
+}

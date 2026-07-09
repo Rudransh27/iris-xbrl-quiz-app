@@ -1,304 +1,359 @@
+/* src/components/Navbar.css */
+
+/* =========================================================================
+   🎨 SYSTEM COLOR STYLESHEET CONFIGURATIONS
+   ========================================================================= */
 :root {
-  --primary-color: #0f256e;
-  --secondary-color: #22C55E;
-  --text-dark: #151313;
-  --bg-white: #ffffff;
-  --hover-color: #f0f0f0;
-  --active-link-color: var(--secondary-color);
-  --nav-button-bg-light: #f5f5f5;
-  --nav-button-text-light: var(--primary-color);
-  --nav-button-hover-bg-light: var(--primary-color);
-  --nav-button-hover-text-light: var(--bg-white);
-  --nav-button-bg-dark: #222;
-  --nav-button-text-dark: #f5f5f5;
-  --nav-button-hover-bg-dark: #444;
-  --nav-button-hover-text-dark: var(--bg-white);
+  /* NOTE: --amber-gold / --blaze-orange / --neon-pink / --blue-violet /
+     --azure-blue are NOT redefined here on purpose. A dozen other CSS
+     files across the app (Footer.css, HeroEntryCard.css, QuizResults.css,
+     etc.) each redeclare these exact same names at :root with their own
+     hardcoded hex — because CSS custom properties are global, whichever of
+     those files happens to load last silently wins, making any alias set
+     here unreliable (verified: it was clobbered back to the old hex in
+     testing). Every rule below that used one of these five tokens has been
+     repointed straight at the new src/index.css palette instead. */
+
+  /* Crisp Bone White Interface Framework Settings */
+  --nav-bg-white: var(--white);
+  --nav-card-light: var(--frozen-water);
+  --nav-border-light: #e5e5e5;
+  --nav-text-dark: var(--ink-strong);   /* Dark charcoal — high-contrast on white/frozen-water */
+  --nav-text-muted: #5e6c75;   /* Secondary slate gray for unselected routes */
 }
 
-/* Base styles for the light theme */
-.light-theme {
-  --bg-color: var(--bg-white);
-  --text-color: var(--text-dark);
-  --icon-color: var(--text-dark);
-}
-
-/* Styles for the dark theme */
-.dark-theme {
-  --bg-color: #1a1a1a;
-  --text-color: #f5f5f5;
-  --icon-color: var(--text-color);
-}
-
-.navbar-complete {
+/* =========================================================================
+   🧱 NAVBAR CONTAINER SPECIFICATION (Balanced Sizing Viewport)
+   ========================================================================= */
+.duo-nav-container {
+  width: 100%;
+  background-color: var(--nav-bg-white);
+  border-bottom: 3px solid var(--nav-border-light); /* Thick, structural flat 2D line */
   position: sticky;
   top: 0;
-  width: 100%;
-  padding: 1rem 2rem;
-  background-color: var(--bg-color);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  z-index: 1050;
+  padding: 0 20px;
+  box-sizing: border-box;
+  font-family: "Nunito", system-ui, sans-serif;
+}
+
+.duo-nav-wrapper {
+  max-width: 1140px;
+  height: 64px; /* Sleek, crisp professional height */
+  margin: 0 auto;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  z-index: 1000;
-  font-family: 'Poppins', sans-serif;
-  transition: background-color 0.3s ease;
 }
 
-.navbar__branding {
+.nav-left-cluster {
   display: flex;
   align-items: center;
-  text-decoration: none;
-  gap: 0.5rem;
+  gap: 32px;
+  flex: 1;
 }
 
-.navbar__logo {
-  height: 40px;
-}
-
-.navbar__links {
+.duo-logo-link {
   display: flex;
-  gap: 2.5rem;
   align-items: center;
 }
 
-.nav-item {
-  text-decoration: none;
-  font-weight: 500;
-  color: var(--text-color);
-  font-size: 1rem;
-  position: relative;
-  transition: color 0.3s ease;
-  padding: 0.5rem 0;
+.duo-logo-img {
+  height: 32px;
+  width: auto;
 }
 
-.nav-item::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: -5px;
-  width: 0;
-  height: 2px;
-  background-color: var(--secondary-color);
-  transition: width 0.3s ease;
-}
-
-.nav-item:hover {
-  color: var(--primary-color);
-}
-.nav-item:hover::after {
-  width: 100%;
-}
-
-.nav-item.active {
-  color: var(--active-link-color);
-  font-weight: 600;
-}
-.nav-item.active::after {
-  width: 100%;
-  background-color: var(--active-link-color);
-}
-
-.navbar__actions {
+.duo-links-panel {
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  gap: 6px;
+}
+
+/* =========================================================================
+   ⚡ CRUNCHY NAVIGATION TAB LABELS (High-Contrast Black Elements)
+   ========================================================================= */
+.duo-nav-item-wrapper {
+  display: inline-flex;
   align-items: center;
 }
 
-.theme-toggle-btn {
-  background: none;
-  border: none;
+.duo-nav-item {
+  color: var(--nav-text-muted); /* Dark slate gray by default */
+  text-decoration: none !important;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.1s ease;
+}
+
+/* Turns high-contrast black on hover */
+.duo-nav-item:hover:not(.item-disabled) {
+  color: var(--nav-text-dark);
+  background-color: var(--nav-card-light);
+}
+
+/* Active Highlight Style: amber-glow accents alongside the charcoal typography */
+.duo-nav-item.item-active {
+  color: var(--nav-text-dark) !important; /* Kept bold charcoal for maximum priority readability */
+  background-color: var(--nav-card-light);
+  border: 2px solid var(--amber-glow);
+  border-bottom: 4px solid var(--amber-glow-dark); /* 3D tactile push feedback edge line */
+}
+
+/* Disabled Coming Soon Route */
+.duo-nav-item.item-disabled {
+  color: var(--nav-text-muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+  gap: 6px;
+  padding: 8px 14px;
+  font-weight: 800;
+}
+
+.duo-disabled-tag {
+  background-color: var(--nav-border-light);
+  color: var(--nav-text-dark);
+  font-size: 8px;
+  font-weight: 900;
+  padding: 2px 5px;
+  border-radius: 5px;
+}
+
+/* =========================================================================
+   👤 TACTILE USER PORTAL DASH HUD CONTAINER (Desktop Layout)
+   ========================================================================= */
+.duo-actions-desktop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.duo-theme-toggle-btn {
+  background: var(--nav-bg-white);
+  border: 2px solid var(--nav-border-light);
+  border-bottom: 4px solid var(--nav-border-light);
+  color: var(--light-sea-green);
+  padding: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  color: var(--icon-color);
-  padding: 0.5rem;
-  font-size: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.3s ease;
+  transition: all 0.1s ease;
 }
 
-.theme-toggle-btn:hover {
-  color: var(--primary-color);
+.duo-theme-toggle-btn:hover {
+  background-color: var(--nav-card-light);
 }
 
-.hamburger-menu {
-  display: none;
+.duo-theme-toggle-btn:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.duo-user-hud-box {
+  display: flex;
+  align-items: center;
+  background-color: var(--nav-bg-white);
+  border: 2px solid var(--nav-border-light);
+  border-bottom: 4px solid var(--nav-border-light);
+  border-radius: 12px;
+  padding: 3px 10px 3px 4px;
+}
+
+.duo-profile-anchor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none !important;
+}
+
+.navbar-avatar-frame {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--nav-card-light);
+  border: 2px solid var(--nav-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.navbar-avatar-emoji-font {
+  font-size: 14px;
+}
+
+.navbar-avatar-img-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.duo-username-text {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--nav-text-dark);
+}
+
+.duo-xp-badge {
+  background-color: var(--honey-bronze) !important;
+  color: #3c3c3c !important;
+  font-weight: 900;
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.hud-separator {
+  width: 1px;
+  height: 16px;
+  background-color: var(--nav-border-light);
+  margin: 0 10px;
+}
+
+.duo-logout-icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--nav-text-muted);
   cursor: pointer;
-  font-size: 1.8rem;
-  color: var(--text-color);
-  padding: 0.5rem;
+  padding: 2px;
+  display: flex;
+  align-items: center;
 }
 
-.mobile-only-actions {
+.duo-logout-icon-btn:hover {
+  color: var(--amber-glow);
+}
+
+/* Primary amber-glow Sign In/Log In Action Button */
+.duo-btn-outline {
+  text-decoration: none !important;
+  font-weight: 800;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--white);
+  background-color: var(--amber-glow);
+  border: none;
+  border-bottom: 4px solid var(--amber-glow-dark);
+  padding: 8px 18px;
+  border-radius: 12px;
+  transition: all 0.1s ease;
+}
+
+.duo-btn-outline:hover {
+  filter: brightness(1.05);
+}
+
+.duo-btn-outline:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+/* =========================================================================
+   📱 RESPONSIVE ADJUSTMENTS
+   ========================================================================= */
+.duo-mobile-profile-hero-card,
+.duo-mobile-actions-wrapper {
   display: none;
 }
 
-/* Button styles for Login/Logout */
-.nav-item-button {
-  padding: 0.5rem 1.0rem; /* Increased padding */
-  border-radius: 50px; /* Fully rounded button */
+.duo-hamburger-trigger {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--nav-text-dark);
   cursor: pointer;
-  font-weight: 600;
-  font-size: 0.95rem;
-  text-decoration: none;
-  text-align: center;
-  transition: all 0.3s ease;
-  white-space: nowrap;
 }
 
-/* Specific styling for desktop buttons based on theme */
-.light-theme .desktop-login-btn {
-  background-color: var(--nav-button-bg-light);
-  color: var(--nav-button-text-light);
-  border: 1px solid var(--primary-color);
-}
-.light-theme .desktop-login-btn:hover {
-  background-color: var(--nav-button-hover-bg-light);
-  color: var(--nav-button-hover-text-light);
-}
-
-.dark-theme .desktop-login-btn {
-  background-color: var(--nav-button-bg-dark);
-  color: var(--nav-button-text-dark);
-  border: 1px solid var(--nav-button-text-dark);
-}
-.dark-theme .desktop-login-btn:hover {
-  background-color: var(--nav-button-hover-bg-dark);
-  color: var(--nav-button-hover-text-dark);
-}
-
-.desktop-logout-btn {
-  background-color: var(--primary-color);
-  color: var(--bg-white);
-  border: 1px solid var(--primary-color);
-}
-.desktop-logout-btn:hover {
-  background-color: transparent;
-  color: var(--primary-color);
-}
-
-.xp-container {
-    display: flex;
-    align-items: center;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-color);
-    transition: color 0.3s ease;
-}
-
-.xp-container:hover {
-    color: var(--secondary-color);
-}
-
-.xp-text {
-    white-space: nowrap;
-}
-
-.mobile-only-xp {
+@media (max-width: 991px) {
+  .duo-actions-desktop {
     display: none;
   }
 
-
-/* Responsive styles */
-@media (max-width: 768px) {
-
-   .xp-container {
-        display: none;
-    }
-    
-    /* Display the mobile-only XP counter within the mobile menu */
-    .mobile-only-xp {
-        display: flex; /* Ensure it's a flexbox to align the icon and text */
-        align-items: center;
-        gap: 5px; /* Adjust spacing */
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--text-color);
-        padding: 0.75rem 0;
-    }
-    
-    /* Make the mobile menu items fill the width */
-    .nav-item,
-    .mobile-only-xp {
-        width: 100%;
-        text-align: center;
-    }
-
-
-  .navbar-complete {
-    padding: 0.8rem 1.5rem;
-  }
-  .navbar__branding {
-    gap: 0.3rem;
-  }
-  .navbar__logo {
-    height: 35px;
-  }
-
-  .navbar__links {
-    position: fixed; /* Use fixed for full-screen menu */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: var(--bg-color);
-    flex-direction: column;
-    padding: 2rem;
-    box-shadow: none; /* No shadow for full-screen menu */
-    justify-content: center;
-    align-items: center;
-    transform: translateX(100%);
-    transition: transform 0.4s ease-in-out;
-    gap: 1.5rem;
-  }
-  .navbar__links--open {
-    transform: translateX(0);
-  }
-  .hamburger-menu {
+  .duo-hamburger-trigger {
     display: block;
   }
 
-  /* Hide desktop buttons and theme toggle on mobile */
-  .desktop-only-theme,
-  .desktop-login-btn,
-  .desktop-logout-btn {
-    display: none;
+  .duo-hamburger-trigger.rotated {
+    transform: rotate(90deg);
   }
-  
-  /* Show mobile-specific actions */
-  .mobile-only-actions {
-    display: flex;
+
+  .duo-links-panel {
+    position: fixed;
+    top: 67px;
+    left: -100%;
+    width: 100%;
+    height: calc(100vh - 67px);
+    background-color: var(--nav-bg-white);
     flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    padding-top: 2rem;
+    align-items: stretch;
+    padding: 20px;
+    gap: 10px;
+    box-sizing: border-box;
+    transition: left 0.2s ease;
+    border-top: 1px solid var(--nav-border-light);
+  }
+
+  .duo-links-panel.mobile-panel-open {
+    left: 0;
+  }
+
+  .duo-nav-item-wrapper,
+  .duo-nav-item {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: flex-start;
+  }
+
+  .duo-mobile-profile-hero-card {
+    display: block;
+    background-color: var(--nav-card-light);
+    border: 2px solid var(--nav-border-light);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+
+  .duo-mobile-actions-wrapper {
+    display: block;
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 2px solid var(--nav-border-light);
+  }
+
+  .duo-btn-primary {
+    background-color: var(--amber-glow);
+    border: none;
+    border-bottom: 4px solid var(--amber-glow-dark);
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 800;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
     width: 100%;
   }
 
-  /* Mobile button and theme toggle styling */
-  .nav-item-button,
-  .mobile-theme-btn {
-    width: 100%;
-    font-size: 1.2rem;
-    padding: 0.75rem 0;
-    border-radius: 0;
-    text-align: center;
+  .duo-btn-secondary {
     background-color: transparent;
-    color: var(--text-color);
-    border: none;
-    transition: all 0.3s ease;
-  }
-  .mobile-theme-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    color: var(--text-color);
-  }
-  .mobile-theme-btn:hover,
-  .mobile-login-btn:hover,
-  .mobile-logout-btn:hover {
-    background-color: var(--hover-color);
-    color: var(--primary-color);
+    border: 2px solid var(--nav-border-light);
+    border-bottom: 4px solid var(--nav-border-light);
+    color: var(--amber-glow);
+    font-size: 14px;
+    font-weight: 800;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    width: 100%;
   }
 }

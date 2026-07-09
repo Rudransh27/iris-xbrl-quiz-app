@@ -1,94 +1,157 @@
 /* src/components/QuizCard.css */
+
 .question-card {
-  background-color: var(--card-bg);
-  border-radius: 12px;
-  box-shadow: 0 4px 8px var(--shadow-color);
-  padding: var(--spacing-lg);
-  margin-top: calc(var(--spacing-lg) * 5);
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1; /* Sharp clean bounding container box line */
+  border-radius: 16px;
+  padding: 24px;
   position: relative;
-  border: 1px solid var(--border-color);
-  overflow: visible;
+  z-index: 5;
+  box-sizing: border-box;
 }
 
-/* Updated positioning and size for Tom */
+/* 🖼️ Optional Quiz Illustration Adjustments */
+.quiz-question-image {
+  width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+/* Mascot/Tom Img Layout Adjustment if any */
 .tom-img {
-  position: absolute;
-  top: -55px;
-  left: -55px;
-  width: 100px;
-  opacity: 0.9;
-  z-index: 1; /* Z-index increased to be above the header */
+  display: block;
+  max-width: 65px;
+  height: auto;
+  margin: 0 auto 16px auto;
+  opacity: 0.95;
 }
 
+/* =========================================================================
+   🎯 QUESTION MARKDOWN TEXT CORE (Standard Premium Slate Charcoal)
+   ========================================================================= */
 .quiz-question-text {
+  margin-bottom: 24px;
   text-align: center;
-  position: relative;
-  z-index: 2;
-  margin-bottom: var(--spacing-md);
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  color: var(--primary-color);
 }
 
+.quiz-question-text.markdown-body p,
+.quiz-question-text.markdown-body h1,
+.quiz-question-text.markdown-body h2,
+.quiz-question-text.markdown-body h3 {
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  color: #0f172a !important; /* 🎯 STANDARD: Premium core text visibility focus */
+  line-height: 1.45 !important;
+  margin: 0 !important;
+}
+
+/* =========================================================================
+   🎮 OPTIONS GRID ARCHITECTURE (Duolingo Style Mechanics)
+   ========================================================================= */
 .options-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-md);
+  grid-template-columns: 1fr; /* Single column flow for mobile and clean parsing default */
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .options-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2-column distribution on bigger screens */
+  }
 }
 
 .option-button {
-  padding: var(--spacing-md);
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  background-color: var(--card-bg);
-  color: black;
+  width: 100%;
+  background-color: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: #334155; /* 🎯 STANDARD: Carbon Slate text weight for high readability */
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: var(--font-size-md);
-  font-weight: 600;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
 }
 
-.option-button:hover {
-  background-color: #f1f1f1;
-  border-color: var(--primary-color);
+/* Hover conditions when user hasn't submitted yet */
+.option-button:hover:not(:disabled) {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
+/* 💻 Option State 1: Active Selection Profile before submission */
 .option-button.selected {
-  border-color: var(--primary-color);
-  background-color: var(--primary-color);
-  color: white;
+  background-color: rgba(15, 37, 110, 0.04);
+  border-color: #0f256e; /* Hard corporate blue frame boundary lock */
+  color: #0f256e !important;
+  font-weight: 700;
 }
 
+/* 🟢 Option State 2: SUCCESS VERIFIED LOGIC (Correct Answer) */
 .option-button.correct {
-  background-color: var(--correct-color);
-  color: white;
-  border-color: var(--correct-color);
+  background-color: rgba(46, 125, 50, 0.08) !important;
+  border-color: #2e7d32 !important; /* Premium Pista Green success accent */
+  color: #2e7d32 !important;
+  font-weight: 700;
 }
 
+/* 🔴 Option State 3: EXCEPTION CRASH LOGIC (Incorrect Selection) */
 .option-button.incorrect {
-  background-color: var(--incorrect-color);
-  color: white;
-  border-color: var(--incorrect-color);
+  background-color: rgba(194, 24, 91, 0.06) !important;
+  border-color: #c2185b !important; /* Premium Pink/Crimson failure accent */
+  color: #c2185b !important;
+  font-weight: 700;
 }
 
+/* Generic Disabled States override when quiz state hits answered flag */
+.option-button:disabled {
+  cursor: not-allowed;
+}
+
+/* =========================================================================
+   📖 COLLAPSIBLE KNOWLEDGE EXPLANATION VIEW
+   ========================================================================= */
 .quiz-explanation {
-  margin-top: var(--spacing-lg);
-  padding: var(--spacing-md);
-  background-color: #f1f1f1;
-  border-left: 4px solid var(--primary-color);
-  border-radius: 4px;
+  margin-top: 24px;
+  background-color: #f8fafc; /* Crisp inner grey sub-bedding canvas */
+  border-top: 2px dashed #cbd5e1; /* Clear micro divider notch line */
+  padding: 16px 20px;
+  border-radius: 0 0 14px 14px;
 }
 
 .quiz-explanation h4 {
-  margin-top: 0;
-  color: var(--primary-color);
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0f172a; /* Sharp Title tracking labels */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px 0;
 }
 
-.quiz-question-image {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin-bottom: var(--spacing-md);
-  border-radius: 8px;
+/* Internal text rendering inside explanation markdown node */
+.quiz-explanation .markdown-body p {
+  font-size: 0.88rem !important;
+  color: #334155 !important; /* Soft Carbon Reading standard Gray applied safely */
+  line-height: 1.5 !important;
+  margin: 0 !important;
+}
+
+/* Format internal standard sub-elements blocks if code hints occur */
+.quiz-explanation .markdown-body pre, 
+.quiz-explanation .markdown-body code {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  font-size: 0.8rem !important;
 }

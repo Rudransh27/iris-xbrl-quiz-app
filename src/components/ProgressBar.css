@@ -1,15 +1,21 @@
 /* ProgressBar.css */
-.quiz-progress-container {
+
+/* 🎯 FIXED: Match with .quiz-progress-bar-container inside JSX */
+.quiz-progress-bar-container {
   flex: 1;
-  height: 8px;
-  background-color: #eee;
-  border-radius: 4px;
+  height: 10px; /* Highly readable thin professional track density */
+  background-color: #e2e8f0; /* Subdued premium grey rail track background */
+  border-radius: 20px;
   overflow: hidden;
-  margin: 0 12px;
+  margin: 0 14px;
+  position: relative;
 }
 
-.quiz-progress-bar {
+/* 🎯 FIXED: Match with .quiz-progress-fill inside JSX */
+.quiz-progress-fill {
   height: 100%;
-  background-color: #2196f3;
-  transition: width 0.3s ease-in-out;
+  background-color: #0f256e; /* 💻 Solid Corporate Blue track indicator matching platform standards */
+  border-radius: 20px;
+  /* Premium cubic-bezier transition framework for a super fluid loading effect */
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }

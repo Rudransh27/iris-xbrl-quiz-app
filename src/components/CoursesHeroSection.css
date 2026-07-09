@@ -1,158 +1,262 @@
-    :root {
-    --primary-color: #0f256e;
-    --secondary-color: #22C55E;
-    --text-dark: #333333;
-    --bg-white: #ffffff;
-    --bg-light-gray: #f8f9fa;
+/* src/components/CoursesHeroSection.css */
 
-    /* Shape colors */
-    --light-blue-shade: rgba(173, 216, 230, 0.5);
-    --light-green-shade: rgba(144, 238, 144, 0.5);
-    --light-pink-shade: rgba(255, 182, 193, 0.5);
-    }
+:root {
+  --amber-gold: #ffbe0bff;
+  --blaze-orange: #fb5607ff;
+  --neon-pink: #ff006eff;
+  --blue-violet: #8338ecff;
+  --azure-blue: #3a86ffff;
 
-    .courses-hero-section {
-    position: relative;
-    width: 100%;
-    min-height: 80vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 4rem 2rem;
-    background-color: var(--bg-light-gray);
-    text-align: center;
-    overflow: hidden;
-    }
-
-    .courses-hero-background-shapes {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-    }
-
-    .course-shape {
-    position: absolute;
-    opacity: 0.4;
-    animation: float 15s infinite ease-in-out;
-    }
-
-    .shape--circle-green {
-    width: 200px;
-    height: 200px;
-    background-color: var(--light-green-shade);
-    border-radius: 50%;
-    top: 10%;
-    left: 5%;
-    animation-delay: 0s;
-    }
-
-    .shape--square-blue {
-    width: 150px;
-    height: 150px;
-    background-color: var(--light-blue-shade);
-    transform: rotate(45deg);
-    top: 40%;
-    right: 15%;
-    animation-delay: 3s;
-    }
-
-    .shape--triangle-pink {
-    width: 180px;
-    height: 180px;
-    background-color: var(--light-pink-shade);
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    bottom: 10%;
-    left: 20%;
-    animation-delay: 6s;
-    }
-
-    @keyframes float {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-20px) scale(1.05); }
-    }
-
-    .courses-hero-content {
-    position: relative;
-    z-index: 1;
-    max-width: 90%;
-    margin: 0 auto;
-    }
-
-    .courses-hero-header {
-    margin-bottom: 3rem;
-    }
-
-    .courses-hero-title {
-    font-size: 2.5rem;
-    font-weight: 600;
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-    }
-
-    .courses-hero-subtitle {
-    font-size: 1.25rem;
-    color: var(--text-dark);
-    font-weight: 500;
-    max-width: 700px;
-    margin: 0 auto;
-    }
-
-    /* Updated Grid layout */
-    .courses-grid {
-    display: grid;
-    /* Creates 4 columns, each taking up an equal fraction of the available space */
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
-    text-align: left;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 1200px) {
-        .courses-grid {
-            /* On medium screens, show 3 columns */
-            grid-template-columns: repeat(3, 1fr);
-        }
-    }
-
-.all-courses-btn {
-  display: inline-block; /* Essential for Link to be styled like a button */
-  padding: 0.75rem 2rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--bg-white);
-  background-color: var(--primary-color);
-  border: 2px solid var(--primary-color);
-  border-radius: 15px;
-  cursor: pointer;
-  text-decoration: none; /* Remove underline from Link */
-  transition: all 0.3s ease;
-  margin-top: 30px;
+  --duo-snow-white: #ffffff;
+  --duo-border-light: #e5e5e5;
+  --duo-text-black: #3c3c3c;
+  --duo-text-slate: #5e6c75;
 }
 
-.all-courses-btn:hover {
-  background-color: var(--secondary-color); /* Green color on hover */
-  border-color: var(--secondary-color);
+.orbit-home-benefit-section {
+  width: 100%;
+  background-color: var(--duo-snow-white);
+  padding: 64px 24px;
+  box-sizing: border-box;
+  font-family: "Nunito", system-ui, sans-serif;
 }
 
-    @media (max-width: 768px) {
-    .courses-hero-title {
-        font-size: 2rem;
-    }
+.orbit-home-wrapper {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-    .courses-hero-subtitle {
-        font-size: 1rem;
-    }
-    
-    .courses-hero-content {
-        padding: 0 1rem;
-    }
+/* ================= HERO HEADINGS BLOCK ================= */
+.orbit-home-header {
+  text-align: center;
+  margin-bottom: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-    .courses-grid {
-        /* On small screens, show 1 column */
-        grid-template-columns: 1fr;
-    }
-    }
+.duo-spark-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #f0f6ff;
+  border: 2px solid var(--azure-blue);
+  color: var(--azure-blue);
+  font-size: 11px;
+  font-weight: 900;
+  padding: 8px 16px;
+  border-radius: 12px;
+  letter-spacing: 0.8px;
+  margin-bottom: 20px;
+}
+
+.orbit-home-title {
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--duo-text-black);
+  margin: 0 0 16px 0;
+  letter-spacing: -0.5px;
+}
+
+.orbit-home-title .title-accent {
+  color: var(--azure-blue);
+}
+
+.orbit-home-subtitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--duo-text-slate);
+  max-width: 640px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ================= CRISP 2D TEAM BENEFIT CARDS ================= */
+.orbit-benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+  width: 100%;
+  margin-bottom: 56px;
+}
+
+@media (max-width: 850px) {
+  .orbit-benefits-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+.duo-benefit-card {
+  background-color: var(--duo-snow-white);
+  border: 2px solid var(--duo-border-light);
+  border-bottom: 5px solid var(--duo-border-light); /* Chunky Duolingo 3D Border */
+  border-radius: 20px;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.15s ease;
+}
+
+.duo-benefit-card:hover {
+  border-color: var(--hover-accent);
+  border-bottom-color: var(--hover-shadow);
+  transform: translateY(-2px);
+}
+
+.duo-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.duo-card-badge {
+  background-color: var(--duo-card-light);
+  border: 2px solid var(--duo-border-light);
+  color: var(--duo-text-slate);
+  font-size: 10px;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+}
+
+.duo-card-character-emoji {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.duo-card-team-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--duo-text-black);
+  margin: 0 0 16px 0;
+}
+
+.duo-card-divider {
+  width: 100%;
+  height: 2px;
+  background-color: var(--duo-border-light);
+  margin-bottom: 18px;
+}
+
+.duo-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.body-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.block-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+.label-red { color: var(--blaze-orange); }
+.label-green { color: #46a302; }
+
+.block-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #555555;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.block-text.text-highlight {
+  color: var(--duo-text-black);
+  font-size: 13.5px;
+}
+
+/* ================= HORIZONTAL VALUE STRIP ================= */
+.orbit-home-value-strip {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  border-top: 2px solid var(--duo-border-light);
+  padding-top: 48px;
+  margin-bottom: 48px;
+}
+
+@media (max-width: 850px) {
+  .orbit-home-value-strip {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding-top: 32px;
+  }
+}
+
+.value-strip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.strip-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.text-azure { color: var(--azure-blue); }
+.text-pink { color: var(--neon-pink); }
+.text-gold { color: var(--amber-gold); }
+
+.strip-text-group h5 {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--duo-text-black);
+  margin: 0 0 4px 0;
+}
+
+.strip-text-group p {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--duo-text-slate);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ================= CENTRAL ACCENT CTA ROW ================= */
+.orbit-home-actions-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.orbit-cta-primary-btn {
+  text-decoration: none !important;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  background-color: var(--azure-blue);
+  border: none;
+  border-bottom: 5px solid #1a62d6; /* 3D Action Push Shadow */
+  padding: 14px 32px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.1s ease;
+}
+
+.orbit-cta-primary-btn:hover {
+  filter: brightness(1.05);
+}
+
+.orbit-cta-primary-btn:active {
+  transform: translateY(3px);
+  border-bottom-width: 2px;
+}

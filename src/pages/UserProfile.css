@@ -1,0 +1,337 @@
+/* src/pages/UserProfile.css */
+
+:root {
+  --amber-gold: #ffbe0bff;
+  --blaze-orange: #fb5607ff;
+  --neon-pink: #ff006eff;
+  --blue-violet: #8338ecff;
+  --azure-blue: #3a86ffff;
+
+  --duo-snow-white: #ffffff;
+  --duo-border-light: #e5e5e5;
+  --duo-text-dark: #3c3c3c;
+  --duo-text-slate: #5e6c75;
+}
+
+.duo-profile-page-canvas {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--duo-snow-white);
+  box-sizing: border-box;
+  font-family: "Nunito", system-ui, sans-serif;
+}
+
+/* ================= THE HIGH-SATURATION GLASS CARD ARCHITECTURE ================= */
+.duo-profile-glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 2px solid var(--duo-border-light);
+  border-bottom: 5px solid var(--duo-border-light); /* Tactile 3D thick flat shadow line */
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+}
+
+/* Glossy diagonal shine overlay layer */
+.duo-card-shine::before {
+  content: "";
+  position: absolute;
+  top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-25deg);
+  pointer-events: none;
+}
+.duo-profile-glass-card:hover .duo-card-shine::before {
+  left: 200%;
+  transition: left 0.6s ease-in-out;
+}
+
+/* ================= LEFT MAIN PROFILES SPECIALIZATION ELEMENT ================= */
+.duo-profile-glass-card.identity-card:hover {
+  border-color: var(--azure-blue);
+  border-bottom-color: #1a62d6;
+}
+
+.duo-avatar-trigger-container {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto;
+  position: relative;
+  cursor: pointer;
+}
+
+.duo-avatar-core-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #f7f9fa;
+  border: 4px solid var(--duo-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.duo-avatar-img-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.duo-avatar-emoji-font {
+  font-size: 48px;
+}
+
+/* Duolingo image overlay change photo link */
+.duo-avatar-lens-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 900;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.duo-avatar-trigger-container:hover .duo-avatar-lens-overlay {
+  opacity: 1;
+}
+
+.duo-profile-title-name {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--duo-text-dark);
+}
+
+.duo-profile-sub-role {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--duo-text-slate);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Multi-colored status custom badges mapping */
+.duo-status-badge {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 4px 12px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  border: 2px solid transparent;
+}
+.badge-azure { background-color: #f0f6ff; color: var(--azure-blue); border-color: rgba(58, 134, 255, 0.2); }
+.badge-green { background-color: #f2fdf0; color: #58cc02; border-color: rgba(88, 204, 2, 0.2); }
+.badge-gold { background-color: #fdf8eb; color: #c28b00; border-color: rgba(255, 190, 11, 0.2); }
+
+/* Embedded Presets Selector Drawer */
+.duo-avatar-selector-drawer {
+  background-color: #f7f9fa;
+  border: 2px solid var(--duo-border-light);
+  border-radius: 16px;
+  margin-top: 12px;
+}
+.drawer-lbl-micro {
+  font-size: 9px;
+  font-weight: 900;
+  color: #a0a0a0;
+  letter-spacing: 0.5px;
+}
+.duo-preset-node {
+  background-color: #ffffff;
+  border: 2px solid var(--duo-border-light);
+  border-bottom-width: 4px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+.duo-preset-node.active {
+  border-color: var(--azure-blue);
+  border-bottom-color: #1a62d6;
+  background-color: #f0f6ff;
+}
+.preset-label-text {
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--duo-text-dark);
+}
+
+/* ================= RIGHT DATA PANELS ELEMENTS ================= */
+.duo-profile-glass-card.info-strip-card {
+  min-height: 72px;
+}
+.strip-meta-lbl {
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--duo-text-slate);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: block;
+}
+.strip-main-val {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--duo-text-dark);
+  display: block;
+}
+
+/* Colorful Icon circle boundaries */
+.strip-icon-box, .panel-header-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid transparent;
+}
+.icon-azure { color: var(--azure-blue); background-color: #f0f6ff; border-color: rgba(58, 134, 255, 0.15); }
+.icon-green { color: #58cc02; background-color: #f2fdf0; border-color: rgba(88, 204, 2, 0.15); }
+.icon-gold { color: #d69800; background-color: #fdf8eb; border-color: rgba(255, 190, 11, 0.15); }
+.icon-pink { color: var(--neon-pink); background-color: #fff0f5; border-color: rgba(255, 0, 110, 0.15); }
+
+/* Core Panel Typography Header */
+.panel-title-text {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--duo-text-dark);
+  margin: 0;
+}
+.panel-subtitle-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--duo-text-slate);
+  margin: 2px 0 0 0;
+}
+.duo-xp-total-pill {
+  font-size: 12px;
+  font-weight: 900;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background-color: var(--blue-violet);
+  color: #ffffff;
+}
+
+/* ================= XP PROGRESS RAILS SYSTEM ================= */
+.duo-xp-progress-track-container {
+  background: #f7f9fa;
+  border: 2px solid var(--duo-border-light);
+  border-radius: 16px;
+}
+.progress-track-lbl { font-size: 12px; font-weight: 800; color: var(--duo-text-slate); }
+.progress-track-val { font-size: 13px; font-weight: 900; color: var(--duo-text-dark); }
+.progress-track-val .muted-text { color: #a0a0a0; font-weight: 700; }
+
+.duo-progress-rail-base {
+  width: 100%;
+  height: 12px;
+  background-color: var(--duo-border-light);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.duo-progress-fill-beam {
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--azure-blue), #5fa1ff);
+  transition: width 0.4s ease;
+}
+
+/* ================= STATS SUMMARY BOX GRID BLOCKS ================= */
+.duo-stats-summary-box {
+  background-color: rgba(255,255,255,0.4);
+  border: 2px solid var(--duo-border-light);
+  border-bottom-width: 5px;
+  border-radius: 18px;
+  padding: 16px;
+  transition: all 0.1s ease;
+}
+.duo-stats-summary-box:hover {
+  transform: translateY(-2px);
+}
+.duo-stats-summary-box h2 {
+  font-size: 26px;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+.duo-stats-summary-box span {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--duo-text-slate);
+  display: block;
+  margin-top: 2px;
+}
+
+/* Color track border mappings for individual statistics tiles */
+.duo-stats-summary-box.color-azure { color: var(--azure-blue); }
+.duo-stats-summary-box.color-azure:hover { border-color: var(--azure-blue); border-bottom-color: #1a62d6; }
+
+.duo-stats-summary-box.color-pink { color: var(--neon-pink); }
+.duo-stats-summary-box.color-pink:hover { border-color: var(--neon-pink); border-bottom-color: #b3004b; }
+
+.duo-stats-summary-box.color-gold { color: #c28b00; }
+.duo-stats-summary-box.color-gold:hover { border-color: var(--amber-gold); border-bottom-color: #e0a300; }
+
+.duo-empty-placeholder {
+  background-color: #f7f9fa;
+  border: 2px dashed var(--duo-border-light);
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #afafaf;
+}
+
+/* ================= CHUNKY ACTION CTA SELECTIONS ================= */
+.duo-btn-outline-compact {
+  background-color: #ffffff;
+  color: var(--duo-text-slate);
+  border: 2px solid var(--duo-border-light);
+  border-bottom: 4px solid var(--duo-border-light);
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+.duo-btn-outline-compact:hover {
+  color: var(--duo-text-dark);
+  background-color: #f7f9fa;
+}
+.duo-btn-outline-compact:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+/* Dynamic Core Initial Loader Spinner Element */
+.duo-profile-loader-box {
+  width: 100%;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.duo-profile-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--duo-border-light);
+  border-top-color: var(--azure-blue);
+  border-radius: 50%;
+  animation: duoSpin 0.8s linear infinite;
+}
+@keyframes duoSpin {
+  100% { transform: rotate(360deg); }
+}

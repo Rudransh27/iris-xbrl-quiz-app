@@ -1,116 +1,433 @@
 /* src/index.css */
 
-/* Add these two lines to fix the unwanted space issue */
-html, body {
-  overflow-x: hidden;
+/* ═══════════════════════════════════════════════════════════════════════════
+   IRIS ORBIT — DESIGN SYSTEM TOKENS  (Soft Pastel Rainbow · Clean & Airy)
+   Philosophy: No heavy blues/greens. No dark corporate sterility. Instead:
+   soft violet brand, warm typography, pastel category colors, clean whites.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Canvas & surfaces ─────────────────────────────────────────────────── */
+  --orbit-canvas:          #f8f5ff;      /* Ultra-light lavender canvas */
+  --orbit-surface:         #ffffff;      /* Card / panel surface */
+  --orbit-surface-subtle:  #f7f5ff;      /* Slightly raised surface */
+
+  /* ── Brand (soft violet — warm, not corporate blue) ───────────────────── */
+  --orbit-brand:           #7c6ef7;      /* Primary actions, active states */
+  --orbit-brand-muted:     #ede9fe;      /* Tinted background fills */
+  --orbit-brand-dark:      #5b4ed1;      /* Hover/pressed states */
+  --orbit-brand-light:     #f5f3ff;      /* Very light tint */
+
+  /* ── Typography ────────────────────────────────────────────────────────── */
+  --orbit-text-heading:    #1a1523;      /* Deep warm near-black */
+  --orbit-text-body:       #4a4558;      /* Warm medium gray */
+  --orbit-text-muted:      #8b8399;      /* Placeholder / muted labels */
+  --orbit-text-inverse:    #ffffff;
+
+  /* ── Borders ───────────────────────────────────────────────────────────── */
+  --orbit-border:          #eae7f4;      /* Default dividers */
+  --orbit-border-strong:   #d3cee8;      /* Stronger dividers */
+
+  /* ── Pastel category palette — each feature zone gets its own color ────── */
+  /* Modules / Courses */
+  --pastel-modules:        #ede9fe;
+  --pastel-modules-text:   #6d28d9;
+  --pastel-modules-border: #c4b5fd;
+
+  /* Progress / Completion */
+  --pastel-progress:       #d1fae5;
+  --pastel-progress-text:  #065f46;
+  --pastel-progress-border:#6ee7b7;
+
+  /* Quizzes / Assessments */
+  --pastel-quiz:           #fce7f3;
+  --pastel-quiz-text:      #9d174d;
+  --pastel-quiz-border:    #f9a8d4;
+
+  /* Daily Reads */
+  --pastel-reads:          #fff7ed;
+  --pastel-reads-text:     #c2410c;
+  --pastel-reads-border:   #fdba74;
+
+  /* Ideas & R&D */
+  --pastel-ideas:          #fef9c3;
+  --pastel-ideas-text:     #92400e;
+  --pastel-ideas-border:   #fde047;
+
+  /* Leaderboard */
+  --pastel-leaderboard:    #ecfdf5;
+  --pastel-leaderboard-text:#047857;
+  --pastel-leaderboard-border:#6ee7b7;
+
+  /* Streaks */
+  --pastel-streak:         #fffbeb;
+  --pastel-streak-text:    #b45309;
+  --pastel-streak-border:  #fde68a;
+
+  /* Pink / Completion — replaces green progress indicators */
+  --pastel-pink:           #fdf2f8;
+  --pastel-pink-text:      #db2777;
+  --pastel-pink-border:    #fbcfe8;
+
+  /* ── XP pill ───────────────────────────────────────────────────────────── */
+  --orbit-xp-bg:           #fdf4ff;
+  --orbit-xp-border:       #c084fc;
+  --orbit-xp-text:         #7e22ce;
+
+  /* ── Progress ring ─────────────────────────────────────────────────────── */
+  --orbit-ring-empty:      #ede9fe;
+  --orbit-ring-partial:    #7c6ef7;
+  --orbit-ring-complete:   #db2777;
+
+  /* ── Module card gradients (pastel-leaning, not dark) ──────────────────── */
+  --grad-m1: linear-gradient(135deg, #a78bfa 0%, #7c6ef7 100%);  /* Violet */
+  --grad-m2: linear-gradient(135deg, #f9a8d4 0%, #f472b6 100%);  /* Rose */
+  --grad-m3: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);  /* Mint */
+  --grad-m4: linear-gradient(135deg, #fcd34d 0%, #fb923c 100%);  /* Amber */
+  --grad-m5: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);  /* Sky */
+  --grad-m6: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%);  /* Lavender */
+
+  /* ── Shadows (purple-tinted, soft) ────────────────────────────────────── */
+  --orbit-shadow-sm:  0 1px 3px rgba(124,110,247,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --orbit-shadow-md:  0 4px 12px rgba(124,110,247,0.12), 0 2px 4px rgba(0,0,0,0.05);
+  --orbit-shadow-lg:  0 10px 32px rgba(124,110,247,0.16), 0 4px 8px rgba(0,0,0,0.06);
+
+  /* ── Border-radius scale ───────────────────────────────────────────────── */
+  --radius-xs:   6px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   20px;
+  --radius-2xl:  28px;
+  --radius-full: 9999px;
+
+  /* ── Legacy aliases (keeps old components working during migration) ─────── */
+  --bg-global-canvas:       var(--orbit-canvas);
+  --bg-tactile-cards:       var(--orbit-surface);
+  --border-tactile:         var(--orbit-border);
+  --text-primary:           var(--orbit-text-heading);
+  --text-secondary:         var(--orbit-text-body);
+  --text-inverse:           var(--orbit-text-inverse);
+  --bg-hud-banner:          var(--orbit-brand);
+  --border-hud-tactile:     var(--orbit-brand-dark);
+  --curriculum-icon-bg:     var(--orbit-brand-muted);
+  --curriculum-icon-text:   var(--orbit-brand);
+  --curriculum-hover:       var(--orbit-brand-light);
+  --stat-row-border:        var(--orbit-border);
+  --badge-progress-bg:      var(--pastel-reads);
+  --badge-progress-text:    var(--pastel-reads-text);
+  --badge-completed-bg:     var(--pastel-progress);
+  --badge-completed-text:   var(--pastel-progress-text);
+  --bg-daily-read:          #2e1065;
+  --border-daily-tactile:   #1e0a4a;
+
+  /* ── Glassmorphic surface (Daily Reads, premium cards) ─────────────────── */
+  --orbit-glass-bg:         rgba(255, 255, 255, 0.62);
+  --orbit-glass-border:     rgba(124, 110, 247, 0.18);
+  --orbit-glass-shadow:     0 4px 28px rgba(124, 110, 247, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --orbit-glass-highlight:  linear-gradient(135deg, rgba(124,110,247,0.04) 0%, rgba(192,132,252,0.04) 100%);
+
+  /* ── IRIS Red accent (welcome notification, urgent tags) ───────────────── */
+  --orbit-iris-red:         #e11d48;
+  --orbit-iris-red-bg:      rgba(225, 29, 72, 0.06);
+  --orbit-iris-red-border:  rgba(225, 29, 72, 0.25);
+
+  /* ── Plant / streak animation ──────────────────────────────────────────── */
+  --orbit-streak-glow:      rgba(249, 115, 22, 0.28);
+
+  /* ── Dashboard v2 accent palette (Iris Orbit user dashboard — orange-led) ─
+     Scoped to new, uniquely-named tokens so the rest of the app (auth,
+     admin, existing violet brand) is untouched. Consumed only by the
+     components under src/components/OrbitDashboard/. ───────────────────── */
+  --amber-glow:        #ff9f1c;   /* Primary/dominant accent */
+  --honey-bronze:      #ffbf69;   /* Secondary accent */
+  --white:             #ffffff;
+  --frozen-water:      #cbf3f0;   /* Cool tint surface */
+  --light-sea-green:   #2ec4b6;   /* Success / consistency accent */
+
+  /* Derived helper tones — hover/pressed variants of the accent, so
+     components don't repeat raw rgba() literals. */
+  --amber-glow-dark:   #e08600;   /* Hover/pressed state for amber-glow */
+  --amber-glow-muted:  rgba(255, 159, 28, 0.14);  /* Translucent tint — safe over light or dark surfaces */
+  --amber-glow-hover:  rgba(255, 159, 28, 0.08);  /* Even lighter translucent hover wash */
+
+  /* Fixed dark ink for elements that sit on a deliberately fixed light
+     surface (--white / --frozen-water) regardless of app theme — e.g. the
+     dashboard's checklist rows and idea card. Unlike --orbit-text-heading,
+     this does NOT swap in dark mode, because its paired background doesn't
+     swap either. */
+  --ink-strong: #1a1523;
+  --ink-muted:  #4a4558;
 }
 
+/* ── Eye-soothing slate / deep-indigo dark mode ────────────────────────────
+   No harsh black. Uses a rich slate base (#0b0a14) with purple-tinted surfaces
+   and preserved pastel luminosity across all category tokens. */
+[data-theme="dark"] {
+  /* ── Slate canvas (NOT black) ────────────────────────────────────────────── */
+  --orbit-canvas:          #0b0a14;   /* Deep space slate */
+  --orbit-surface:         #131124;   /* Card surfaces */
+  --orbit-surface-subtle:  #1a1830;   /* Elevated panels */
+
+  /* ── Brand (slightly brighter for dark contrast) ──────────────────────── */
+  --orbit-brand:           #9d91fa;
+  --orbit-brand-muted:     rgba(157,145,250,0.18);
+  --orbit-brand-dark:      #7b6ef0;
+  --orbit-brand-light:     rgba(157,145,250,0.10);
+
+  /* ── Typography ───────────────────────────────────────────────────────── */
+  --orbit-text-heading:    #f0eeff;
+  --orbit-text-body:       #b0a8d0;
+  --orbit-text-muted:      #6a6390;
+  --orbit-text-inverse:    #0b0a14;
+
+  /* ── Purple-tinted borders ────────────────────────────────────────────── */
+  --orbit-border:          #312e5c;   /* Soft purple neon border */
+  --orbit-border-strong:   #4a4580;
+
+  /* ── XP pill ──────────────────────────────────────────────────────────── */
+  --orbit-xp-bg:           rgba(192,132,252,0.15);
+  --orbit-xp-border:       rgba(192,132,252,0.45);
+  --orbit-xp-text:         #d8b4fe;
+
+  /* ── Shadows (deeper for slate) ───────────────────────────────────────── */
+  --orbit-shadow-sm:  0 1px 4px rgba(0,0,0,0.55), 0 0 0 1px rgba(49,46,92,0.30);
+  --orbit-shadow-md:  0 4px 16px rgba(0,0,0,0.60), 0 0 0 1px rgba(49,46,92,0.40);
+  --orbit-shadow-lg:  0 12px 40px rgba(0,0,0,0.70), 0 0 0 1px rgba(49,46,92,0.50);
+
+  /* ── Pastel dark variants — hue preserved, luminosity shifted ─────────── */
+  --pastel-modules:         rgba(109,40,217,0.22);
+  --pastel-modules-text:    #c4b5fd;
+  --pastel-modules-border:  rgba(196,181,253,0.35);
+
+  --pastel-progress:        rgba(6,95,70,0.22);
+  --pastel-progress-text:   #6ee7b7;
+  --pastel-progress-border: rgba(110,231,183,0.35);
+
+  --pastel-quiz:            rgba(157,23,77,0.20);
+  --pastel-quiz-text:       #f9a8d4;
+  --pastel-quiz-border:     rgba(249,168,212,0.35);
+
+  --pastel-reads:           rgba(194,65,12,0.20);
+  --pastel-reads-text:      #fdba74;
+  --pastel-reads-border:    rgba(253,186,116,0.35);
+
+  --pastel-ideas:           rgba(146,64,14,0.20);
+  --pastel-ideas-text:      #fde047;
+  --pastel-ideas-border:    rgba(253,224,71,0.35);
+
+  --pastel-leaderboard:     rgba(4,120,87,0.20);
+  --pastel-leaderboard-text:#6ee7b7;
+  --pastel-leaderboard-border:rgba(110,231,183,0.35);
+
+  --pastel-streak:          rgba(180,83,9,0.16);
+  --pastel-streak-text:     #fcd34d;
+  --pastel-streak-border:   rgba(252,211,77,0.32);
+
+  /* Pink — dark variant */
+  --pastel-pink:            rgba(219,39,119,0.18);
+  --pastel-pink-text:       #f9a8d4;
+  --pastel-pink-border:     rgba(249,168,212,0.30);
+
+  /* ── Glassmorphic surface — dark overrides ────────────────────────────── */
+  --orbit-glass-bg:         rgba(19, 17, 36, 0.80);
+  --orbit-glass-border:     rgba(124, 110, 247, 0.28);
+  --orbit-glass-shadow:     0 4px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --orbit-glass-highlight:  linear-gradient(135deg, rgba(157,145,250,0.06) 0%, rgba(220,38,127,0.04) 100%);
+
+  /* ── IRIS Red — dark variant ───────────────────────────────────────────── */
+  --orbit-iris-red:         #f43f5e;
+  --orbit-iris-red-bg:      rgba(244, 63, 94, 0.10);
+  --orbit-iris-red-border:  rgba(244, 63, 94, 0.30);
+
+  /* ── Legacy aliases (backward compat) ────────────────────────────────── */
+  --bg-global-canvas:       var(--orbit-canvas);
+  --bg-tactile-cards:       var(--orbit-surface);
+  --border-tactile:         var(--orbit-border);
+  --text-primary:           var(--orbit-text-heading);
+  --text-secondary:         var(--orbit-text-body);
+  --text-inverse:           var(--orbit-text-inverse);
+  --bg-hud-banner:          var(--orbit-brand);
+  --border-hud-tactile:     var(--orbit-brand-dark);
+  --curriculum-icon-bg:     var(--orbit-brand-muted);
+  --curriculum-icon-text:   var(--orbit-brand);
+  --curriculum-hover:       var(--orbit-brand-light);
+  --stat-row-border:        var(--orbit-border);
+  --badge-progress-bg:      var(--pastel-reads);
+  --badge-progress-text:    var(--pastel-reads-text);
+  --badge-completed-bg:     var(--pastel-progress);
+  --badge-completed-text:   var(--pastel-progress-text);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLOBAL NEBULA CANVAS — warm peach · cream · lavender ambient backdrop
+   Three large soft radial blobs replace the old orbital rings. The blobs
+   are oversized (900–700px) so they read as a continuous atmospheric wash
+   rather than discrete shapes. background-attachment: fixed pins them to
+   the viewport, creating a parallax depth as content scrolls over them.
+   ═══════════════════════════════════════════════════════════════════════════ */
 body {
-  /* ... rest of your body styles ... */
-  font-family: 'Roboto', sans-serif;
+  background-color: var(--orbit-canvas);
+  background-image:
+    /* Blob 1 — warm peach, anchored top-right */
+    radial-gradient(ellipse 900px 700px at 92% -5%,
+      rgba(253, 186, 116, 0.38) 0%,
+      rgba(255, 237, 213, 0.22) 38%,
+      transparent 68%),
+    /* Blob 2 — soft lavender, anchored bottom-left */
+    radial-gradient(ellipse 780px 620px at -8% 102%,
+      rgba(196, 181, 253, 0.36) 0%,
+      rgba(221, 214, 254, 0.20) 38%,
+      transparent 68%),
+    /* Blob 3 — creamy center glow, drifts slowly */
+    radial-gradient(ellipse 560px 420px at 55% 48%,
+      rgba(255, 247, 237, 0.28) 0%,
+      transparent 62%),
+    /* Fine coordinate grid — very subtle */
+    linear-gradient(rgba(167,139,250,0.020) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(167,139,250,0.020) 1px, transparent 1px);
+  background-size:
+    200% 200%,   /* blob 1 — oversized for drift */
+    200% 200%,   /* blob 2 */
+    160% 160%,   /* blob 3 */
+    40px 40px,   /* h-grid */
+    40px 40px;   /* v-grid */
+  background-position:
+    100% 0%,     /* blob 1 start */
+    0%   100%,   /* blob 2 start */
+    55%  48%,    /* blob 3 (static) */
+    0 0, 0 0;    /* grid (static) */
+  background-attachment: fixed;
+  animation: global-canvas-shimmer 28s ease-in-out infinite;
+  color: var(--orbit-text-body);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
   margin: 0;
   padding: 0;
-  background-color: var(--bg-page);
-  color: var(--text-primary);
-  line-height: 1.6;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ensure box-sizing is consistent across all elements */
-*, *::before, *::after {
-  box-sizing: border-box;
+/* ── Dark-mode nebula canvas — deep rose + indigo blobs on slate ─────────── */
+[data-theme="dark"] body {
+  background-image:
+    /* Blob 1 — deep rose/coral, top-right */
+    radial-gradient(ellipse 900px 700px at 92% -5%,
+      rgba(190, 18, 60, 0.16) 0%,
+      rgba(153, 27, 27, 0.09) 38%,
+      transparent 68%),
+    /* Blob 2 — deep violet, bottom-left */
+    radial-gradient(ellipse 780px 620px at -8% 102%,
+      rgba(109, 40, 217, 0.20) 0%,
+      rgba(91, 33, 182, 0.10) 38%,
+      transparent 68%),
+    /* Blob 3 — purple center */
+    radial-gradient(ellipse 560px 420px at 55% 48%,
+      rgba(157, 145, 250, 0.10) 0%,
+      transparent 62%),
+    linear-gradient(rgba(157,145,250,0.016) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(157,145,250,0.016) 1px, transparent 1px);
+  background-size: 200% 200%, 200% 200%, 160% 160%, 40px 40px, 40px 40px;
+  background-position: 100% 0%, 0% 100%, 55% 48%, 0 0, 0 0;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
-body::-webkit-scrollbar {
-  display: none;
+/* ── Nebula drift — blobs 1 & 2 slowly shift for an "alive" feel ──────────── */
+@keyframes global-canvas-shimmer {
+  0%   { background-position: 100%   0%,   0% 100%, 55% 48%, 0 0, 0 0; }
+  25%  { background-position: 88%    8%,  10%  92%, 52% 52%, 0 0, 0 0; }
+  50%  { background-position: 80%   14%,  16%  86%, 58% 44%, 0 0, 0 0; }
+  75%  { background-position: 92%    6%,   6%  96%, 53% 50%, 0 0, 0 0; }
+  100% { background-position: 100%   0%,   0% 100%, 55% 48%, 0 0, 0 0; }
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
-body {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+/* ── Utility: animate-fade-in ──────────────────────────────────────────── */
+.animate-fade-in {
+  animation: orbitFadeIn 0.25s ease forwards;
+}
+@keyframes orbitFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-
-/* --- Light Theme Defaults (Applies by default) --- */
-:root {
-    /* Primary Brand Colors (Navy Family) */
-    --brand-primary: #003366;
-    --brand-secondary: #1A4B83;
-    --brand-tertiary: #2C5B97;
-    --brand-dark: #001F3F;
-
-    /* Accent Color (Complementary) */
-    --accent-teal: #00BCD4;
-    --accent-teal-darker: #00A3B5;
-
-    /* Text Colors */
-    --text-primary: #223255;
-    --text-secondary: #38424f;
-    --text-light: #FFFFFF;
-    --text-link: var(--brand-secondary);
-    --text-link-hover: var(--brand-primary);
-
-    /* Backgrounds */
-    --bg-page: #F0F2F5;
-    --bg-card-light: #F8FBFF;
-    --bg-card-white: #FFFFFF;
-    --bg-navbar: var(--bg-card-white);
-    --bg-button-light: #EFEFEF;
-
-    /* Borders & Shadows */
-    --border-light: #E0E0E0;
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
-    --shadow-md: 0 6px 24px rgba(44,72,109,0.07);
-    --shadow-lg: 0 12px 30px rgba(44,72,109,0.1);
-    --shadow-navbar: 0 2px 12px rgba(44,72,109,0.05);
-
-    /* Specific to quiz component (re-use global if possible) */
-    --selected-bg: #D0DCE7;
-    --selected-border: var(--brand-primary);
-    --correct-answer: #4CAF50;
-    --wrong-answer: #F44336;
+/* ── Growing plant / streak sway ─────────────────────────────────────────
+   Used on the streak emoji in OrbitWorkspace home. Gentle rock when streak > 0. */
+@keyframes orbit-plant-sway {
+  0%, 100% { transform: rotate(-3deg) scale(1);    }
+  50%       { transform: rotate( 3deg) scale(1.04); }
 }
 
-/* --- Dark Theme Overrides (Applied when body has 'dark-theme' class) --- */
-body.dark-theme {
-    /* Primary Brand Colors (Adapted for Dark Mode) */
-    --brand-primary: #4DD0E1;
-    --brand-secondary: #00BCD4;
-    --brand-tertiary: #00A3B5;
-    --brand-dark: #E0E0E0;
+/* ── Streak fire pulse ───────────────────────────────────────────────────
+   Extra energy pulse on the streak chip when streak > 20. */
+@keyframes orbit-streak-fire {
+  0%, 100% { box-shadow: 0 0 0 0   var(--orbit-streak-glow); }
+  50%       { box-shadow: 0 0 14px 4px var(--orbit-streak-glow); }
+}
 
-    /* Accent Color (Complementary) */
-    --accent-teal: #9CCC65;
-    --accent-teal-darker: #8BC34A;
+/* ── Hero avatar ring spin ───────────────────────────────────────────────── */
+@keyframes orbit-spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 
-    /* Text Colors */
-    --text-primary: #E0E0E0;
-    --text-secondary: #A0A0A0;
-    --text-light: #1A1A1A;
-    --text-link: var(--brand-primary);
-    --text-link-hover: var(--brand-secondary);
+/* ── Hero accent bar gradient slide ─────────────────────────────────────── */
+@keyframes orbit-bar-slide {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
 
-    /* Backgrounds */
-    --bg-page: #1A1A2E;
-    --bg-card-light: #2A2A4A;
-    --bg-card-white: #22223D;
-    --bg-navbar: #22223D;
-    --bg-button-light: #3A3A5A;
+/* ── Goal checklist item check animation ────────────────────────────────── */
+@keyframes orbit-check-pop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.2); }
+  100% { transform: scale(1);   opacity: 1; }
+}
 
-    /* Borders & Shadows */
-    --border-light: #3A3A5A;
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
-    --shadow-md: 0 6px 24px rgba(0,0,0,0.4);
-    --shadow-lg: 0 12px 30px rgba(0,0,0,0.5);
-    --shadow-navbar: 0 2px 12px rgba(0,0,0,0.2);
+/* ── Dashboard skeleton loader ───────────────────────────────────────────── */
+@keyframes orbit-skeleton-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 0.85; }
+}
 
-    /* Specific to quiz component overrides for dark theme */
-    --selected-bg: #3A3A5A;
-    --selected-border: var(--brand-primary);
-    --correct-answer: #66BB6A;
-    --wrong-answer: #FF7070;
+/* ── Loading screen keyframes (used by OrbitLoadingScreen in HomePage) ──── */
+@keyframes orbit-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes orbit-ping {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  70%  { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+@keyframes orbit-pulse-text {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 1; }
+}
+
+/* ── AI Mesh canvas — auth & onboarding screens ─────────────────────────── */
+/* Shifting gradient background that feels "alive" — hardware-accelerated. */
+@keyframes auth-shimmer {
+  0%, 100% { background-position: 0%   50%; }
+  50%       { background-position: 100% 50%; }
+}
+/* Faint CSS grid that breathes in/out to create depth. */
+@keyframes auth-grid-breathe {
+  0%, 100% { opacity: 0.025; }
+  50%       { opacity: 0.062; }
+}
+/* Decorative orbit rings gently pulse. */
+@keyframes auth-ring-pulse {
+  0%, 100% { transform: scale(1);    }
+  50%       { transform: scale(1.06); }
+}
+/* Panel content entry animation. */
+@keyframes auth-fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes auth-fade-out {
+  from { opacity: 1; transform: translateY(0);     }
+  to   { opacity: 0; transform: translateY(-14px); }
+}
+/* OTP box focus shimmer ring. */
+@keyframes auth-otp-focus {
+  0%   { box-shadow: 0 0 0 0   rgba(124,110,247,0.35); }
+  100% { box-shadow: 0 0 0 4px rgba(124,110,247,0); }
 }

@@ -1,64 +1,153 @@
 // src/components/auth/AuthCard.jsx
-
-import React, { useState, useContext, useEffect } from "react";
-import { Form, Button, Card, Spinner, Alert, InputGroup } from "react-bootstrap";
-import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Eye, EyeSlash } from "react-bootstrap-icons"; // for password toggle
+// ─────────────────────────────────────────────────────────────────────────────
+// IRIS Orbit — Unified Authentication Card (v2)
+//
+// Steps:
+//   "login"    → Login form (email + password + SSO)
+//   "register" → Registration form (username + dept + team + email + pw)
+//   "describe" → Post-signup micro-description ("Tell us who's walking in")
+//
+// All API calls preserved exactly. React Bootstrap removed — pure inline styles
+// + AuthLayout's injected CSS utility classes.
+// ─────────────────────────────────────────────────────────────────────────────
+import React, { useState, useContext, useEffect, useLayoutEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import AuthContext from "../../context/AuthContext";
-import irisLogo from "../../assets/irislogo.svg";
-import "../../pages/Auth.css";
+import api from "../../admin/services/api";
+import AuthLayout from "./AuthLayout";
 
-const AuthCard = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
+// ── Spinner (no React Bootstrap dependency) ───────────────────────────────
+function Spinner() {
+  return (
+    <span style={{
+      display: "inline-block",
+      width: "16px", height: "16px", borderRadius: "50%",
+      border: "2px solid rgba(255,255,255,0.4)",
+      borderTopColor: "#fff",
+      animation: "orbit-spin 0.7s linear infinite",
+      flexShrink: 0,
+    }} />
+  );
+}
+
+// ── SSO notice (inline, no modal) ─────────────────────────────────────────
+function SSONotice({ visible, onDismiss }) {
+  if (!visible) return null;
+  return (
+    <div style={{
+      padding: "12px 16px", marginTop: "8px",
+      background: "var(--pastel-reads)",
+      border: "1px solid var(--pastel-reads-border)",
+      borderRadius: "10px",
+      display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px",
+    }}>
+      <div>
+        <div style={{ fontSize: "12px", fontWeight: "700", color: "var(--pastel-reads-text)", marginBottom: "2px" }}>
+          Enterprise SSO
+        </div>
+        <div style={{ fontSize: "12px", color: "var(--orbit-text-body)", lineHeight: 1.55 }}>
+          SSO integration is managed by your IT administrator.
+          Contact <strong>it@irisregtech.com</strong> to enable corporate login for your domain.
+        </div>
+      </div>
+      <button
+        onClick={onDismiss}
+        style={{
+          background: "none", border: "none", cursor: "pointer", padding: "0",
+          color: "var(--orbit-text-muted)", fontSize: "16px", lineHeight: 1,
+          flexShrink: 0,
+        }}
+      >×</button>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+export default function AuthCard() {
+  // ── Form fields ────────────────────────────────────────────────────────
+  const [email,           setEmail]           = useState("");
+  const [password,        setPassword]        = useState("");
+  const [username,        setUsername]        = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoginMode, setIsLoginMode] = useState(true);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [description,     setDescription]     = useState("");
+
+  // ── Dept / team cascade ────────────────────────────────────────────────
+  const [departmentsData,  setDepartmentsData]  = useState([]);
+  const [selectedDeptCode, setSelectedDeptCode] = useState("");
+  const [selectedTeamId,   setSelectedTeamId]   = useState("");
+
+  // ── UI state ───────────────────────────────────────────────────────────
+  const [step,           setStep]           = useState("login"); // "login"|"register"|"describe"
+  const [error,          setError]          = useState("");
+  const [success,        setSuccess]        = useState("");
+  const [loading,        setLoading]        = useState(false);
+  const [showPassword,   setShowPassword]   = useState(false);
+  const [ssoVisible,     setSsoVisible]     = useState(false);
+  const [securityNotice, setSecurityNotice] = useState({ message: "", variant: "" });
+  const [pendingEmail,   setPendingEmail]   = useState(""); // used in describe → verify-email
 
   const { login, register, user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect if already logged in
+  useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
+
+  // Redirect already-logged-in users
   useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
+    if (user) navigate("/");
   }, [user, navigate]);
 
-  // Switch mode based on route
+  // Set step from route path
   useEffect(() => {
     if (location.pathname === "/login") {
-      setIsLoginMode(true);
+      setStep("login");
+      const sp = new URLSearchParams(location.search);
+      const status = sp.get("session_status");
+      if (status === "concurrent_kickout") {
+        setSecurityNotice({
+          message: "Access revoked: your account signed in on another device.",
+          variant: "danger",
+        });
+      } else if (status === "expired_timeout") {
+        setSecurityNotice({
+          message: "Session expired after 15 minutes of inactivity.",
+          variant: "warning",
+        });
+      } else {
+        setSecurityNotice({ message: "", variant: "" });
+      }
     } else if (location.pathname === "/register") {
-      setIsLoginMode(false);
+      setStep("register");
+      setSecurityNotice({ message: "", variant: "" });
     }
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
-  // Validation rules
-  const isFormValid = isLoginMode
-    ? email && password.length >= 6
-    : username &&
-      email &&
-      password.length >= 6 &&
-      password === confirmPassword;
+  // Load departments when entering register step
+  useEffect(() => {
+    if (step === "register" && departmentsData.length === 0) {
+      api.getDepartments()
+        .then(data => setDepartmentsData(data || []))
+        .catch(() => setError("Failed to load business units. Please refresh."));
+    }
+  }, [step]);
 
-  // Handle login
-  const handleLoginSubmit = async (e) => {
+  const availableTeams = departmentsData.find(d => d.code === selectedDeptCode)?.teams || [];
+
+  const isLoginValid    = email.trim() && password.length >= 6;
+  const isRegisterValid = username.trim() && email.trim() && selectedDeptCode && selectedTeamId
+                          && password.length >= 6 && password === confirmPassword;
+
+  // ── Handlers ──────────────────────────────────────────────────────────
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    setError(""); setSuccess(""); setSecurityNotice({ message: "", variant: "" });
     setLoading(true);
     try {
-      const res = await login(email, password);
+      const res = await login(email.trim().toLowerCase(), password);
       if (res.success) {
-        const redirectPath = localStorage.getItem("redirectPath") || "/";
+        const redirect = localStorage.getItem("redirectPath") || "/";
         localStorage.removeItem("redirectPath");
-        navigate(redirectPath);
+        navigate(redirect, { replace: true });
       } else {
         setError(res.message || "Invalid credentials. Please try again.");
       }
@@ -69,209 +158,371 @@ const AuthCard = () => {
     }
   };
 
-  // Handle register
-  const handleRegisterSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-    setLoading(true);
+    if (password !== confirmPassword) { setError("Passwords do not match."); return; }
+    setError(""); setSuccess(""); setLoading(true);
     try {
-      const res = await register(username, email, password);
-      if (res.success) {
-        setSuccess("Registration successful! Please sign in.");
-        setIsLoginMode(true);
-        navigate("/login");
+      const res = await register(
+        username.trim(), email.trim().toLowerCase(),
+        password, selectedDeptCode, selectedTeamId
+      );
+      if (res && res.success) {
+        setPendingEmail(email.trim().toLowerCase());
+        setStep("describe"); // → micro-description step
       } else {
-        setError(res.message || "Registration failed. Please try again.");
+        setError(res?.message || "Registration failed. Try again.");
       }
     } catch (err) {
-      setError(err.message || "Registration failed. Please try again.");
+      setError(err.message || "Registration failed. Please check domain restrictions.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Toggle between login/register
-  const toggleFormMode = () => {
-    setIsLoginMode(!isLoginMode);
-    if (isLoginMode) {
-      navigate("/register");
-    } else {
-      navigate("/login");
+  const handleDescribe = (skip = false) => {
+    if (!skip && description.trim()) {
+      localStorage.setItem("orbit_profile_bio", description.trim());
     }
+    const target = `/verify-email?email=${encodeURIComponent(pendingEmail)}`;
+    navigate(target);
   };
 
+  const switchToRegister = () => {
+    setStep("register"); setError(""); setSuccess("");
+    setSelectedDeptCode(""); setSelectedTeamId("");
+    navigate("/register");
+  };
+  const switchToLogin = () => {
+    setStep("login"); setError(""); setSuccess("");
+    navigate("/login");
+  };
+
+  const descCharsLeft = 140 - description.length;
+
+  // ─────────────────────────────────────────────────────────────────────
   return (
-    <Card className="auth-card p-4 shadow-lg border-0 rounded-4">
-      <Card.Body>
-        {/* Logo */}
-        <div className="text-center mb-3">
-          <img src={irisLogo} alt="Iris Logo" className="auth-logo-img" />
-        </div>
+    <AuthLayout>
 
-        {/* Global error / success messages */}
-        {error && (
-          <Alert variant="danger" className="text-center mb-3">
-            {error}
-          </Alert>
-        )}
-        {success && (
-          <Alert variant="success" className="text-center mb-3">
-            {success}
-          </Alert>
-        )}
+      {/* ══════════════════════════════════════════════════════════════════
+          STEP: LOGIN
+      ══════════════════════════════════════════════════════════════════ */}
+      {step === "login" && (
+        <div className="auth-fade-in" style={{ width: "100%", maxWidth: "380px" }}>
+          <h1 style={{
+            fontSize: "clamp(24px, 3vw, 30px)", fontWeight: "800",
+            letterSpacing: "-0.5px", color: "var(--orbit-text-heading)",
+            margin: "0 0 6px", lineHeight: 1.2,
+          }}>
+            Welcome back.
+          </h1>
+          <p style={{ fontSize: "14px", color: "var(--orbit-text-muted)", margin: "0 0 28px", lineHeight: 1.6 }}>
+            Sign in to continue your learning journey.
+          </p>
 
-        {/* Title */}
-        <h1 className="text-center mb-2 fw-bold">
-          {isLoginMode ? "Welcome Back" : "Join Us"}
-        </h1>
-        <p className="text-center text-muted mb-4">
-          {isLoginMode
-            ? "Sign in to your account."
-            : "Create your new account."}
-        </p>
-
-        {/* Form */}
-        <Form
-          onSubmit={isLoginMode ? handleLoginSubmit : handleRegisterSubmit}
-          className="w-100"
-        >
-          {!isLoginMode && (
-            <Form.Group className="mb-3">
-              <Form.Control
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={loading}
-                required
-                className="auth-input"
-              />
-            </Form.Group>
-          )}
-
-          <Form.Group className="mb-3">
-            <Form.Control
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-              required
-              className="auth-input"
-            />
-          </Form.Group>
-
-          {/* Password with toggle */}
-          <Form.Group className="mb-3">
-            <InputGroup>
-              <Form.Control
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-                required
-                className="auth-input"
-              />
-              <Button
-                variant="outline-secondary"
-                onClick={() => setShowPassword(!showPassword)}
-                type="button"
-                aria-label="Toggle password visibility"
-              >
-                {showPassword ? <EyeSlash /> : <Eye />}
-              </Button>
-            </InputGroup>
-            {password && password.length < 6 && (
-              <small className="text-danger">
-                Password must be at least 6 characters
-              </small>
-            )}
-          </Form.Group>
-
-          {!isLoginMode && (
-            <Form.Group className="mb-4">
-              <Form.Control
-                type="password"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={loading}
-                required
-                className="auth-input"
-              />
-              {confirmPassword &&
-                confirmPassword !== password && (
-                  <small className="text-danger">
-                    Passwords do not match
-                  </small>
-                )}
-            </Form.Group>
-          )}
-
-          {/* Submit button */}
-          <Button
-            variant="primary"
-            type="submit"
-            className="w-100 auth-submit-button"
-            disabled={loading || !isFormValid}
-          >
-            {loading ? (
-              <Spinner animation="border" size="sm" />
-            ) : isLoginMode ? (
-              "Sign In"
-            ) : (
-              "Sign Up"
-            )}
-          </Button>
-
-          {/* Forgot password link */}
-          {isLoginMode && (
-            <div className="text-center mt-3">
-              <Link
-                to="/forgot-password"
-                className="text-muted text-decoration-none auth-link"
-              >
-                Forgot password?
-              </Link>
+          {/* Security notices */}
+          {securityNotice.message && (
+            <div className={`auth-alert-${securityNotice.variant === "danger" ? "error" : "warning"}`}
+              style={{ marginBottom: "16px" }}>
+              {securityNotice.message}
             </div>
           )}
-        </Form>
+          {error   && <div className="auth-alert-error"   style={{ marginBottom: "16px" }}>{error}</div>}
+          {success && <div className="auth-alert-success" style={{ marginBottom: "16px" }}>{success}</div>}
 
-        {/* Footer action */}
-        <div className="auth-footer-actions text-center mt-4">
-          {isLoginMode ? (
-            <>
-              Don’t have an account?{" "}
-              <button
-                type="button"
-                onClick={toggleFormMode}
-                className="text-decoration-none auth-link btn btn-link p-0"
-              >
-                Sign up
+          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <input
+              className="auth-input"
+              type="email" placeholder="Work email"
+              value={email} onChange={e => setEmail(e.target.value)}
+              disabled={loading} required
+            />
+
+            <div style={{ position: "relative" }}>
+              <input
+                className="auth-input"
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password} onChange={e => setPassword(e.target.value)}
+                disabled={loading} required
+                style={{ paddingRight: "60px" }}
+              />
+              {password && (
+                <button type="button" className="auth-pw-toggle"
+                  onClick={() => setShowPassword(p => !p)}>
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              )}
+            </div>
+
+            {/* Forgot password */}
+            <div style={{ textAlign: "right", marginTop: "-4px" }}>
+              <button type="button" className="auth-ghost-link"
+                onClick={() => navigate("/forgot-password")}>
+                Forgot password?
               </button>
-            </>
-          ) : (
-            <>
-              Already have an account?{" "}
+            </div>
+
+            <button type="submit" className="auth-btn-primary" disabled={loading || !isLoginValid}>
+              {loading ? <Spinner /> : "Log In"}
+            </button>
+          </form>
+
+          {/* OR divider + SSO */}
+          <div style={{ margin: "20px 0 0" }}>
+            <div className="auth-or-divider">or</div>
+            <div style={{ marginTop: "12px" }}>
               <button
-                type="button"
-                onClick={toggleFormMode}
-                className="text-decoration-none auth-link btn btn-link p-0"
+                type="button" className="auth-btn-secondary"
+                onClick={() => setSsoVisible(v => !v)}
               >
-                Log in
+                {/* Microsoft-style icon placeholder */}
+                <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                  <rect x="1" y="1" width="7.5" height="7.5" fill="#f25022"/>
+                  <rect x="9.5" y="1" width="7.5" height="7.5" fill="#7fba00"/>
+                  <rect x="1" y="9.5" width="7.5" height="7.5" fill="#00a4ef"/>
+                  <rect x="9.5" y="9.5" width="7.5" height="7.5" fill="#ffb900"/>
+                </svg>
+                Sign in with Enterprise SSO
               </button>
-            </>
-          )}
+              <SSONotice visible={ssoVisible} onDismiss={() => setSsoVisible(false)} />
+            </div>
+          </div>
+
+          {/* Switch to register */}
+          <div style={{ textAlign: "center", marginTop: "28px", fontSize: "13px", color: "var(--orbit-text-muted)" }}>
+            Don't have an account?{" "}
+            <button type="button" className="auth-link-btn" onClick={switchToRegister}>
+              Sign up
+            </button>
+          </div>
         </div>
-      </Card.Body>
-    </Card>
-  );
-};
+      )}
 
-export default AuthCard;
+      {/* ══════════════════════════════════════════════════════════════════
+          STEP: REGISTER
+      ══════════════════════════════════════════════════════════════════ */}
+      {step === "register" && (
+        <div className="auth-fade-in" style={{ width: "100%", maxWidth: "380px" }}>
+          <h1 style={{
+            fontSize: "clamp(22px, 2.8vw, 28px)", fontWeight: "800",
+            letterSpacing: "-0.5px", color: "var(--orbit-text-heading)",
+            margin: "0 0 6px", lineHeight: 1.2,
+          }}>
+            Create your account.
+          </h1>
+          <p style={{ fontSize: "14px", color: "var(--orbit-text-muted)", margin: "0 0 24px", lineHeight: 1.6 }}>
+            Join IRIS Orbit and start your compliance learning journey.
+          </p>
+
+          {error   && <div className="auth-alert-error"   style={{ marginBottom: "14px" }}>{error}</div>}
+          {success && <div className="auth-alert-success" style={{ marginBottom: "14px" }}>{success}</div>}
+
+          <form onSubmit={handleRegister} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <input
+              className="auth-input"
+              type="text" placeholder="Username"
+              value={username} onChange={e => setUsername(e.target.value)}
+              disabled={loading} required
+            />
+
+            {/* Dept cascade */}
+            <select
+              className="auth-select"
+              value={selectedDeptCode}
+              onChange={e => { setSelectedDeptCode(e.target.value); setSelectedTeamId(""); }}
+              disabled={loading} required
+            >
+              <option value="" disabled>Select Line of Business</option>
+              {departmentsData.map(d => (
+                <option key={d._id} value={d.code}>{d.name}</option>
+              ))}
+            </select>
+
+            {/* Team cascade */}
+            <select
+              className="auth-select"
+              value={selectedTeamId}
+              onChange={e => setSelectedTeamId(e.target.value)}
+              disabled={loading || !selectedDeptCode} required
+            >
+              <option value="" disabled>
+                {!selectedDeptCode ? "Awaiting business line…" : "Select Team"}
+              </option>
+              {availableTeams.map(t => (
+                <option key={t._id} value={t._id}>{t.name}</option>
+              ))}
+            </select>
+
+            <input
+              className="auth-input"
+              type="email" placeholder="Work email"
+              value={email} onChange={e => setEmail(e.target.value)}
+              disabled={loading} required
+            />
+
+            <div style={{ position: "relative" }}>
+              <input
+                className="auth-input"
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password} onChange={e => setPassword(e.target.value)}
+                disabled={loading} required
+                style={{ paddingRight: "60px" }}
+              />
+              {password && (
+                <button type="button" className="auth-pw-toggle"
+                  onClick={() => setShowPassword(p => !p)}>
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              )}
+            </div>
+            {password && password.length < 6 && (
+              <p className="auth-field-hint" style={{ marginTop: "-4px" }}>
+                Minimum 6 characters
+              </p>
+            )}
+
+            <input
+              className="auth-input"
+              type="password" placeholder="Confirm Password"
+              value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+              disabled={loading} required
+            />
+            {confirmPassword && confirmPassword !== password && (
+              <p className="auth-field-hint" style={{ marginTop: "-4px" }}>
+                Passwords do not match
+              </p>
+            )}
+
+            <button
+              type="submit" className="auth-btn-primary"
+              disabled={loading || !isRegisterValid}
+              style={{ marginTop: "4px" }}
+            >
+              {loading ? <Spinner /> : "Sign Up"}
+            </button>
+          </form>
+
+          {/* OR + SSO */}
+          <div style={{ margin: "18px 0 0" }}>
+            <div className="auth-or-divider">or</div>
+            <div style={{ marginTop: "12px" }}>
+              <button type="button" className="auth-btn-secondary"
+                onClick={() => setSsoVisible(v => !v)}>
+                <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                  <rect x="1" y="1" width="7.5" height="7.5" fill="#f25022"/>
+                  <rect x="9.5" y="1" width="7.5" height="7.5" fill="#7fba00"/>
+                  <rect x="1" y="9.5" width="7.5" height="7.5" fill="#00a4ef"/>
+                  <rect x="9.5" y="9.5" width="7.5" height="7.5" fill="#ffb900"/>
+                </svg>
+                Sign up with Enterprise SSO
+              </button>
+              <SSONotice visible={ssoVisible} onDismiss={() => setSsoVisible(false)} />
+            </div>
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: "24px", fontSize: "13px", color: "var(--orbit-text-muted)" }}>
+            Already have an account?{" "}
+            <button type="button" className="auth-link-btn" onClick={switchToLogin}>
+              Log in
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          STEP: DESCRIBE — "Tell us who's walking in"
+          Shown after successful registration, before OTP verification.
+      ══════════════════════════════════════════════════════════════════ */}
+      {step === "describe" && (
+        <div className="auth-fade-in" style={{ width: "100%", maxWidth: "400px" }}>
+          {/* Chip */}
+          <div style={{
+            display: "inline-block",
+            background: "var(--orbit-brand-muted)", color: "var(--orbit-brand)",
+            fontSize: "10px", fontWeight: "800", letterSpacing: "1.6px",
+            textTransform: "uppercase", padding: "5px 13px",
+            borderRadius: "var(--radius-full)",
+            border: "1px solid var(--orbit-brand)", marginBottom: "20px",
+          }}>
+            One last thing
+          </div>
+
+          <h1 style={{
+            fontSize: "clamp(24px, 3vw, 30px)", fontWeight: "800",
+            letterSpacing: "-0.5px", color: "var(--orbit-text-heading)",
+            margin: "0 0 8px", lineHeight: 1.18,
+            fontFamily: "'Georgia', 'Palatino', serif",
+          }}>
+            Tell us who's walking in.
+          </h1>
+          <p style={{ fontSize: "14px", color: "var(--orbit-text-muted)", margin: "0 0 8px", lineHeight: 1.7 }}>
+            Describe yourself in a line. Make it specific. Emojis are encouraged.
+          </p>
+
+          {/* Example pills */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "22px" }}>
+            {["💻 Best Coder", "📊 Data Wizard", "🚀 Product Dreamer", "🎯 Sharp Analyst"].map((ex, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setDescription(ex)}
+                style={{
+                  background: "var(--orbit-surface-subtle)",
+                  border: "1px solid var(--orbit-border)",
+                  borderRadius: "var(--radius-full)",
+                  padding: "4px 12px", fontSize: "12px",
+                  color: "var(--orbit-text-body)", cursor: "pointer",
+                  fontFamily: "inherit", fontWeight: "500",
+                  transition: "background 0.15s, border-color 0.15s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "var(--orbit-brand-muted)"; e.currentTarget.style.borderColor = "var(--orbit-brand)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "var(--orbit-surface-subtle)"; e.currentTarget.style.borderColor = "var(--orbit-border)"; }}
+              >
+                {ex}
+              </button>
+            ))}
+          </div>
+
+          {/* Description input */}
+          <div style={{ marginBottom: "6px" }}>
+            <input
+              className="auth-input"
+              type="text"
+              placeholder="e.g. 💻 Best Coder"
+              value={description}
+              onChange={e => { if (e.target.value.length <= 140) setDescription(e.target.value); }}
+              maxLength={140}
+              autoFocus
+            />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+            <span style={{ fontSize: "11px", color: "var(--orbit-text-muted)" }}>
+              One line. Make it specific.
+            </span>
+            <span className={`auth-char-counter${descCharsLeft < 20 ? " warn" : ""}${descCharsLeft === 0 ? " limit" : ""}`}>
+              {descCharsLeft} chars left
+            </span>
+          </div>
+
+          <button
+            type="button" className="auth-btn-primary"
+            onClick={() => handleDescribe(false)}
+            style={{ marginBottom: "12px" }}
+            disabled={!description.trim()}
+          >
+            Continue →
+          </button>
+
+          <div style={{ textAlign: "center" }}>
+            <button type="button" className="auth-ghost-link" onClick={() => handleDescribe(true)}>
+              Skip for now — verify email first
+            </button>
+          </div>
+        </div>
+      )}
+
+    </AuthLayout>
+  );
+}

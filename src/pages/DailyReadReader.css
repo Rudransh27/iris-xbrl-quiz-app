@@ -1,0 +1,208 @@
+/* src/pages/DailyReadReader.css */
+
+:root {
+  --amber-gold: #ffbe0bff;
+  --blaze-orange: #fb5607ff;
+  --neon-pink: #ff006eff;
+  --blue-violet: #8338ecff;
+  --azure-blue: #3a86ffff;
+  --duo-green: #58cc02;
+
+  --duo-snow: #ffffff;
+  --duo-gray-plate: #f7f9fa;
+  --duo-border: #e5e5e5;
+  --duo-text-dark: #3c3c3c;
+  --duo-text-slate: #5e6c75;
+}
+
+.daily-reader-shell {
+  max-width: 800px;
+  width: 100%;
+  margin: 40px auto; 
+  padding: 0 24px;
+  box-sizing: border-box;
+  font-family: "Nunito", system-ui, sans-serif;
+  text-align: left;
+}
+
+/* ================= 🎛️ BACK TRACK NAVIGATION BUTTON ================= */
+.daily-reader-back-btn {
+  background-color: var(--duo-snow);
+  border: 2px solid var(--duo-border);
+  border-bottom-width: 4px; /* Playful 3D bounce lip */
+  border-radius: 14px;
+  color: var(--blue-violet);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  transition: all 0.1s ease;
+}
+
+.daily-reader-back-btn:hover {
+  background-color: var(--duo-gray-plate);
+}
+
+.daily-reader-back-btn:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+/* ================= 📄 MAIN ARTICLE DISPLAY SLATE ================= */
+.daily-reader-article-card {
+  background-color: var(--duo-snow);
+  border: 2px solid var(--duo-border);
+  border-bottom: 5px solid var(--duo-border); /* Distinct flat shadow base */
+  border-radius: 24px;
+  padding: 32px 24px;
+  box-sizing: border-box;
+}
+
+.daily-reader-tags-ribbon {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.daily-reader-tag-chip {
+  background-color: #f3ebff;
+  border: 2px solid #e2ccff;
+  color: var(--blue-violet);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 8px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.daily-reader-headline {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--duo-text-dark);
+  line-height: 1.3;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.5px;
+}
+
+/* Metadata Info Strip Row */
+.daily-reader-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--duo-text-slate);
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--duo-border);
+  margin-bottom: 24px;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Main Content Body Reading Viewport */
+.daily-reader-body-content {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.7;
+  color: var(--duo-text-dark);
+  white-space: pre-wrap;
+}
+
+/* ================= 🔗 SUPPLEMENTARY EXTERNAL REFERENCE PANEL ================= */
+.daily-reader-reference-box {
+  margin-top: 40px;
+  padding: 16px;
+  background-color: var(--duo-gray-plate);
+  border: 2px solid var(--duo-border);
+  border-left: 4px solid var(--azure-blue); /* Distinct brand identity spine ribbon */
+  border-radius: 0 14px 14px 0;
+}
+
+.reference-title-lbl {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--azure-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.reference-anchor-link {
+  color: var(--blue-violet);
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none !important;
+  word-break: break-all;
+}
+
+.reference-anchor-link:hover {
+  text-decoration: underline !important;
+}
+
+/* ================= 🛑 EXCEPTION HOOK ERROR COMPONENT CARDS ================= */
+.layout-error-padding {
+  padding-top: 40px;
+}
+
+.daily-reader-error-card {
+  background-color: #fff0f0;
+  border: 2px solid #ff595e;
+  border-bottom-width: 5px;
+  border-radius: 16px;
+  padding: 24px;
+  color: #ff595e;
+  margin-top: 16px;
+}
+
+.daily-reader-error-card h4 {
+  font-size: 16px;
+  font-weight: 900;
+  margin: 0 0 8px 0;
+}
+
+.daily-reader-error-card p {
+  font-size: 13.5px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Loading Engine Placeholders */
+.daily-reader-loader {
+  width: 100%;
+  height: 40vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.daily-reader-loader span {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--duo-text-slate);
+}
+
+.daily-reader-spinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid var(--duo-border);
+  border-top-color: var(--blue-violet);
+  border-radius: 50%;
+  animation: readerSpin 0.8s linear infinite;
+}
+
+@keyframes readerSpin {
+  100% { transform: rotate(360deg); }
+}

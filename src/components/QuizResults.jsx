@@ -3,118 +3,151 @@ import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Label } from 'recharts';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
-import './QuizResults.css'; // Import the new CSS file
+import './QuizResults.css';
 
-// Define modern, thematic colors
+// 🎯 Vibrant Gamified Contrast Palette Mappings
 const CHART_COLORS = {
-  correct: '#4CAF50', // A vibrant green
-  incorrect: '#FF5733', // A warm, energetic red-orange
+  correct: '#58cc02',   /* Bright Active Green */
+  incorrect: '#ff4b4b', /* Signature Coral Crimson */
 };
 
-const QuizResults = ({ score, totalQuestions, onReturn }) => {
-  const { width, height } = useWindowSize();
+const QuizResults = ({ score, totalQuestions, onReturn, xp = 0, sandboxScore = null, sandboxMaxScore = null }) => {
+  const { width, height } = useWindowSize();
 
-  const correctAnswers = score;
-  const incorrectAnswers = totalQuestions - score;
-  const percentageCorrect = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+  const correctAnswers = score;
+  const incorrectAnswers = totalQuestions - score;
+  const percentageCorrect = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
-  // Data for the pie chart
-  const data = [
-    { name: 'Correct', value: correctAnswers },
-    { name: 'Incorrect', value: incorrectAnswers },
-  ];
+  const hasSandboxData = sandboxScore !== null && sandboxMaxScore !== null && sandboxMaxScore > 0;
+  const sandboxPercentage = hasSandboxData ? Math.round((sandboxScore / sandboxMaxScore) * 100) : 0;
 
-  // Only show confetti for a perfect score
-  const showConfetti = score > 0 && score === totalQuestions && totalQuestions > 0;
+  const data = [
+    { name: 'Correct', value: correctAnswers },
+    { name: 'Incorrect', value: incorrectAnswers },
+  ];
 
-  return (
-    <div className="quiz-complete-container">
-      {showConfetti && (
-        <Confetti
-          width={width}
-          height={height}
-          recycle={false}
-          numberOfPieces={300}
-          gravity={0.15} // Softer confetti fall
-          colors={['#FFD700', '#FF4500', '#1E90FF', '#32CD32']} // Gold, OrangeRed, DodgerBlue, LimeGreen
-        />
-      )}
+  const showConfetti = (score > 0 && score === totalQuestions && totalQuestions > 0) ||
+                       (hasSandboxData && sandboxScore > 0 && sandboxScore === sandboxMaxScore);
 
-      <div className="quiz-complete-card modern-card-design">
-        <h2 className="results-title">
-          {showConfetti ? '🎉 Perfect Score! 🎉' : 'Quest Complete!'}
-        </h2>
-        <p className="results-summary">
-          You answered <span className="score-highlight">{score}</span> out of{' '}
-          <span className="total-highlight">{totalQuestions}</span> questions correctly.
-        </p>
+  return (
+    <div className="quiz-results-viewport-wrapper">
 
-        {totalQuestions > 0 ? (
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={data}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={70}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={800}
-                  animationEasing="ease-out"
-                  stroke="none" // Remove stroke for a cleaner look
-                >
-                  {data.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.name === 'Correct' ? CHART_COLORS.correct : CHART_COLORS.incorrect}
-                    />
-                  ))}
-                  <Label
-                    value={`${percentageCorrect.toFixed(0)}%`}
-                    position="center"
-                    className="chart-center-label"
-                  />
-                </Pie>
-                <Tooltip
-                  formatter={(value, name) => [`${value} ${name} answers`, name]}
-                  contentStyle={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: '#fff',
-                    padding: '10px',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
-                  }}
-                />
-                <Legend
-                  verticalAlign="bottom"
-                  align="center"
-                  wrapperStyle={{ paddingTop: '20px', color: 'var(--text-color)' }}
-                  payload={
-                    data.map((item) => ({
-                      id: item.name,
-                      value: `${item.name} (${(item.value / totalQuestions * 100).toFixed(0)}%)`,
-                      type: 'circle', // Use circle for a modern legend
-                      color: item.name === 'Correct' ? CHART_COLORS.correct : CHART_COLORS.incorrect,
-                    }))
-                  }
-                />
-              </PieChart>
-          </ResponsiveContainer>
-          </div>
-        ) : (
-          <p className="no-questions-message">No graded questions were found in this quest.</p>
-        )}
+      {showConfetti && (
+        <Confetti
+          width={width}
+          height={height}
+          recycle={false}
+          numberOfPieces={250}
+          gravity={0.12}
+          colors={['#ffbe0b', '#3a86ff', '#58cc02', '#ff006e']}
+        />
+      )}
 
-        <button className="complete-screen-button modern-button" onClick={onReturn}>
-          Return to Trail
-        </button>
-      </div>
-    </div>
-  );
+      <div className="quiz-results-card-housing">
+
+        {/* ================= STAGE STATUS HEADER ================= */}
+        <h2 className="quiz-results-main-title">
+          {showConfetti ? '🎉 PERFECT SCORE! 🎉' : 'STAGE COMPLETE!'}
+        </h2>
+
+        <p className="quiz-results-subtext-summary">
+          {totalQuestions > 0 ? (
+            <>You successfully cleared <span className="score-highlight-node">{score}</span> out of{' '}
+            <span className="total-highlight-node">{totalQuestions}</span> challenge units correctly.</>
+          ) : hasSandboxData ? (
+            <>You scored <span className="score-highlight-node">{sandboxScore}</span> out of{' '}
+            <span className="total-highlight-node">{sandboxMaxScore}</span> on the simulation challenge.</>
+          ) : (
+            'Stage cleared successfully.'
+          )}
+        </p>
+
+        {/* ================= XP TACTILE BADGE ================= */}
+        {xp > 0 && (
+          <div className="xp-gain-badge-capsule">
+            <span className="xp-gain-text">+{xp} XP EARNED</span>
+          </div>
+        )}
+
+        {/* ================= METRICS DATA RING VISUALIZER ================= */}
+        {totalQuestions > 0 ? (
+          <div className="quiz-results-chart-frame">
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={68}
+                  outerRadius={92}
+                  dataKey="value"
+                  animationBegin={0}
+                  animationDuration={700}
+                  animationEasing="ease-out"
+                  stroke="none"
+                >
+                  {data.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.name === 'Correct' ? CHART_COLORS.correct : CHART_COLORS.incorrect}
+                    />
+                  ))}
+                  <Label
+                    value={`${percentageCorrect.toFixed(0)}%`}
+                    position="center"
+                    className="quiz-chart-center-metric"
+                  />
+                </Pie>
+                <Tooltip
+                  formatter={(value, name) => [`${value} ${name} blocks`, name]}
+                  contentStyle={{
+                    backgroundColor: '#182730',
+                    border: 'none',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    padding: '8px 12px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    fontFamily: '"Nunito", system-ui, sans-serif',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+                  }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  iconSize={10}
+                  wrapperStyle={{ paddingTop: '15px' }}
+                  payload={data.map((item) => ({
+                    id: item.name,
+                    value: `${item.name} (${totalQuestions > 0 ? ((item.value / totalQuestions) * 100).toFixed(0) : 0}%)`,
+                    type: 'circle',
+                    color: item.name === 'Correct' ? CHART_COLORS.correct : CHART_COLORS.incorrect,
+                  }))}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        ) : hasSandboxData ? (
+          <div className="quiz-results-sandbox-score-block">
+            <div className="sandbox-score-ring-display">
+              <span className="sandbox-score-numerator">{sandboxScore}</span>
+              <span className="sandbox-score-separator">/</span>
+              <span className="sandbox-score-denominator">{sandboxMaxScore}</span>
+            </div>
+            <p className="sandbox-accuracy-label">{sandboxPercentage}% MCQ Accuracy</p>
+            <p className="sandbox-text-hint">Written responses saved for instructor review.</p>
+          </div>
+        ) : (
+          <p className="quiz-results-empty-notice">No graded records mapped in this segment block.</p>
+        )}
+
+        {/* ================= LOWER CHUNKY CONTROLS COCKPIT BUTTON ================= */}
+        <button type="button" className="quiz-results-return-trigger-btn" onClick={onReturn}>
+          Continue
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default QuizResults;

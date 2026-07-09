@@ -1,96 +1,71 @@
 // src/pages/ModuleTrail.jsx
-
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import ModuleCardEach from "../components/ModuleCardEach";
 import api from "../admin/services/api";
-import "./ModuleTrail.css";
-
-const departments = ["All", "ideal", "ifile", "carbon"];
+import ModulesLabsSection from "../components/OrbitDashboard/ModulesLabsSection";
+import { setCurrentModule } from "../components/OrbitDashboard/currentModuleStorage";
+import AuthContext from "../context/AuthContext";
+import "../components/OrbitDashboard/OrbitDashboard.css";
 
 export default function ModuleTrail() {
   const [modules, setModules] = useState([]);
+  const [completedCardIds, setCompletedCardIds] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState("All");
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
-  useLayoutEffect(() => {
-      window.scrollTo(0, 0);
-    }, []);
+  useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
-    const fetchModules = async () => {
+    const fetchData = async () => {
       try {
-        const data = await api.getModules();
-        setModules(data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch modules:", error);
+        const [modulesData, progressData] = await Promise.all([
+          api.getModules(),
+          api.getUserProgress().catch(() => null),
+        ]);
+
+        const mods = modulesData?.success ? modulesData.data : modulesData;
+        setModules(Array.isArray(mods) ? mods : []);
+
+        if (progressData) {
+          const pData = progressData?.success ? progressData.data : progressData;
+          const ids = Array.isArray(pData?.completedCardIds) ? pData.completedCardIds : [];
+          setCompletedCardIds(ids.map((id) => id.toString()));
+        }
+      } catch (err) {
+        console.error("ModuleTrail fetch error:", err);
+      } finally {
         setLoading(false);
       }
     };
-    fetchModules();
+    fetchData();
   }, []);
 
-  const handleModuleClick = (module) => {
-    // Navigate to the new module detail URL instead of changing state
-    navigate(`/modules/${module._id}`);
+  const getModuleProgress = (mod) => {
+    const total = mod.totalCardCount || 0;
+    const allIds = (mod.allCardIds || []).map((id) => id.toString());
+    const done = allIds.length > 0 ? allIds.filter((id) => completedCardIds.includes(id)).length : 0;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    return { done, total, pct };
   };
 
-  const filteredModules =
-    activeFilter === "All"
-      ? modules
-      : modules.filter((mod) => mod.department === activeFilter);
+  const handleModuleClick = (module) => {
+    setCurrentModule(user?._id, { moduleId: module._id });
+    if (module.hasTopics === false) navigate(`/quiz/${module._id}/undefined`);
+    else navigate(`/orbit/modules/${module._id}/topics`);
+  };
 
-  if (loading) {
-    return <div className="loading-state">Loading modules...</div>;
-  }
-  
   return (
-    <div className="module-trail-page">
-      {/* Background shapes container */}
-      <div className="module-trail-background-shapes">
-        <div className="course-shape shape--circle-green"></div>
-        <div className="course-shape shape--square-blue"></div>
-        <div className="course-shape shape--triangle-pink"></div>
-      </div>
-
-      <div className="page-header">
-        <h1 className="page-title">Your Learning Trail</h1>
-        <p className="page-subtitle">
-          Explore curated modules across different departments and start your journey.
-        </p>
-        <div className="filter-buttons">
-          {departments.map((department) => (
-            <button
-              key={department}
-              className={`filter-btn ${activeFilter === department ? "active" : ""}`}
-              onClick={() => setActiveFilter(department)}
-            >
-              {department}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="module-grid-wrapper">
-        <div className="module-trail-grid">
-          {filteredModules.length > 0 ? (
-            filteredModules.map((module) => (
-              <ModuleCardEach
-                key={module._id}
-                title={module.title}
-                imageUrl={module.imageUrl}
-                description={module.description}
-                department={module.department}
-                onClick={() => handleModuleClick(module)}
-              />
-            ))
-          ) : (
-            <p className="no-modules-message">No modules found for this department.</p>
-          )}
-        </div>
-      </div>
+    <div style={{ maxWidth: 1180, margin: "0 auto", padding: "8px 4px 32px" }}>
+      <ModulesLabsSection
+        modules={modules}
+        getModuleProgress={getModuleProgress}
+        onOpenModule={handleModuleClick}
+        loading={loading}
+        title="Learn"
+        subtitle="Modules build knowledge. Labs build practice."
+        showSearch
+      />
     </div>
   );
 }

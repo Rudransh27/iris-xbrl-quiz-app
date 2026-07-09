@@ -1,205 +1,414 @@
 /* src/pages/Quiz.css */
+
 :root {
-    --primary-color: #007bff;
-    --secondary-color: #6c757d;
-    --background-color: #f8f9fa;
-    --card-bg: #ffffff;
-    --text-color: #343a40;
-    --border-color: #e2e8f0;
-    --shadow-color: rgba(0, 0, 0, 0.05);
-    --correct-color: #28a745;
-    --incorrect-color: #dc3545;
-    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-size-base: 16px;
-    --font-size-lg: 1.25rem;
-    --font-size-sm: 0.875rem;
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-    --primary-blue-gradient-start: #007bff;
-    --primary-blue-gradient-end: #00c6ff;
+  --amber-gold: #ffbe0bff;
+  --blaze-orange: #fb5607ff;
+  --neon-pink: #ff006eff;
+  --blue-violet: #8338ecff;
+  --azure-blue: #3a86ffff;
+  --duo-green: #58cc02;
+
+  --duo-snow: #ffffff;
+  --duo-gray-plate: #f7f9fa;
+  --duo-border: #e5e5e5;
+  --duo-text-dark: #3c3c3c;
+  --duo-text-slate: #5e6c75;
 }
 
-body {
-    font-family: var(--font-family);
-    background-color: var(--background-color);
-    color: var(--text-color);
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+/* Base structural layout configuration rules */
+.quiz-simulation-player {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--duo-snow);
+  font-family: "Nunito", system-ui, sans-serif;
+  position: relative;
 }
 
-.quiz-container {
-    width: 100%;
-    max-width: 900px;
-    padding: var(--spacing-md);
-    box-sizing: border-box;
+/* Hover-reveal wrapper for the standard (non-sandbox) header — mirrors the
+   sandbox overlay's exact HUD mechanic (.sandbox-hover-trigger-zone /
+   .hud-revealed) rather than a second bespoke pattern. */
+.quiz-standard-header-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 50;
+  transform: translateY(-100%);
+  transition: transform 0.25s ease;
 }
 
-.loading-state {
-    font-size: var(--font-size-lg);
-    color: var(--text-color);
-    text-align: center;
+.quiz-standard-header-hud.hud-revealed {
+  transform: translateY(0);
 }
 
-.top-fixed-elements {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    box-sizing: border-box;
-    z-index: 1000;
-    background: var(--background-color);
+.main-flexible-workspace-deck {
+  width: 100%;
+  flex-grow: 1;
+  display: flex;
+  position: relative;
+  /* min-height:0 (not a fixed calc(100vh - Npx)) — the header is now an
+     absolutely-positioned hover-reveal overlay (zero flow height), so a
+     stale magic-number subtraction here would either leave a gap or
+     overflow. flex-grow:1 alone correctly fills whatever space is actually
+     left after the bottom action dock, on any viewport. */
+  min-height: 0;
 }
 
-.quiz-status-bar1 {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--spacing-md);
-    max-width: 900px;
-    margin: 0 auto;
-    padding: var(--spacing-md);
+/* ================= 🎛️ THE TAXONOMY SYLLABUS RAIL SYSTEM ================= */
+.quiz-dynamic-sidebar-rails {
+  height: 100%;
+  background-color: var(--duo-snow);
+  border-right: 2px solid var(--duo-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  z-index: 10;
 }
 
-.exit-button {
-    background: none;
-    border: none;
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--text-color);
-    cursor: pointer;
-    transition: transform 0.2s;
+.quiz-dynamic-sidebar-rails.drawer-expanded { width: 280px; }
+.quiz-dynamic-sidebar-rails.drawer-collapsed { width: 0; border-right-width: 0; }
+
+.sidebar-rails-header {
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--duo-border);
+  background-color: var(--duo-gray-plate);
+  text-align: left;
 }
 
-.exit-button:hover {
-    transform: scale(1.1);
+.sidebar-header-lbl-micro {
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--duo-text-slate);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
 }
 
-.quiz-progress-container {
-    flex-grow: 1;
+.sidebar-scrollable-menu-nodes {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  /* 🎯 REMOVED SCROLLBAR: Standard cross-browser string hide overrides */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.sidebar-scrollable-menu-nodes::-webkit-scrollbar {
+  display: none;
 }
 
-.chances-container {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    font-size: var(--font-size-lg);
-    font-weight: bold;
+/* Interactive Sidebar Rows Layout sheets */
+.sidebar-nav-item-row {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--duo-border);
+  transition: all 0.1s ease;
+  box-sizing: border-box;
 }
 
-.heart-icon {
-    font-size: 1.5em;
-    color: var(--incorrect-color);
+.row-left-content-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-truncate: true;
+  width: 82%;
 }
 
-/* New XP Container Styles */
-.xp-container {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    font-size: var(--font-size-lg);
-    font-weight: bold;
-    background: rgba(255, 255, 255, 0.2);
-    /* Subtle white background */
-    padding: 5px 10px;
-    border-radius: 20px;
+.row-icon-indicator {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 15px;
 }
 
-.xp-icon {
-    font-size: 1.5em;
-    /* Slightly larger icon */
-    color: gold;
-    /* Yellow/gold color for XP */
+/* Gamified Saturated Icon Accent Mappings */
+.icon-azure  { color: var(--azure-blue); }
+.icon-pink   { color: var(--neon-pink); }
+.icon-gold   { color: var(--amber-gold); }
+.icon-purple { color: var(--blue-violet); }
+.icon-green  { color: var(--duo-green); }
+
+.sidebar-node-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--duo-text-slate);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.xp-count {
-    color: var(--color-white);
-    /* Ensure text is white */
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-    /* Add text shadow for better readability */
+.sidebar-nav-item-row.active-row-node {
+  background-color: #f0f6ff;
+}
+.sidebar-nav-item-row.active-row-node .sidebar-node-title {
+  color: var(--azure-blue);
+  font-weight: 900;
 }
 
-.nav-buttons {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-top: var(--spacing-lg);
+.clickable-row { cursor: pointer; }
+.clickable-row:hover:not(.active-row-node) { background-color: var(--duo-gray-plate); }
+
+.hard-locked-row {
+  opacity: 0.42;
+  cursor: not-allowed;
+  background-color: #fafafa;
 }
 
-.prev-button {
-    margin-right: auto;
+.text-green-checkmark { color: var(--duo-green); }
+.text-muted-lock { color: #a5b4fc; }
+
+.pending-dot-pulse {
+  width: 7px;
+  height: 7px;
+  background-color: var(--azure-blue);
+  border-radius: 50%;
+  animation: duoNodePulse 1s infinite alternate;
 }
 
-.nav-button {
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-lg);
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    background: var(--primary-color);
-    color: white;
+/* ================= 🖥️ CENTER STAGE SLEEVE PLAYBACK VIEWS ================= */
+.quiz-sleeve-viewport-wrapper {
+  flex-grow: 1;
+  height: 100%;
+  overflow-y: auto;
+  background-color: var(--duo-gray-plate);
+  padding: 32px 16px;
+  box-sizing: border-box;
+  /* 🎯 REMOVED SCROLLBAR: Standard cross-browser string hide overrides */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.quiz-sleeve-viewport-wrapper::-webkit-scrollbar {
+  display: none;
 }
 
-.nav-button:disabled {
-    background: var(--secondary-color);
-    cursor: not-allowed;
-    opacity: 0.7;
+.central-stage-box-bounds {
+  width: 100%;
+  max-width: 680px;
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
-.nav-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px var(--shadow-color);
+/* Drawer Toggle Button overlays controllers */
+.iris-drawer-toggle-trigger {
+  position: absolute;
+  top: 16px;
+  z-index: 100;
+  background-color: var(--duo-snow);
+  border: 2px solid var(--duo-border);
+  border-bottom-width: 4px;
+  color: var(--duo-text-dark);
+  padding: 8px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.markdown-body {
-    line-height: 1.6;
-    color: var(--text-color);
+.iris-drawer-toggle-trigger.trigger-aside { left: 296px; }
+.iris-drawer-toggle-trigger.trigger-flush { left: 16px; }
+
+.iris-drawer-toggle-trigger:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
 }
 
-.markdown-body h1,
-.markdown-body h2,
-.markdown-body h3 {
-    margin-top: var(--spacing-lg);
-    margin-bottom: var(--spacing-sm);
+/* ================= ⚡ THE LOWER COCKPIT CONTROL ROW DOCK ================= */
+.quiz-action-control-dock {
+  width: 100%;
+  height: 84px;
+  background-color: var(--duo-snow);
+  border-top: 2px solid var(--duo-border);
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  z-index: 50;
 }
 
-.markdown-body p {
-    margin-bottom: var(--spacing-md);
+.dock-content-alignment {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.ant-progress-outer {
-    margin-right: 0 !important;
+.dock-nav-btn {
+  border: none;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 12px 24px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.1s ease;
+  box-sizing: border-box;
 }
 
-html.full-screen-mode,
-html.full-screen-mode body {
-    height: 100%;
-    overflow: hidden;
+.prev-action-trigger {
+  background-color: var(--duo-snow);
+  border: 2px solid var(--duo-border);
+  border-bottom: 4px solid var(--duo-border);
+  color: var(--duo-text-slate);
+  cursor: pointer;
+}
+.prev-action-trigger:hover { background-color: var(--duo-gray-plate); }
+.prev-action-trigger:active { transform: translateY(2px); border-bottom-width: 2px; }
+
+.submit-action-trigger {
+  color: #ffffff;
+  border-bottom-style: solid;
+  border-bottom-width: 5px;
 }
 
-
-
-/* Optional: Animation for XP gain */
-@keyframes pulseXp {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.1);
-    }
-
-    100% {
-        transform: scale(1);
-    }
+.action-node-pulsing {
+  animation: duoButtonGlowPulse 1.4s infinite alternate;
 }
 
-.xp-container.gained {
-    animation: pulseXp 0.5s ease-out forwards;
+/* ================= 🖥️ FULLSCREEN SANDBOX SYSTEM TERMINALS ================= */
+.html-sandbox-fullscreen-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--duo-snow);
 }
+
+/* Invisible trigger strip anchored to the top-center of the viewport — hovering it
+   slides the exit HUD bar down without any permanently-visible chrome. */
+.sandbox-hover-trigger-zone {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 18px;
+  z-index: 100000;
+}
+
+.sandbox-top-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 56px;
+  width: 100%;
+  background-color: #182730;
+  border-bottom: 3px solid var(--duo-green);
+  padding: 0 24px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100001;
+  transform: translateY(-100%);
+  transition: transform 0.25s ease;
+}
+
+.sandbox-top-hud.hud-revealed {
+  transform: translateY(0);
+}
+
+.hud-left-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badge-fullscreen-mode {
+  font-size: 9px;
+  font-weight: 900;
+  color: #ffffff;
+  background-color: var(--duo-green);
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.sandbox-hud-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.duo-close-workspace-btn {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-bottom: 3px solid rgba(0, 0, 0, 0.2);
+  color: #ff595e;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+.duo-close-workspace-btn:hover { background-color: rgba(255, 255, 255, 0.15); }
+.duo-close-workspace-btn:active { transform: translateY(2px); border-bottom-width: 1px; }
+
+.sandbox-frame-viewport {
+  width: 100%;
+  height: calc(100vh - 56px);
+  background-color: #ffffff;
+}
+
+/* ================= 🌀 UTILITY COMPILING STATE SPINNERS ================= */
+.cyber-loading-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background-color: var(--duo-gray-plate);
+}
+
+.cyber-loading-container span {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--duo-text-slate);
+  letter-spacing: 0.8px;
+}
+
+.cyber-spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid var(--duo-border);
+  border-top-color: var(--azure-blue);
+  border-radius: 50%;
+  animation: duoPlayerSpin 0.7s linear infinite;
+}
+
+.no-modules-placeholder {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--blaze-orange);
+  padding: 40px;
+}
+
+@keyframes duoPlayerSpin { 100% { transform: rotate(360deg); } }
+@keyframes duoNodePulse { 0% { opacity: 0.3; } 100% { opacity: 1; } }
+@keyframes duoButtonGlowPulse { 0% { filter: brightness(1); } 100% { filter: brightness(1.08); } }

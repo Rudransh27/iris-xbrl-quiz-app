@@ -1,17 +1,23 @@
 // src/components/CodeCard.jsx
-
 import React, { useState, useEffect } from "react";
-import "./CodeCard.css";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import Prism from "prismjs";
+import "prismjs/themes/prism-tomorrow.css";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import AceEditor from "react-ace";
+import {
+  Lightbulb,
+  Check2Circle,
+  ExclamationTriangle,
+  Files,
+} from "react-bootstrap-icons";
+import api from "../admin/services/api";
+import "./CodeCard.css";
+
 import "ace-builds/src-noconflict/mode-xml";
 import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
-import api from "../admin/services/api"; // Import the API service
 
 const CodeCard = ({
   title,
@@ -24,47 +30,61 @@ const CodeCard = ({
   userAnswer,
   validationError,
   isCorrect,
-  cardId, // New prop
-  topicId, // New prop
-  moduleId, // New prop
+  cardId,
+  topicId,
+  moduleId,
 }) => {
   const [copySuccessTax, setCopySuccessTax] = useState(false);
   const [copySuccessInst, setCopySuccessInst] = useState(false);
   const [showHint, setShowHint] = useState(false);
-  const [attemptLogged, setAttemptLogged] = useState(false); // New state to prevent multiple logs
+  const [attemptLogged, setAttemptLogged] = useState(false);
+  const [editorTheme, setEditorTheme] = useState("github");
 
-  const currentTheme = document.body.classList.contains('dark-theme') ? 'monokai' : 'github';
-
-  // Log the code card attempt when the user answers correctly or incorrectly
+  // Live active system dark/light tracker
   useEffect(() => {
+    const checkActiveTheme = () => {
+      const isDark = document.body.classList.contains("dark-theme");
+      setEditorTheme(isDark ? "monokai" : "github");
+    };
+
+    checkActiveTheme();
+
+    const observer = new MutationObserver(checkActiveTheme);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const [hasRecorded, setHasRecorded] = useState(false);
+
+  useEffect(() => {
+    // Reset guard when card changes
+    setHasRecorded(false);
+  }, [cardId]);
+
+  useEffect(() => {
+    if (isCorrect === null || hasRecorded) return;
+
     const recordAttempt = async () => {
-      // Only log if the card is answered (correctly or incorrectly)
-      if (isCorrect !== null && !attemptLogged) {
-        try {
-          await api.post("/progress/card-completed", {
-            cardId,
-            topicId,
-            moduleId,
-            isCorrect,
-          });
-          console.log(
-            `Code card attempt recorded. Card ID: ${cardId}, Correct: ${isCorrect}`
-          );
-          setAttemptLogged(true); // Mark the attempt as logged
-        } catch (error) {
-          console.error("Failed to record code card completion:", error);
-        }
+      try {
+        await api.post("/progress/card-completed", {
+          cardId,
+          topicId,
+          moduleId,
+          isCorrect,
+        });
+        setHasRecorded(true);
+      } catch (error) {
+        console.error("Failed to record code card completion:", error);
       }
     };
 
     recordAttempt();
-  }, [isCorrect, cardId, topicId, moduleId, attemptLogged]);
-
+  }, [isCorrect, cardId, topicId, moduleId]); // hasRecorded NOT in deps
   const handleCopy = (text, which) => {
-    if (!navigator.clipboard) {
-      alert("Clipboard API not supported");
-      return;
-    }
+    if (!navigator.clipboard) return;
     navigator.clipboard.writeText(text).then(() => {
       if (which === "taxonomy") {
         setCopySuccessTax(true);
@@ -76,128 +96,195 @@ const CodeCard = ({
     });
   };
 
+  // Markdown custom elements code highlighters
   const renderers = {
     code({ node, inline, className, children, ...props }) {
+      if (inline) {
+        return (
+          <code className={className} {...props}>
+            {children}
+          </code>
+        );
+      }
+
       const match = /language-(\w+)/.exec(className || "");
-      return !inline && match ? (
-        <SyntaxHighlighter
-          style={oneDark}
-          language={match[1]}
-          PreTag="div"
-          {...props}
-        >
-          {String(children).replace(/\n$/, "")}
-        </SyntaxHighlighter>
-      ) : (
-        <code className={className} {...props}>
-          {children}
-        </code>
+      const lang = match ? match[1] : "xml";
+
+      let highlighted = children;
+      try {
+        if (Prism.languages[lang]) {
+          highlighted = Prism.highlight(
+            String(children).replace(/\n$/, ""),
+            Prism.languages[lang],
+            lang,
+          );
+        } else {
+          highlighted = String(children).replace(/\n$/, "");
+        }
+      } catch (error) {
+        console.error("Highlight error:", error);
+        highlighted = String(children).replace(/\n$/, "");
+      }
+
+      return (
+        <pre {...props}>
+          <code
+            className={className}
+            dangerouslySetInnerHTML={{ __html: highlighted }}
+          />
+        </pre>
       );
     },
   };
 
-  const toggleHint = () => {
-    setShowHint(!showHint);
-  };
-
   return (
-    <div className="code-card">
-      <h3 className="code-card-title">{title}</h3>
+    <div className="compiler-code-card-shell">
+      <h3 className="compiler-card-main-title">{title}</h3>
+
+      {/* 📚 TAXONOMY SCHEMAS REFERENCE CODE BLOCKS */}
       {taxonomyCode && (
-        <div className="code-snippet">
-          <div className="copy-button-container">
+        <div className="compiler-code-snippet-box">
+          <div className="compiler-snippet-header font-monospace">
+            <span>📚 TAXONOMY RULES METADATA (.XML)</span>
             <button
-              className="copy-button"
+              className="compiler-copy-btn"
               onClick={() => handleCopy(taxonomyCode, "taxonomy")}
-              aria-label="Copy taxonomy code to clipboard"
               type="button"
             >
-              {copySuccessTax ? "Copied!" : "Copy"}
+              <Files size={12} className="me-1" />
+              <span>{copySuccessTax ? "Copied!" : "Copy XML"}</span>
             </button>
           </div>
-          <h6>📚 Taxonomy XML</h6>
-          <SyntaxHighlighter language="xml" style={oneDark} showLineNumbers>
-            {taxonomyCode}
-          </SyntaxHighlighter>
+          <div className="compiler-prism-scroller">
+            <pre>
+              <code
+                className="language-xml"
+                dangerouslySetInnerHTML={{
+                  __html: Prism.highlight(
+                    taxonomyCode,
+                    Prism.languages.xml,
+                    "xml",
+                  ),
+                }}
+              />
+            </pre>
+          </div>
         </div>
       )}
 
+      {/* 📄 UNVALIDATED EXECUTABLE CODE BLOCKS */}
       {instanceCode && (
-        <div className="code-snippet">
-          <div className="copy-button-container">
+        <div className="compiler-code-snippet-box">
+          <div className="compiler-snippet-header font-monospace">
+            <span>📄 REPORTING INSTANCE TEMPLATE</span>
             <button
-              className="copy-button"
+              className="compiler-copy-btn"
               onClick={() => handleCopy(instanceCode, "instance")}
-              aria-label="Copy instance code to clipboard"
               type="button"
             >
-              {copySuccessInst ? "Copied!" : "Copy"}
+              <Files size={12} className="me-1" />
+              <span>{copySuccessInst ? "Copied!" : "Copy Template"}</span>
             </button>
           </div>
-          <h6>📄 XML (To be Edited)</h6>
-          <SyntaxHighlighter language="xml" style={oneDark} showLineNumbers>
-            {instanceCode}
-          </SyntaxHighlighter>
+          <div className="compiler-prism-scroller">
+            <pre>
+              <code
+                className="language-xml"
+                dangerouslySetInnerHTML={{
+                  __html: Prism.highlight(
+                    instanceCode,
+                    Prism.languages.xml,
+                    "xml",
+                  ),
+                }}
+              />
+            </pre>
+          </div>
         </div>
       )}
 
-      <div className="code-question">
-        <div className="knowledge-content markdown-body">
+      {/* 🎯 QUESTION CONTENT DESCRIPTIVE PANELS */}
+      <div className="compiler-question-prompt-viewport">
+        <div className="compiler-markdown-body markdown-body">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
             {question}
           </ReactMarkdown>
         </div>
       </div>
 
-      <div className="hint-container">
+      {/* 💡 ANALYTICS MICRO HINTS VIEWPORTS */}
+      <div className="compiler-hint-action-row">
         {hint && isCorrect === false && (
-          <button className="hint-button" onClick={toggleHint}>
-            <span role="img" aria-label="bulb icon">💡</span> Hint
+          <button
+            className="compiler-hint-toggle-trigger font-monospace"
+            onClick={() => setShowHint(!showHint)}
+          >
+            <Lightbulb size={13} className="bulb-vector" />
+            <span>
+              {showHint ? "HIDE SOLUTION HINT" : "REQUEST ENGINE HINT"}
+            </span>
           </button>
         )}
       </div>
 
       {showHint && (
-        <div className="knowledge-content markdown-body code-hint">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
-            {hint}
-          </ReactMarkdown>
+        <div className="compiler-hint-floating-drawer animate-fade-up">
+          <div className="compiler-markdown-body markdown-body">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
+              {hint}
+            </ReactMarkdown>
+          </div>
         </div>
       )}
 
-      <AceEditor
-        mode="xml"
-        theme={currentTheme}
-        name="code_editor"
-        editorProps={{ $blockScrolling: true }}
-        setOptions={{
-          enableBasicAutocompletion: true,
-          enableLiveAutocompletion: false,
-          enableSnippets: true,
-          showLineNumbers: true,
-          tabSize: 2,
-        }}
-        value={userAnswer || ""}
-        onChange={onAnswer}
-        width="100%"
-        height="200px"
-        readOnly={isCorrect !== null}
-        className={`ace-editor-container ${
-          isCorrect === true ? "correct" : isCorrect === false ? "error" : ""
-        }`}
-      />
+      {/* 💻 EMBEDDED REALTIME CODE EDITOR INTERACTIVE ENGINE */}
+      <div
+        className={`compiler-editor-container-hull ${isCorrect === true ? "hull-success" : isCorrect === false ? "hull-error" : ""}`}
+      >
+        <div className="editor-console-header font-monospace">
+          <span className="live-pulse-dot"></span>
+          <span>LIVE TESTING CONSOLE // ACE LAYER RUNNING</span>
+        </div>
+        <AceEditor
+          mode="xml"
+          theme={editorTheme}
+          name="compiler_core_editor"
+          editorProps={{ $blockScrolling: true }}
+          setOptions={{
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: false,
+            enableSnippets: true,
+            showLineNumbers: true,
+            tabSize: 2,
+          }}
+          value={userAnswer || ""}
+          onChange={onAnswer}
+          width="100%"
+          height="220px"
+          readOnly={isCorrect !== null}
+        />
+      </div>
 
+      {/* ❌ VALIDATION ERROR EXCEPTIONS RESPONSES */}
       {validationError && (
-        <p className="error-msg">
-          {validationError}
-        </p>
+        <div className="compiler-exception-alert font-monospace animate-fade-up">
+          <ExclamationTriangle size={14} className="flex-shrink-0" />
+          <div className="exception-text-string">{validationError}</div>
+        </div>
       )}
 
+      {/* 🟢 SUCCESS COMPILATION FEEDBACK SHEETS */}
       {isCorrect === true && explanation && (
-        <div className="knowledge-content markdown-body code-explanation">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
-            {explanation}
-          </ReactMarkdown>
+        <div className="compiler-success-feedback-drawer animate-fade-up">
+          <div className="success-feedback-header-title font-monospace">
+            <Check2Circle size={15} />
+            <span>COMPILATION EXECUTED SUCCESSFUL // EXPLANATION LOG</span>
+          </div>
+          <div className="compiler-markdown-body markdown-body">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
+              {explanation}
+            </ReactMarkdown>
+          </div>
         </div>
       )}
     </div>

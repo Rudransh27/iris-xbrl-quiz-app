@@ -1,0 +1,189 @@
+/* src/admin/AdminDashboard.css */
+
+/* =========================================================================
+   🛡️ MASTER PLATFORM LEVEL CONTAINER SETUP (Vercel Core Layout Style)
+   ========================================================================= */
+.admin-dashboard-container.global-viewport-lock {
+  height: 100vh !important;
+  width: 100vw !important;
+  overflow: hidden !important;
+  background-color: #f8fafc; /* Pristine premium canvas background tint */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* =========================================================================
+   🚀 MINIMALIST PRISTINE SIDEBAR (Wipeout Chunky Dark Blue)
+   ========================================================================= */
+.admin-sidebar-nav-panel {
+  background: #ffffff !important;
+  border-right: 1px solid #e2e8f0 !important;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 0 !important;
+  box-shadow: 2px 0 12px rgba(15, 37, 110, 0.005);
+}
+
+/* Sidebar Branding Header Block */
+.admin-sidebar-header {
+  padding: 24px 20px 18px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+}
+
+.text-dark-title {
+  color: #1e293b !important;
+  font-size: 16px;
+  letter-spacing: -0.3px;
+}
+
+.text-primary-brand {
+  color: #0f256e !important; /* IRIS Deep Blue Accent Token */
+}
+
+/* Developer Mini Tag Badge */
+.admin-role-badge {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-top: 6px;
+  font-family: var(--bs-font-monospace);
+}
+
+/* Navigation Links Vertical Stack Area */
+.admin-nav-links-stack {
+  padding: 16px 12px !important;
+}
+
+/* Interactive Navigation Menu Row Item */
+.admin-nav-link-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #475569;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Hover: Delicate Highlight Overlay */
+.admin-nav-link-btn:hover {
+  background-color: #f8fafc;
+  color: #0f256e;
+}
+
+/* Active Focus Route (Apple Style) */
+.admin-nav-link-btn.active {
+  background-color: #f0f4ff !important;
+  color: #0f256e !important;
+  font-weight: 600;
+}
+
+.admin-nav-link-btn.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  height: 60%;
+  width: 3.5px;
+  background-color: #0f256e;
+  border-radius: 0 4px 4px 0;
+} 
+
+/* =========================================================================
+   📦 OPERATIONAL WORKSPACE FLIGHT DECK (Independent Inner Scrolls)
+   ========================================================================= */
+.admin-viewport-content-floor {
+  background-color: #f8fafc !important; /* Matches seamless canvas tinting */
+  height: 100vh;
+  overflow: hidden;
+}
+
+.admin-scrollable-workspace-pane {
+  height: 100%;
+  overflow-y: auto !important;
+  padding-bottom: 50px;
+}
+
+/* Form Container Space Tuning Constraints */
+.form-render-container-bounds {
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+/* =========================================================================
+   📊 HIGH-FIDELITY REFINED METRIC CARD HUD RIBBON 
+   ========================================================================= */
+.dashboard-metric-hud-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 10px rgba(15, 37, 110, 0.015) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-metric-hud-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(15, 37, 110, 0.03) !important;
+}
+
+/* Round Badge Shape wrapper for icons inside HUD */
+.hud-icon-wrapper {
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hud-metric-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: -0.1px;
+}
+
+.hud-metric-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 2px 0 0 0;
+  letter-spacing: -0.5px;
+}
+
+/* =========================================================================
+   🚀 UNIVERSAL MICRO UTILITIES & ANIMATIONS HANDLERS
+   ========================================================================= */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.animate-fade-in {
+  animation: adminEntrance 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes adminEntrance {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}

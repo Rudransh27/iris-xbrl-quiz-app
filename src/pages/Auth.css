@@ -1,149 +1,202 @@
 /* src/pages/Auth.css */
 
-/* This class styles the main content area.
-   It needs to take up the available vertical space between the Navbar and Footer. */
+/* Main Full Window Layout Wrapping Canvas */
 .auth-page-main-content {
-  flex-grow: 1; /* Allows this div to take up available space */
+  flex-grow: 1;
   display: flex;
-  justify-content: center; /* Centers content horizontally */
-  align-items: center; /* Centers content vertically */
-  padding: 20px; /* Add some padding around the centered card */
-  background-color: #fafafa; /* A light, neutral background */
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  /* ☀️ BRIGHT CLEAN BACKDROP: Pure elegant light grey backgrounds taaki crisp white cards alag se uthein */
+  background-color: #fafafa !important; 
+  min-height: calc(100vh - 74px);
+  box-sizing: border-box;
 }
 
-/* This wrapper is crucial for centering the card itself within the flex container. */
+/* Master container defining the double box stack layout width */
+.insta-style-wrapper {
+  width: 100%;
+  max-width: 350px; /* Precise Instagram layout standardized width */
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Perfect distance separating the twin boxes */
+}
+
 .auth-card-wrapper {
   width: 100%;
-  max-width: 400px; /* Maximum width of the card on larger screens */
   display: flex;
   justify-content: center;
 }
 
-/* Styling for the AuthCard component itself */
+/* =========================================================================
+   📦 CARD 1: MAIN FORM HOUSING FRAME (Crisp Bright Card with Curved Corners)
+   ========================================================================= */
 .auth-card {
-  width: 100%; /* Make card take full width of its wrapper */
-  border: 1px solid #dbdbdb; /* Subtle border, like Instagram */
-  border-radius: 8px; /* Slightly rounded corners */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Softer shadow */
-  background-color: #fff;
-  padding: 30px 40px; /* Adjust padding for card content */
+  width: 100%;
+  background-color: #ffffff !important; /* Pure high-intensity bright white */
+  
+  /* 🎯 THE SPECIFICATION: Main box gets smooth border radius, border is crisp and sharp */
+  border: 1px solid #cbd5e1 !important; /* Clean high-visibility slate grey border */
+  border-radius: 12px !important; /* Elegant premium curved corners only for the main box */
+  
+  padding: 32px 28px !important;
+  box-shadow: 0 4px 12px rgba(15, 37, 110, 0.02) !important; /* Subtle premium depth elevation */
 }
 
-/* Dynamic Title & Subtitle */
+/* Dynamic Headings Core Typography */
 .auth-card h1 {
-  font-size: 1.8rem; /* Slightly smaller header */
-  font-weight: 600;
-  color: #262626; /* Darker text for headings */
-  margin-bottom: 0.5rem;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #0f172a; /* Strong deep charcoal text contrast */
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.4px;
 }
 
 .auth-card p {
-  font-size: 0.95rem; /* Slightly smaller subtitle */
-  color: #8e8e8e; /* Muted text color */
-  margin-bottom: 1.5rem;
+  font-size: 0.88rem;
+  color: #64748b; /* Muted subtext lines */
+  margin-bottom: 1.4rem;
 }
 
-/* Form Inputs */
+/* =========================================================================
+   📥 INPUT ELEMENT FIELDS SYSTEM (Strictly Flat Instagram Sharp Corners)
+   ========================================================================= */
 .auth-card .form-control {
-  background-color: #fafafa;
-  border: 1px solid #dbdbdb;
-  border-radius: 5px;
-  padding: 12px 15px; /* Slightly more padding */
+  background-color: #fafafa; /* Smooth clean flat inner background */
+  
+  /* 🎯 THE SPECIFICATION: Hard zero border radius for strict Instagram rectangle look */
+  border: 1px solid #cbd5e1; /* Sharp clean grey borderline */
+  border-radius: 0px !important; /* ❌ INPUTS RADIUS REMOVED COMPLETELY (Flat Corners) */
+  
+  padding: 10px 12px;
   font-size: 14px;
-  height: 48px; /* Consistent height for input fields */
+  height: 38px; /* High density compact size tracking */
+  color: #0f172a;
+  transition: border-color 0.15s ease-in-out;
 }
 
+/* Select specific alignment formatting padding overrides */
+.auth-card .dropdown-fix {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Precise borderline focus transition when clicking fields */
 .auth-card .form-control:focus {
-  border-color: #a8a8a8;
-  box-shadow: none;
+  background-color: #ffffff;
+  border-color: #94a3b8 !important; /* Clean dark grey highlight border stroke */
+  box-shadow: none !important; /* No extra blurry shadows */
+  outline: none !important;
 }
 
-/* Primary Button */
+/* Password inner text-based trigger buttons styling links layer */
+.insta-inner-toggle-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none !important;
+  border: none !important;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 10;
+  padding: 0;
+}
+.insta-inner-toggle-btn:hover {
+  color: #0f256e;
+}
+
+/* =========================================================================
+   🚀 PRIMARY BUTTONS AND LINK CORE GLOWS (#0f256e Brand Sync)
+   ========================================================================= */
 .auth-card .btn-primary {
-  background-color: #0095f6; /* Instagram blue */
-  border-color: #0095f6;
+  background-color: #0f256e !important; /* Royal Navy Primary Corporate Blue */
+  border-color: #0f256e !important;
   font-weight: 600;
   font-size: 14px;
-  border-radius: 5px;
-  padding: 10px;
-  height: 42px; /* Button height */
-}
-
-.auth-card .btn-primary:hover {
-  background-color: #0077b5;
-  border-color: #0077b5;
-}
-
-/* Separator for "or" */
-.auth-card .or-separator {
+  border-radius: 6px !important; /* Subtle smooth curves only for core action buttons */
+  padding: 6px 12px;
+  height: 36px;
   display: flex;
   align-items: center;
-  margin: 20px 0;
-  color: #8e8e8e;
-  font-size: 13px;
+  justify-content: center;
+  transition: opacity 0.15s ease;
 }
 
-.auth-card .or-separator hr {
-  flex-grow: 1;
-  border: none;
-  height: 1px;
-  background-color: #dbdbdb;
-  margin: 0 10px;
+.auth-card .btn-primary:hover:not(:disabled) {
+  opacity: 0.92;
 }
 
-.auth-card .or-separator span {
-  padding: 0 10px;
+.auth-card .btn-primary:disabled {
+  background-color: rgba(15, 37, 110, 0.45) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+  cursor: not-allowed;
 }
 
-/* Footer links for toggling between login/signup */
-.auth-card .auth-footer-actions {
-  font-size: 14px;
-  margin-top: 25px;
-}
-
-.auth-card .auth-footer-actions a.auth-link {
-  color: #0095f6;
+.auth-forgot-password-link {
+  font-size: 12px;
   font-weight: 600;
-  text-decoration: none;
+  color: #0f256e !important;
+  text-decoration: none !important;
+}
+.auth-forgot-password-link:hover {
+  text-decoration: underline !important;
 }
 
-.auth-card .auth-footer-actions a.auth-link:hover {
-  text-decoration: underline;
+/* =========================================================================
+   📦 CARD 2: BOTTOM ISOLATED SWITCH BOX (Curved Corners & Bright Canvas)
+   ========================================================================= */
+.auth-isolated-switch-box {
+  background-color: #ffffff; /* Matching bright white background */
+  border: 1px solid #cbd5e1; /* Precise clean matching border line */
+  border-radius: 12px; /* Uniform 12px radius matching the main form card above */
+  font-size: 14px;
+  color: #334155;
 }
 
-/* Forgot Password Link */
-.auth-card .auth-link-forgot {
-  font-size: 13px;
-  margin-top: 15px;
-  text-align: center;
+.auth-switch-trigger-btn {
+  background: none !important;
+  border: none !important;
+  color: #0f256e !important; /* Hyperlinks match the platform identity */
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  display: inline-block;
+}
+.auth-switch-trigger-btn:hover {
+  text-decoration: underline !important;
 }
 
-/* --- LOGO SIZE CHANGE --- */
-/* Ensure the logo is smaller and centered */
-.auth-card .auth-logo-img { /* Changed selector to match AuthCard.jsx */
-  max-width: 100px; /* Reduced from 120px for an even smaller logo */
+/* Logo Image constraints updates */
+.auth-card .auth-logo-img {
+  max-width: 90px;
   height: auto;
-  margin-bottom: 20px; /* Adjusted margin */
+  margin-bottom: 14px;
 }
 
-/* Responsive adjustments */
+.auth-alert-compact {
+  font-size: 12px !important;
+  padding: 10px !important;
+  border-radius: 6px !important;
+  font-weight: 600;
+}
+
+/* Responsive Adaptive Viewports step media controls */
 @media (max-width: 576px) {
   .auth-page-main-content {
     padding: 15px;
   }
-  .auth-card-wrapper {
-    max-width: 90%; /* Card takes more width on small screens */
+  .insta-style-wrapper {
+    max-width: 92%;
   }
   .auth-card {
-    padding: 25px 30px;
+    padding: 24px 20px !important;
+    border-radius: 12px !important; /* Preserves curves flawlessly on smaller screens */
   }
-  .auth-card h1 {
-    font-size: 1.6rem;
-  }
-  .auth-card p {
-    font-size: 0.9rem;
-  }
-  .auth-card .auth-logo-img { /* Ensure logo size adjustment on small screens */
-    max-width: 80px;
+  .auth-isolated-switch-box {
+    border-radius: 12px;
   }
 }

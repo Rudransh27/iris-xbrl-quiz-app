@@ -1,153 +1,209 @@
 // src/components/Navbar.jsx
-import React, { useState, useEffect, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaBars, FaTimes } from 'react-icons/fa';
-import { MdLightMode, MdDarkMode } from 'react-icons/md';
+import { Badge } from 'react-bootstrap';
+import { BoxArrowRight, TrophyFill, Lightbulb, Sun, MoonStarsFill } from 'react-bootstrap-icons';
 import './Navbar.css';
 import irisLogo from '../assets/irislogo.svg';
 import AuthContext from '../context/AuthContext';
-import ConfirmationModal from './ConfirmationModal'; // Import the new modal component
+import { ThemeContext } from '../context/ThemeContext'; 
+import ConfirmationModal from './ConfirmationModal'; 
+
+const AVATAR_LIST = [
+  { id: 'dev', emoji: '💻' },
+  { id: 'xbrl', emoji: '⚙️' },
+  { id: 'db', emoji: '🗄️' },
+  { id: 'cyber', emoji: '⚡' }
+];
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
-  const [showModal, setShowModal] = useState(false); // New state for the modal
+  const [showModal, setShowModal] = useState(false); 
+  // 💡 State to track if the custom image fails to load
+  const [imageLoadError, setImageLoadError] = useState(false);
+  
   const { user, logout } = useContext(AuthContext);
+  const { theme, toggleTheme } = useContext(ThemeContext); 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const isAuthenticated = !!user;
-  const isAdmin = user?.role === 'admin';
-
-  useEffect(() => {
-    document.body.className = theme === 'dark' ? 'dark-theme' : 'light-theme';
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
-  };
+  const hasAdminDashboardAccess = user?.role === 'admin' || user?.role === 'superadmin';
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const handleLoginClick = () => {
-    const currentPath = window.location.pathname;
+    const currentPath = location.pathname;
     if (currentPath !== '/login' && currentPath !== '/register') {
       localStorage.setItem('redirectPath', currentPath);
     }
     navigate('/login');
-    toggleMobileMenu();
+    setIsMobileMenuOpen(false);
   };
 
   const handleLogoutConfirmation = () => {
-    setShowModal(true); // Show the modal instead of logging out immediately
-    if (isMobileMenuOpen) {
-      toggleMobileMenu(); // Close the mobile menu when the modal opens
-    }
+    setShowModal(true); 
+    setIsMobileMenuOpen(false);
   };
 
   const handleLogout = () => {
     logout();
-    setShowModal(false); // Close the modal
+    setShowModal(false); 
     navigate('/');
+    setImageLoadError(false); // Reset error state on logout
   };
 
+  // 🔑 SAFETIED PICTURE ENGINE: Only renders custom image if url exists AND hasn't failed to load
+  const hasCustomAvatar = Boolean(user?.avatarUrl) && !imageLoadError; 
+  const activeAvatar = AVATAR_LIST.find(a => a.id === user?.avatarId) || AVATAR_LIST[0];
+  const avatarImage = hasCustomAvatar ? user.avatarUrl : null;
+
   return (
-    <nav className="navbar-complete">
-      <Link to="/" className="navbar__branding">
-        <img src={irisLogo} alt="IRIS logo" className="navbar__logo" />
-      </Link>
-
-      <div className={`navbar__links ${isMobileMenuOpen ? 'navbar__links--open' : ''}`}>
-        <Link
-          to="/"
-          className={`nav-item ${window.location.pathname === '/' ? 'active' : ''}`}
-          onClick={toggleMobileMenu}
-        >
-          Home
-        </Link>
-        <Link
-          to="/modules"
-          className={`nav-item ${window.location.pathname === '/modules' ? 'active' : ''}`}
-          onClick={toggleMobileMenu}
-        >
-          Modules
-        </Link>
-        {isAuthenticated && isAdmin && (
-          <Link
-            to="/admin"
-            className={`nav-item ${window.location.pathname.startsWith('/admin') ? 'active' : ''}`}
-            onClick={toggleMobileMenu}
-          >
-            Admin Dashboard
+    <nav className="duo-nav-container">
+      <div className="duo-nav-wrapper">
+        
+        {/* LEFT CLUSTER: Brand & Navigation Routes */}
+        <div className="nav-left-cluster">
+          <Link to="/" className="duo-logo-link" onClick={() => setIsMobileMenuOpen(false)}>
+            <img src={irisLogo} alt="IRIS logo" className="duo-logo-img" />
           </Link>
-        )}
 
-        <div className="mobile-only-actions">
-          <button
-            onClick={toggleTheme}
-            className="theme-toggle-btn mobile-theme-btn"
-            aria-label="Toggle theme"
-          >
-            {theme === 'light' ? <MdDarkMode size={24} /> : <MdLightMode size={24} />}
-            <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
-          </button>
-          {!isAuthenticated ? (
-            <button onClick={handleLoginClick} className="nav-item-button mobile-login-btn">
-              Sign In
-            </button>
-          ) : (
-            <button onClick={handleLogoutConfirmation} className="nav-item-button mobile-logout-btn">
-              Logout
-            </button>
-          )}
+          <div className={`duo-links-panel ${isMobileMenuOpen ? 'mobile-panel-open' : ''}`}>
+            
+            {/* 📱 MOBILE NAVIGATION DRAWER USER PROFILE WIDGET */}
+            {isAuthenticated && (
+              <div className="duo-mobile-profile-hero-card">
+                <Link to="/profile" className="duo-profile-anchor w-100" onClick={() => setIsMobileMenuOpen(false)}>
+                  <div className="navbar-avatar-frame">
+                    {avatarImage ? (
+                      <img 
+                        src={avatarImage} 
+                        alt="User Profile Image" 
+                        className="navbar-avatar-img-element" 
+                        onError={() => setImageLoadError(true)} // 🛡️ Triggers emoji fallback on broken link
+                      />
+                    ) : (
+                      <span className="navbar-avatar-emoji-font">{activeAvatar.emoji}</span>
+                    )}
+                  </div>
+                  <div className="d-flex flex-column align-items-start justify-content-center">
+                    <span className="duo-username-text">{user.username}</span>
+                    <Badge className="duo-xp-badge mt-1">
+                      {user.xp || 0} XP
+                    </Badge>
+                  </div>
+                </Link>
+              </div>
+            )}
+
+            {/* Standard Navigation Link Stack */}
+            <div className="duo-nav-item-wrapper">
+              <Link to="/" className={`duo-nav-item ${location.pathname === '/' ? 'item-active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+                Home
+              </Link>
+            </div>
+            
+             {isAuthenticated && hasAdminDashboardAccess && (
+              <div className="duo-nav-item-wrapper">
+                <Link to="/orbit" className={`duo-nav-item ${location.pathname.startsWith('/orbit') ? 'item-active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+                  Iris Orbit
+                </Link>
+              </div>
+            )}
+
+            <div className="duo-nav-item-wrapper">
+              <Link to="/modules" className={`duo-nav-item ${location.pathname.startsWith('/modules') ? 'item-active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+                Modules
+              </Link>
+            </div>
+
+            {isAuthenticated && hasAdminDashboardAccess && (
+              <div className="duo-nav-item-wrapper">
+                <Link to="/admin" className={`duo-nav-item ${location.pathname.startsWith('/admin') ? 'item-active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+                  Dashboard
+                </Link>
+              </div>
+            )}
+            {isAuthenticated && (
+              <div className="duo-nav-item-wrapper">
+                <Link to="/ideas" className={`duo-nav-item d-flex align-items-center gap-1.5 ${location.pathname.startsWith('/ideas') ? 'item-active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+                  <Lightbulb size={14} className={location.pathname.startsWith('/ideas') ? 'text-warning' : ''} /> Ideas Sandbox
+                </Link>
+              </div>
+            )}
+
+           
+            {/* Mobile View Sidebar Footer Controls Container */}
+            <div className="duo-mobile-actions-wrapper">
+              <button onClick={toggleTheme} className="duo-theme-toggle-btn text-start gap-3 w-100 mb-2">
+                {theme === 'light' ? <MoonStarsFill size={14} /> : <Sun size={14} />}
+                <span>{theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}</span>
+              </button>
+              
+              {!isAuthenticated ? (
+                <button onClick={handleLoginClick} className="duo-btn-primary">Sign In</button>
+              ) : (
+                <button onClick={handleLogoutConfirmation} className="duo-btn-secondary d-flex align-items-center justify-content-center gap-2">
+                  <BoxArrowRight size={14} /> <span>Sign Out</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="navbar__actions">
-        {/* <button
-          onClick={toggleTheme}
-          className="theme-toggle-btn desktop-only-theme"
-          aria-label="Toggle theme"
-        >
-          {theme === 'light' ? <MdDarkMode size={24} /> : <MdLightMode size={24} />}
-        </button> */}
+        {/* RIGHT CLUSTER: Desktop Mode Navigation Tools HUD */}
+        <div className="duo-actions-desktop">
+          <button onClick={toggleTheme} className="duo-theme-toggle-btn" title="Toggle Light/Dark">
+            {theme === 'light' ? <MoonStarsFill size={14} /> : <Sun size={14} />}
+          </button>
 
-        {!isAuthenticated ? (
-          <Link
-            to="/login"
-            className="nav-item-button desktop-login-btn"
-            onClick={() => {
-              const currentPath = window.location.pathname;
+          {isAuthenticated ? (
+            <div className="duo-user-hud-box">
+              <Link to="/profile" className="duo-profile-anchor" title="View Profile Analytics">
+                <div className="navbar-avatar-frame">
+                  {avatarImage ? (
+                    <img 
+                      src={avatarImage} 
+                      alt="User Profile Image" 
+                      className="navbar-avatar-img-element" 
+                      onError={() => setImageLoadError(true)} // 🛡️ Triggers emoji fallback on broken link
+                    />
+                  ) : (
+                    <span className="navbar-avatar-emoji-font">{activeAvatar.emoji}</span>
+                  )}
+                </div>
+                <span className="duo-username-text">{user.username}</span>
+                <Badge className="duo-xp-badge">
+                  {user.xp || 0} XP
+                </Badge>
+              </Link>
+              <div className="hud-separator"></div>
+              <button onClick={handleLogoutConfirmation} className="duo-logout-icon-btn" title="Sign Out">
+                <BoxArrowRight size={15} />
+              </button>
+            </div>
+          ) : (
+            <Link to="/login" className="duo-btn-outline" onClick={() => {
+              const currentPath = location.pathname;
               if (currentPath !== '/login' && currentPath !== '/register') {
                 localStorage.setItem('redirectPath', currentPath);
               }
-            }}
-          >
-            Sign In
-          </Link>
-        ) : (
-          <button onClick={handleLogoutConfirmation} className="nav-item-button desktop-logout-btn">
-            Logout
-          </button>
-        )}
-      </div>
+            }}>
+              Log In
+            </Link>
+          )}
+        </div>
 
-      <div
-        className="hamburger-menu"
-        onClick={toggleMobileMenu}
-        aria-label="Toggle mobile menu"
-      >
-        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+        {/* Mobile View Drawer Hamburger Menu Trigger Button Icon */}
+        <button className={`duo-hamburger-trigger ${isMobileMenuOpen ? 'rotated' : ''}`} onClick={toggleMobileMenu}>
+          {isMobileMenuOpen ? <FaTimes size={18} /> : <FaBars size={18} />}
+        </button>
       </div>
       
-      {/* The modal component is rendered at the bottom */}
-      <ConfirmationModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onConfirm={handleLogout}
-      />
+      <ConfirmationModal isOpen={showModal} onClose={() => setShowModal(false)} onConfirm={handleLogout} />
     </nav>
   );
 }

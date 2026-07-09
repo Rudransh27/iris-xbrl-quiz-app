@@ -1,227 +1,147 @@
 /* src/pages/TopicTrail.css */
 
-.topic-cards-page {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f4f7f6;
-  padding: 0;
+:root {
+  --amber-gold: #ffbe0bff;
+  --blaze-orange: #fb5607ff;
+  --neon-pink: #ff006eff;
+  --blue-violet: #8338ecff;
+  --azure-blue: #3a86ffff;
+
+  --duo-snow-white: #ffffff;
+  --duo-border-line: #e5e5e5;
+  --duo-text-dark: #3c3c3c;
+  --duo-text-slate: #5e6c75;
+}
+
+.topic-trail-page {
+  width: 100%;
   min-height: 100vh;
-  color: #333;
+  background-color: var(--duo-snow-white);
+  padding: 40px 24px;
+  box-sizing: border-box;
+  font-family: "Nunito", system-ui, sans-serif;
+}
+
+.duo-topic-container {
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+/* ================= COMPACT BACK CONTROLS ================= */
+.trail-btn-pos {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 32px;
+}
+
+.trail-back-btn {
+  background-color: var(--duo-snow-white);
+  border: 2px solid var(--duo-border-line);
+  border-bottom: 4px solid var(--duo-border-line); /* Classic chunky feedback bottom border */
+  color: var(--duo-text-slate);
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.1s ease;
+}
+
+.trail-back-btn:hover {
+  background-color: #f7f9fa;
+  color: var(--duo-text-dark);
+}
+
+.trail-back-btn:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+/* ================= HEADER SECTION ================= */
+.topic-page-header {
+  margin-bottom: 48px;
+}
+
+.topic-page-title {
+  font-size: 34px;
+  font-weight: 900;
+  color: var(--duo-text-dark);
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+}
+
+.topic-page-subtitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--duo-text-slate);
+  max-width: 560px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* ================= GRID CONTAINMENT MATRIX ================= */
+.topics-grid-container {
+  width: 100%;
+}
+
+.topic-trail-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 28px;
+  width: 100%;
+}
+
+.no-topics-placeholder {
+  width: 100%;
+  text-align: center;
+  background-color: var(--duo-snow-white);
+  border: 2px dashed var(--duo-border-line);
+  border-radius: 18px;
+  padding: 48px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #afafaf;
+}
+
+/* ================= SKELETON RE-STYLES ================= */
+.skeleton-topic-card {
+  background-color: var(--duo-snow-white);
+  border: 2px solid var(--duo-border-line);
+  border-bottom: 5px solid var(--duo-border-line);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-node {
+  background-color: #eeeeee;
+  border-radius: 6px;
   position: relative;
   overflow: hidden;
 }
 
-.background-shapes {
+.skeleton-node::after {
+  content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  overflow: hidden;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: translateX(-100%);
+  animation: duoShimmer 1.5s infinite;
 }
 
-.background-shapes > div {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.1;
-  animation: float 12s infinite ease-in-out;
-}
+.skeleton-icon-sphere { width: 44px; height: 44px; border-radius: 50%; }
+.skeleton-text-title { width: 65%; height: 20px; margin: 4px 0; }
+.skeleton-text-paragraph { width: 100%; height: 36px; }
+.skeleton-progress-track { width: 100%; height: 14px; border-radius: 8px; margin-top: 4px; }
 
-/* Shape 1 (top-left) */
-.shape-1 {
-  width: 200px;
-  height: 200px;
-  top: 5%;
-  left: -50px;
-  background: radial-gradient(circle, #4a90e2, #1a569a);
-  animation-delay: -2s;
-  transform: rotate(15deg);
-}
-
-/* Shape 2 (bottom-right) */
-.shape-2 {
-  width: 250px;
-  height: 250px;
-  bottom: -50px;
-  right: -50px;
-  background: radial-gradient(circle, #50e3c2, #189e7c);
-  animation-delay: -4s;
-  transform: rotate(-25deg);
-}
-
-/* Shape 3 (top-right) */
-.shape-3 {
-  width: 100px;
-  height: 100px;
-  top: 15%;
-  right: -20px;
-  background: radial-gradient(circle, #ff6b6b, #e63946);
-  animation-delay: -6s;
-  animation-duration: 9s;
-  transform: rotate(45deg);
-}
-
-/* Shape 4 (bottom-left) */
-.shape-4 {
-  width: 120px;
-  height: 120px;
-  bottom: 20%;
-  left: -20px;
-  background: radial-gradient(circle, #f39c12, #f1c40f);
-  animation-delay: -8s;
-  animation-duration: 11s;
-  transform: rotate(30deg);
-}
-
-@keyframes float {
-  0% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-15px) rotate(5deg); }
-  100% { transform: translateY(0) rotate(0deg); }
-}
-
-.page-header-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  position: relative; 
-  padding: 2rem;
-  background: white;
-  z-index: 100;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-.btnPos {
-  position: absolute;
-  top: 2rem;
-  left: 2rem;
-  z-index: 101;
-}
-
-.back-btn {
-  background: #1e3a8a;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 50px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.cards-header-content h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1e3a8a;
-  margin: 0;
-}
-
-.cards-header-content p {
-  color: #666;
-  margin: 0.5rem 0 0;
-}
-
-.cards-container {
-  display: grid;
-  gap: 30px;
-  max-width: 1400px;
-  margin: 3rem auto;
-  padding: 0 2rem;
-  z-index: 10;
-  position: relative; /* Set to relative to contain the new absolute shapes */
-}
-
-/* NEW: Styles for the shapes behind the cards */
-.card-background-shapes {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 9;
-}
-
-.card-background-shapes > div {
-  position: absolute;
-  opacity: 0.2;
-  animation: float 14s infinite ease-in-out;
-}
-
-/* Shape 1 (a circle) */
-.card-shape-1 {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  top: 10%;
-  left: 15%;
-  background: #7bd4f4;
-  animation-delay: -3s;
-}
-
-/* Shape 2 (a square rotated into a diamond) */
-.card-shape-2 {
-  width: 100px;
-  height: 100px;
-  top: 30%;
-  right: 10%;
-  background: #f7d56c;
-  transform: rotate(45deg);
-  animation-delay: -6s;
-  animation-duration: 11s;
-}
-
-/* Shape 3 (a subtle, larger circle) */
-.card-shape-3 {
-  width: 250px;
-  height: 250px;
-  border-radius: 50%;
-  bottom: 5%;
-  left: 20%;
-  background: #b2f2bb;
-  animation-delay: -9s;
-  animation-duration: 13s;
-}
-
-.card-shape-4 {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  top: 80%;
-  left: 79%;
-  background: #fab6fe;
-  animation-delay: -3s;
-}
-
-@media (min-width: 1024px) {
-    .cards-container {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-    .cards-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 767px) {
-    .cards-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .page-header-container {
-        padding-top: 5rem; 
-    }
-    
-    .btnPos {
-      top: 1rem;
-      left: 1rem;
-    }
-    
-    .back-btn {
-      padding: 0.5rem 1rem;
-    }
-    
-    .cards-header-content h1 {
-        font-size: 2rem;
-    }
+@keyframes duoShimmer {
+  100% { transform: translateX(100%); }
 }

@@ -1,127 +1,362 @@
 /* src/components/CodeCard.css */
-.code-card {
-  background-color: var(--card-bg);
+
+.compiler-code-card-shell {
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  z-index: 5;
+  box-sizing: border-box;
+}
+
+.compiler-card-main-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a; /* Standard Slate Dark Bold Core */
+  letter-spacing: -0.5px;
+  margin: 0 0 20px 0;
+}
+
+/* =========================================================================
+   📚 CODE SNIPPETS BOX WRAPPERS (No rigid boxes clutter)
+   ========================================================================= */
+/* Update these specific blocks inside src/components/CodeCard.css */
+
+.compiler-code-snippet-box {
+  width: 100%;
+  background-color: #1e1e1e !important; /* VS Code official signature flat graphite gray backdrop */
   border-radius: 12px;
-  box-shadow: 0 4px 8px var(--shadow-color);
-  padding: var(--spacing-lg);
-  margin-top: calc(var(--spacing-lg) * 2);
-  position: relative;
-  border: 1px solid var(--border-color);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.code-card h3 {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  color: var(--primary-color);
-  margin-top: 0;
-  margin-bottom: var(--spacing-md);
+.compiler-snippet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #1a1a1a !important; /* Darker header tab row */
+  padding: 10px 16px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #858585;
+  border-bottom: 1px solid #2d2d2d;
 }
 
-.code-snippet {
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  margin-bottom: var(--spacing-md);
-  position: relative;
-  max-height: 300px;
+.compiler-prism-scroller {
+  max-height: 200px;
   overflow-y: auto;
 }
 
-.code-snippet h6 {
-  background-color: #f1f1f1;
-  padding: var(--spacing-sm);
-  margin: 0;
-  border-bottom: 1px solid var(--border-color);
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  font-size: var(--font-size-sm);
-  font-weight: bold;
+/* Force standard system code font typography rules mapping */
+.compiler-prism-scroller pre, 
+.compiler-prism-scroller code {
+  font-family: 'Fira Code', 'Cascadia Code', Consolas, Monaco, monospace !important;
+  font-size: 0.88rem !important;
+  line-height: 1.55 !important;
+  color: #abb2bf !important;
 }
 
-.copy-button {
-  position: absolute;
-  right: var(--spacing-sm);
-  top: var(--spacing-sm);
-  z-index: 10;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition: all 0.2s ease;
+.compiler-prism-scroller pre span,
+.compiler-prism-scroller code span {
+  color: inherit !important;
 }
 
-.copy-button:hover {
-  background: var(--primary-color);
-  opacity: 0.9;
+.compiler-prism-scroller > div {
+  margin: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  padding: 16px !important;
 }
 
-.error-msg {
-  color: var(--incorrect-color);
-  font-size: var(--font-size-sm);
-  margin-top: var(--spacing-sm);
+/* Prism token colors - Tomorrow theme */
+.compiler-prism-scroller .token.comment,
+.compiler-prism-scroller .token.prolog,
+.compiler-prism-scroller .token.doctype,
+.compiler-prism-scroller .token.cdata {
+  color: #5c6370 !important;
 }
 
-.ace-editor-container {
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+.compiler-prism-scroller .token.punctuation {
+  color: #abb2bf !important;
 }
 
-.ace-editor-container.correct {
-  border-color: var(--correct-color);
-  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25);
+.compiler-prism-scroller .token.property,
+.compiler-prism-scroller .token.tag,
+.compiler-prism-scroller .token.boolean,
+.compiler-prism-scroller .token.number,
+.compiler-prism-scroller .token.constant,
+.compiler-prism-scroller .token.symbol,
+.compiler-prism-scroller .token.deleted {
+  color: #d19a66 !important;
 }
 
-.ace-editor-container.error {
-  border-color: var(--incorrect-color);
-  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+.compiler-prism-scroller .token.selector,
+.compiler-prism-scroller .token.attr-name,
+.compiler-prism-scroller .token.string,
+.compiler-prism-scroller .token.char,
+.compiler-prism-scroller .token.builtin,
+.compiler-prism-scroller .token.inserted {
+  color: #98c379 !important;
 }
 
-.ace-editor-container:focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+.compiler-prism-scroller .token.operator,
+.compiler-prism-scroller .token.entity,
+.compiler-prism-scroller .token.url,
+.compiler-prism-scroller .language-css .token.string,
+.compiler-prism-scroller .style .token.string {
+  color: #56b6c2 !important;
 }
 
-.code-card-title {
-  text-align: center; /* Centers the heading only */
-  font-size: var(--font-size-lg);
+.compiler-prism-scroller .token.atrule,
+.compiler-prism-scroller .token.attr-value,
+.compiler-prism-scroller .token.keyword {
+  color: #c678dd !important;
+}
+
+.compiler-prism-scroller .token.function,
+.compiler-prism-scroller .token.class-name {
+  color: #61afef !important;
+}
+
+.compiler-prism-scroller .token.regex,
+.compiler-prism-scroller .token.important,
+.compiler-prism-scroller .token.variable {
+  color: #e06c75 !important;
+}
+
+.compiler-prism-scroller .token.name,
+.compiler-prism-scroller .token.namespace {
+  color: #d19a66 !important;
+}
+
+/* XML-specific tag coloring */
+.compiler-prism-scroller .token.tag {
+  color: #d19a66 !important;
+}
+
+.compiler-prism-scroller .token.tag * {
+  color: #d19a66 !important;
+}
+
+.compiler-prism-scroller .token.tag.punctuation {
+  color: #d19a66 !important;
+}
+
+.compiler-prism-scroller .tag {
+  color: #d19a66 !important;
+}
+
+.compiler-prism-scroller .token.tag .token.punctuation {
+  color: #d19a66 !important;
+}
+
+.compiler-prism-scroller .token.tag .token.attr-name {
+  color: #98c379 !important;
+}
+
+.compiler-prism-scroller .token.tag .token.attr-value {
+  color: #61afef !important;
+}
+
+/* High visibility code element tag for single ticks `like_this` inside questions markdown text */
+.compiler-markdown-body.markdown-body :not(pre) > code {
+  background-color: #f1f5f9 !important;
+  color: #000000 !important;
+  font-size: 0.84rem !important;
+  font-weight: 700 !important;
+  padding: 2px 6px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  font-family: 'Fira Code', monospace !important;
+}
+.compiler-copy-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #98c379 !important;
+  font-size: 0.68rem;
   font-weight: 600;
-  color: var(--primary-color);
-  margin-top: 0;
-  margin-bottom: var(--spacing-md);
-}
-
-.hint-container {
-  text-align: right;
-  margin-bottom: 10px;
-}
-
-.hint-button {
-  background-color: #2c3e50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 8px 15px;
+  padding: 3px 10px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 1rem;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: background-color 0.3s ease;
+  transition: all 0.15s ease;
+}
+.compiler-copy-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #61afef !important;
 }
 
-.hint-button:hover {
-  background-color: #34495e;
+.compiler-prism-scroller {
+  max-height: 180px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+}
+/* Prism internal structural overrules spacing resets */
+.compiler-prism-scroller > div {
+  margin: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  padding: 14px !important;
 }
 
-.code-hint {
-  margin-top: 3px;
-  background-color: white;
-  border: 1px solid white;
-  color: #2c3e50;
-  padding: 15px;
+/* =========================================================================
+   🎯 DESCRIPTIVE QUESTION VIEWPANELS (Slate Contrast Balanced)
+   ========================================================================= */
+.compiler-question-prompt-viewport {
+  margin: 20px 0;
+  padding: 4px 2px;
+}
+
+.compiler-markdown-body.markdown-body p,
+.compiler-markdown-body.markdown-body li {
+  font-size: 0.94rem !important;
+  color: #334155 !important; /* 🎯 STANDARD: Premium dark gray slate readability focus */
+  line-height: 1.55 !important;
+}
+
+.compiler-markdown-body.markdown-body h1,
+.compiler-markdown-body.markdown-body h2,
+.compiler-markdown-body.markdown-body h3,
+.compiler-markdown-body.markdown-body h4 {
+  font-weight: 700 !important;
+  color: #0f172a !important;
+}
+
+/* =========================================================================
+   💡 RE-ENGINEERED COMPILER SOLUTION HINTS SYSTEMS
+   ========================================================================= */
+.compiler-hint-action-row {
+  margin-bottom: 12px;
+  display: flex;
+}
+
+.compiler-hint-toggle-trigger {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #b45309; /* Elegant amber gold hint label focus */
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+.compiler-hint-toggle-trigger:hover { color: #d97706; }
+
+.compiler-hint-floating-drawer {
+  background-color: rgba(217, 119, 6, 0.04);
+  border: 1px dashed rgba(217, 119, 6, 0.2);
   border-radius: 8px;
-  margin-bottom: 17px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+}
+.compiler-hint-floating-drawer .compiler-markdown-body p {
+  color: #78350f !important;
+  font-size: 0.88rem !important;
+}
+
+/* =========================================================================
+   💻 EMBEDDED INTERACTIVE LIVE CONSOLE HOUSING (Ace Framework Sync)
+   ========================================================================= */
+.compiler-editor-container-hull {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  transition: all 0.2s ease-in-out;
+}
+
+.editor-console-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 8px 14px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.live-pulse-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background-color: #0284c7;
+  box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.4);
+  animation: compileDotPulse 1.6s infinite;
+}
+@keyframes compileDotPulse {
+  0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.4); }
+  70% { box-shadow: 0 0 0 5px rgba(2, 132, 199, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+}
+
+/* Hull boundary feedback context shifts */
+.compiler-editor-container-hull.hull-success { border-color: #2e7d32; }
+.compiler-editor-container-hull.hull-error { border-color: #c2185b; }
+
+/* Overwrite active ace layouts padding parameters dynamically if any */
+#code_editor, #compiler_core_editor {
+  font-family: 'Fira Code', 'Courier New', Courier, monospace !important;
+  font-size: 0.88rem !important;
+}
+
+/* =========================================================================
+   ❌ VALIDATION CRASH ALERT BOXES
+   ========================================================================= */
+.compiler-exception-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background-color: rgba(194, 24, 91, 0.05);
+  border: 1px solid rgba(194, 24, 91, 0.15);
+  color: #c2185b; /* Rich dark crimson failure string alert color */
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+.exception-text-string { font-weight: 700; }
+
+/* =========================================================================
+   🟢 SUCCESS VERIFIED LOGS DRAWER ARCHITECTURE
+   ========================================================================= */
+.compiler-success-feedback-drawer {
+  background-color: rgba(46, 125, 50, 0.04);
+  border: 1px solid rgba(46, 125, 50, 0.15);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 20px;
+}
+
+.success-feedback-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #2e7d32; /* Pista Green deep variant status track code */
+  margin-bottom: 10px;
+  letter-spacing: 0.2px;
+}
+
+.compiler-success-feedback-drawer .compiler-markdown-body p {
+  color: #1b5e20 !important;
+  font-size: 0.88rem !important;
+  margin: 0 !important;
+}
+
+/* Stagger animations sequences */
+.animate-fade-up { animation: compilerNodeIn 0.35s ease-out both; }
+@keyframes compilerNodeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }

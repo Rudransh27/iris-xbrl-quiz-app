@@ -1,0 +1,53 @@
+/* src/components/Layout.css */
+
+/* 📁 SECTION HEADERS (Main, Engage, Content, etc.) */
+.nav-section {
+  font-size: 11px;
+  color: var(--text-secondary) !important; 
+  padding: 16px 20px 6px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+/* 🔗 INDIVIDUAL LINK BLOCKS */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px;
+  font-size: 14px;
+  color: var(--text-primary) !important; 
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 4px solid transparent;
+  font-weight: 600;
+}
+
+/* 👥 LINK HOVER STATE (Drops into Frosted Blue) */
+.nav-item:hover {
+  background: var(--curriculum-hover) !important;
+  color: var(--text-primary) !important;
+  padding-left: 24px; /* Soft tactical slide effect */
+}
+
+/* 🎯 SELECTED FOCUS STATE (Highlights text using deep Cerulean / Active Tint) */
+.nav-item.active {
+  color: var(--border-hud-tactile) !important; 
+  background: var(--curriculum-icon-bg) !important;
+  border-left-color: var(--bg-hud-banner) !important;
+  font-weight: 800;
+}
+
+/* 📥 SCROLLER SCALABILITY REINFORCEMENTS */
+.content-fluid-scroller::-webkit-scrollbar {
+  width: 6px;
+}
+.content-fluid-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+.content-fluid-scroller::-webkit-scrollbar-thumb {
+  background: var(--border-tactile);
+  border-radius: 20px;
+}

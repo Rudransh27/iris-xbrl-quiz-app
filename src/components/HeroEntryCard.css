@@ -1,206 +1,228 @@
+/* src/components/HeroEntryCard.css */
+
 :root {
-  --primary-color: #0f256e;
-  --secondary-color: #22C55E;
-  --text-dark: #333333;
-  --bg-white: #ffffff;
+  /* Vibrant Gamified Palette */
+  --amber-gold: #ffbe0bff;
+  --blaze-orange: #fb5607ff;
+  --neon-pink: #ff006eff;
+  --blue-violet: #8338ecff;
+  --azure-blue: #3a86ffff;
   
-  /* New light colors for the shapes */
-  --light-blue-shade: rgba(173, 216, 230, 0.5);
-  --light-green-shade: rgba(144, 238, 144, 0.5);
-  --light-pink-shade: rgba(255, 182, 193, 0.5);
-  --light-yellow-shade: rgba(255, 255, 224, 0.5);
-  --light-red-shade: rgba(240, 128, 128, 0.5);
+  /* Interface Neutrals */
+  --duo-snow: #ffffff;
+  --duo-light-gray: #e5e5e5;
+  --duo-text-dark: #3c3c3c;
+  --duo-text-muted: #afafaf;
 }
 
-.hero-banner-complete {
-  position: relative;
+.simple-vibrant-hero-container {
   width: 100%;
-  min-height: 80vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  overflow: hidden;
-  background-color: var(--bg-white);
-  font-family: 'Poppins', sans-serif;
-  padding: 4rem 2rem;
-}
-
-.hero-banner__background-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom, rgba(15, 37, 110, 0.05) 0%, rgba(255, 255, 255, 0) 25%);
-  z-index: 1;
-}
-
-/* Updated creative background design to place shapes in the surrounding area */
-.creative-shapes-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Individual shape styles and positioning */
-.shape-pattern {
-  position: absolute;
-  opacity: 0.5;
-}
-
-.shape-circle {
-  width: 150px;
-  height: 150px;
-  background-color: var(--light-blue-shade);
-  border-radius: 50%;
-  animation: pulse 10s infinite ease-in-out;
-}
-
-.shape-square {
-  width: 120px;
-  height: 120px;
-  background-color: var(--light-green-shade);
-  transform: rotate(45deg);
-  animation: pulse 12s infinite ease-in-out reverse;
-}
-
-.shape-triangle {
-  width: 150px;
-  height: 150px;
-  background-color: var(--light-pink-shade);
-  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-  animation: pulse 11s infinite ease-in-out;
-}
-
-/* Specific positioning for each shape to keep them away from the center text */
-.creative-shapes-container .shape-pattern:nth-child(1) { top: 5%; left: 10%; }
-.creative-shapes-container .shape-pattern:nth-child(2) { top: 20%; right: 5%; }
-.creative-shapes-container .shape-pattern:nth-child(3) { top: 50%; left: 0%; }
-.creative-shapes-container .shape-pattern:nth-child(4) { bottom: 10%; right: 15%; }
-.creative-shapes-container .shape-pattern:nth-child(5) { bottom: 5%; left: 20%; }
-.creative-shapes-container .shape-pattern:nth-child(6) { top: 60%; right: 0%; }
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-
-.hero-content {
-  position: relative;
-  z-index: 2;
-  max-width: 800px;
-}
-
-.hero-title {
-  font-size: 3.5rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  margin-bottom: 1rem;
-}
-
-/* New styling for the brand and underline */
-.iris-brand-color {
-  color: var(--secondary-color);
-}
-
-.hero-subtitle {
-  font-size: 1.25rem;
-  color: var(--text-dark);
-  font-weight: 500;
-  position: relative;
-}
-
-.iris-underline {
-  position: relative;
-  display: inline-block;
-  color: var(--primary-color);
-}
-
-.iris-underline::after,
-.iris-underline::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  width: 100%;
-  background-color: var(--primary-color);
-  border-radius: 5px;
-  opacity: 0.8;
-}
-
-.iris-underline::before {
-  bottom: 0px;
-  height: 3px;
-}
-
-.iris-underline::after {
-  bottom: -6px;
-  height: 2px;
-}
-
-.hero-description {
-  font-size: 1rem;
-  color: #666;
-  margin: 1.5rem 0;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.search-bar-container {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.search-input {
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 50px;
-  width: 100%;
-  max-width: 450px;
-  transition: border-color 0.3s ease;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-}
-
-.search-btn {
-  padding: 1rem 2rem;
-  background-color: var(--primary-color);
-  color: var(--bg-white);
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-size: 1rem;
+  min-height: 85vh;
+  background-color: var(--duo-snow); 
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 40px 24px;
+  box-sizing: border-box;
+  font-family: "Nunito", "DIN Next LT Pro", system-ui, sans-serif; /* Duolingo-style rounded fonts */
 }
 
-.search-btn:hover {
-  background-color: var(--secondary-color);
+.simple-hero-wrapper {
+  width: 100%;
+  max-width: 1050px;
 }
 
-/* Responsive adjustments for smaller screens */
-@media (max-width: 768px) {
-  .hero-title { font-size: 2.5rem; }
-  .hero-subtitle { font-size: 1rem; }
-  .search-bar-container { flex-direction: column; }
-  .search-input, .search-btn { width: 100%; max-width: none; }
-  
-  /* Make shapes smaller on mobile to keep them in the surrounding */
-  .shape-circle, .shape-square, .shape-triangle {
-    width: 80px;
-    height: 80px;
+.simple-split-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  align-items: center;
+  gap: 48px;
+}
+
+@media (max-width: 991px) {
+  .simple-split-layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
   }
+}
+
+/* ================= LEFT CONTENT PANEL ================= */
+.simple-text-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+@media (max-width: 991px) {
+  .simple-text-panel {
+    align-items: center;
+  }
+}
+
+.simple-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--duo-snow);
+  border: 2px solid var(--duo-light-gray);
+  border-bottom: 4px solid var(--duo-light-gray); /* Chunky Duolingo Border */
+  padding: 10px 20px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--blue-violet);
+  letter-spacing: 0.8px;
+  margin-bottom: 24px;
+  transform: rotate(-1deg); /* Playful tilt */
+}
+
+.simple-star-icon {
+  color: var(--amber-gold);
+  font-size: 16px;
+}
+
+.simple-hero-title {
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--duo-text-dark);
+  margin: 0 0 20px 0;
+  letter-spacing: -0.5px;
+}
+
+.simple-brand-text {
+  color: var(--azure-blue);
+  position: relative;
+}
+
+.simple-hero-subtitle {
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #777777;
+  margin: 0 0 40px 0;
+  max-width: 500px;
+}
+
+/* ================= CHUNKY DUOLINGO SEARCH CAPSULE ================= */
+.simple-search-capsule {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 520px;
+  background-color: #f7f7f7;
+  border: 2px solid var(--duo-light-gray);
+  border-bottom: 5px solid var(--duo-light-gray);
+  border-radius: 20px;
+  padding: 6px 8px 6px 20px;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.simple-search-capsule:focus-within {
+  background-color: var(--duo-snow);
+  border-color: var(--azure-blue);
+  border-bottom-color: #2871e6; /* Darker variant of azure for depth */
+}
+
+.simple-search-icon {
+  color: var(--duo-text-muted);
+  font-size: 18px;
+  margin-right: 14px;
+}
+
+.simple-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--duo-text-dark);
+  padding: 14px 0;
+}
+
+.simple-search-input::placeholder {
+  color: var(--duo-text-muted);
+}
+
+/* THE 3D DUOLINGO BUTTON */
+.simple-search-btn {
+  background-color: var(--neon-pink);
+  border: none;
+  border-bottom: 5px solid #d00058; /* Darker pink for tactile base */
+  color: #ffffff;
+  padding: 14px 32px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.1s ease;
+}
+
+.simple-search-btn:hover {
+  filter: brightness(1.05);
+}
+
+.simple-search-btn:active {
+  transform: translateY(4px);
+  border-bottom-width: 1px;
+}
+
+/* ================= RIGHT GRAPHIC: GAMIFIED PLANET ORBIT ================= */
+.simple-graphic-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chunky-planet-core {
+  width: 260px;
+  height: 260px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chunky-inner-core {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background-color: var(--blaze-orange);
+  border: 2px solid var(--duo-snow);
+  border-bottom: 8px solid #cc4300; /* Flat 3D lighting shadow */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  transform: rotate(-5deg);
+}
+
+.chunky-inner-core span {
+  color: var(--duo-snow);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.chunky-ring {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.ring-vibrant-1 {
+  width: 190px;
+  height: 190px;
+  border: 6px dashed var(--amber-gold);
+}
+
+.ring-vibrant-2 {
+  width: 260px;
+  height: 260px;
+  border: 4px solid var(--blue-violet);
+  border-bottom-width: 8px; /* Give the structural orbit path a 3D drop */
 }

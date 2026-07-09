@@ -1,6 +1,6 @@
 // src/context/AuthContext.js
-import React, { createContext, useState, useEffect } from 'react';
-import api from '../admin/services/api';
+import React, { createContext, useState, useEffect, useCallback } from "react";
+import api from "../admin/services/api";
 
 const AuthContext = createContext();
 
@@ -8,18 +8,43 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user on app start
+  // =========================================================================
+  // 🧠 STRUCTURAL DATA NORMALIZATION MATRIX
+  // =========================================================================
+  const normalizeUserData = (userPayload) => {
+    return {
+      ...userPayload,
+      role: userPayload.role || "user",
+      isAdmin: userPayload.role === "admin" || userPayload.role === "superadmin",
+      xp: userPayload.xp ?? 0,
+      streak: userPayload.streak ?? userPayload.currentStreak ?? 0,
+      avatarUrl: userPayload.avatarUrl || "",
+      avatarId: userPayload.avatarId || "dev",
+      department: userPayload.department || null,
+      team: userPayload.team || null
+    };
+  };
+
+  // Load user on app start (Reload Hydration Layer)
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (token) {
         try {
           const res = await api.validateToken();
-          if (res.valid) {
-            setUser({ ...res.user, xp: res.user.xp ?? 0 });
-            localStorage.setItem('user', JSON.stringify(res.user));
-          } else logout();
-        } catch (err) { logout(); }
+          if (res.valid && res.user) {
+            const userData = normalizeUserData(res.user);
+            setUser(userData);
+            localStorage.setItem("user", JSON.stringify(userData));
+          } else {
+            logout();
+          }
+        } catch (err) {
+          console.error("❌ Token authentication handshake crashed:", err.message);
+          logout();
+        }
+      } else {
+        setUser(null);
       }
       setLoading(false);
     };
@@ -27,72 +52,113 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const refreshUser = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-  try {
-    const res = await api.validateToken();
-    if (res.valid) {
-      const userData = {
-        ...res.user,
-        isAdmin: res.user.role === 'admin',
-        xp: res.user.xp ?? 0,
-      };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+    try {
+      const res = await api.validateToken();
+      if (res.valid && res.user) {
+        const userData = normalizeUserData(res.user);
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+      }
+    } catch (err) {
+      console.error("Failed to refresh user profile matrix:", err.message);
     }
-  } catch (err) {
-    console.error("Failed to refresh user:", err.message);
-  }
-};
-
+  };
 
   const login = async (email, password) => {
     try {
       const res = await api.login(email, password);
-      localStorage.setItem('token', res.token);
+      localStorage.setItem("token", res.token);
 
-      const validateRes = await api.validateToken();
-      if (!validateRes.valid) throw new Error('Invalid token after login');
-
-      const userData = { ...validateRes.user, xp: validateRes.user.xp ?? 0 };
+      const userData = normalizeUserData(res.user);
       setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem("user", JSON.stringify(userData));
       return { success: true };
     } catch (err) {
-      return { success: false, message: err.message || 'Login failed' };
+      return { success: false, message: err.response?.data?.message || err.message || 'Login failed' };
     }
   };
 
-  const register = async (username, email, password) => {
+  // =========================================================================
+  // 📝 REGISTRATION PIPELINE ASSIGNMENT LINK
+  // =========================================================================
+  const register = async (username, email, password, department, teamId) => {
     try {
-      const res = await api.register(username, email, password);
-      localStorage.setItem('token', res.token);
-      const userData = { ...res.user, xp: res.user.xp ?? 100 };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return { success: true };
+      const res = await api.register(username, email, password, department, teamId);
+      return { success: true, message: res.message };
     } catch (err) {
-      return { success: false, message: err.message || 'Registration failed' };
+      return { success: false, message: err.response?.data?.message || err.message || "Registration failed" };
     }
   };
 
+  const verifyEmail = async (email, otp) => {
+    try {
+      const res = await api.verifyEmail(email, otp);
+
+      if (res.success && res.token) {
+        localStorage.setItem("token", res.token);
+
+        const userData = normalizeUserData(res.user);
+        if (userData.xp === 0) userData.xp = 100; 
+
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+        return { success: true };
+      }
+      return { success: false, message: 'Verification handshake payload error' };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || err.message || 'Verification failed' };
+    }
+  };
+
+  // =========================================================================
+  // 🧹 DEEP CLEAN LIFECYCLE LOGOUT ACTIONS
+  // =========================================================================
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    // 🌟 FIXED: Flushes all active curriculum and layout state flags cleanly
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("iris_active_module_id");
+    localStorage.removeItem("iris_selected_topic");
+    localStorage.removeItem("iris_selected_topic_id");
+    localStorage.removeItem("iris_studio_active_tree_state");
+    
     setUser(null);
   };
 
-  const updateUserXP = (xpToAdd) => {
+  const updateUserXP = (newXpTotal) => {
     if (user) {
-      const updatedUser = { ...user, xp: xpToAdd };
+      const updatedUser = { ...user, xp: newXpTotal };
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
     }
   };
 
+  const updateUserStreak = useCallback((newStreak) => {
+    setUser(prev => {
+      if (!prev || prev.streak === newStreak) return prev;
+      const updated = { ...prev, streak: newStreak };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUserXP, refreshUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        verifyEmail,
+        updateUserXP,
+        updateUserStreak,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

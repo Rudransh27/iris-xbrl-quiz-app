@@ -1,225 +1,265 @@
 /* src/components/ModuleDetail.css */
 
-/* --- Root Variables --- */
-:root {
-  --detail-shape-red: rgba(255, 99, 132, 0.3);
-  --detail-shape-yellow: rgba(255, 206, 86, 0.3);
-  --primary-color: #1e3a8a;
-  --text-dark: #333;
-  --text-gray: #666;
-  --bg-white: #ffffff;
-  --bg-light-gray: #f9fafb;
-  --border-color: #e5e7eb;
-}
-
-/* --- Base Styles (Desktop-first) --- */
 .module-detail-page {
   position: relative;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 4rem 2rem;
-  font-family: 'Arial', sans-serif;
-  min-height: 80vh;
+  width: 100%;
+  background-color: #fafbfe; /* Pure crisp bright light environment backing */
+  padding: 30px 0 60px 0; /* Compressed compact layout breathing height */
+  min-height: calc(100vh - 74px);
   overflow: hidden;
 }
 
-.module-detail-background-shapes {
+.detail-ambient-grid {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.detail-shape {
-  position: absolute;
-  opacity: 0.6;
-  animation: float 15s infinite ease-in-out;
-}
-
-.shape--circle-red {
-  width: 250px;
-  height: 250px;
-  background-color: var(--detail-shape-red);
-  border-radius: 50%;
-  top: 10%;
-  left: -5%;
-  animation-delay: 0s;
-}
-
-.shape--square-yellow {
-  width: 200px;
-  height: 200px;
-  background-color: var(--detail-shape-yellow);
-  transform: rotate(45deg);
-  bottom: 5%;
-  right: -5%;
-  animation-delay: 3s;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-20px) scale(1.05); }
-}
-
-.back-btn {
-  position: relative;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: radial-gradient(rgba(15, 37, 110, 0.02) 1px, transparent 0);
+  background-size: 26px 26px;
   z-index: 1;
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  cursor: pointer;
-  font-size: 1rem;
-  margin-bottom: 2rem;
-  padding: 0;
+}
+
+.module-detail-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 5;
+}
+
+/* Back navigation anchor configuration */
+.detail-back-btn {
+  background: transparent;
+  border: 1px solid rgba(15, 37, 110, 0.12);
+  color: #0f256e;
+  font-size: 0.82rem;
   font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: all 0.2s ease;
+}
+.detail-back-btn:hover {
+  background-color: #0f256e;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 37, 110, 0.12);
 }
 
-.module-detail-content-wrapper {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  gap: 5rem;
+/* Two-column structural distribution system layout */
+.module-detail-layout-split {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr; 
+  gap: 36px;
   align-items: flex-start;
 }
 
-.module-detail-left {
-  flex: 1;
-}
-
-.module-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  margin-bottom: 1rem;
-}
-
-.module-description {
-  font-size: 1.1rem;
-  color: var(--text-gray);
-  line-height: 1.6;
-  margin-bottom: 2rem;
-}
-
-.content-heading {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-dark);
-  margin-bottom: 1.5rem;
-}
-
-.topics-table {
-  border-radius: 12px;
-  background-color: var(--bg-white);
-  padding: 1.5rem;
+/* =========================================================================
+   🎯 LEFT PANEL: STANDARD PREMIUM CONTRAST RESET (No Harsh Blacks)
+   ========================================================================= */
+.module-detail-left-panel {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  align-items: flex-start;
+  width: 100%;
 }
 
-.topic-item {
+.detail-pill-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  background-color: rgba(15, 37, 110, 0.05);
+  color: #0f256e;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.detail-main-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #0f172a; /* 🎯 STANDARD: Premium Elite Charcoal (Not harsh black) */
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.detail-main-desc {
+  font-size: 0.94rem;
+  color: #334155; /* 🎯 STANDARD: Soft Developer Charcoal Slate for beautiful reading */
+  line-height: 1.55;
+  max-width: 680px;
+  margin-bottom: 28px;
+}
+
+.curriculum-header-bar {
   display: flex;
   align-items: center;
-  font-size: 1.1rem;
-  color: var(--text-dark);
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  gap: 8px;
+  width: 100%;
+  border-bottom: 1px dashed #e2e8f0;
+  padding-bottom: 6px;
+  margin-bottom: 16px;
 }
 
-.topic-item:hover,
-.topic-item.expanded {
-  background-color: var(--bg-light-gray);
-  color: var(--primary-color);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+.curriculum-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b; /* Balanced header text profile */
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.topic-item.expanded .topic-icon {
-  transform: rotate(90deg);
-}
-
-.topic-icon {
-  color: var(--primary-color);
-  font-size: 1.2rem;
-  margin-right: 0.75rem;
-  font-weight: bold;
-  transition: transform 0.2s ease;
-}
-
-.topic-title {
-  flex-grow: 1;
-}
-
-.module-detail-right {
-  width: 40%;
-  flex-shrink: 0;
-  margin-top: -3rem; /* Moves the card up by 3rem */
-}
-
-.knowledge-cards-list-wrapper {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease-out;
-}
-
-.topic-item.expanded + .knowledge-cards-list-wrapper {
-  max-height: 2000px;
-}
-
-.knowledge-cards-list {
+/* =========================================================================
+   🔮 PROFESSIONAL TOPICS ACCORDION MATRIX (Clean Compact & Balanced Colors)
+   ========================================================================= */
+.topics-accordion-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-left: 2rem;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  border-left: 2px solid var(--border-color);
+  width: 100%;
+  gap: 10px;
 }
 
-.knowledge-card-link {
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid var(--border-color);
+.accordion-node-item {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0; /* Soft border line instead of hard dark boundaries */
   border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+
+.accordion-trigger-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px; /* Balanced tight cell spacing */
   cursor: pointer;
-  font-size: 1rem;
-  color: var(--text-dark);
-  transition: all 0.2s ease;
+  user-select: none;
+  background-color: #ffffff;
+  transition: background-color 0.15s ease;
 }
 
-.knowledge-card-link:hover {
-  background-color: var(--bg-light-gray);
+.accordion-trigger-row:hover {
+  background-color: #f8fafc;
 }
 
-/* --- Media Queries for Responsiveness --- */
+.trigger-title-stack {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
 
-@media (max-width: 768px) {
-  .module-detail-page {
-    padding: 2rem 1rem;
-  }
+.topic-index-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b; /* Soft metadata slate tracking labels */
+}
 
-  .module-detail-content-wrapper {
-    flex-direction: column-reverse;
-    gap: 2rem;
-  }
+.accordion-title-text {
+  font-size: 0.94rem;
+  font-weight: 600; /* 🎯 STANDARD: Rounded bold weighting pass */
+  color: #1e293b; /* 🎯 STANDARD: Elegant Dark Slate look */
+}
 
-  .module-detail-left,
-  .module-detail-right {
-    width: 100%;
-    flex-shrink: 1;
-  }
+.accordion-arrow-vector {
+  color: #64748b;
+  transition: transform 0.2s ease;
+}
+.accordion-arrow-vector.rotated {
+  transform: rotate(180deg);
+}
 
-  .module-detail-right {
-    margin-top: 0; /* Remove the negative margin on mobile */
-  }
+/* Collapsible drawer container parameters */
+.accordion-collapsible-drawer {
+  background-color: #f8fafc; /* Slick light sub-bedding matrix */
+  border-top: 1px solid #f1f5f9;
+  padding: 12px 18px 12px 46px;
+}
 
-  .module-title {
-    font-size: 2rem;
-  }
+.chapters-links-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
-  .content-heading {
-    font-size: 1.2rem;
+.chapter-document-anchor-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+  color: #475569; /* Balanced slate gray link text */
+  transition: all 0.15s ease;
+}
+
+.doc-title-string {
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.chapter-document-anchor-row:hover {
+  transform: translateX(3px);
+}
+
+/* =========================================================================
+   🟢 HOVER BLOOM SYNC ENGINE (Premium Balanced Profiles)
+   ========================================================================= */
+
+/* iFile -> Pista Green Sync */
+.dept-context-ifile .accordion-node-item:hover,
+.dept-context-ifile .accordion-node-item.active-node { border-color: rgba(144, 238, 144, 0.8); }
+.dept-context-ifile .accordion-node-item.active-node .topic-index-badge { color: #2e7d32; }
+.dept-context-ifile .chapter-document-anchor-row:hover { color: #2e7d32 !important; }
+.dept-context-ifile .doc-icon-tint { color: rgba(144, 238, 144, 1); }
+
+/* iDEAL -> Light Pink Sync */
+.dept-context-ideal .accordion-node-item:hover,
+.dept-context-ideal .accordion-node-item.active-node { border-color: rgba(255, 182, 193, 0.7); }
+.dept-context-ideal .accordion-node-item.active-node .topic-index-badge { color: #c2185b; }
+.dept-context-ideal .chapter-document-anchor-row:hover { color: #c2185b !important; }
+.dept-context-ideal .doc-icon-tint { color: rgba(255, 182, 193, 1); }
+
+/* Carbon -> Corporate Blue Sync */
+.dept-context-carbon .accordion-node-item:hover,
+.dept-context-carbon .accordion-node-item.active-node { border-color: rgba(15, 37, 110, 0.3); }
+.dept-context-carbon .accordion-node-item.active-node .topic-index-badge { color: #0f256e; }
+.dept-context-carbon .chapter-document-anchor-row:hover { color: #0f256e !important; }
+.dept-context-carbon .doc-icon-tint { color: #0f256e; }
+
+.no-chapters-notice {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Sticky card management framework layout sidebar */
+.sticky-sidebar-card-holder {
+  position: sticky;
+  top: 94px;
+}
+
+/* Transitions engine keyframes trigger */
+.animate-fade-up { animation: detIn 0.4s ease-out both; }
+@keyframes detIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* =========================================================================
+   📱 RESPONSIVE BREAKPOINT GRID CONSTRAINTS
+   ========================================================================= */
+@media (max-width: 992px) {
+  .module-detail-layout-split {
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
+  .sticky-sidebar-card-holder {
+    position: static;
+  }
+}
+
+@media (max-width: 576px) {
+  .detail-main-title { font-size: 1.75rem; }
+  .accordion-collapsible-drawer { padding-left: 20px; }
 }
