@@ -156,7 +156,7 @@ export default function VideoCard({ videoUrl, title, description, thumbnailUrl, 
           <div className="video-tags-stack-ribbon d-flex flex-wrap gap-1.5 mb-3">
             {tags.map((tag, tIdx) => (
               <span key={tIdx} className="video-custom-badge-pill font-monospace">
-                <TagFill size={9} className="me-1 text-primary" /> {tag}
+                <TagFill size={9} className="me-1" /> {tag}
               </span>
             ))}
           </div>
@@ -164,7 +164,7 @@ export default function VideoCard({ videoUrl, title, description, thumbnailUrl, 
 
         <div className="video-session-notes-box rounded-3 border">
           <div className="notes-header-indicator border-bottom bg-white px-3 py-2 d-flex align-items-center gap-1.5 fw-bold font-monospace">
-            <InfoCircleFill size={12} style={{ color: '#0f256e' }} />
+            <InfoCircleFill size={12} style={{ color: 'var(--amber-glow-dark, #e08600)' }} />
             <span>SESSION CORE NOTES MATRIX</span>
           </div>
           

@@ -3,12 +3,12 @@ import React, { useState, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { Badge } from 'react-bootstrap';
-import { BoxArrowRight, TrophyFill, Lightbulb, Sun, MoonStarsFill } from 'react-bootstrap-icons';
+import { BoxArrowRight, TrophyFill, Sun, MoonStarsFill } from 'react-bootstrap-icons';
 import './Navbar.css';
-import irisLogo from '../assets/irislogo.svg';
+import irisLogo from '../assets/iris-orbit-logo.png';
 import AuthContext from '../context/AuthContext';
-import { ThemeContext } from '../context/ThemeContext'; 
-import ConfirmationModal from './ConfirmationModal'; 
+import { ThemeContext } from '../context/ThemeContext';
+import ConfirmationModal from './ConfirmationModal';
 
 const AVATAR_LIST = [
   { id: 'dev', emoji: '💻' },
@@ -24,7 +24,7 @@ export default function Navbar() {
   const [imageLoadError, setImageLoadError] = useState(false);
   
   const { user, logout } = useContext(AuthContext);
-  const { theme, toggleTheme } = useContext(ThemeContext); 
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -92,7 +92,7 @@ export default function Navbar() {
                   <div className="d-flex flex-column align-items-start justify-content-center">
                     <span className="duo-username-text">{user.username}</span>
                     <Badge className="duo-xp-badge mt-1">
-                      {user.xp || 0} XP
+                      {user.xp || 0} Plasma
                     </Badge>
                   </div>
                 </Link>
@@ -106,19 +106,13 @@ export default function Navbar() {
               </Link>
             </div>
             
-             {isAuthenticated && hasAdminDashboardAccess && (
+             {isAuthenticated && (
               <div className="duo-nav-item-wrapper">
                 <Link to="/orbit" className={`duo-nav-item ${location.pathname.startsWith('/orbit') ? 'item-active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
                   Iris Orbit
                 </Link>
               </div>
             )}
-
-            <div className="duo-nav-item-wrapper">
-              <Link to="/modules" className={`duo-nav-item ${location.pathname.startsWith('/modules') ? 'item-active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
-                Modules
-              </Link>
-            </div>
 
             {isAuthenticated && hasAdminDashboardAccess && (
               <div className="duo-nav-item-wrapper">
@@ -127,22 +121,27 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
-            {isAuthenticated && (
-              <div className="duo-nav-item-wrapper">
-                <Link to="/ideas" className={`duo-nav-item d-flex align-items-center gap-1.5 ${location.pathname.startsWith('/ideas') ? 'item-active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
-                  <Lightbulb size={14} className={location.pathname.startsWith('/ideas') ? 'text-warning' : ''} /> Ideas Sandbox
-                </Link>
-              </div>
-            )}
 
-           
+            <div className="duo-nav-item-wrapper">
+              <Link to="/about" className={`duo-nav-item ${location.pathname.startsWith('/about') ? 'item-active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+                About Us
+              </Link>
+            </div>
+
+            <div className="duo-nav-item-wrapper">
+              <Link to="/contact" className={`duo-nav-item ${location.pathname.startsWith('/contact') ? 'item-active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+                Contact
+              </Link>
+            </div>
+
+
             {/* Mobile View Sidebar Footer Controls Container */}
             <div className="duo-mobile-actions-wrapper">
               <button onClick={toggleTheme} className="duo-theme-toggle-btn text-start gap-3 w-100 mb-2">
                 {theme === 'light' ? <MoonStarsFill size={14} /> : <Sun size={14} />}
                 <span>{theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}</span>
               </button>
-              
+
               {!isAuthenticated ? (
                 <button onClick={handleLoginClick} className="duo-btn-primary">Sign In</button>
               ) : (
@@ -177,7 +176,7 @@ export default function Navbar() {
                 </div>
                 <span className="duo-username-text">{user.username}</span>
                 <Badge className="duo-xp-badge">
-                  {user.xp || 0} XP
+                  {user.xp || 0} Plasma
                 </Badge>
               </Link>
               <div className="hud-separator"></div>

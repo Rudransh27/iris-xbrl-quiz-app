@@ -5,48 +5,82 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { io as socketIO } from "socket.io-client";
-import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
+import api from "../admin/services/api";
 import SuperAdminDashboard from "../admin/SuperAdminDashboard";
 import Dashboard1 from "../admin/Dashboard1";
 import {
   House, Book, BarChart, Lightbulb, Trophy, PersonCircle,
-  Shield, Building, Broadcast, ArrowLeftRight, LightningCharge,
+  Shield, Building, Broadcast, ArrowLeftRight, LightningCharge, Fire,
   SunFill, MoonFill, Activity, BoxArrowRight,
-  ChevronLeft, ChevronRight, List, XLg,
+  List, XLg,
 } from "react-bootstrap-icons";
 import "./Layout.css";
 import "./OrbitShell.css";
+import { resolveViewMode, viewModeStorageKey } from "../utils/viewMode";
+import irisOrbitLogo from "../assets/iris-orbit-logo.png";
 
 export default function OrbitShell() {
   const location    = useLocation();
   const navigate    = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { user, logout, refreshUser }  = useContext(AuthContext);
   const { theme, toggleTheme } = useContext(ThemeContext);
   const bio = localStorage.getItem("orbit_profile_bio") || "";
 
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [liveXP,      setLiveXP]      = useState(user?.xp || 0);
+  const [streak,      setStreak]      = useState(0);
   const [toastQueue,  setToastQueue]  = useState([]);
+  const [departmentName, setDepartmentName] = useState("");
   const socketRef = useRef(null);
 
-  const [currentViewMode, setCurrentViewMode] = useState(() => {
-    const saved = localStorage.getItem("orbit_view_mode");
-    if (saved) return saved;
-    if (user?.role === "superadmin") return "superadmin";
-    if (user?.role === "admin")      return "admin";
-    return "learner";
-  });
+  // Department label shown in the topbar (replaces the old duplicate
+  // "Iris Orbit" wordmark there, now that the single logo lives in the
+  // sidebar/topbar intersection cell) — resolved from the public
+  // departments list since `user.department` is only a bare ObjectId.
+  useEffect(() => {
+    if (!user?.department || typeof api.getDepartments !== "function") return;
+    let cancelled = false;
+    api.getDepartments().then((res) => {
+      if (cancelled) return;
+      const list = res?.data || res || [];
+      const match = list.find((d) => d._id === user.department || d._id?.toString?.() === user.department);
+      if (match?.name) setDepartmentName(match.name);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [user?.department]);
+
+  // Streak isn't tracked anywhere in this shell today (only OrbitWorkspace
+  // fetches it) — the topbar needs it too now, so pull it once here via the
+  // same endpoint OrbitWorkspace already uses.
+  useEffect(() => {
+    if (!user?._id || typeof api.getMyStreak !== "function") return;
+    let cancelled = false;
+    api.getMyStreak().then((res) => {
+      if (!cancelled && res?.success) setStreak(res.currentStreak || 0);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [user?._id]);
+
+  // "learner" is the only safe default before the user's real role is known
+  // (AuthContext hydrates asynchronously) — never trust any pre-role-check
+  // storage read for the initial render.
+  const [currentViewMode, setCurrentViewMode] = useState("learner");
+  const viewModeKey = viewModeStorageKey(user?._id);
+
+  // One-time cleanup: the old unscoped key could still be sitting in a
+  // browser's localStorage from before this fix and must never be read
+  // again by anything.
+  useEffect(() => { localStorage.removeItem("orbit_view_mode"); }, []);
 
   useEffect(() => {
-    if (!localStorage.getItem("orbit_view_mode") && user?.role) {
-      if (user.role === "superadmin") setCurrentViewMode("superadmin");
-      else if (user.role === "admin") setCurrentViewMode("admin");
-    }
-  }, [user]);
+    if (!user?.role) return;
+    const saved = viewModeKey ? localStorage.getItem(viewModeKey) : null;
+    setCurrentViewMode(resolveViewMode(user.role, saved));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?._id, user?.role]);
 
   useEffect(() => { if (user?.xp !== undefined) setLiveXP(user.xp); }, [user?.xp]);
 
@@ -65,7 +99,7 @@ export default function OrbitShell() {
       refreshUser?.();
       const toast = {
         id:          notificationId || String(Date.now()),
-        message:     message || `⚡ You've been awarded ${xpAwarded} XP for "${moduleTitle}"!`,
+        message:     message || `⚡ You've been awarded ${xpAwarded} Plasma for "${moduleTitle}"!`,
         xpAwarded:   xpAwarded || 0,
         moduleTitle: moduleTitle || "",
       };
@@ -76,120 +110,110 @@ export default function OrbitShell() {
   }, [user?._id]);
 
   // ─── Active section detection ────────────────────────────────────────────
-  const p     = location.pathname;
-  const qview = searchParams.get("view") || "home";
+  // Derived purely from the real URL now — no more ?view= query param.
+  const p = location.pathname;
 
   const activeNav =
     p.startsWith("/orbit/modules") ? "modules"
     : p === "/orbit/ideas"         ? "ideas"
     : p === "/orbit/profile"       ? "profile"
-    : qview;
+    : p === "/orbit"               ? "home"
+    : p.replace("/orbit/", "");
+
+  // 🎯 BUG FIX ("why are we landing on the superadmin page from Iris Orbit"):
+  // bare /orbit is the "Home" destination — the navbar's "Iris Orbit" link
+  // and the sidebar's own "Home" item both point there — and MUST always
+  // render the learner workspace for every role, never the admin/superadmin
+  // dashboard. Only /orbit/dashboard (a distinct URL, reached via the
+  // explicit "Hub"/"Admin Panel"/mode-switcher controls, intentionally
+  // routed to `element={null}` in App.jsx for exactly this reason) is the
+  // actual dashboard/hub screen. Any other /orbit/* path (modules, profile,
+  // ideas, etc.) is a real, purposeful navigation and must always render
+  // its own routed page too.
+  const isDashboardHome = p.startsWith("/orbit/dashboard");
 
   const goTo = (dest) => {
     if (dest === "modules")  return navigate("/orbit/modules");
     if (dest === "ideas")    return navigate("/orbit/ideas");
     if (dest === "profile")  return navigate("/orbit/profile");
-    if (p === "/orbit") setSearchParams({ view: dest });
-    else navigate(`/orbit?view=${dest}`);
+    navigate(dest === "home" ? "/orbit" : `/orbit/${dest}`);
   };
 
   const goAdmin  = (tab) => navigate(`/orbit/dashboard?tab=${tab}`);
   const adminTab = new URLSearchParams(location.search).get("tab") || "overview";
 
   const handleSignOut = () => {
-    localStorage.removeItem("orbit_view_mode");
+    if (viewModeKey) localStorage.removeItem(viewModeKey);
     logout();
     navigate("/");
   };
 
   // ─── Sidebar nav item renderer (plain function, NOT a React component) ───
+  // Icon-box-on-top, label-below, centered — a common, generic nav-rail
+  // convention (icon tinted/boxed when active, plain otherwise). Full label
+  // always renders now (no more collapsed/expanded duality); `title` still
+  // carries it too, useful since some labels are truncated at this width.
   const sideNavItem = (Icon, label, isActive, onClickFn, isDanger = false) => (
     <div
       key={label}
       className="orbit-nav-item"
       onClick={() => { onClickFn(); setIsMobileDrawerOpen(false); }}
-      title={isCollapsed ? label : undefined}
+      title={label}
       style={{
         display:        "flex",
+        flexDirection:  "column",
         alignItems:     "center",
-        gap:            "10px",
-        padding:        isCollapsed ? "10px 0" : "9px 14px",
-        margin:         isCollapsed ? "2px 8px" : "1px 10px",
-        borderRadius:   "9px",
+        gap:            "4px",
+        padding:        "8px 4px",
+        margin:         "2px 8px",
+        borderRadius:   "12px",
         cursor:         "pointer",
-        transition:     "background 0.14s ease, padding-left 0.14s ease, color 0.14s ease",
-        // Active state: bold heading-ink for the label (not the amber accent
-        // itself) — the tinted background + left border already carry the
-        // brand color, and amber-on-white text alone reads too low-contrast.
-        // --orbit-text-heading (not a fixed ink) so this still swaps
-        // correctly against the sidebar's own dark-mode surface.
-        color:          isActive ? "var(--orbit-text-heading)"
-                        : isDanger ? "var(--pastel-streak-text)"
-                        : "var(--orbit-text-body)",
-        background:     isActive ? "var(--orbit-brand-muted)" : "transparent",
-        fontWeight:     isActive ? "700" : "600",
-        fontSize:       "13.5px",
-        justifyContent: isCollapsed ? "center" : "flex-start",
-        borderLeft:     isActive && !isCollapsed ? "3px solid var(--orbit-brand)" : "3px solid transparent",
-        whiteSpace:     "nowrap",
-        overflow:       "hidden",
         userSelect:     "none",
       }}
-      onMouseEnter={(e) => {
-        if (!isActive) {
-          e.currentTarget.style.background  = "var(--orbit-brand-light)";
-          e.currentTarget.style.color       = isDanger ? "var(--pastel-streak-text)" : "var(--orbit-text-heading)";
-          if (!isCollapsed) e.currentTarget.style.paddingLeft = "18px";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isActive) {
-          e.currentTarget.style.background  = "transparent";
-          e.currentTarget.style.color       = isDanger ? "var(--pastel-streak-text)" : "var(--orbit-text-body)";
-          if (!isCollapsed) e.currentTarget.style.paddingLeft = "14px";
-        }
-      }}
     >
-      <Icon size={15} style={{ flexShrink: 0 }} />
-      {!isCollapsed && <span>{label}</span>}
+      <div
+        className="orbit-nav-item__icon"
+        style={{
+          width:          "44px",
+          height:         "44px",
+          borderRadius:   "12px",
+          display:        "flex",
+          alignItems:     "center",
+          justifyContent: "center",
+          // Active: a solid black fill (--ink-strong is a fixed dark ink
+          // token that doesn't swap with the theme, so this stays black in
+          // both light and dark mode) rather than a colored/pale tint.
+          background:     isActive ? "var(--ink-strong)" : "transparent",
+          color:          isActive ? "#ffffff" : isDanger ? "var(--pastel-streak-text)" : "var(--orbit-text-muted)",
+          transition:     "background 0.14s ease, color 0.14s ease",
+        }}
+        onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "var(--orbit-brand-light)"; }}
+        onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+      >
+        <Icon size={19} />
+      </div>
+      <span style={{
+        fontSize:   "10.5px",
+        fontWeight: isActive ? "700" : "600",
+        textAlign:  "center",
+        lineHeight: 1.2,
+        maxWidth:   "76px",
+        color:      isActive ? "var(--orbit-text-heading)" : isDanger ? "var(--pastel-streak-text)" : "var(--orbit-text-muted)",
+      }}>
+        {label}
+      </span>
     </div>
   );
 
   // ─── Section header / divider ─────────────────────────────────────────────
-  const sideSection = (label) =>
-    !isCollapsed ? (
-      <div key={`sec-${label}`} style={{
-        fontSize:      "9.5px",
-        color:         "var(--orbit-text-muted)",
-        padding:       "14px 20px 4px",
-        letterSpacing: "1.6px",
-        textTransform: "uppercase",
-        fontWeight:    "800",
-      }}>
-        {label}
-      </div>
-    ) : (
-      <div key={`sec-${label}`} style={{
-        height:     "1px",
-        background: "var(--orbit-border)",
-        margin:     "8px 12px",
-      }} />
-    );
+  // Just a small gap between logical groups now — the icon-rail is too
+  // narrow for readable uppercase group labels (and the reference layout
+  // doesn't show any); grouping is still implicit in the JSX list order.
+  const sideSection = (label) => <div key={`sec-${label}`} style={{ height: "10px" }} />;
 
   return (
     <div style={{
       display: "flex", minHeight: "100vh", background: "var(--orbit-canvas)",
-      // Re-theme the whole Orbit shell (sidebar, topbar, and every section
-      // rendered through the Outlet below) onto the amber-glow palette by
-      // overriding these custom properties at the root — every descendant
-      // that reads var(--orbit-brand...) picks it up automatically, so
-      // there's no need to hunt down each individual usage site. Translucent
-      // amber (not a solid frozen-water swatch) for the muted/light tiers so
-      // hover/active states stay legible in both light AND dark mode.
-      "--orbit-brand": "var(--amber-glow)",
-      "--orbit-brand-dark": "var(--amber-glow-dark)",
-      "--orbit-brand-muted": "var(--amber-glow-muted)",
-      "--orbit-brand-light": "var(--amber-glow-hover)",
     }}>
 
       {/* Mobile-only dimmed backdrop behind the drawer — closes it on tap. */}
@@ -198,81 +222,45 @@ export default function OrbitShell() {
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════
-          PERSISTENT COLLAPSIBLE SIDEBAR
+          PERSISTENT ICON-RAIL SIDEBAR
       ══════════════════════════════════════════════════════════════════════ */}
       <aside className={`orbit-sidebar ${isMobileDrawerOpen ? "orbit-sidebar--open" : ""}`} style={{
-        width:          isCollapsed ? "68px" : "256px",
-        background:     "var(--orbit-surface)",
-        borderRight:    "1px solid var(--orbit-border)",
-        transition:     "width 0.26s cubic-bezier(0.4, 0, 0.2, 1)",
-        display:        "flex",
-        flexDirection:  "column",
-        overflow:       "hidden",
-        whiteSpace:     "nowrap",
-        flexShrink:     0,
-        boxShadow:      "2px 0 20px rgba(255, 159, 28, 0.10)",
-        zIndex:         10,
+        width:            "92px",
+        background:       "var(--orbit-canvas)",
+        borderRight:      "1px solid var(--orbit-border)",
+        display:          "flex",
+        flexDirection:    "column",
+        overflow:         "hidden",
+        flexShrink:       0,
+        boxShadow:        "var(--orbit-shadow-sm)",
+        zIndex:           10,
       }}>
 
-        {/* ── Logo + collapse toggle ────────────────────────────────── */}
+        {/* ── Logo — the ONE place the Iris Orbit mark appears. This cell's
+               height (56px) matches the topbar's height exactly, and its
+               bottom border reuses the topbar's own border color
+               (--orbit-glass-border) so the two form one continuous,
+               unbroken line at the intersection instead of two
+               slightly-different-colored borders meeting at a seam. A
+               distinct dark fill (matching the reference "keka"-style
+               corner tile) makes this cell read as a self-contained brand
+               mark rather than blending into either the sidebar or topbar. */}
         <div style={{
-          padding:        isCollapsed ? "14px 7px" : "14px 14px 14px 16px",
-          borderBottom:   "1px solid var(--orbit-border)",
+          padding:        "10px 7px",
+          borderBottom:   "1px solid var(--orbit-glass-border)",
+          background:     "var(--ink-strong)",
           display:        "flex",
           alignItems:     "center",
-          justifyContent: "space-between",
+          justifyContent: "center",
           minHeight:      "56px",
           boxSizing:      "border-box",
           gap:            "6px",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "9px", overflow: "hidden", flex: 1 }}>
-            <div style={{
-              width:       "30px",
-              height:      "30px",
-              borderRadius:"9px",
-              background:  "linear-gradient(135deg, var(--orbit-brand) 0%, var(--orbit-brand-dark) 100%)",
-              display:     "flex",
-              alignItems:  "center",
-              justifyContent: "center",
-              boxShadow:   "0 2px 10px rgba(255,159,28,0.38)",
-              flexShrink:  0,
-              fontSize:    "15px",
-            }}>
-            </div>
-            {!isCollapsed && (
-              <div>
-                <div style={{ fontSize: "14px", fontWeight: "800", color: "var(--orbit-text-heading)", letterSpacing: "0.1px", lineHeight: 1.2 }}>
-                  IRIS Orbit
-                </div>
-                <div style={{ fontSize: "9px", color: "var(--orbit-text-muted)", textTransform: "uppercase", letterSpacing: "1.5px", marginTop: "1px" }}>
-                  Learning Platform
-                </div>
-              </div>
-            )}
-          </div>
-          <button
-            className="orbit-sidebar-collapse-toggle"
-            onClick={() => setIsCollapsed(c => !c)}
-            style={{
-              background:    "var(--orbit-brand-muted)",
-              border:        "1px solid var(--orbit-border-strong)",
-              borderRadius:  "7px",
-              color:         "var(--orbit-brand)",
-              width:         "24px",
-              height:        "24px",
-              minWidth:      "24px",
-              cursor:        "pointer",
-              display:       "flex",
-              alignItems:    "center",
-              justifyContent:"center",
-              flexShrink:    0,
-              transition:    "all 0.14s ease",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--orbit-brand)"; e.currentTarget.style.color = "#fff"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "var(--orbit-brand-muted)"; e.currentTarget.style.color = "var(--orbit-brand)"; }}
-          >
-            {isCollapsed ? <ChevronRight size={11} /> : <ChevronLeft size={11} />}
-          </button>
+          <img
+            src={irisOrbitLogo}
+            alt="Iris Orbit"
+            style={{ maxWidth: "72px", maxHeight: "38px", objectFit: "contain", flexShrink: 0 }}
+          />
           <button
             className="orbit-mobile-drawer-close"
             onClick={() => setIsMobileDrawerOpen(false)}
@@ -292,93 +280,73 @@ export default function OrbitShell() {
           </button>
         </div>
 
-        {/* ── Sign Out — deliberately placed here, not buried at the bottom.
-               Outlined (not filled/red) so it reads as "always available"
-               rather than alarming, but it's the first thing under the logo. */}
-        {user && (
-          <button
-            className="orbit-sidebar-signout-btn"
-            onClick={handleSignOut}
-            title="Sign out"
-            style={{
-              margin:         isCollapsed ? "10px 8px" : "12px 14px",
-              padding:        isCollapsed ? "9px 0" : "10px 12px",
-              display:        "flex",
-              alignItems:     "center",
-              justifyContent: "center",
-              gap:            "8px",
-              background:     "var(--white)",
-              border:         "1.5px solid var(--amber-glow)",
-              color:          "var(--ink-strong)",
-              borderRadius:   "10px",
-              fontSize:       "13px",
-              fontWeight:     "800",
-              cursor:         "pointer",
-              transition:     "all 0.14s ease",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--amber-glow)"; e.currentTarget.style.color = "var(--white)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "var(--white)"; e.currentTarget.style.color = "var(--ink-strong)"; }}
-          >
-            <BoxArrowRight size={15} />
-            {!isCollapsed && "Sign Out"}
-          </button>
-        )}
-
+        {/* ── Sign Out — deliberately  placed here, not buried at the bottom.
+               Same icon-box/label shape as nav items below, but keeps its
+               own amber-glow accent (a distinct "exit" color, unrelated to
+               the brand-violet nav accent) so it reads as "always available"
+               rather than alarming. */}
+        
         {/* ── Navigation stack ──────────────────────────────────────── */}
         <div style={{ flex: 1, padding: "6px 0", overflowY: "auto" }}>
 
-          {/* LEARNER NAV */}
-          {currentViewMode === "learner" && (
+          {/* LEARNER NAV — shown for the actual learner role, AND for an
+              admin/superadmin browsing any non-dashboard-home /orbit/* page
+              (modules, profile, etc.). Mirrors the main content pane's
+              isDashboardHome gate below: those pages always render their
+              real learner-style content regardless of role, so the sidebar
+              must match instead of permanently showing the admin/superadmin
+              nav no matter what's actually on screen. */}
+          {(currentViewMode === "learner" || !isDashboardHome) && (
             <>
               {sideSection("Main")}
-              {sideNavItem(House,     "Home",               activeNav === "home",       () => goTo("home"))}
-              {sideNavItem(Book,      "Learn",              activeNav === "modules",    () => goTo("modules"))}
-              {sideNavItem(BarChart,  "My Progress",        activeNav === "progress",   () => goTo("progress"))}
+              {sideNavItem(House,     "Home",     activeNav === "home",        () => goTo("home"))}
+              {sideNavItem(Book,      "Learn",    activeNav === "modules",     () => goTo("modules"))}
+              {sideNavItem(BarChart,  "Progress", activeNav === "progress",    () => goTo("progress"))}
               {sideSection("Engage")}
-              {sideNavItem(Lightbulb, "Submit Idea",        activeNav === "ideas",      () => goTo("ideas"))}
-              {sideNavItem(Trophy,    "Leaderboard",        activeNav === "leaderboard",() => goTo("leaderboard"))}
+              {sideNavItem(Lightbulb, "Ideas",    activeNav === "ideas",       () => goTo("ideas"))}
+              {sideNavItem(Trophy,    "Leaderboard", activeNav === "leaderboard", () => goTo("leaderboard"))}
               {sideSection("Discover")}
-              {sideNavItem(Broadcast, "What's Landing Next",activeNav === "pipeline",   () => goTo("pipeline"))}
+              {sideNavItem(Broadcast, "Pipeline", activeNav === "pipeline",    () => goTo("pipeline"))}
             </>
           )}
 
-          {/* ADMIN NAV */}
-          {currentViewMode === "admin" && (
+          {/* ADMIN NAV — only on the dashboard/hub screen itself */}
+          {isDashboardHome && currentViewMode === "admin" && (
             <>
               {sideSection("Overview")}
-              {sideNavItem(BarChart,  "Dashboard",          adminTab === "overview",          () => goAdmin("overview"))}
-              {sideNavItem(Building,  "Team Members",       adminTab === "create-team",       () => goAdmin("create-team"))}
+              {sideNavItem(BarChart,  "Dashboard", adminTab === "overview",          () => goAdmin("overview"))}
+              {sideNavItem(Building,  "Team",      adminTab === "create-team",       () => goAdmin("create-team"))}
               {sideSection("Content")}
-              {sideNavItem(Book,      "Module Curation",    adminTab === "add-module",         () => goAdmin("add-module"))}
+              {sideNavItem(Book,      "Modules",   adminTab === "add-module",        () => goAdmin("add-module"))}
               {sideSection("Analytics")}
-              {sideNavItem(Activity,  "Platform Analytics", adminTab === "platform-analytics", () => goAdmin("platform-analytics"))}
-              {sideNavItem(BarChart,  "User Analytics",     adminTab === "user-analytics",     () => goAdmin("user-analytics"))}
+              {sideNavItem(Activity,  "Analytics", adminTab === "platform-analytics", () => goAdmin("platform-analytics"))}
+              {sideNavItem(BarChart,  "Users",     adminTab === "user-analytics",     () => goAdmin("user-analytics"))}
               {sideSection("Review")}
-              {sideNavItem(Lightbulb, "Ideas Inbox",        adminTab === "ideas-review",       () => goAdmin("ideas-review"))}
+              {sideNavItem(Lightbulb, "Ideas",     adminTab === "ideas-review",       () => goAdmin("ideas-review"))}
             </>
           )}
 
-          {/* SUPERADMIN NAV */}
-          {currentViewMode === "superadmin" && (
+          {/* SUPERADMIN NAV — only on the dashboard/hub screen itself */}
+          {isDashboardHome && currentViewMode === "superadmin" && (
             <>
               {sideSection("Platform")}
-              {sideNavItem(Shield,   "IRIS Orbit Hub", p === "/orbit",    () => navigate("/orbit"))}
-              {sideNavItem(Building, "Admin Panel",    false, () => {
+              {sideNavItem(Shield,   "Hub",   isDashboardHome, () => navigate("/orbit/dashboard"))}
+              {sideNavItem(Building, "Admin", false, () => {
                 setCurrentViewMode("admin");
-                localStorage.setItem("orbit_view_mode", "admin");
+                if (viewModeKey) localStorage.setItem(viewModeKey, "admin");
                 navigate("/orbit/dashboard?tab=overview");
               })}
               {sideSection("Content")}
-              {sideNavItem(Book,     "All Modules", false, () => navigate("/orbit/modules"))}
-              {sideNavItem(Activity, "Analytics",   false, () => navigate("/orbit/dashboard?tab=platform-analytics"))}
+              {sideNavItem(Book,     "Modules",   false, () => navigate("/orbit/modules"))}
+              {sideNavItem(Activity, "Analytics", false, () => navigate("/orbit/dashboard?tab=platform-analytics"))}
             </>
           )}
         </div>
 
         {/* ── Footer — Sign Out lives up top now, not buried here ────── */}
         <div style={{ borderTop: "1px solid var(--orbit-border)", padding: "6px 0" }}>
-          {sideNavItem(PersonCircle, "Profile",     activeNav === "profile", () => goTo("profile"))}
-          {sideNavItem(House,        "Exit to Web", false,                   () => navigate("/"))}
+          {sideNavItem(PersonCircle, "Profile", activeNav === "profile", () => goTo("profile"))}
+          {sideNavItem(House,        "Exit",    false,                   () => navigate("/"))}
         </div>
       </aside>
 
@@ -388,21 +356,24 @@ export default function OrbitShell() {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "var(--orbit-canvas)" }}>
 
         {/* Topbar */}
-        <header style={{
-          height:       "56px",
-          background:   "var(--orbit-surface)",
-          borderBottom: "1px solid var(--orbit-border)",
-          display:      "flex",
-          alignItems:   "center",
-          justifyContent: "space-between",
-          padding:      "0 clamp(12px, 4vw, 24px)",
-          flexShrink:   0,
-          boxShadow:    "0 1px 8px rgba(255, 159, 28, 0.08)",
-          gap:          "10px",
+        <header className="orbit-topbar" style={{
+          height:           "56px",
+          background:       "var(--orbit-glass-bg)",
+          backdropFilter:   "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          backgroundImage:  "var(--orbit-glass-highlight)",
+          borderBottom:     "1px solid var(--orbit-glass-border)",
+          display:          "flex",
+          alignItems:       "center",
+          justifyContent:   "space-between",
+          padding:          "0 clamp(12px, 4vw, 24px)",
+          flexShrink:       0,
+          boxShadow:        "var(--orbit-glass-shadow)",
+          gap:              "10px",
         }}>
 
-          {/* Left: hamburger (mobile-only) + breadcrumb */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+          {/* Left: hamburger (mobile-only) + logo/wordmark lockup */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
             <button
               className="orbit-hamburger-trigger"
               onClick={() => setIsMobileDrawerOpen(true)}
@@ -420,25 +391,45 @@ export default function OrbitShell() {
             >
               <List size={18} />
             </button>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0, overflow: "hidden" }}>
-            <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--orbit-text-muted)", letterSpacing: "0.4px" }}>
-              IRIS Orbit
-            </span>
-            <span style={{
-              width: "3px", height: "3px", borderRadius: "50%",
-              background: "var(--orbit-border-strong)", display: "inline-block",
-            }} />
-            <span style={{
-              fontSize:      "11px",
-              fontWeight:    "800",
-              color:         "var(--orbit-text-heading)",
-              letterSpacing: "0.4px",
-              textTransform: "uppercase",
-            }}>
-              {currentViewMode === "admin"      ? "Admin Console"
-               : currentViewMode === "superadmin" ? "Superadmin Hub"
-               : "Learner View"}
-            </span>
+
+            {/* The Iris Orbit mark itself now lives ONLY in the sidebar's
+                logo cell above — this used to duplicate it right next to
+                that cell. In its place: the user's own department, since
+                that's more useful context here than a repeated brand mark. */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0, overflow: "hidden" }}>
+              {departmentName && (
+                <span style={{
+                  fontSize:      "15px",
+                  fontWeight:    "800",
+                  color:         "var(--orbit-text-heading)",
+                  letterSpacing: "0.1px",
+                  whiteSpace:    "nowrap",
+                }}>
+                  {departmentName}
+                </span>
+              )}
+              {/* 🎯 BUG FIX ("navbar shows Superadmin Hub after closing a
+                  module"): this badge used to reflect currentViewMode alone,
+                  so it kept saying "Superadmin Hub" on ordinary learner
+                  pages (modules, profile, etc.) just because that's the
+                  role's stored preference — not because that's what's
+                  actually on screen. It must match isDashboardHome exactly
+                  like the content pane and sidebar nav do. */}
+              <span style={{
+                fontSize:      "10px",
+                fontWeight:    "800",
+                color:         "var(--orbit-brand)",
+                background:    "var(--orbit-brand-muted)",
+                letterSpacing: "0.4px",
+                textTransform: "uppercase",
+                padding:       "3px 8px",
+                borderRadius:  "999px",
+                whiteSpace:    "nowrap",
+              }}>
+                {isDashboardHome && currentViewMode === "admin"      ? "Admin Console"
+                 : isDashboardHome && currentViewMode === "superadmin" ? "Superadmin Hub"
+                 : "Learner View"}
+              </span>
             </div>
           </div>
 
@@ -473,7 +464,7 @@ export default function OrbitShell() {
                 onClick={() => {
                   const next = currentViewMode === "admin" ? "learner" : "admin";
                   setCurrentViewMode(next);
-                  localStorage.setItem("orbit_view_mode", next);
+                  if (viewModeKey) localStorage.setItem(viewModeKey, next);
                   navigate(next === "admin" ? "/orbit/dashboard?tab=overview" : "/orbit");
                 }}
                 style={{
@@ -503,8 +494,11 @@ export default function OrbitShell() {
                 onChange={(e) => {
                   const m = e.target.value;
                   setCurrentViewMode(m);
-                  localStorage.setItem("orbit_view_mode", m);
-                  navigate(m === "admin" ? "/orbit/dashboard?tab=overview" : "/orbit");
+                  if (viewModeKey) localStorage.setItem(viewModeKey, m);
+                  // "learner" goes Home (/orbit); "superadmin"/"admin" both
+                  // go to the dashboard/hub screen — bare /orbit is never
+                  // the dashboard, regardless of which mode is picked here.
+                  navigate(m === "learner" ? "/orbit" : "/orbit/dashboard?tab=overview");
                 }}
                 style={{
                   background:   "var(--orbit-brand)",
@@ -537,7 +531,23 @@ export default function OrbitShell() {
               fontSize:    "12px",
               fontWeight:  "800",
             }}>
-              <LightningCharge size={11} /> {liveXP} XP
+              <LightningCharge size={11} /> {liveXP} Plasma
+            </span>
+
+            {/* Streak pill */}
+            <span style={{
+              display:     "inline-flex",
+              alignItems:  "center",
+              gap:         "4px",
+              background:  "var(--pastel-streak)",
+              border:      "1.5px solid var(--pastel-streak-border)",
+              color:       "var(--pastel-streak-text)",
+              borderRadius:"var(--radius-full)",
+              padding:     "4px 12px",
+              fontSize:    "12px",
+              fontWeight:  "800",
+            }}>
+              <Fire size={11} /> {streak}
             </span>
 
             {/* Profile avatar — navigates inside shell (no hard redirect) */}
@@ -568,11 +578,19 @@ export default function OrbitShell() {
           </div>
         </header>
 
-        {/* Content pane — Outlet keeps sidebar mounted across all /orbit/* routes */}
+        {/* Content pane — Outlet keeps sidebar mounted across all /orbit/* routes.
+            🎯 BUG FIX: this used to branch on currentViewMode ALONE, so an
+            admin/superadmin got SuperAdminDashboard/Dashboard1 crammed into
+            EVERY /orbit/* route — including /orbit/modules, module detail,
+            profile, etc. — instead of the actual routed page, even though
+            the sidebar has real working nav links to those pages for both
+            roles. The dashboard/hub override must only apply on the actual
+            dashboard screen (bare /orbit, or /orbit/dashboard) — every other
+            path always renders its real route via <Outlet />. */}
         <main className="content-fluid-scroller" style={{ flex: 1, overflowY: "auto", padding: "clamp(12px, 4vw, 24px)" }}>
-          {currentViewMode === "superadmin" ? (
+          {isDashboardHome && currentViewMode === "superadmin" ? (
             <SuperAdminDashboard />
-          ) : currentViewMode === "admin" ? (
+          ) : isDashboardHome && currentViewMode === "admin" ? (
             <Dashboard1 />
           ) : (
             <Outlet />
@@ -622,7 +640,7 @@ export default function OrbitShell() {
                   WebkitTextFillColor:   "transparent",
                   lineHeight:            1.3,
                 }}>
-                  +{toast.xpAwarded} XP Awarded!
+                  +{toast.xpAwarded} Plasma Awarded!
                 </span>
               </div>
               <p style={{ margin: 0, fontSize: "12px", color: "rgba(231,198,255,0.85)", fontWeight: "500", lineHeight: 1.5 }}>

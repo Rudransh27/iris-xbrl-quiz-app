@@ -2,13 +2,15 @@
 
 .question-card {
   width: 100%;
-  background-color: #ffffff;
-  border: 1px solid #cbd5e1; /* Sharp clean bounding container box line */
-  border-radius: 16px;
+  background-color: var(--white, #ffffff);
+  border: 1px solid #e2e8f0;
+  border-top: 3px solid var(--amber-glow, #ff9f1c);
+  border-radius: 14px;
   padding: 24px;
   position: relative;
   z-index: 5;
   box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
 }
 
 /* 🖼️ Optional Quiz Illustration Adjustments */
@@ -86,24 +88,27 @@
 
 /* Hover conditions when user hasn't submitted yet */
 .option-button:hover:not(:disabled) {
-  background-color: #f8fafc;
-  border-color: #94a3b8;
+  background-color: var(--amber-glow-hover, rgba(255, 159, 28, 0.08));
+  border-color: var(--amber-glow, #ff9f1c);
   color: #0f172a;
 }
 
-/* 💻 Option State 1: Active Selection Profile before submission */
+/* 💻 Option State 1: Active Selection Profile before submission.
+   Was the "IRIS corporate blue" (#0f256e) — now the app's one primary
+   accent, since this state is exactly "the thing you've actively chosen." */
 .option-button.selected {
-  background-color: rgba(15, 37, 110, 0.04);
-  border-color: #0f256e; /* Hard corporate blue frame boundary lock */
-  color: #0f256e !important;
+  background-color: var(--amber-glow-muted, rgba(255, 159, 28, 0.14));
+  border-color: var(--amber-glow, #ff9f1c);
+  color: var(--amber-glow-dark, #e08600) !important;
   font-weight: 700;
 }
 
-/* 🟢 Option State 2: SUCCESS VERIFIED LOGIC (Correct Answer) */
+/* 🟢 Option State 2: SUCCESS VERIFIED LOGIC (Correct Answer) —
+   standardized to the shared --light-sea-green success token. */
 .option-button.correct {
-  background-color: rgba(46, 125, 50, 0.08) !important;
-  border-color: #2e7d32 !important; /* Premium Pista Green success accent */
-  color: #2e7d32 !important;
+  background-color: rgba(46, 196, 182, 0.1) !important;
+  border-color: var(--light-sea-green, #2ec4b6) !important;
+  color: #14807a !important;
   font-weight: 700;
 }
 

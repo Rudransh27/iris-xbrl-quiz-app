@@ -1,124 +1,122 @@
 // src/components/TopicCard.jsx
-import React, { useState } from "react";
-import { Check2Circle, LockFill, TicketDetailedFill, ClockHistory, StarFill } from "react-bootstrap-icons";
+import React from "react";
+import { LockFill, CheckLg, ClockHistory, StarFill, PlayFill } from "react-bootstrap-icons";
 import "./TopicCard.css";
 
-const smilies = ["(˃ᴗ˂)", "(˘▾˘)", "ʕ•ᴥ•ʔ", "(◕‿◕)", "(✿◠‿◠)", "(o˘◡˘o)"];
+// Tiny top-left format badge — derived from the topic's first card's real
+// content type, same data source as the previous icon-based version, just
+// rendered as a "✦ LABEL" tag instead of a monochrome glyph.
+const LABEL_BY_CARD_TYPE = {
+  knowledge: "TEXT",
+  video: "VIDEO",
+  quiz: "QUIZ",
+  code: "LAB",
+  pdf: "PDF",
+  ppt: "SLIDES",
+  html_sandbox: "LAB",
+};
 
 export default function TopicCard({
-  image,
   title,
   description,
   status,
   progress,
   estimatedTime,
   pointsReward,
+  cards,
   onClick,
 }) {
-  const [imageLoadFailed, setImageLoadFailed] = useState(false);
-  const [smiley] = useState(() => smilies[Math.floor(Math.random() * smilies.length)]);
-
   const cardsCovered = progress?.cardsCovered || 0;
   const totalCards = progress?.totalCards || 0;
   const percentage = totalCards > 0 ? Math.round((cardsCovered / totalCards) * 100) : 0;
 
   const isLocked = status === "locked";
   const isCompleted = status === "completed";
-  const hasNoImage = !image || image.trim() === "" || imageLoadFailed;
+  const inProgress = !isLocked && !isCompleted && cardsCovered > 0;
 
-  // Distinct from the existing PASSED/LOCKED/START pill (which drives the
-  // lock/theme state) — this is a separate at-a-glance progress badge.
-  const statusBadgeLabel = isLocked
-    ? null
-    : cardsCovered === 0
-    ? "Not Started"
-    : cardsCovered < totalCards
-    ? "In Progress"
-    : "Completed";
+  const statusKey = isLocked ? "locked" : isCompleted ? "completed" : inProgress ? "in-progress" : "not-started";
+  const typeLabel = LABEL_BY_CARD_TYPE[cards?.[0]?.card_type] || "TOPIC";
+
+  const ctaLabel = isLocked ? "Locked" : isCompleted ? "Review" : inProgress ? "Resume" : "Start";
+
+  const handleCtaClick = (e) => {
+    e.stopPropagation(); // the whole card is also clickable — avoid double-firing
+    if (!isLocked && onClick) onClick();
+  };
 
   return (
     <div
-      className={`duo-topic-glass-card status-${status}`}
+      className={`topic-card topic-card--${statusKey}`}
       onClick={isLocked ? undefined : onClick}
+      role="button"
       tabIndex={isLocked ? -1 : 0}
       aria-disabled={isLocked}
+      onKeyDown={(e) => {
+        if (!isLocked && (e.key === "Enter" || e.key === " ")) onClick?.();
+      }}
     >
-      {/* 🌟 Playful Glossy Reflection Sheet Overlay */}
-      <div className="duo-card-shine"></div>
+      {/* Top block — badge/title/meta/status. Grouped as one flex child so
+          the footer below can be pinned to the card's bottom edge via
+          justify-content: space-between, regardless of how much text this
+          block ends up wrapping to. */}
+      <div className="topic-card__top">
+        <div className="topic-card__heading-row">
+          <span className="topic-card__type-badge">✦ {typeLabel}</span>
 
-      {/* ================= LEFT VISUAL PORTAL ================= */}
-      <div className="duo-media-block-left">
-        {hasNoImage ? (
-          <div className="duo-smiley-placeholder">
-            <span>{smiley}</span>
-          </div>
-        ) : (
-          <img
-            src={image}
-            alt={title}
-            className="duo-topic-thumbnail"
-            onError={() => setImageLoadFailed(true)}
-          />
-        )}
-        
-        {isLocked && (
-          <div className="duo-lock-screen-overlay">
-            <LockFill size={16} className="duo-lock-icon" />
-          </div>
-        )}
-
-        <div className="duo-status-mini-pill">
-          {isCompleted ? "PASSED" : isLocked ? "LOCKED" : "START"}
-        </div>
-      </div>
-
-      {/* ================= RIGHT METRIC DATA BLOCK ================= */}
-      <div className="duo-content-block-right">
-        <div className="duo-card-header-meta">
-          <h3 className="duo-card-main-title">{title}</h3>
-          {isCompleted ? (
-            <Check2Circle className="duo-success-checkmark-vector" size={18} />
-          ) : (
-            <TicketDetailedFill size={14} className="duo-deco-icon" />
-          )}
-        </div>
-        
-        <p className="duo-card-main-description">{description}</p>
-
-        {/* Premium meta row: status badge + duration + points reward */}
-        <div className="duo-card-meta-badges-row">
-          {statusBadgeLabel && (
-            <span className={`duo-status-badge duo-status-badge--${statusBadgeLabel.toLowerCase().replace(" ", "-")}`}>
-              {statusBadgeLabel}
+          {/* Minimal status indicators — no bulky colored blocks. "Not
+              started" shows nothing at all, the quietest possible default. */}
+          {isLocked && (
+            <span className="topic-card__status topic-card__status--locked" aria-label="Locked">
+              <LockFill size={11} />
             </span>
           )}
+          {isCompleted && (
+            <span className="topic-card__status topic-card__status--completed" aria-label="Completed">
+              <CheckLg size={12} />
+            </span>
+          )}
+          {inProgress && (
+            <span className="topic-card__status topic-card__status--in-progress">
+              In Progress
+            </span>
+          )}
+        </div>
+
+        <h3 className="topic-card__title">{title}</h3>
+        {description && <p className="topic-card__description">{description}</p>}
+
+        <div className="topic-card__meta-row">
           {!!estimatedTime && (
-            <span className="duo-meta-badge">
-              <ClockHistory size={11} /> ~{estimatedTime} min
+            <span className="topic-card__meta-item">
+              <ClockHistory size={11} /> {estimatedTime} min
             </span>
           )}
           {!!pointsReward && (
-            <span className="duo-meta-badge duo-meta-badge--points">
-              <StarFill size={11} /> +{pointsReward} pts
+            <span className="topic-card__meta-item topic-card__meta-item--xp">
+              <StarFill size={11} /> +{pointsReward} Plasma
             </span>
           )}
         </div>
+      </div>
 
-        {/* Real-Time Linear Progress Bar Gauge Component */}
+      {/* Footer block — always the last flex child, so space-between pins
+          it flush to the bottom of every card in a row, aligned or not. */}
+      <div className="topic-card__footer">
         {!isLocked && totalCards > 0 && (
-          <div className="duo-card-progress-container">
-            <div className="duo-progress-labels-row">
-              <span>PROGRESS</span>
-              <span>{cardsCovered}/{totalCards} NODES</span>
-            </div>
-            <div className="duo-rail-base-track">
-              <div 
-                className="duo-fill-beam-progress" 
-                style={{ width: `${percentage}%` }}
-              ></div>
-            </div>
+          <div className="topic-card__progress-track" aria-hidden="true">
+            <div className="topic-card__progress-fill" style={{ width: `${percentage}%` }} />
           </div>
         )}
+
+        <button
+          type="button"
+          className="topic-card__cta"
+          onClick={handleCtaClick}
+          disabled={isLocked}
+        >
+          {!isLocked && <PlayFill size={13} />}
+          {ctaLabel}
+        </button>
       </div>
     </div>
   );

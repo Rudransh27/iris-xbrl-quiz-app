@@ -1,65 +1,79 @@
 // src/components/OrbitDashboard/DashboardHome.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import "./OrbitDashboard.css";
 import HeroWelcome from "./HeroWelcome";
 import ChecklistCard from "./ChecklistCard";
 import ActivityCalendar from "./ActivityCalendar";
-import TodaysReadBanner from "./TodaysReadBanner";
+import NewsCarousel from "./NewsCarousel";
 import CurrentModuleCard from "./CurrentModuleCard";
 import SuggestIdeaCard from "./SuggestIdeaCard";
 import PopularModulesRow from "./PopularModulesRow";
 import SlidingPuzzleWidget from "./SlidingPuzzleWidget";
-import { toDateKey, loadHistory, markDay, computeStreak } from "./dashboardStorage";
-import { getCurrentModule } from "./currentModuleStorage";
+import { engagementHistoryToMap } from "./dashboardStorage";
 
 export default function DashboardHome({
   user,
   navigate,
   todaysRead,
+  newsFeed,
   modules,
-  displayModule,
+  widgetModule,
   hotModule,
   moduleTaskDone,
   getModuleProgress,
   handleNavigationGate,
   verifyStreak,
+  streakData,
 }) {
   const userId = user?._id || "guest";
-  const [history, setHistory] = useState(() => loadHistory(userId));
-  const todayKey = toDateKey(new Date());
-  const todayEntry = history[todayKey] || {};
 
-  // Priority for the checklist's "Active Module" widget: admin's platform-wide
-  // Hot Module override > the module the user explicitly last opened > the
-  // auto-picked displayModule fallback.
-  const currentModuleEntry = useMemo(() => getCurrentModule(userId), [userId]);
-  const userSelectedModule = useMemo(() => {
-    if (!currentModuleEntry?.moduleId) return null;
-    return (
-      modules.find(
-        (m) => (m._id || m.id)?.toString() === currentModuleEntry.moduleId.toString()
-      ) || null
-    );
-  }, [modules, currentModuleEntry]);
-  const widgetModule = hotModule || userSelectedModule || displayModule;
+  // 🎯 Single source of truth: the server's engagementHistory/todayActions
+  // (fetched by OrbitWorkspace via GET /api/progress/streak, kept live by
+  // verifyStreak) — replaces the old localStorage-only history, which had no
+  // way to stay in sync across devices/browsers with the "official" streak
+  // shown in the sidebar/profile. See dashboardStorage.js's
+  // engagementHistoryToMap for the shape conversion.
+  const history = useMemo(
+    () => engagementHistoryToMap(streakData?.engagementHistory),
+    [streakData?.engagementHistory]
+  );
+  const todayActions = streakData?.todayActions || [];
+  const todayEntry = {
+    read: todayActions.includes("daily_read"),
+    module: todayActions.includes("module_progress"),
+    idea: todayActions.includes("idea_submission"),
+  };
+  const streak = streakData?.currentStreak || 0;
+
+  // Priority for the checklist's "Active Module" widget (the module the user
+  // explicitly last opened > admin's platform-wide Hot Module default > the
+  // auto-picked fallback) is resolved once in OrbitWorkspace and handed down
+  // as `widgetModule` — this is the SAME module moduleTaskDone was computed
+  // against, so the widget and the completion check can never diverge.
+  //
+  // hotModule is only a *default suggestion* now, shown when the user hasn't
+  // opened anything themselves — so the "Admin-featured" hint/badge below
+  // must only appear when widgetModule actually IS the hot module, not
+  // whenever a hot module merely exists somewhere in the module list.
+  const isHotModuleActive =
+    !!hotModule &&
+    !!widgetModule &&
+    (hotModule._id || hotModule.id)?.toString() === (widgetModule._id || widgetModule.id)?.toString();
 
   // Task 2 (Module Completion) is the one automatic condition this component
   // can observe directly — the parent (OrbitWorkspace) computes the tiered
   // "full module" vs "at least one topic" rule and hands down a plain
-  // boolean. Task 1 (Today's Read, 30s timer) and Task 3 (Idea Submission)
-  // are detected on OTHER routes (DailyReadReader / IdeasAndRD) and write
-  // straight to the same localStorage history — this effect only needs to
-  // persist Task 2's signal the moment it flips true.
+  // boolean. Tasks 1/3 (Today's Read / Idea Submission) call the server
+  // directly from their own pages (DailyReadReader / IdeasAndRD) — every
+  // qualifying action, including this one, goes through verifyStreak, which
+  // updates the same shared engagementHistory, so there's nothing left to
+  // persist locally here.
   useEffect(() => {
     if (moduleTaskDone && !todayEntry.module) {
-      const nextHistory = markDay(userId, history, todayKey, { module: true });
-      setHistory(nextHistory);
       verifyStreak("module_progress");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moduleTaskDone]);
-
-  const streak = useMemo(() => computeStreak(history), [history]);
 
   const goToRead = () => {
     if (todaysRead?.id) navigate(`/orbit/daily-read/${todaysRead.id}`);
@@ -72,11 +86,11 @@ export default function DashboardHome({
 
   const goToIdea = () => navigate("/orbit/ideas");
 
-  const moduleHint = hotModule
+  const moduleHint = isHotModuleActive
     ? `Admin-featured "${hotModule.title}" — ${
         hotModule.hasTopics === false
           ? "auto-checks at 100% complete"
-          : "auto-checks once you finish the topic you're on"
+          : "auto-checks once you complete at least one topic inside it"
       }`
     : !widgetModule
     ? "Auto-checks once you have an active module"
@@ -107,7 +121,7 @@ export default function DashboardHome({
       // one slot — the module/progress the "Active Module" widget shows.
       widgetModule,
       progress: moduleProgress,
-      isHotModule: !!hotModule,
+      isHotModule: isHotModuleActive,
     },
     {
       key: "idea",
@@ -127,7 +141,7 @@ export default function DashboardHome({
         <ActivityCalendar history={history} streak={streak} />
       </div>
 
-      <TodaysReadBanner todaysRead={todaysRead} onRead={goToRead} />
+      <NewsCarousel newsFeed={newsFeed} />
 
       <div className="orbit-dash__split--even">
         <CurrentModuleCard module={widgetModule} progress={moduleProgress} onResume={goToModule} />

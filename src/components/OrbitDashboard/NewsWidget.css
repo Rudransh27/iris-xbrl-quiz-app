@@ -1,0 +1,136 @@
+/* src/components/OrbitDashboard/NewsWidget.css */
+
+.orbit-news-widget {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  padding: 24px 28px;
+  background: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  box-shadow: var(--orbit-shadow-sm);
+}
+
+.orbit-news-widget__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.orbit-news-widget__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--orbit-brand-dark);
+  background: var(--orbit-brand-muted);
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+.orbit-news-widget__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--orbit-text-heading);
+  line-height: 1.35;
+}
+
+.orbit-news-widget__text {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--orbit-text-body);
+  line-height: 1.55;
+}
+
+.orbit-news-widget__media-image {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-top: 4px;
+}
+
+.orbit-news-widget__media-video {
+  /* Capped like the image variant above — at full widget width a plain
+     `width: 100%; aspect-ratio: 16/9` grew to 400px+ tall on wide dashboard
+     layouts, dwarfing the rest of the card. Cap the height and derive width
+     from it instead, centered, so it stays a compact preview regardless of
+     how wide the surrounding card is. */
+  width: 100%;
+  max-width: 390px;
+  max-height: 220px;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 4px auto 0;
+}
+
+.orbit-news-widget__media-video iframe,
+.orbit-news-widget__media-video video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: none;
+}
+
+/* ── Breaking News state: glowing red accent + marquee scroll ───────────── */
+.orbit-news-widget--breaking {
+  border-color: rgba(220, 38, 38, 0.45);
+  box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.25), 0 0 28px -6px rgba(220, 38, 38, 0.55);
+}
+
+.orbit-news-widget__tag--breaking {
+  color: #ffffff;
+  background: #dc2626;
+  animation: orbit-news-breaking-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes orbit-news-breaking-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.55); }
+  50%      { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+}
+
+.orbit-news-widget__marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.orbit-news-widget__marquee-track {
+  display: inline-flex;
+  gap: 48px;
+  /* Was 18s — far too fast to actually read before it scrolled past.
+     Slowed down, plus pause-on-hover so anyone who wants to read the full
+     line can just hold their cursor over it. */
+  animation: orbit-news-marquee 34s linear infinite;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--orbit-text-heading);
+}
+
+.orbit-news-widget__marquee:hover .orbit-news-widget__marquee-track {
+  animation-play-state: paused;
+}
+
+.orbit-news-widget__marquee-track span {
+  white-space: nowrap;
+}
+
+@keyframes orbit-news-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-news-widget__marquee-track {
+    animation: none;
+  }
+  .orbit-news-widget__tag--breaking {
+    animation: none;
+  }
+}

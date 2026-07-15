@@ -22,12 +22,10 @@ export default function QuizPlayerHeader({ currentIndex, totalLength, topicXP, c
         {/* 📊 DYNAMIC PROGRESS ENGINE RAIL */}
         <div className="quiz-header-progress-viewport">
           <div className="quiz-header-progress-base-rail">
-            <div 
+            <div
               className="quiz-header-progress-fluid-beam"
               style={{ width: `${Math.max(4, progressPercent)}%` }}
-            >
-              <div className="quiz-header-progress-fluid-shine"></div>
-            </div>
+            />
           </div>
           <span className="quiz-header-step-counter">
             {currentIndex + 1} / {totalLength} NODES
@@ -35,9 +33,9 @@ export default function QuizPlayerHeader({ currentIndex, totalLength, topicXP, c
         </div>
         
         {/* 💫 XP TRACKER CLUSTER */}
-        <div className="quiz-header-stat-capsule xp-node-tint" aria-label={`You have ${topicXP} XP`}>
+        <div className="quiz-header-stat-capsule xp-node-tint" aria-label={`You have ${topicXP} Plasma`}>
           <Trophy size={14} className="stat-vector-icon text-gold-accent" />
-          <span className="quiz-stat-count-string">{topicXP} <span className="stat-lbl-dim">XP</span></span>
+          <span className="quiz-stat-count-string">{topicXP} <span className="stat-lbl-dim">Plasma</span></span>
         </div>
         
         {/* ❤️ LIFE CHANCES TRACKER CLUSTER */}

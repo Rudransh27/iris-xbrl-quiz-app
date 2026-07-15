@@ -64,8 +64,8 @@ export default function PptCard({ pptUrl, title, description }) {
               href={cleanPptUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-sm btn-primary px-4 fw-semibold mt-1"
-              style={{ backgroundColor: '#0f256e', borderColor: '#0f256e' }}
+              className="btn btn-sm px-4 fw-semibold mt-1"
+              style={{ backgroundColor: 'var(--amber-glow, #ff9f1c)', borderColor: 'var(--amber-glow, #ff9f1c)', color: '#fff' }}
             >
               Download & Open Slide Deck Directly
             </a>

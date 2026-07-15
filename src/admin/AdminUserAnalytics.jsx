@@ -20,16 +20,29 @@ const BAR_COLORS = [
 ];
 
 // ── Separated score calculation from questions[] ──────────────────────────────
-// Fixes the "40/5" display bug where score/maxScore fields are unreliable.
-// Always derive from the per-question objects the sandbox posted.
+// 🎯 CANONICAL POINT RULES (not trusted from the payload): each question's
+// own reported points/maxPoints is set by whoever authored the sandbox HTML,
+// and is frequently left at an inconsistent placeholder value (the
+// platform's own documented contract even shows `maxPoints: 1` as its
+// example) — that's exactly what produced nonsense fractions like
+// "5/5 (5 questions)" or "50/4 (admin graded)": the denominator was a SUM of
+// those unreliable per-question values instead of the platform's fixed
+// per-type point rule. Every MCQ/true_false question is worth a fixed 5
+// points; every other type (text, code, or anything else) is admin-graded
+// and worth up to 10 points — counted here, never summed from the payload.
+const QUIZ_QUESTION_POINTS = 5;
+const DESCRIPTIVE_QUESTION_POINTS = 10;
+
 function computeScores(questions) {
-  const qs    = questions || [];
-  const mcqQs = qs.filter(q => q.type === "mcq" || q.type === "true_false");
-  const descQs = qs.filter(q => q.type === "text" || q.type === "code");
+  const qs = questions || [];
+  const mcqQs  = qs.filter(q => q.type === "mcq" || q.type === "true_false");
+  // Everything that isn't auto-gradable MCQ — text, code, or any other/
+  // unrecognized type — is a single admin-graded bucket, each worth up to 10.
+  const descQs = qs.filter(q => q.type !== "mcq" && q.type !== "true_false");
   return {
-    autoScore: mcqQs.reduce((s, q) => s + (Number(q.points)    || 0), 0),
-    autoMax:   mcqQs.reduce((s, q) => s + (Number(q.maxPoints) || 0), 0),
-    descMax:   descQs.reduce((s, q) => s + (Number(q.maxPoints) || 0), 0),
+    autoScore: mcqQs.filter(q => q.isCorrect).length * QUIZ_QUESTION_POINTS,
+    autoMax:   mcqQs.length * QUIZ_QUESTION_POINTS,
+    descMax:   descQs.length * DESCRIPTIVE_QUESTION_POINTS,
     mcqCount:  mcqQs.length,
     descCount: descQs.length,
   };
@@ -86,7 +99,7 @@ function exportDeptGrading(deptName, deptUsers) {
   const summaryRows = deptUsers.map(u => ({
     "Username":        u.username,
     "Email":           u.email,
-    "Total XP":        u.xp,
+    "Total Plasma":    u.xp,
     "Sandbox Cards":   u.sandboxResults.length,
   }));
   const summaryWS = XLSX.utils.json_to_sheet(summaryRows);
@@ -380,7 +393,7 @@ export default function AdminUserAnalytics() {
       const xpTotal = result.results?.filter(r => r.status === "updated").reduce((s, r) => s + (r.xpDelta || 0), 0) || 0;
       setImportStatus({
         success: true,
-        message: `✅ ${updated} record(s) updated — ${xpTotal} total XP awarded. Users notified in real-time.`,
+        message: `✅ ${updated} record(s) updated — ${xpTotal} total Plasma awarded. Users notified in real-time.`,
       });
       // Refresh user list to reflect new XP
       const usersRes = await api.getAdminUsersList();
@@ -427,8 +440,8 @@ export default function AdminUserAnalytics() {
       <div style={{ display: "flex", flexWrap: "wrap", gap: "14px", marginBottom: "28px" }}>
         <StatCard icon="📚" label="Total Modules"    value={modules.length}          color="var(--orbit-brand)"          bg="var(--orbit-brand-muted)"          border="var(--orbit-brand)" />
         <StatCard icon="👤" label="Registered Users" value={users.length || "—"}     color="var(--pastel-progress-text)" bg="var(--pastel-progress)"            border="var(--pastel-progress-border)" />
-        <StatCard icon="⚡" label="Total XP Earned"  value={stats?.xpStats?.total}   color="var(--pastel-streak-text)"   bg="var(--pastel-streak)"              border="var(--pastel-streak-border)" />
-        <StatCard icon="🏆" label="Top User XP"      value={stats?.xpStats?.max}     color="var(--pastel-reads-text)"    bg="var(--pastel-reads)"               border="var(--pastel-reads-border)" />
+        <StatCard icon="⚡" label="Total Plasma Earned"  value={stats?.xpStats?.total}   color="var(--pastel-streak-text)"   bg="var(--pastel-streak)"              border="var(--pastel-streak-border)" />
+        <StatCard icon="🏆" label="Top User Plasma"      value={stats?.xpStats?.max}     color="var(--pastel-reads-text)"    bg="var(--pastel-reads)"               border="var(--pastel-reads-border)" />
       </div>
 
       {/* ── Charts row ──────────────────────────────────────────────────────── */}
@@ -482,7 +495,7 @@ export default function AdminUserAnalytics() {
         <div style={{ flex: 1, height: "1.5px", background: "var(--orbit-border)" }} />
       </div>
       <p style={{ fontSize: "12px", color: "var(--orbit-text-muted)", margin: "0 0 20px" }}>
-        Export a complete department grading workbook, score descriptive questions, then re-upload to sync XP and notify users in real-time.
+        Export a complete department grading workbook, score descriptive questions, then re-upload to sync Plasma and notify users in real-time.
       </p>
 
       {/* Dept export + import side-by-side */}
@@ -522,7 +535,7 @@ export default function AdminUserAnalytics() {
         <div style={{ background: "var(--orbit-surface)", border: "1.5px solid var(--orbit-border)", borderRadius: "18px", padding: "22px" }}>
           <h4 style={{ fontSize: "13px", fontWeight: "800", color: "var(--orbit-text-heading)", margin: "0 0 6px" }}>Import Graded Report</h4>
           <p style={{ fontSize: "11px", color: "var(--orbit-text-muted)", margin: "0 0 14px", lineHeight: 1.6 }}>
-            Re-upload the completed workbook. Scores sync instantly, XP is recalculated, and each user receives a <strong>live notification</strong>.
+            Re-upload the completed workbook. Scores sync instantly, Plasma is recalculated, and each user receives a <strong>live notification</strong>.
           </p>
 
           <div
@@ -605,15 +618,23 @@ export default function AdminUserAnalytics() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {htmlSubmissions.map((sub) => {
-              const maxPoints = Number(htmlModuleCard?.content?.maxPoints) || 15;
-              const textQuestions = (sub.questions || []).filter(q => q.type === "text" || q.type === "code");
+              // Same canonical-points fix as computeScores above: the grading
+              // bound must be descCount * 10 for THIS submission's actual
+              // questions, not a single flat card-level number — otherwise a
+              // card with 4 descriptive questions still only let an admin
+              // award up to 10 total instead of the true 40.
+              const { autoScore, autoMax, descMax } = computeScores(sub.questions);
+              const maxPoints = descMax > 0 ? descMax : (Number(htmlModuleCard?.content?.maxPoints) || 10);
+              const textQuestions = (sub.questions || []).filter(q => q.type !== "mcq" && q.type !== "true_false");
               const draft = gradeDrafts[sub.user._id] ?? (sub.adminScore ?? "");
               return (
                 <div key={sub.user._id} style={{ padding: "14px 16px", background: "var(--orbit-canvas)", borderRadius: "12px", border: "1px solid var(--orbit-border)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px", flexWrap: "wrap", gap: "6px" }}>
                     <div>
                       <div style={{ fontSize: "13px", fontWeight: "700", color: "var(--orbit-text-heading)" }}>{sub.user.username}</div>
-                      <div style={{ fontSize: "11px", color: "var(--orbit-text-muted)" }}>{sub.user.email} · Objective: {sub.score}/{sub.maxScore}</div>
+                      <div style={{ fontSize: "11px", color: "var(--orbit-text-muted)" }}>
+                        {sub.user.email}{autoMax > 0 ? ` · Objective: ${autoScore}/${autoMax}` : ""}
+                      </div>
                     </div>
                   </div>
 
@@ -739,7 +760,7 @@ export default function AdminUserAnalytics() {
               </div>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 {[
-                  { l: "⚡ XP", v: selectedUser.xp || 0, c: "var(--pastel-streak-text)", bg: "var(--pastel-streak)", b: "var(--pastel-streak-border)" },
+                  { l: "⚡ Plasma", v: selectedUser.xp || 0, c: "var(--pastel-streak-text)", bg: "var(--pastel-streak)", b: "var(--pastel-streak-border)" },
                   { l: "🃏 Cards", v: selectedUser.cardsCompleted || 0, c: "var(--orbit-brand)", bg: "var(--orbit-brand-muted)", b: "var(--orbit-brand)" },
                   { l: "📚 Topics", v: selectedUser.topicsCompleted || 0, c: "var(--pastel-progress-text)", bg: "var(--pastel-progress)", b: "var(--pastel-progress-border)" },
                 ].map((chip, i) => (

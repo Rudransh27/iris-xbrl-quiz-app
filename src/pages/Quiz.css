@@ -1,13 +1,7 @@
 /* src/pages/Quiz.css */
 
 :root {
-  --amber-gold: #ffbe0bff;
-  --blaze-orange: #fb5607ff;
-  --neon-pink: #ff006eff;
-  --blue-violet: #8338ecff;
-  --azure-blue: #3a86ffff;
   --duo-green: #58cc02;
-
   --duo-snow: #ffffff;
   --duo-gray-plate: #f7f9fa;
   --duo-border: #e5e5e5;
@@ -22,26 +16,9 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--duo-snow);
+  background-color: var(--white, var(--duo-snow));
   font-family: "Nunito", system-ui, sans-serif;
   position: relative;
-}
-
-/* Hover-reveal wrapper for the standard (non-sandbox) header — mirrors the
-   sandbox overlay's exact HUD mechanic (.sandbox-hover-trigger-zone /
-   .hud-revealed) rather than a second bespoke pattern. */
-.quiz-standard-header-hud {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 50;
-  transform: translateY(-100%);
-  transition: transform 0.25s ease;
-}
-
-.quiz-standard-header-hud.hud-revealed {
-  transform: translateY(0);
 }
 
 .main-flexible-workspace-deck {
@@ -49,19 +26,17 @@
   flex-grow: 1;
   display: flex;
   position: relative;
-  /* min-height:0 (not a fixed calc(100vh - Npx)) — the header is now an
-     absolutely-positioned hover-reveal overlay (zero flow height), so a
-     stale magic-number subtraction here would either leave a gap or
-     overflow. flex-grow:1 alone correctly fills whatever space is actually
-     left after the bottom action dock, on any viewport. */
+  /* min-height:0 (not a fixed calc(100vh - Npx)) — the header and bottom
+     dock are normal flow siblings, so flex-grow:1 alone correctly fills
+     whatever space is actually left between them, on any viewport. */
   min-height: 0;
 }
 
 /* ================= 🎛️ THE TAXONOMY SYLLABUS RAIL SYSTEM ================= */
 .quiz-dynamic-sidebar-rails {
   height: 100%;
-  background-color: var(--duo-snow);
-  border-right: 2px solid var(--duo-border);
+  background-color: var(--white, var(--duo-snow));
+  border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -74,18 +49,18 @@
 .quiz-dynamic-sidebar-rails.drawer-collapsed { width: 0; border-right-width: 0; }
 
 .sidebar-rails-header {
-  padding: 12px 16px;
-  border-bottom: 2px solid var(--duo-border);
-  background-color: var(--duo-gray-plate);
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: var(--white, var(--duo-snow));
   text-align: left;
 }
 
-.sidebar-header-lbl-micro {
-  font-size: 10px;
-  font-weight: 900;
-  color: var(--duo-text-slate);
+.sidebar-rails-header-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ink-strong, #1a1523);
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.6px;
 }
 
 .sidebar-scrollable-menu-nodes {
@@ -101,23 +76,18 @@
   display: none;
 }
 
-/* Interactive Sidebar Rows Layout sheets */
+/* Interactive Sidebar Rows Layout sheets — a left accent bar marks the
+   active row (via box-shadow inset, no layout-shifting border) instead of
+   a full pale-blue background wash. */
 .sidebar-nav-item-row {
-  padding: 14px 16px;
+  padding: 13px 16px 13px 13px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--duo-border);
-  transition: all 0.1s ease;
+  border-bottom: 1px solid #f1f2f4;
+  border-left: 3px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
   box-sizing: border-box;
-}
-
-.row-left-content-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-truncate: true;
-  width: 82%;
 }
 
 .row-icon-indicator {
@@ -125,48 +95,45 @@
   align-items: center;
   flex-shrink: 0;
   font-size: 15px;
+  color: var(--ink-muted, #9aa1ab);
 }
-
-/* Gamified Saturated Icon Accent Mappings */
-.icon-azure  { color: var(--azure-blue); }
-.icon-pink   { color: var(--neon-pink); }
-.icon-gold   { color: var(--amber-gold); }
-.icon-purple { color: var(--blue-violet); }
-.icon-green  { color: var(--duo-green); }
 
 .sidebar-node-title {
   font-size: 13.5px;
-  font-weight: 700;
-  color: var(--duo-text-slate);
+  font-weight: 600;
+  color: var(--ink-strong, #1a1523);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .sidebar-nav-item-row.active-row-node {
-  background-color: #f0f6ff;
+  background-color: var(--amber-glow-muted, rgba(255, 159, 28, 0.14));
+  border-left-color: var(--amber-glow, #ff9f1c);
 }
 .sidebar-nav-item-row.active-row-node .sidebar-node-title {
-  color: var(--azure-blue);
-  font-weight: 900;
+  color: var(--amber-glow-dark, #e08600);
+  font-weight: 800;
+}
+.sidebar-nav-item-row.active-row-node .row-icon-indicator {
+  color: var(--amber-glow-dark, #e08600);
 }
 
 .clickable-row { cursor: pointer; }
-.clickable-row:hover:not(.active-row-node) { background-color: var(--duo-gray-plate); }
+.clickable-row:hover:not(.active-row-node) { background-color: #f8fafc; }
 
 .hard-locked-row {
-  opacity: 0.42;
+  opacity: 0.45;
   cursor: not-allowed;
-  background-color: #fafafa;
 }
 
-.text-green-checkmark { color: var(--duo-green); }
-.text-muted-lock { color: #a5b4fc; }
+.sidebar-status-done { color: var(--light-sea-green, #2ec4b6); }
+.sidebar-status-locked { color: #b0b4bb; }
 
 .pending-dot-pulse {
   width: 7px;
   height: 7px;
-  background-color: var(--azure-blue);
+  background-color: var(--amber-glow, #ff9f1c);
   border-radius: 50%;
   animation: duoNodePulse 1s infinite alternate;
 }
@@ -201,33 +168,37 @@
   position: absolute;
   top: 16px;
   z-index: 100;
-  background-color: var(--duo-snow);
-  border: 2px solid var(--duo-border);
-  border-bottom-width: 4px;
-  color: var(--duo-text-dark);
+  background-color: var(--white, var(--duo-snow));
+  border: 1px solid #e2e8f0;
+  color: var(--ink-muted, #4a4558);
   padding: 8px 10px;
-  border-radius: 12px;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
 }
 
 .iris-drawer-toggle-trigger.trigger-aside { left: 296px; }
 .iris-drawer-toggle-trigger.trigger-flush { left: 16px; }
 
+.iris-drawer-toggle-trigger:hover {
+  border-color: var(--amber-glow, #ff9f1c);
+  color: var(--amber-glow-dark, #e08600);
+}
+
 .iris-drawer-toggle-trigger:active {
-  transform: translateY(2px);
-  border-bottom-width: 2px;
+  transform: scale(0.95);
 }
 
 /* ================= ⚡ THE LOWER COCKPIT CONTROL ROW DOCK ================= */
 .quiz-action-control-dock {
   width: 100%;
   height: 84px;
-  background-color: var(--duo-snow);
-  border-top: 2px solid var(--duo-border);
+  background-color: var(--white, var(--duo-snow));
+  border-top: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   box-sizing: border-box;
@@ -247,32 +218,35 @@
 .dock-nav-btn {
   border: none;
   font-size: 13px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   padding: 12px 24px;
-  border-radius: 14px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.1s ease;
+  transition: all 0.15s ease;
   box-sizing: border-box;
 }
 
 .prev-action-trigger {
-  background-color: var(--duo-snow);
-  border: 2px solid var(--duo-border);
-  border-bottom: 4px solid var(--duo-border);
-  color: var(--duo-text-slate);
+  background-color: var(--white, var(--duo-snow));
+  border: 1px solid #e2e8f0;
+  color: var(--ink-muted, #4a4558);
   cursor: pointer;
 }
-.prev-action-trigger:hover { background-color: var(--duo-gray-plate); }
-.prev-action-trigger:active { transform: translateY(2px); border-bottom-width: 2px; }
+.prev-action-trigger:hover { background-color: #f8fafc; border-color: #cbd5e1; }
+.prev-action-trigger:active { transform: scale(0.97); }
 
 .submit-action-trigger {
   color: #ffffff;
-  border-bottom-style: solid;
-  border-bottom-width: 5px;
+  border: none;
+}
+.submit-action-trigger:not(:disabled):hover {
+  filter: brightness(0.94);
+}
+.submit-action-trigger:not(:disabled):active {
+  transform: scale(0.97);
 }
 
 .action-node-pulsing {
@@ -289,89 +263,162 @@
   background-color: var(--duo-snow);
 }
 
-/* Invisible trigger strip anchored to the top-center of the viewport — hovering it
-   slides the exit HUD bar down without any permanently-visible chrome. */
-.sandbox-hover-trigger-zone {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 220px;
-  height: 18px;
-  z-index: 100000;
-}
-
-.sandbox-top-hud {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 56px;
-  width: 100%;
-  background-color: #182730;
-  border-bottom: 3px solid var(--duo-green);
-  padding: 0 24px;
-  box-sizing: border-box;
+/* Permanent top-right "Abort Mission" rocket control — no hover tracking
+   zone, no slide-down HUD. Fixed positioning isolates it from the sandboxed
+   document's own layout/scroll entirely, and it never triggers a re-render
+   on mouse movement (the old hover state toggle was what caused the
+   iframe's blob URL to regenerate and reset the sandboxed page — see
+   sandboxBlobUrl's useMemo in Quiz.jsx for the actual fix). 44x44px keeps
+   a generous touch target on mobile. */
+.sandbox-exit-icon-btn {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(15, 21, 30, 0.1);
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  color: var(--ink-muted, #4a4558);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  z-index: 100001;
-  transform: translateY(-100%);
-  transition: transform 0.25s ease;
-}
-
-.sandbox-top-hud.hud-revealed {
-  transform: translateY(0);
-}
-
-.hud-left-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.badge-fullscreen-mode {
-  font-size: 9px;
-  font-weight: 900;
-  color: #ffffff;
-  background-color: var(--duo-green);
-  padding: 3px 8px;
-  border-radius: 4px;
-  letter-spacing: 0.5px;
-}
-
-.sandbox-hud-title {
-  font-size: 14.5px;
-  font-weight: 800;
-  color: #ffffff;
-  margin: 0;
-  max-width: 320px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.duo-close-workspace-btn {
-  background-color: rgba(255, 255, 255, 0.08);
-  border: none;
-  border-bottom: 3px solid rgba(0, 0, 0, 0.2);
-  color: #ff595e;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 6px 14px;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  justify-content: center;
   cursor: pointer;
-  transition: all 0.1s ease;
+  box-shadow: 0 2px 10px rgba(16, 24, 40, 0.15);
+  transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  touch-action: manipulation;
 }
-.duo-close-workspace-btn:hover { background-color: rgba(255, 255, 255, 0.15); }
-.duo-close-workspace-btn:active { transform: translateY(2px); border-bottom-width: 1px; }
 
-.sandbox-frame-viewport {
+/* Idle → ready-to-launch: a subtle shake + amber halo, like the engines are
+   warming up. Desktop-only micro-interaction (hover has no equivalent on
+   touch, so mobile just gets the plain idle state — no janky stuck-hover). */
+@media (hover: hover) {
+  .sandbox-exit-icon-btn:hover {
+    color: var(--amber-glow-dark, #e08600);
+    border-color: var(--amber-glow, #ff9f1c);
+    box-shadow: 0 0 0 6px var(--amber-glow-muted, rgba(255, 159, 28, 0.14)), 0 2px 10px rgba(16, 24, 40, 0.15);
+    animation: rocketWarmup 0.5s ease-in-out infinite;
+  }
+}
+
+.sandbox-exit-icon-btn:active {
+  transform: scale(0.92);
+}
+
+@keyframes rocketWarmup {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  20% { transform: rotate(-8deg) translateY(-1px); }
+  40% { transform: rotate(7deg) translateY(-1px); }
+  60% { transform: rotate(-5deg); }
+  80% { transform: rotate(4deg); }
+}
+
+/* Liftoff — plays once when the user confirms "Eject!"; the actual
+   navigation is deferred (see handleConfirmEject's setTimeout) until this
+   finishes, so the fly-off is fully visible before the page changes. */
+.sandbox-exit-icon-btn.eject-liftoff {
+  animation: rocketLiftoff 0.55s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+  pointer-events: none;
+}
+
+@keyframes rocketLiftoff {
+  0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+  25% { transform: translateY(-6px) scale(1.08) rotate(-4deg); opacity: 1; }
+  100% { transform: translateY(-140vh) scale(0.5) rotate(6deg); opacity: 0; }
+}
+
+/* ================= 💥 COSMIC "ABORT MISSION" CONFIRMATION MODAL ================= */
+.eject-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(10, 12, 20, 0.55);
+  backdrop-filter: blur(3px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  animation: ejectBackdropFadeIn 0.15s ease;
+}
+
+.eject-modal-card {
   width: 100%;
-  height: calc(100vh - 56px);
+  max-width: 380px;
   background-color: #ffffff;
+  border-radius: 18px;
+  padding: 28px 24px 24px;
+  box-sizing: border-box;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: ejectModalPopIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.eject-modal-title {
+  font-size: 19px;
+  font-weight: 900;
+  color: #0b0a14;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.3px;
+}
+
+.eject-modal-body {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0b0a14;
+  line-height: 1.55;
+  margin: 0 0 24px 0;
+}
+
+.eject-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.eject-modal-btn {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+  padding: 0 10px;
+  touch-action: manipulation;
+}
+
+.eject-modal-btn--stay {
+  background-color: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  color: #0b0a14;
+}
+.eject-modal-btn--stay:hover { background-color: #f8fafc; border-color: #cbd5e1; }
+
+.eject-modal-btn--go {
+  background-color: var(--amber-glow, #ff9f1c);
+  border: 1.5px solid var(--amber-glow, #ff9f1c);
+  color: #ffffff;
+}
+.eject-modal-btn--go:hover { background-color: var(--amber-glow-dark, #e08600); border-color: var(--amber-glow-dark, #e08600); }
+
+.eject-modal-btn:active { transform: scale(0.96); }
+
+@keyframes ejectBackdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ejectModalPopIn {
+  from { opacity: 0; transform: scale(0.92) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@media (max-width: 480px) {
+  .eject-modal-actions { flex-direction: column-reverse; }
+  .eject-modal-card { padding: 24px 20px 20px; }
 }
 
 /* ================= 🌀 UTILITY COMPILING STATE SPINNERS ================= */
@@ -397,7 +444,7 @@
   width: 36px;
   height: 36px;
   border: 4px solid var(--duo-border);
-  border-top-color: var(--azure-blue);
+  border-top-color: var(--amber-glow, #ff9f1c);
   border-radius: 50%;
   animation: duoPlayerSpin 0.7s linear infinite;
 }
@@ -405,7 +452,7 @@
 .no-modules-placeholder {
   font-size: 13px;
   font-weight: 800;
-  color: var(--blaze-orange);
+  color: #c2185b;
   padding: 40px;
 }
 

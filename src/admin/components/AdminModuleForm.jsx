@@ -1,9 +1,30 @@
 // src/admin/components/AdminModuleForm.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Form, Button, Alert, Spinner, Row, Col } from 'react-bootstrap';
-import api from '../services/api'; 
+import api from '../services/api';
+import AuthContext from '../../context/AuthContext';
 
 export default function AdminModuleForm({ editData = null, onModuleAdded, setActiveTab }) {
+  // 🔐 SCOPE-CHANGE RBAC (frontend mirror of the backend rule): a Department
+  // Admin must never even SEE other departments in the dropdown, let alone
+  // be able to submit one — matches quiz-backend/src/routes/moduleRoutes.js,
+  // which forces department to req.user.department for any non-superadmin
+  // regardless of what's submitted. Restricting the dropdown here is purely
+  // a UX/error-prevention layer; the backend remains the actual authority.
+  const { user } = useContext(AuthContext);
+  const isSuperAdmin = user?.role === 'superadmin';
+  // 👤 OWNERSHIP: creating a brand-new module (editData === null) trivially
+  // makes the current user its owner once saved, so the Global option stays
+  // visible while creating. When editing, ownership is only real if this
+  // module's recorded creator matches the current user — a module with no
+  // recorded creator (created before this field existed) is NOT owned by
+  // anyone here, matching the backend's identical safe-default treatment.
+  const isOwner = !editData || (
+    !!editData.createdBy &&
+    !!user?._id &&
+    (editData.createdBy._id || editData.createdBy).toString() === user._id.toString()
+  );
+  const canUseGlobalScope = isSuperAdmin || isOwner;
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState(''); 
@@ -176,8 +197,38 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
     }
   };
 
+  // 🔐 A Department Admin only ever sees their OWN department in this list —
+  // never the full company directory. Super Admins see everything.
+  const visibleDepartmentsList = isSuperAdmin
+    ? departmentsList
+    : departmentsList.filter(d => (d._id || '').toString() === (user?.department || '').toString());
+
   // Compute sub-team options available for selection depending on parent choice matrix
-  const availableTeams = departmentsList.find(d => d._id === selectedDepartment)?.teams || [];
+  const availableTeams = visibleDepartmentsList.find(d => d._id === selectedDepartment)?.teams || [];
+
+  // 🔐 Keep selectedDepartment permanently locked to the Department Admin's
+  // own department the instant a non-Global scope is chosen — covers both
+  // creating a new module and editing an existing one (e.g. promoting a
+  // Global module back to Departmental), matching the backend's identical
+  // "always forced to req.user.department" rule.
+  useEffect(() => {
+    if (isSuperAdmin) return;
+    if (visibility === 'Global') return;
+    if (user?.department && selectedDepartment !== user.department) {
+      setSelectedDepartment(user.department);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuperAdmin, visibility, user?.department]);
+
+  // 👤 Global-option visibility: show it if this admin is allowed to USE it,
+  // OR if the module is already sitting at Global (so the <select>'s bound
+  // value always matches a real rendered <option> — otherwise a non-owner
+  // editing an already-Global module would have no option matching the
+  // current value at all). When a non-owner is looking at an already-Global
+  // module, the whole dropdown locks instead of letting them pick anything
+  // else, since per spec they can't pull it out of Global either.
+  const showGlobalOption = canUseGlobalScope || visibility === 'Global';
+  const lockVisibilityDropdown = !isSuperAdmin && !isOwner && visibility === 'Global';
 
   if (loadingStructure) {
     return (
@@ -215,20 +266,31 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
           <Col md={6}>
             <Form.Group>
               <Form.Label className="fw-semibold text-dark small">Access Visibility Scope Tier</Form.Label>
-              <Form.Select 
-                value={visibility} 
+              <Form.Select
+                value={visibility}
                 onChange={(e) => {
                   setVisibility(e.target.value);
                   setSelectedDepartment(''); // Flush stale states
                   setSelectedTeamIds([]);
-                }} 
+                }}
                 required
+                disabled={lockVisibilityDropdown}
                 className="admin-flat-input text-muted"
               >
-                <option value="Global">Global (All Corporate Specialist Nodes)</option>
+                {showGlobalOption && <option value="Global">Global (All Corporate Specialist Nodes)</option>}
                 <option value="Departmental">Departmental (Isolate to Single Business Line)</option>
                 <option value="Team-Specific">Team-Specific (Restricted to Sub-Team Branches)</option>
               </Form.Select>
+              {lockVisibilityDropdown && (
+                <small className="text-danger d-block mt-1">
+                  This module is Global and was created by someone else — only its creator or a Super Admin can change its scope.
+                </small>
+              )}
+              {!isSuperAdmin && !isOwner && !lockVisibilityDropdown && (
+                <small className="text-muted d-block mt-1">
+                  You didn't create this module, so it can't be set to Global — you can still adjust its scope within your own department.
+                </small>
+              )}
             </Form.Group>
           </Col>
         </Row>
@@ -316,13 +378,19 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
                     setSelectedTeamIds([]); // Clear child check fields when department shifts
                   }}
                   required
+                  disabled={!isSuperAdmin}
                   className="admin-flat-input text-muted"
                 >
                   <option value="" disabled>Select Department</option>
-                  {departmentsList.map(d => (
+                  {visibleDepartmentsList.map(d => (
                     <option key={d._id} value={d._id}>{d.name}</option>
                   ))}
                 </Form.Select>
+                {!isSuperAdmin && (
+                  <small className="text-muted d-block mt-1">
+                    Locked to your own department — Department Admins cannot assign modules to other departments.
+                  </small>
+                )}
               </Form.Group>
             </Col>
           </Row>

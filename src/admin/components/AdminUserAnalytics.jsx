@@ -12,6 +12,33 @@ import {
 } from 'react-bootstrap-icons';
 import api from '../services/api';
 
+// ─── accurate score computation from questions[] ────────────────────────────
+// 🎯 CANONICAL POINT RULES (not trusted from the payload): a question's own
+// reported points/maxPoints is set by whoever authored the sandbox HTML and
+// is frequently left at an inconsistent placeholder value (the platform's
+// documented contract even shows `maxPoints: 1` as its example) — summing
+// those produced nonsense fractions like "5/5 (5 questions)" or
+// "50/4 (admin graded)". Every MCQ/true_false question is worth a fixed 5
+// points; every other type (text, code, or anything else) is admin-graded
+// and worth up to 10 points — counted here, never summed from the payload.
+const QUIZ_QUESTION_POINTS = 5;
+const DESCRIPTIVE_QUESTION_POINTS = 10;
+
+function computeScores(questions) {
+  const qs    = questions || [];
+  const mcqQs = qs.filter(q => q.type === 'mcq' || q.type === 'true_false');
+  // Everything that isn't auto-gradable MCQ — text, code, or any other/
+  // unrecognized type — is a single admin-graded bucket, each worth up to 10.
+  const descQs = qs.filter(q => q.type !== 'mcq' && q.type !== 'true_false');
+  return {
+    autoScore: mcqQs.filter(q => q.isCorrect).length * QUIZ_QUESTION_POINTS,
+    autoMax:   mcqQs.length * QUIZ_QUESTION_POINTS,
+    descMax:   descQs.length * DESCRIPTIVE_QUESTION_POINTS,
+    mcqCount:  mcqQs.length,
+    descCount: descQs.length,
+  };
+}
+
 // ─── per-question breakdown inside a sandbox card ───────────────────────────
 function QuestionBreakdown({ questions }) {
   if (!questions || questions.length === 0) {
@@ -219,7 +246,7 @@ export default function AdminUserAnalytics() {
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: xpColor(u.xp) }}>{u.xp} XP</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: xpColor(u.xp) }}>{u.xp} Plasma</div>
                   <div style={{ fontSize: 10.5, color: '#94a3b8' }}>{u.cardsCompleted} cards</div>
                 </div>
               </div>
@@ -269,7 +296,7 @@ export default function AdminUserAnalytics() {
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.72)' }}>{user.email}</div>
             </div>
             <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{user.xp} XP</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{user.xp} Plasma</div>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
                 Joined {new Date(user.joinedAt).toLocaleDateString()}
               </div>
@@ -322,8 +349,16 @@ export default function AdminUserAnalytics() {
               </div>
             ) : sandboxResults.map((r, idx) => {
               const isOpen = expandedIdx === idx;
-              const pct = r.percentage;
+
+              // Recomputed total — NOT the raw r.score/r.maxScore pair (see
+              // computeScores' comment for why those are unreliable).
+              const { autoScore, autoMax, descMax, descCount } = computeScores(r.questions);
+              const hasAdminGrade = r.adminScore !== null && r.adminScore !== undefined;
+              const totalScore = autoScore + (hasAdminGrade ? r.adminScore : 0);
+              const totalMax   = autoMax + descMax;
+              const pct = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : null;
               const pctColor = pct === null ? '#94a3b8' : pct >= 70 ? '#16a34a' : pct >= 40 ? '#d97706' : '#dc2626';
+              const pendingGrading = descCount > 0 && !hasAdminGrade;
 
               return (
                 <div key={idx} style={{ border: '1.5px solid #e2e8f0', borderRadius: 12, marginBottom: 10, overflow: 'hidden' }}>
@@ -340,8 +375,12 @@ export default function AdminUserAnalytics() {
                       </div>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontWeight: 800, fontSize: 15, color: pctColor }}>{r.score}/{r.maxScore}</div>
-                      <div style={{ fontSize: 11, color: '#94a3b8' }}>{pct !== null ? `${pct}%` : '—'}</div>
+                      <div style={{ fontWeight: 800, fontSize: 15, color: pctColor }}>
+                        {totalMax > 0 ? `${totalScore}/${totalMax}` : '—'}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#94a3b8' }}>
+                        {pendingGrading ? 'pending grading' : pct !== null ? `${pct}%` : '—'}
+                      </div>
                     </div>
                     {pct !== null && (
                       <div style={{ width: 5, height: 38, background: '#e2e8f0', borderRadius: 4, overflow: 'hidden', flexShrink: 0 }}>
@@ -408,7 +447,7 @@ export default function AdminUserAnalytics() {
                     <div style={{ flex: 1, fontSize: 12.5, color: '#334155' }}>
                       {t.isCompleted ? 'Completed' : 'In progress'}
                     </div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#0f256e' }}>{t.bestXP} XP</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#0f256e' }}>{t.bestXP} Plasma</div>
                   </div>
                 ))}
               </div>

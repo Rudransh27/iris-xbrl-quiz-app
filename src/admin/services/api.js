@@ -39,9 +39,9 @@ const getPublicHeader = () => {
 };
 
 // ---------------- Progress Tracking ----------------
-async function recordCardCompletion(cardId, topicId, moduleId, isCorrect, telemetryPayload = null) {
+async function recordCardCompletion(cardId, topicId, moduleId, isCorrect, telemetryPayload = null, timeSpentDelta = 0) {
   try {
-    const requestBody = { cardId, topicId, moduleId, isCorrect };
+    const requestBody = { cardId, topicId, moduleId, isCorrect, timeSpentDelta };
 
     if (telemetryPayload && typeof telemetryPayload === 'object') {
       Object.assign(requestBody, telemetryPayload);
@@ -137,6 +137,20 @@ async function updateProfile(profileData) {
     return await handleFetchResponse(response);
   } catch (error) {
     console.error('Profile Update API Error:', error);
+    throw error;
+  }
+}
+
+async function completeProfile(department, teamId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify({ department, teamId }),
+    });
+    return await handleFetchResponse(response);
+  } catch (error) {
+    console.error('Complete Profile API Error:', error);
     throw error;
   }
 }
@@ -336,6 +350,84 @@ async function getAllDailyReads() {
   }
 }
 
+// ---------------- News/Broadcast Architecture ----------------
+async function getDashboardNews() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/news/dashboard`, {
+      headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  } catch (error) {
+    console.error('Fetch Dashboard News API Error:', error);
+    throw error;
+  }
+}
+
+async function uploadBroadcastVideo(videoFile) {
+  try {
+    const formData = new FormData();
+    formData.append('video', videoFile);
+
+    const authHeaders = getAuthHeader();
+    delete authHeaders['Content-Type'];
+
+    const response = await fetch(`${IMAGE_BASE_URL}/upload-video`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Video upload failed on the server.');
+    }
+
+    const data = await response.json();
+    return data.videoUrl;
+  } catch (error) {
+    console.error("Frontend broadcast video upload error:", error);
+    throw error;
+  }
+}
+
+async function getNewsFeed() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/news/feed`, {
+      headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  } catch (error) {
+    console.error('Fetch News Feed API Error:', error);
+    throw error;
+  }
+}
+
+async function getAllNewsForAdmin() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/news/manage`, {
+      headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  } catch (error) {
+    console.error('Fetch Manageable News API Error:', error);
+    throw error;
+  }
+}
+
+async function createNewsPost(newsData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/news/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify(newsData),
+    });
+    return await handleFetchResponse(response);
+  } catch (error) {
+    console.error('Create News Post API Error:', error);
+    throw error;
+  }
+}
+
 // Add this method inside your existing `const api = { ... }` definition mapping block
 
 
@@ -348,6 +440,7 @@ const api = {
   verifyEmail,
   validateToken,
   updateProfile,
+  completeProfile,
   forgotPassword,
   resetPassword,
   validateCode,
@@ -358,7 +451,12 @@ const api = {
   uploadPdfCard,
   getTodaysRead,
   createDailyRead,
-  getAllDailyReads, 
+  getAllDailyReads,
+  getDashboardNews,
+  getNewsFeed,
+  uploadBroadcastVideo,
+  getAllNewsForAdmin,
+  createNewsPost, 
  
   // Add this method inside your api = { ... } object
 getWorkspaceCurriculum: async () => {
@@ -697,6 +795,24 @@ getWorkspaceCurriculum: async () => {
   getDeptSandboxAnswers: async () => {
     const response = await fetch(`${API_BASE_URL}/progress/admin/dept-sandbox-answers`, {
       headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  getAdminModuleProgressTable: async () => {
+    const response = await fetch(`${API_BASE_URL}/progress/admin/module-progress-table`, {
+      headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  importModuleGradesCsv: async (moduleId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch(`${API_BASE_URL}/progress/admin/module/${moduleId}/import-grades-csv`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+      body: formData,
     });
     return await handleFetchResponse(response);
   },

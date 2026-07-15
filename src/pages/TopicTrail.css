@@ -1,88 +1,223 @@
-/* src/pages/TopicTrail.css */
-
-:root {
-  --amber-gold: #ffbe0bff;
-  --blaze-orange: #fb5607ff;
-  --neon-pink: #ff006eff;
-  --blue-violet: #8338ecff;
-  --azure-blue: #3a86ffff;
-
-  --duo-snow-white: #ffffff;
-  --duo-border-line: #e5e5e5;
-  --duo-text-dark: #3c3c3c;
-  --duo-text-slate: #5e6c75;
-}
+/* src/pages/TopicTrail.css
+   "Modern Tech" minimalist pass (Linear/Vercel-style) — pure white page,
+   no boxed/colored header panel, no large frozen-water washes. Orange
+   (--amber-glow) is reserved for intentional accents only (progress fill,
+   the card CTA, hover borders) — never a background block. */
 
 .topic-trail-page {
   width: 100%;
   min-height: 100vh;
-  background-color: var(--duo-snow-white);
-  padding: 40px 24px;
+  background-color: var(--white);
+  padding: clamp(24px, 5vw, 48px) clamp(16px, 4vw, 32px);
   box-sizing: border-box;
   font-family: "Nunito", system-ui, sans-serif;
+  position: relative;
+  /* Contains the absolutely-positioned orbit background and is the hard
+     defensive guard against any horizontal scroll it could introduce. */
+  overflow-x: hidden;
 }
 
 .duo-topic-container {
-  max-width: 1050px;
+  max-width: 1100px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1; /* sits above .orbit-bg (z-index: 0) */
 }
 
-/* ================= COMPACT BACK CONTROLS ================= */
-.trail-btn-pos {
+/* ================= COSMIC ORBIT AMBIENT BACKGROUND =================
+   Purely CSS/SVG, zero JS, zero layout-affecting properties animated —
+   only `transform: rotate()`, which is compositor-only (GPU), so this never
+   touches layout/paint on scroll or resize. Fades to transparent before it
+   reaches the card grid via a mask, so it never fights with card contrast. */
+.orbit-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 32px;
+  height: 560px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 92%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 92%);
 }
 
-.trail-back-btn {
-  background-color: var(--duo-snow-white);
-  border: 2px solid var(--duo-border-line);
-  border-bottom: 4px solid var(--duo-border-line); /* Classic chunky feedback bottom border */
-  color: var(--duo-text-slate);
-  padding: 8px 16px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 800;
+.orbit-bg__rings {
+  width: 100%;
+  height: 100%;
+  animation: orbitRingsSpin 140s linear infinite;
+  transform-origin: 69% 17%; /* matches the SVG circles' shared center */
+}
+
+.orbit-bg__rings circle {
+  fill: none;
+  stroke: rgba(203, 243, 240, 0.55);
+  stroke-width: 1;
+}
+
+@keyframes orbitRingsSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Each track is a 0x0 pivot placed at the same center as the SVG rings;
+   the planet dot is offset from that pivot by roughly a ring's radius, so
+   rotating the pivot traces a real circular orbit — no per-frame JS. */
+.orbit-track {
+  position: absolute;
+  top: 17%;
+  left: 69%;
+  width: 0;
+  height: 0;
+}
+
+.orbit-track--1 { animation: orbitRingsSpin 38s linear infinite; }
+.orbit-track--2 { animation: orbitRingsSpin 62s linear infinite reverse; }
+.orbit-track--3 { animation: orbitRingsSpin 95s linear infinite; }
+
+.orbit-planet {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.orbit-planet--amber {
+  top: -140px;
+  background: var(--amber-glow);
+  box-shadow: 0 0 18px 5px rgba(255, 159, 28, 0.55);
+}
+
+.orbit-planet--seagreen {
+  top: -230px;
+  left: 6px;
+  width: 6px;
+  height: 6px;
+  background: var(--light-sea-green);
+  opacity: 0.75;
+  box-shadow: 0 0 10px 3px rgba(46, 196, 182, 0.4);
+}
+
+.orbit-planet--ghost {
+  top: -320px;
+  left: -10px;
+  width: 5px;
+  height: 5px;
+  background: #cbd5e1;
+  opacity: 0.6;
+}
+
+/* ================= MINIMAL HEADER (unboxed, no card chrome) ================= */
+.topic-header {
+  margin-bottom: 20px;
+}
+
+.topic-header__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.topic-header__breadcrumb button {
+  background: none;
+  border: none;
+  padding: 2px;
+  min-height: 28px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #8a8f98;
   cursor: pointer;
+}
+
+.topic-header__breadcrumb button:hover {
+  color: var(--amber-glow-dark);
+}
+
+.topic-header__breadcrumb svg {
+  color: #c1c5cb;
+  flex-shrink: 0;
+}
+
+.topic-header__breadcrumb-current {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+.topic-header__title {
+  font-size: clamp(24px, 3.6vw, 32px);
+  font-weight: 800;
+  color: var(--ink-strong);
+  margin: 0 0 14px 0;
+  letter-spacing: -0.6px;
+  line-height: 1.15;
+}
+
+.topic-header__meta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Plain text, not chip/badge backgrounds — the "clean" reading of metadata. */
+.topic-header__meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.1s ease;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
 }
 
-.trail-back-btn:hover {
-  background-color: #f7f9fa;
-  color: var(--duo-text-dark);
-}
-
-.trail-back-btn:active {
-  transform: translateY(2px);
-  border-bottom-width: 2px;
-}
-
-/* ================= HEADER SECTION ================= */
-.topic-page-header {
-  margin-bottom: 48px;
-}
-
-.topic-page-title {
-  font-size: 34px;
-  font-weight: 900;
-  color: var(--duo-text-dark);
-  margin: 0 0 12px 0;
-  letter-spacing: -0.5px;
-}
-
-.topic-page-subtitle {
-  font-size: 16px;
+.topic-header__meta-item--xp {
+  color: var(--amber-glow-dark);
   font-weight: 700;
-  color: var(--duo-text-slate);
-  max-width: 560px;
-  margin: 0 auto;
-  line-height: 1.5;
+}
+
+/* ================= RAZOR-THIN MASTER PROGRESS LINE ================= */
+.topic-progress-line-wrap {
+  margin-bottom: clamp(24px, 4vw, 36px);
+}
+
+.topic-progress-line-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9aa1ab;
+  margin-bottom: 6px;
+}
+
+.topic-progress-line {
+  width: 100%;
+  height: 3px;
+  border-radius: var(--radius-full, 999px);
+  background: #eef0f2;
+  overflow: hidden;
+}
+
+.topic-progress-line__fill {
+  height: 100%;
+  border-radius: var(--radius-full, 999px);
+  background: linear-gradient(90deg, var(--amber-glow), var(--light-sea-green));
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.topic-progress-line--mastered .topic-progress-line__fill {
+  animation: topicProgressMasteredPulse 1.1s ease-out;
+}
+
+@keyframes topicProgressMasteredPulse {
+  0% { box-shadow: 0 0 0 0 rgba(46, 196, 182, 0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(46, 196, 182, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(46, 196, 182, 0); }
 }
 
 /* ================= GRID CONTAINMENT MATRIX ================= */
@@ -92,37 +227,48 @@
 
 .topic-trail-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 28px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  /* grid-auto-rows: 1fr forces every row's implicit track to the SAME
+     height (the tallest card's natural height), and align-items: stretch
+     (the grid default, stated explicitly here) stretches every card to
+     fill that row height — this is what actually equalizes card height
+     regardless of title/description length. */
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+  gap: clamp(14px, 2.5vw, 22px);
   width: 100%;
+}
+
+.topic-stagger-wrapper {
+  height: 100%;
 }
 
 .no-topics-placeholder {
   width: 100%;
   text-align: center;
-  background-color: var(--duo-snow-white);
-  border: 2px dashed var(--duo-border-line);
-  border-radius: 18px;
+  background-color: var(--white);
+  border: 1px dashed #e2e8f0;
+  border-radius: 14px;
   padding: 48px;
   font-size: 14px;
-  font-weight: 800;
-  color: #afafaf;
+  font-weight: 700;
+  color: #9aa1ab;
 }
 
 /* ================= SKELETON RE-STYLES ================= */
 .skeleton-topic-card {
-  background-color: var(--duo-snow-white);
-  border: 2px solid var(--duo-border-line);
-  border-bottom: 5px solid var(--duo-border-line);
-  border-radius: 20px;
-  padding: 24px;
+  background-color: var(--white);
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
 }
 
 .skeleton-node {
-  background-color: #eeeeee;
+  background-color: #f1f2f4;
   border-radius: 6px;
   position: relative;
   overflow: hidden;
@@ -132,16 +278,45 @@
   content: "";
   position: absolute;
   top: 0; right: 0; bottom: 0; left: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
   transform: translateX(-100%);
   animation: duoShimmer 1.5s infinite;
 }
 
-.skeleton-icon-sphere { width: 44px; height: 44px; border-radius: 50%; }
-.skeleton-text-title { width: 65%; height: 20px; margin: 4px 0; }
-.skeleton-text-paragraph { width: 100%; height: 36px; }
-.skeleton-progress-track { width: 100%; height: 14px; border-radius: 8px; margin-top: 4px; }
+.skeleton-icon-sphere { width: 32px; height: 32px; border-radius: 8px; }
+.skeleton-text-title { width: 65%; height: 18px; margin: 4px 0; }
+.skeleton-text-paragraph { width: 100%; height: 32px; }
+.skeleton-progress-track { width: 100%; height: 10px; border-radius: 8px; margin-top: 4px; }
 
 @keyframes duoShimmer {
   100% { transform: translateX(100%); }
+}
+
+/* ================= MOBILE-FIRST ================= */
+@media (max-width: 768px) {
+  .topic-header__breadcrumb-current {
+    max-width: 160px;
+  }
+
+  .topic-header__meta-row {
+    gap: 12px;
+  }
+
+  /* Shorter + fades out sooner so the decorative layer never crowds the
+     header text on a small screen, and drop the outermost/faintest ring —
+     one less shape to render, and it's the one most likely to peek past
+     the container edge on narrow viewports. */
+  .orbit-bg {
+    height: 320px;
+    mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 85%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 85%);
+  }
+
+  .orbit-bg__rings circle:last-child {
+    display: none;
+  }
+
+  .orbit-planet--ghost {
+    display: none;
+  }
 }

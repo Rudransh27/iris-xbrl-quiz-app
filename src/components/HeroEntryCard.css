@@ -18,7 +18,8 @@
 .simple-vibrant-hero-container {
   width: 100%;
   min-height: 85vh;
-  background-color: var(--duo-snow); 
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,6 +29,8 @@
 }
 
 .simple-hero-wrapper {
+  position: relative;
+  z-index: 2;
   width: 100%;
   max-width: 1050px;
 }
@@ -64,14 +67,14 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: var(--duo-snow);
-  border: 2px solid var(--duo-light-gray);
-  border-bottom: 4px solid var(--duo-light-gray); /* Chunky Duolingo Border */
+  background-color: #131124; /* --hero-surface */
+  border: 2px solid #312e5c; /* --hero-border */
+  border-bottom: 4px solid #312e5c;
   padding: 10px 20px;
   border-radius: 16px;
   font-size: 13px;
   font-weight: 800;
-  color: var(--blue-violet);
+  color: #9d91fa; /* --hero-brand */
   letter-spacing: 0.8px;
   margin-bottom: 24px;
   transform: rotate(-1deg); /* Playful tilt */
@@ -86,13 +89,13 @@
   font-size: 48px;
   font-weight: 900;
   line-height: 1.2;
-  color: var(--duo-text-dark);
+  color: #f0eeff; /* --hero-heading */
   margin: 0 0 20px 0;
   letter-spacing: -0.5px;
 }
 
 .simple-brand-text {
-  color: var(--azure-blue);
+  color: #9d91fa; /* --hero-brand */
   position: relative;
 }
 
@@ -100,7 +103,7 @@
   font-size: 19px;
   font-weight: 700;
   line-height: 1.5;
-  color: #777777;
+  color: #b0a8d0; /* --hero-body */
   margin: 0 0 40px 0;
   max-width: 500px;
 }
@@ -171,58 +174,12 @@
   border-bottom-width: 1px;
 }
 
-/* ================= RIGHT GRAPHIC: GAMIFIED PLANET ORBIT ================= */
+/* ================= RIGHT COLUMN: reserved space for the 3D astronaut ===== */
+/* The astronaut itself is rendered by CosmicHeroCanvas (full-bleed behind
+   both columns, see .cosmic-hero-stage in hero3d/CosmicHero.css) — this is
+   just an empty spacer preserving the 1.2fr/0.8fr grid ratio. */
 .simple-graphic-panel {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.chunky-planet-core {
-  width: 260px;
-  height: 260px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.chunky-inner-core {
-  width: 130px;
-  height: 130px;
-  border-radius: 50%;
-  background-color: var(--blaze-orange);
-  border: 2px solid var(--duo-snow);
-  border-bottom: 8px solid #cc4300; /* Flat 3D lighting shadow */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5;
-  transform: rotate(-5deg);
-}
-
-.chunky-inner-core span {
-  color: var(--duo-snow);
-  font-size: 20px;
-  font-weight: 900;
-  letter-spacing: 1px;
-}
-
-.chunky-ring {
-  position: absolute;
-  border-radius: 50%;
-  z-index: 2;
-}
-
-.ring-vibrant-1 {
-  width: 190px;
-  height: 190px;
-  border: 6px dashed var(--amber-gold);
-}
-
-.ring-vibrant-2 {
-  width: 260px;
-  height: 260px;
-  border: 4px solid var(--blue-violet);
-  border-bottom-width: 8px; /* Give the structural orbit path a 3D drop */
 }

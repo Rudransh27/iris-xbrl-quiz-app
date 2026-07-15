@@ -29,6 +29,8 @@ export default function PopularModulesRow({ modules, getModuleProgress, onOpenMo
             ? `~${mod.estimatedTime} min`
             : estimateDuration(total || mod.topicCount || 4),
           status,
+          pct,
+          hasTopics: mod.hasTopics !== false,
           points: mod.pointsReward ?? Math.max(50, (total || 0) * 10),
           takeaway: rawDescription
             ? rawDescription.length > 100 ? `${rawDescription.slice(0, 98)}…` : rawDescription

@@ -1,5 +1,5 @@
 // src/pages/Quiz.jsx
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuizEngine } from "../hooks/useQuizEngine";
 import api from "../admin/services/api";
@@ -13,13 +13,13 @@ import {
   QuestionCircle, 
   CodeSquare, 
   LayoutTextWindow, 
-  LockFill, 
-  CheckCircleFill, 
-  List, 
-  ListNested, 
-  FileEarmarkPdfFill, 
+  LockFill,
+  CheckCircleFill,
+  List,
+  ListNested,
+  FileEarmarkPdfFill,
   FileEarmarkEaselFill,
-  XCircleFill
+  RocketTakeoffFill
 } from "react-bootstrap-icons";
 import Swal from 'sweetalert2';
 import "./Quiz.css";
@@ -39,17 +39,49 @@ const Quiz = () => {
       : `/orbit/modules/${moduleId}/topics`;
   };
 
-  const { state, handleAction, handlePrev, updateFields } = useQuizEngine(moduleId, topicId, navigate);
+  const { state, handleAction, handlePrev, updateFields, applyAutoSaveXp, verifyModuleProgressIfComplete } = useQuizEngine(moduleId, topicId, navigate);
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // 🚀 TELEMETRY CACHE STORAGE: Holds scores and raw string logs received from iframe postMessages
   const [sandboxAnswers, setSandboxAnswers] = useState(null);
 
-  // 🖥️ FULLSCREEN SANDBOX OVERLAY: hover-to-reveal exit HUD + a ref to the mounted
-  // sandbox iframe so incoming postMessages can be checked against event.source.
-  const [hudRevealed, setHudRevealed] = useState(false);
+  // 🖥️ FULLSCREEN SANDBOX OVERLAY: a ref to the mounted sandbox iframe so
+  // incoming postMessages can be checked against event.source.
   const sandboxIframeRef = useRef(null);
+
+  // 🎯 ROOT-CAUSE FIX: the blob URL used to be recreated inline on every
+  // render, so ANY unrelated re-render (e.g. the old hover-HUD state toggle)
+  // reassigned the iframe's src to a brand-new blob URL — which reloads the
+  // iframe from scratch and wipes whatever page/state the learner was on
+  // inside the sandbox. Memoizing it to only regenerate when the actual
+  // payload changes keeps the iframe mounted (and its internal state intact)
+  // across unrelated re-renders.
+  const sandboxBlobUrl = useMemo(() => {
+    if (!state.activeSandboxPayload) return null;
+    const blob = new Blob([state.activeSandboxPayload], { type: "text/html" });
+    return URL.createObjectURL(blob);
+  }, [state.activeSandboxPayload]);
+
+  useEffect(() => {
+    return () => {
+      if (sandboxBlobUrl) URL.revokeObjectURL(sandboxBlobUrl);
+    };
+  }, [sandboxBlobUrl]);
+
+  // 🚀 "Abort Mission" cosmic exit flow: click the rocket → confirm modal →
+  // liftoff micro-animation plays → navigate away once it's done.
+  const [showEjectModal, setShowEjectModal] = useState(false);
+  const [isEjecting, setIsEjecting] = useState(false);
+
+  useEffect(() => {
+    if (!showEjectModal) return;
+    const handleEscape = (e) => {
+      if (e.key === "Escape") setShowEjectModal(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [showEjectModal]);
 
   const currentCard = state.content ? state.content[state.currentIndex] : null;
 
@@ -84,6 +116,14 @@ const Quiz = () => {
 
         // 🔒 AUTO-SAVE: Persist to backend immediately so data survives even if the user exits
         // before clicking "Finish Track". The manual "Finish Track" click will upsert again (harmless).
+        //
+        // 🎯 BUG FIX (HTML module XP not visible): this used to be a bare
+        // fire-and-forget call that never read the response at all — the
+        // database was correctly updated (that's why global XP looked right
+        // on the NEXT page), but nothing in this session's local state ever
+        // learned an award happened, so there was no XP to show even if a
+        // results screen had been reached. Capturing xpChange here and
+        // applying it via applyAutoSaveXp fixes that at the source.
         if (currentCard?._id) {
           const payload = {
             cardId: currentCard._id,
@@ -97,7 +137,11 @@ const Quiz = () => {
             moduleId,
             true,
             payload
-          ).catch(e => console.warn('Auto-save sandbox progress failed:', e));
+          ).then(backendResponse => {
+            const serverXpChange = backendResponse?.xpChange ?? backendResponse?.data?.xpChange ?? 0;
+            applyAutoSaveXp(serverXpChange);
+            verifyModuleProgressIfComplete(backendResponse);
+          }).catch(e => console.warn('Auto-save sandbox progress failed:', e));
         }
 
         // Throw a beautiful user notification so the trainee knows their score hit the cluster boundaries
@@ -142,7 +186,7 @@ const Quiz = () => {
       text: 'Any unsaved progress in this current learning track will be lost.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#0f256e',
+      confirmButtonColor: '#ff9f1c',
       cancelButtonColor: '#64748b',
       confirmButtonText: 'Yes, exit track',
       cancelButtonText: 'Cancel'
@@ -213,7 +257,7 @@ const Quiz = () => {
           icon: 'warning',
           title: 'Challenge Pending!',
           text: 'Please navigate through the workspace, complete the final challenge step, and hit "Submit for AI Feedback" inside the simulation card first.',
-          confirmButtonColor: '#0f256e'
+          confirmButtonColor: '#ff9f1c'
         });
         return;
       }
@@ -268,50 +312,82 @@ const Quiz = () => {
   // ⚡ DYNAMIC FULLSCREEN MODAL OVERLAY INTERCEPTOR FOR INLINE WORKSPACES
   // =========================================================================
   if (state.activeSandboxPayload) {
-    const blobObj = new Blob([state.activeSandboxPayload], { type: "text/html" });
-    const blobUrl = URL.createObjectURL(blobObj);
-
     // 🎯 Whole-module sandboxes (moduleType 'html_sandbox') have nothing left to "return to" —
     // exiting must land the learner back on the Learn page. Card-embedded sandboxes (legacy,
     // multi-card modules) keep the old "close overlay, return to flow" behavior.
     const isWholeModuleSandbox = state.moduleType === 'html_sandbox';
     const handleExitSandbox = () => {
       if (isWholeModuleSandbox) {
-        navigate(getExitRedirectPath());
+        // 🎯 BUG FIX (HTML module XP not visible): this used to navigate
+        // away immediately, so the learner never saw ANY completion screen —
+        // even though XP had already been correctly awarded server-side
+        // (see the auto-save fix above). Falling through to the standard
+        // QuizResults screen instead (its `quizFinished` check runs before
+        // the `activeSandboxPayload` check further down this component, so
+        // setting both here in the same batch is enough to swap views) shows
+        // the earned XP and sandbox score before the learner actually leaves
+        // — clicking "Continue" on that screen is what navigates away now.
+        updateFields("activeSandboxPayload", null);
+        updateFields("quizFinished", true);
       } else {
         updateFields("activeSandboxPayload", null);
       }
     };
 
+    // Confirmed "Eject!" — close the modal, let the rocket play its liftoff
+    // animation, then actually navigate away once it's had time to finish.
+    const handleConfirmEject = () => {
+      setShowEjectModal(false);
+      setIsEjecting(true);
+      setTimeout(handleExitSandbox, 550);
+    };
+
     return (
       <div className="html-sandbox-fullscreen-overlay bg-light position-fixed top-0 start-0 w-100 vh-100" style={{ zIndex: 9999, fontFamily: 'Plus Jakarta Sans' }}>
-        {/* Invisible top-center trigger — hovering it slides the exit HUD into view */}
-        <div
-          className="sandbox-hover-trigger-zone"
-          onMouseEnter={() => setHudRevealed(true)}
-        />
-
-        {/* Fullscreen Header Hud Block — hidden by default, revealed on hover */}
-        <div
-          className={`sandbox-top-hud d-flex justify-content-center align-items-center px-4 shadow ${hudRevealed ? 'hud-revealed' : ''}`}
-          style={{ height: "55px", borderBottom: "2px solid #1d9e75" }}
-          onMouseEnter={() => setHudRevealed(true)}
-          onMouseLeave={() => setHudRevealed(false)}
+        {/* Permanent top-right "Abort Mission" control — no hover tracking,
+            no slide animation, always on screen and always clickable. */}
+        <button
+          type="button"
+          className={`sandbox-exit-icon-btn ${isEjecting ? 'eject-liftoff' : ''}`}
+          onClick={() => setShowEjectModal(true)}
+          aria-label="Eject / Abort Mission"
+          title="Eject / Abort Mission"
         >
-          <button
-            className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2 font-monospace fw-bold transition-all px-3"
-            style={{ borderRadius: "20px", fontSize: "12px" }}
-            onClick={handleExitSandbox}
-          >
-            <XCircleFill size={13} /> {isWholeModuleSandbox ? "Exit to Learn" : "Close Workspace & Return to Flow"}
-          </button>
-        </div>
+          <RocketTakeoffFill size={19} />
+        </button>
+
+        {showEjectModal && (
+          <div className="eject-modal-backdrop" onClick={() => setShowEjectModal(false)}>
+            <div className="eject-modal-card" onClick={(e) => e.stopPropagation()}>
+              <h3 className="eject-modal-title">💥 ABORT MISSION?</h3>
+              <p className="eject-modal-body">
+                Leaving now will pause your progress and return you straight to the Learn dashboard. Are you sure you want to exit?
+              </p>
+              <div className="eject-modal-actions">
+                <button
+                  type="button"
+                  className="eject-modal-btn eject-modal-btn--stay"
+                  onClick={() => setShowEjectModal(false)}
+                >
+                  Hold Position! 🧑‍🚀
+                </button>
+                <button
+                  type="button"
+                  className="eject-modal-btn eject-modal-btn--go"
+                  onClick={handleConfirmEject}
+                >
+                  Eject! 🪂
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Borderless Client Window Frame Viewport Area */}
         <div className="w-100 h-100 bg-white">
           <iframe
             ref={sandboxIframeRef}
-            src={blobUrl}
+            src={sandboxBlobUrl}
             title="Fullscreen Native Sandbox Execution Terminal"
             width="100%"
             height="100%"
@@ -330,26 +406,13 @@ const Quiz = () => {
     <div className="quiz-simulation-player custom-dashboard-layout-root global-viewport-lock" style={{ fontFamily: 'Plus Jakarta Sans' }}>
       <div className="quiz-ambient-mesh-grid"></div>
 
-      {/* Invisible top-center trigger — hovering it slides the header HUD into
-          view, mirroring the sandbox overlay's exact hover-to-exit mechanic
-          rather than keeping the progress/XP/lives header always visible. */}
-      <div
-        className="sandbox-hover-trigger-zone"
-        onMouseEnter={() => setHudRevealed(true)}
+      <QuizPlayerHeader
+        currentIndex={state.currentIndex}
+        totalLength={state.content.length}
+        topicXP={state.topicXP}
+        chances={state.chances}
+        onExit={handleExit}
       />
-      <div
-        className={`quiz-standard-header-hud ${hudRevealed ? 'hud-revealed' : ''}`}
-        onMouseEnter={() => setHudRevealed(true)}
-        onMouseLeave={() => setHudRevealed(false)}
-      >
-        <QuizPlayerHeader
-          currentIndex={state.currentIndex}
-          totalLength={state.content.length}
-          topicXP={state.topicXP}
-          chances={state.chances}
-          onExit={handleExit}
-        />
-      </div>
 
       <div className="main-flexible-workspace-deck d-flex position-relative">
         
@@ -361,8 +424,8 @@ const Quiz = () => {
         </button>
 
         <div className={`quiz-dynamic-sidebar-rails font-monospace ${isSidebarOpen ? 'drawer-expanded' : 'drawer-collapsed'}`}>
-          <div className="sidebar-rails-header border-bottom px-3 py-2 text-start">
-            <span className="text-uppercase tracking-wider font-weight-bold text-muted" style={{ fontSize: '9px', letterSpacing: '0.3px' }}>Course Syllabus Timeline</span>
+          <div className="sidebar-rails-header text-start">
+            <span className="sidebar-rails-header-label">Course Syllabus</span>
           </div>
           <div className="sidebar-scrollable-menu-nodes cb-sidebar-scroll-track">
             {state.content.map((card, idx) => {
@@ -382,31 +445,31 @@ const Quiz = () => {
               const isNodeAccessible = isDone || isSequenceSelectable;
 
               return (
-                <div 
-                  key={card._id || idx} 
-                  className={`sidebar-nav-item-row text-start d-flex align-items-center justify-content-between transition-all ${isActive ? 'active-row-node' : ''} ${!isNodeAccessible ? 'hard-locked-row' : 'clickable-row'}`}
+                <div
+                  key={card._id || idx}
+                  className={`sidebar-nav-item-row text-start d-flex align-items-center justify-content-between ${isActive ? 'active-row-node' : ''} ${!isNodeAccessible ? 'hard-locked-row' : 'clickable-row'}`}
                   onClick={() => isNodeAccessible && handleSidebarNodeJump(idx)}
                 >
                   <div className="d-flex align-items-center gap-2 text-truncate w-80">
                     <div className="row-icon-indicator flex-shrink-0 d-flex align-items-center">
-                      {card.card_type === 'knowledge' && <LayoutTextWindow className="text-success" />}
-                      {card.card_type === 'video' && <PlayCircle className="text-danger" />}
-                      {card.card_type === 'quiz' && <QuestionCircle className="text-warning" />}
-                      {card.card_type === 'code' && <CodeSquare className="text-primary" />}
-                      {card.card_type === 'pdf' && <FileEarmarkPdfFill className="text-danger" />}
-                      {card.card_type === 'ppt' && <FileEarmarkEaselFill className="text-info" />}
-                      {card.card_type === 'html_sandbox' && <PlayCircle className="text-success" />}
+                      {card.card_type === 'knowledge' && <LayoutTextWindow />}
+                      {card.card_type === 'video' && <PlayCircle />}
+                      {card.card_type === 'quiz' && <QuestionCircle />}
+                      {card.card_type === 'code' && <CodeSquare />}
+                      {card.card_type === 'pdf' && <FileEarmarkPdfFill />}
+                      {card.card_type === 'ppt' && <FileEarmarkEaselFill />}
+                      {card.card_type === 'html_sandbox' && <PlayCircle />}
                     </div>
-                    <span className="small text-truncate text-sans-serif" style={{ fontWeight: isActive ? '700' : '500' }}>
+                    <span className="sidebar-node-title text-truncate">
                       {card.content?.title || "Untitled Component Node"}
                     </span>
                   </div>
 
                   <div className="row-status-lock-marker flex-shrink-0 ms-2">
                     {isDone ? (
-                      <CheckCircleFill className="text-success" size={11} />
+                      <CheckCircleFill className="sidebar-status-done" size={13} />
                     ) : (
-                      !isNodeAccessible ? <LockFill className="text-muted" size={10} /> : <div className="pending-dot-pulse"></div>
+                      !isNodeAccessible ? <LockFill className="sidebar-status-locked" size={11} /> : <div className="pending-dot-pulse"></div>
                     )}
                   </div>
                 </div>
@@ -445,7 +508,7 @@ const Quiz = () => {
               onClick={handleProcessDockAction} 
               disabled={isButtonDisabled}
               style={{
-                backgroundColor: isButtonDisabled ? '#cbd5e1' : '#0f256e',
+                backgroundColor: isButtonDisabled ? '#cbd5e1' : 'var(--amber-glow, #ff9f1c)',
                 cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
                 minWidth: isHtmlSandboxCard ? '280px' : 'auto'
               }}

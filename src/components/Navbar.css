@@ -1,34 +1,21 @@
 /* src/components/Navbar.css */
+/* Redesigned onto the app's real --orbit- and --orbit-glass- design tokens
+   now that the whole site is permanently dark/cosmic (no more light/dark
+   toggle — see src/context/ThemeContext.jsx). The old --nav- aliases here
+   were hardcoded to fixed light values that never actually reacted to
+   theme, so this is a genuine reskin, not just "let dark mode kick in." */
 
 /* =========================================================================
-   🎨 SYSTEM COLOR STYLESHEET CONFIGURATIONS
-   ========================================================================= */
-:root {
-  /* NOTE: --amber-gold / --blaze-orange / --neon-pink / --blue-violet /
-     --azure-blue are NOT redefined here on purpose. A dozen other CSS
-     files across the app (Footer.css, HeroEntryCard.css, QuizResults.css,
-     etc.) each redeclare these exact same names at :root with their own
-     hardcoded hex — because CSS custom properties are global, whichever of
-     those files happens to load last silently wins, making any alias set
-     here unreliable (verified: it was clobbered back to the old hex in
-     testing). Every rule below that used one of these five tokens has been
-     repointed straight at the new src/index.css palette instead. */
-
-  /* Crisp Bone White Interface Framework Settings */
-  --nav-bg-white: var(--white);
-  --nav-card-light: var(--frozen-water);
-  --nav-border-light: #e5e5e5;
-  --nav-text-dark: var(--ink-strong);   /* Dark charcoal — high-contrast on white/frozen-water */
-  --nav-text-muted: #5e6c75;   /* Secondary slate gray for unselected routes */
-}
-
-/* =========================================================================
-   🧱 NAVBAR CONTAINER SPECIFICATION (Balanced Sizing Viewport)
+   🧱 NAVBAR CONTAINER — glass-cosmic bar
    ========================================================================= */
 .duo-nav-container {
   width: 100%;
-  background-color: var(--nav-bg-white);
-  border-bottom: 3px solid var(--nav-border-light); /* Thick, structural flat 2D line */
+  background: var(--orbit-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background-image: var(--orbit-glass-highlight);
+  border-bottom: 1px solid var(--orbit-glass-border);
+  box-shadow: var(--orbit-glass-shadow);
   position: sticky;
   top: 0;
   z-index: 1050;
@@ -39,7 +26,7 @@
 
 .duo-nav-wrapper {
   max-width: 1140px;
-  height: 64px; /* Sleek, crisp professional height */
+  height: 64px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -59,7 +46,7 @@
 }
 
 .duo-logo-img {
-  height: 32px;
+  height: 92px;
   width: auto;
 }
 
@@ -70,7 +57,7 @@
 }
 
 /* =========================================================================
-   ⚡ CRUNCHY NAVIGATION TAB LABELS (High-Contrast Black Elements)
+   ⚡ NAVIGATION TAB LABELS
    ========================================================================= */
 .duo-nav-item-wrapper {
   display: inline-flex;
@@ -78,7 +65,7 @@
 }
 
 .duo-nav-item {
-  color: var(--nav-text-muted); /* Dark slate gray by default */
+  color: var(--orbit-text-body);
   text-decoration: none !important;
   font-size: 13px;
   font-weight: 800;
@@ -90,26 +77,25 @@
   background-color: transparent;
   display: inline-flex;
   align-items: center;
-  transition: all 0.1s ease;
+  transition: all 0.14s ease;
 }
 
-/* Turns high-contrast black on hover */
 .duo-nav-item:hover:not(.item-disabled) {
-  color: var(--nav-text-dark);
-  background-color: var(--nav-card-light);
+  color: var(--orbit-text-heading);
+  background-color: var(--orbit-brand-light);
 }
 
-/* Active Highlight Style: amber-glow accents alongside the charcoal typography */
+/* Active Highlight: brand-violet glow, matching the OrbitShell sidebar's
+   active-item treatment for a consistent navigation language site-wide. */
 .duo-nav-item.item-active {
-  color: var(--nav-text-dark) !important; /* Kept bold charcoal for maximum priority readability */
-  background-color: var(--nav-card-light);
-  border: 2px solid var(--amber-glow);
-  border-bottom: 4px solid var(--amber-glow-dark); /* 3D tactile push feedback edge line */
+  color: var(--orbit-text-heading) !important;
+  background-color: var(--orbit-brand-muted);
+  border: 2px solid var(--orbit-brand);
+  box-shadow: 0 0 16px -4px var(--orbit-brand);
 }
 
-/* Disabled Coming Soon Route */
 .duo-nav-item.item-disabled {
-  color: var(--nav-text-muted);
+  color: var(--orbit-text-muted);
   opacity: 0.4;
   cursor: not-allowed;
   gap: 6px;
@@ -118,8 +104,8 @@
 }
 
 .duo-disabled-tag {
-  background-color: var(--nav-border-light);
-  color: var(--nav-text-dark);
+  background-color: var(--orbit-glass-border);
+  color: var(--orbit-text-heading);
   font-size: 8px;
   font-weight: 900;
   padding: 2px 5px;
@@ -127,7 +113,7 @@
 }
 
 /* =========================================================================
-   👤 TACTILE USER PORTAL DASH HUD CONTAINER (Desktop Layout)
+   👤 USER HUD (Desktop)
    ========================================================================= */
 .duo-actions-desktop {
   display: flex;
@@ -135,35 +121,11 @@
   gap: 12px;
 }
 
-.duo-theme-toggle-btn {
-  background: var(--nav-bg-white);
-  border: 2px solid var(--nav-border-light);
-  border-bottom: 4px solid var(--nav-border-light);
-  color: var(--light-sea-green);
-  padding: 8px;
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.1s ease;
-}
-
-.duo-theme-toggle-btn:hover {
-  background-color: var(--nav-card-light);
-}
-
-.duo-theme-toggle-btn:active {
-  transform: translateY(2px);
-  border-bottom-width: 2px;
-}
-
 .duo-user-hud-box {
   display: flex;
   align-items: center;
-  background-color: var(--nav-bg-white);
-  border: 2px solid var(--nav-border-light);
-  border-bottom: 4px solid var(--nav-border-light);
+  background: var(--orbit-glass-bg);
+  border: 1px solid var(--orbit-glass-border);
   border-radius: 12px;
   padding: 3px 10px 3px 4px;
 }
@@ -179,8 +141,8 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background-color: var(--nav-card-light);
-  border: 2px solid var(--nav-border-light);
+  background-color: var(--orbit-surface-subtle);
+  border: 2px solid var(--orbit-glass-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -202,12 +164,15 @@
 .duo-username-text {
   font-size: 13px;
   font-weight: 800;
-  color: var(--nav-text-dark);
+  color: var(--orbit-text-heading);
 }
 
+/* XP badge keeps its vivid gamification-amber accent — an intentional,
+   distinct color from the navigational chrome (matches the same pattern
+   used for streak/XP accents elsewhere in the app). */
 .duo-xp-badge {
   background-color: var(--honey-bronze) !important;
-  color: #3c3c3c !important;
+  color: #241a05 !important;
   font-weight: 900;
   font-size: 10px;
   padding: 4px 8px;
@@ -217,14 +182,14 @@
 .hud-separator {
   width: 1px;
   height: 16px;
-  background-color: var(--nav-border-light);
+  background-color: var(--orbit-glass-border);
   margin: 0 10px;
 }
 
 .duo-logout-icon-btn {
   background: transparent;
   border: none;
-  color: var(--nav-text-muted);
+  color: var(--orbit-text-muted);
   cursor: pointer;
   padding: 2px;
   display: flex;
@@ -232,31 +197,31 @@
 }
 
 .duo-logout-icon-btn:hover {
-  color: var(--amber-glow);
+  color: var(--orbit-brand);
 }
 
-/* Primary amber-glow Sign In/Log In Action Button */
+/* Primary brand-violet Sign In/Log In action button */
 .duo-btn-outline {
   text-decoration: none !important;
   font-weight: 800;
   font-size: 12px;
   text-transform: uppercase;
-  color: var(--white);
-  background-color: var(--amber-glow);
+  color: #ffffff;
+  background-color: var(--orbit-brand);
   border: none;
-  border-bottom: 4px solid var(--amber-glow-dark);
+  border-bottom: 3px solid var(--orbit-brand-dark);
   padding: 8px 18px;
   border-radius: 12px;
-  transition: all 0.1s ease;
+  transition: filter 0.14s ease, transform 0.14s ease;
 }
 
 .duo-btn-outline:hover {
-  filter: brightness(1.05);
+  filter: brightness(1.06);
 }
 
 .duo-btn-outline:active {
   transform: translateY(2px);
-  border-bottom-width: 2px;
+  border-bottom-width: 1px;
 }
 
 /* =========================================================================
@@ -271,7 +236,7 @@
   display: none;
   background: transparent;
   border: none;
-  color: var(--nav-text-dark);
+  color: var(--orbit-text-heading);
   cursor: pointer;
 }
 
@@ -294,14 +259,17 @@
     left: -100%;
     width: 100%;
     height: calc(100vh - 67px);
-    background-color: var(--nav-bg-white);
+    background: var(--orbit-glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background-image: var(--orbit-glass-highlight);
     flex-direction: column;
     align-items: stretch;
     padding: 20px;
     gap: 10px;
     box-sizing: border-box;
     transition: left 0.2s ease;
-    border-top: 1px solid var(--nav-border-light);
+    border-top: 1px solid var(--orbit-glass-border);
   }
 
   .duo-links-panel.mobile-panel-open {
@@ -317,8 +285,8 @@
 
   .duo-mobile-profile-hero-card {
     display: block;
-    background-color: var(--nav-card-light);
-    border: 2px solid var(--nav-border-light);
+    background-color: var(--orbit-surface-subtle);
+    border: 1px solid var(--orbit-glass-border);
     border-radius: 14px;
     padding: 12px;
     margin-bottom: 8px;
@@ -328,14 +296,14 @@
     display: block;
     margin-top: auto;
     padding-top: 20px;
-    border-top: 2px solid var(--nav-border-light);
+    border-top: 1px solid var(--orbit-glass-border);
   }
 
   .duo-btn-primary {
-    background-color: var(--amber-glow);
+    background-color: var(--orbit-brand);
     border: none;
-    border-bottom: 4px solid var(--amber-glow-dark);
-    color: var(--white);
+    border-bottom: 3px solid var(--orbit-brand-dark);
+    color: #ffffff;
     font-size: 14px;
     font-weight: 800;
     padding: 12px;
@@ -346,9 +314,8 @@
 
   .duo-btn-secondary {
     background-color: transparent;
-    border: 2px solid var(--nav-border-light);
-    border-bottom: 4px solid var(--nav-border-light);
-    color: var(--amber-glow);
+    border: 2px solid var(--orbit-glass-border);
+    color: var(--orbit-brand);
     font-size: 14px;
     font-weight: 800;
     padding: 12px;

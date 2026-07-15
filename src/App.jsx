@@ -10,6 +10,7 @@ import {
 import { AuthProvider, default as AuthContext } from "./context/AuthContext";
 import { Container, Spinner } from "react-bootstrap";
 import HomePage from "./pages/HomePage";
+import About from "./pages/About";
 import TopicTrail from "./pages/TopicTrail";
 import Quiz from "./pages/Quiz";
 import ModuleTrail from "./pages/ModuleTrail";
@@ -18,6 +19,8 @@ import Layout from "./components/Layout";
 import DocumentationPage from "./components/DocumentationPage";
 import Contact from "./components/Contact";
 import AuthPage from "./pages/Auth";
+import SsoCallback from "./pages/SsoCallback";
+import CompleteProfile from "./pages/CompleteProfile";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -128,6 +131,17 @@ const AppContent = () => {
       window.location.href = "/login?session_status=concurrent_kickout";
     });
 
+    // 🎯 This socket lives at the app root, so — unlike OrbitShell's own
+    // socket, which disconnects the moment the user leaves /orbit/* for the
+    // sibling /quiz/:moduleId/:topicId route (exactly where card completions
+    // happen) — this one stays connected for the whole session regardless of
+    // route. Re-broadcasting as a plain DOM CustomEvent lets any mounted
+    // component (e.g. the Learn page's module cards) react without needing
+    // its own socket connection or a shared Context provider.
+    socket.on("module_progress_update", (data) => {
+      window.dispatchEvent(new CustomEvent("orbit:module-progress", { detail: data }));
+    });
+
     return () => {
       socket.disconnect();
     };
@@ -139,6 +153,8 @@ const AppContent = () => {
         {/* 🔐 Auth & Verification Streams (Public Access Routes) */}
         <Route path="/login" element={<AuthPage />} />
         <Route path="/register" element={<AuthPage />} />
+        <Route path="/sso/callback" element={<SsoCallback />} />
+        <Route path="/complete-profile" element={<CompleteProfile />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route
           path="/verify-email/:token"
@@ -150,6 +166,7 @@ const AppContent = () => {
         {/* ── PUBLIC PAGES ─────────────────────────────────────────── */}
         <Route path="/onboarding" element={<OrbitOnboarding />} />
         <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
 
         {/* ── LEGACY PUBLIC MODULE ROUTES (kept for backward compat) ── */}
@@ -172,6 +189,16 @@ const AppContent = () => {
         >
           {/* Learner home (OrbitWorkspace SPA — home/progress/leaderboard sections) */}
           <Route index element={<OrbitWorkspaceContainer />} />
+          {/* Real routes for the OrbitWorkspace SPA's remaining internal
+              views (progress/leaderboard/pipeline) — static routes below
+              (modules/ideas/profile/dashboard) always win over this dynamic
+              segment at the same depth, so this only ever catches those
+              three values (or a stray value, which OrbitWorkspace's own
+              fallback-to-home logic already handles). Same element as
+              `index` above — React Router keeps this as ONE mounted
+              OrbitWorkspace instance across both, so its data-fetching
+              effects don't re-run on section navigation. */}
+          <Route path=":section" element={<OrbitWorkspaceContainer />} />
 
           {/* Deep-link module routes — render INSIDE the persistent sidebar shell */}
           <Route path="modules" element={<ModuleTrail />} />

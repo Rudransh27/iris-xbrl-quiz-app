@@ -1,12 +1,12 @@
 // src/hooks/useQuizEngine.js
-import { useState, useEffect, useContext, useCallback } from "react";
+import { useState, useEffect, useContext, useCallback, useRef } from "react";
 import api from "../admin/services/api";
 import AuthContext from "../context/AuthContext";
 import * as validators from "../utils/validators";
 import Swal from "sweetalert2";
 
 export const useQuizEngine = (moduleId, topicId, navigate) => {
-  const { user, updateUserXP, refreshUser } = useContext(AuthContext);
+  const { addUserXP, refreshUser } = useContext(AuthContext);
 
   // Normalize checking whether the layout parameters route identifies a Flat/Express Module path
   const isExpressFlatTrack =
@@ -118,6 +118,49 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
     validationError: null,
   });
 
+  // ⏱️ Tracks how long the current card has been open so recordCardCompletion
+  // can report real elapsed time to the admin Progress Dashboard. Reset on
+  // every card change (forward or back) — read at each submission site below.
+  const cardStartTimeRef = useRef(Date.now());
+  useEffect(() => {
+    cardStartTimeRef.current = Date.now();
+  }, [state.currentIndex]);
+
+  // 🎯 Applies a server-computed xpChange that arrived OUTSIDE handleAction's
+  // own flow — currently only the whole-module HTML sandbox's auto-save
+  // (Quiz.jsx) — updating both this session's local topicXP (functional
+  // setState, safe even from a stale closure) and the global AuthContext
+  // total. This is why the HTML module page never showed earned XP before:
+  // the auto-save call updated the database but never called anything like
+  // this, so neither piece of UI state ever knew XP had been awarded.
+  // handleAction's own flow below does NOT use this — it already folds its
+  // own topicXP bump into a broader setState call and calls addUserXP
+  // directly, so calling this too would double-apply the same amount.
+  const applyAutoSaveXp = useCallback((amount) => {
+    if (!amount) return;
+    setState((prev) => ({ ...prev, topicXP: prev.topicXP + amount }));
+    addUserXP(amount);
+  }, [addUserXP]);
+
+  // 🎯 BUG FIX (Module Completion checklist/streak never updating): the
+  // dashboard used to be the ONLY place that decided "is a module/topic done"
+  // (via OrbitWorkspace's moduleTaskDone), so nothing ever recorded the
+  // completion until the user happened to navigate back to the dashboard's
+  // index route — which the post-quiz flow doesn't do automatically (it lands
+  // on the module/topic list instead). Today's Read and Idea Submission both
+  // call verifyDailyStreak right at the moment they complete; Module
+  // Completion is the odd one out that didn't. recordCardCompletion's
+  // response already carries `cardsCovered`/`totalCards` for BOTH module
+  // formats (whole-module count for EXPRESS_FLAT, topic count for STANDARD),
+  // so completion can be detected uniformly right here, at the source.
+  const verifyModuleProgressIfComplete = useCallback((backendResponse) => {
+    const covered = backendResponse?.cardsCovered ?? backendResponse?.data?.cardsCovered;
+    const total = backendResponse?.totalCards ?? backendResponse?.data?.totalCards;
+    if (total > 0 && covered === total && typeof api.verifyDailyStreak === "function") {
+      api.verifyDailyStreak("module_progress").catch(() => {});
+    }
+  }, []);
+
   // 🚀 REFACTORED: Now accepts an optional telemetryPayload sent up from custom cards (like HTML Sandboxes)
   const handleAction = async (telemetryPayload = null) => {
     const currentCard = state.content[state.currentIndex];
@@ -140,6 +183,7 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
       ) {
         try {
           let backendResponse;
+          const timeSpentDelta = Math.round((Date.now() - cardStartTimeRef.current) / 1000);
 
           if (currentCard.card_type === "html_sandbox" && telemetryPayload) {
             console.log(
@@ -153,6 +197,7 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
               moduleId,
               true, // Marked true since submission requires complete execution path
               telemetryPayload, // Pass extra text feedback object matrices safely down the wire
+              timeSpentDelta,
             );
           } else {
             // Standard passive knowledge card completion route
@@ -161,6 +206,8 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
               isExpressFlatTrack ? "" : topicId,
               moduleId,
               true,
+              null,
+              timeSpentDelta,
             );
           }
 
@@ -170,9 +217,8 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
             `📥 Server interaction synchronization result: +${serverXpChange} XP`,
           );
 
-          if (serverXpChange > 0 && user) {
-            updateUserXP((user.xp || 0) + serverXpChange);
-          }
+          addUserXP(serverXpChange);
+          verifyModuleProgressIfComplete(backendResponse);
         } catch (e) {
           console.error("Failed to commit sandbox tracker card async pass:", e);
         }
@@ -224,19 +270,21 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
     }
 
     try {
+      const timeSpentDelta = Math.round((Date.now() - cardStartTimeRef.current) / 1000);
       const backendResponse = await api.recordCardCompletion(
         currentCard._id,
         isExpressFlatTrack ? null : topicId,
         moduleId,
         isCurrentCorrect,
+        null,
+        timeSpentDelta,
       );
 
       const verifiedXpChange =
         backendResponse?.xpChange ?? backendResponse?.data?.xpChange ?? 0;
 
-      if (verifiedXpChange !== 0 && user) {
-        updateUserXP((user.xp || 0) + verifiedXpChange);
-      }
+      addUserXP(verifiedXpChange);
+      verifyModuleProgressIfComplete(backendResponse);
 
       setState((prev) => {
         let updatedContent = [...prev.content];
@@ -296,5 +344,5 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
     setState((prev) => ({ ...prev, [field]: value }));
   }, []); // empty deps — setState setter is stable
 
-  return { state, handleAction, handlePrev, updateFields };
+  return { state, handleAction, handlePrev, updateFields, applyAutoSaveXp, verifyModuleProgressIfComplete };
 };

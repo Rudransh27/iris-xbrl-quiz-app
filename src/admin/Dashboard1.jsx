@@ -15,10 +15,12 @@ import AdminHtmlModuleForm from "./components/AdminHtmlModuleForm";
 import AdminTopicForm from "./components/AdminTopicForm";
 import AdminCardForm from "./components/AdminCardForm";
 import AdminDailyReadForm from "./components/AdminDailyReads";
+import AdminBroadcastForm from "./components/AdminBroadcastForm";
 import AdminTeamDashboard from "./components/AdminTeamDashboard";
 import AdminIdeasReview from "./components/AdminIdeasReview";
 import AdminPlatformAnalytics from "./components/AdminPlatformAnalytics";
 import AdminUserAnalytics from "./AdminUserAnalytics";
+import AdminProgressDashboard from "./components/AdminProgressDashboard";
 
 import "./AdminDashboard.css";
 
@@ -190,9 +192,11 @@ export default function Dashboard1() {
             <button onClick={() => handleFormNavigation("add-card")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "add-card" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>+ Card Block</button>
             <button onClick={() => handleFormNavigation("create-team")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "create-team" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>Team Hub</button>
             <button onClick={() => handleFormNavigation("daily-reads")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "daily-reads" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>+ Post Read</button>
+            <button onClick={() => handleFormNavigation("broadcast")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "broadcast" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>+ Broadcast</button>
             <button onClick={() => handleFormNavigation("ideas-review")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "ideas-review" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>Ideas Inbox</button>
             <button onClick={() => handleFormNavigation("platform-analytics")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "platform-analytics" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>Platform Analytics</button>
             <button onClick={() => handleFormNavigation("user-analytics")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "user-analytics" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>User Analytics</button>
+            <button onClick={() => handleFormNavigation("progress-dashboard")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "progress-dashboard" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>Progress Dashboard</button>
           </div>
 
           {/* ================= OPTIMIZED BENTO STATS COUNTER BAR (Visible on Map) ================= */}
@@ -236,6 +240,9 @@ export default function Dashboard1() {
             {activeTab === "daily-reads" && (
               <AdminDailyReadForm setActiveTab={setActiveTab} />
             )}
+            {activeTab === "broadcast" && (
+              <AdminBroadcastForm setActiveTab={setActiveTab} />
+            )}
             {activeTab === "ideas-review" && (
               <AdminIdeasReview />
             )}
@@ -244,6 +251,9 @@ export default function Dashboard1() {
             )}
             {activeTab === "user-analytics" && (
               <AdminUserAnalytics />
+            )}
+            {activeTab === "progress-dashboard" && (
+              <AdminProgressDashboard />
             )}
           </div>
         </>

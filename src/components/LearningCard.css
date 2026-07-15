@@ -1,11 +1,15 @@
-/* src/components/LearningCard.css */
+/* src/components/LearningCard.css
+   Recolored to the shared crisp/minimal card language (matches TopicCard):
+   flat white, a single thin neutral border, a soft ambient shadow instead
+   of a chunky 3D ridge, and a top accent line as the one intentional
+   --amber-glow touch. The old --azure-blue token was declared but never
+   actually used anywhere in this file — dropped rather than carried along. */
 
 :root {
   --duo-snow: #ffffff;
   --duo-border: #e5e5e5;
   --duo-text-dark: #3c3c3c;
   --duo-text-slate: #5e6c75;
-  --azure-blue: #3a86ff;
 }
 
 .knowledge-card {
@@ -15,16 +19,16 @@
   margin: 12px 0;
 }
 
-/* ================= 💬 PREMIUM 3D CHAT CARD OVERRIDE ================= */
 .knowledge-text {
   width: 100%;
-  background-color: var(--duo-snow);
-  border: 2px solid var(--duo-border);
-  border-bottom: 5px solid var(--duo-border); /* Tactile 3D lift ridge */
-  border-radius: 24px;
+  background-color: var(--white, var(--duo-snow));
+  border: 1px solid #e2e8f0;
+  border-top: 3px solid var(--amber-glow, #ff9f1c);
+  border-radius: 14px;
   padding: 24px;
   position: relative; /* Gives context coordinate mappings to the mascot element */
   box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
 }
 
 /* 🎯 FIXED: Absolute anchoring loops targeting the internal top-right edge boundaries */

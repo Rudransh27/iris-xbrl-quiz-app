@@ -15,6 +15,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import AuthContext from "../../context/AuthContext";
 import api from "../../admin/services/api";
 import AuthLayout from "./AuthLayout";
+import { API_BASE_URL } from "../../admin/services/config";
 
 // ── Spinner (no React Bootstrap dependency) ───────────────────────────────
 function Spinner() {
@@ -30,37 +31,11 @@ function Spinner() {
   );
 }
 
-// ── SSO notice (inline, no modal) ─────────────────────────────────────────
-function SSONotice({ visible, onDismiss }) {
-  if (!visible) return null;
-  return (
-    <div style={{
-      padding: "12px 16px", marginTop: "8px",
-      background: "var(--pastel-reads)",
-      border: "1px solid var(--pastel-reads-border)",
-      borderRadius: "10px",
-      display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px",
-    }}>
-      <div>
-        <div style={{ fontSize: "12px", fontWeight: "700", color: "var(--pastel-reads-text)", marginBottom: "2px" }}>
-          Enterprise SSO
-        </div>
-        <div style={{ fontSize: "12px", color: "var(--orbit-text-body)", lineHeight: 1.55 }}>
-          SSO integration is managed by your IT administrator.
-          Contact <strong>it@irisregtech.com</strong> to enable corporate login for your domain.
-        </div>
-      </div>
-      <button
-        onClick={onDismiss}
-        style={{
-          background: "none", border: "none", cursor: "pointer", padding: "0",
-          color: "var(--orbit-text-muted)", fontSize: "16px", lineHeight: 1,
-          flexShrink: 0,
-        }}
-      >×</button>
-    </div>
-  );
-}
+// ── Real Microsoft SSO redirect — full-page navigation, not a fetch, since
+// the backend needs to redirect the browser on to login.microsoftonline.com ──
+const redirectToMicrosoftSso = () => {
+  window.location.href = `${API_BASE_URL}/auth/microsoft`;
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AuthCard() {
@@ -82,7 +57,6 @@ export default function AuthCard() {
   const [success,        setSuccess]        = useState("");
   const [loading,        setLoading]        = useState(false);
   const [showPassword,   setShowPassword]   = useState(false);
-  const [ssoVisible,     setSsoVisible]     = useState(false);
   const [securityNotice, setSecurityNotice] = useState({ message: "", variant: "" });
   const [pendingEmail,   setPendingEmail]   = useState(""); // used in describe → verify-email
 
@@ -274,9 +248,8 @@ export default function AuthCard() {
             <div style={{ marginTop: "12px" }}>
               <button
                 type="button" className="auth-btn-secondary"
-                onClick={() => setSsoVisible(v => !v)}
+                onClick={redirectToMicrosoftSso}
               >
-                {/* Microsoft-style icon placeholder */}
                 <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
                   <rect x="1" y="1" width="7.5" height="7.5" fill="#f25022"/>
                   <rect x="9.5" y="1" width="7.5" height="7.5" fill="#7fba00"/>
@@ -285,7 +258,6 @@ export default function AuthCard() {
                 </svg>
                 Sign in with Enterprise SSO
               </button>
-              <SSONotice visible={ssoVisible} onDismiss={() => setSsoVisible(false)} />
             </div>
           </div>
 
@@ -409,7 +381,7 @@ export default function AuthCard() {
             <div className="auth-or-divider">or</div>
             <div style={{ marginTop: "12px" }}>
               <button type="button" className="auth-btn-secondary"
-                onClick={() => setSsoVisible(v => !v)}>
+                onClick={redirectToMicrosoftSso}>
                 <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
                   <rect x="1" y="1" width="7.5" height="7.5" fill="#f25022"/>
                   <rect x="9.5" y="1" width="7.5" height="7.5" fill="#7fba00"/>
@@ -418,7 +390,6 @@ export default function AuthCard() {
                 </svg>
                 Sign up with Enterprise SSO
               </button>
-              <SSONotice visible={ssoVisible} onDismiss={() => setSsoVisible(false)} />
             </div>
           </div>
 

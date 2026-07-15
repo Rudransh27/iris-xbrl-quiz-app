@@ -1,6 +1,6 @@
 // src/pages/OrbitWorkspace.jsx
 import React, { useState, useEffect, useContext, useCallback, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   PlayFill,
   CheckCircleFill,
@@ -14,7 +14,6 @@ import {
 import AuthContext from "../context/AuthContext";
 import api from "../admin/services/api";
 import DashboardHome from "../components/OrbitDashboard/DashboardHome";
-import { toDateKey, loadHistory, markDay } from "../components/OrbitDashboard/dashboardStorage";
 import { getCurrentModule, setCurrentModule } from "../components/OrbitDashboard/currentModuleStorage";
 
 // ============================================================
@@ -86,12 +85,13 @@ const tactilePanelStyle = {
 export default function OrbitWorkspace({ currentViewMode = "learner" }) {
   const { user, updateUserStreak } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const currentSection = searchParams.get("view") || "home";
+  const { section } = useParams();
+  const currentSection = section || "home";
 
   // â"€â"€ Shared data â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   const [modules, setModules] = useState([]);
   const [todaysRead, setTodaysRead] = useState(null);
+  const [newsFeed, setNewsFeed] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [departmentsList, setDepartmentsList] = useState([]);
   const [completedCardIds, setCompletedCardIds] = useState([]);
@@ -117,13 +117,34 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
       if (typeof api.verifyDailyStreak !== "function") return;
       const res = await api.verifyDailyStreak(actionType);
       if (res?.success) {
-        setStreakData(prev => ({
-          ...prev,
-          currentStreak:      res.currentStreak,
-          longestStreak:      res.longestStreak,
-          qualifiesForStreak: res.qualifiesForStreak,
-          todayActions:       res.todayActions || [],
-        }));
+        // 🎯 Upsert TODAY's entry into engagementHistory client-side instead
+        // of just updating the top-level counters — the calendar (and the
+        // dashboard's own checklist "done" flags) render directly from
+        // engagementHistory now, so without this they wouldn't reflect a
+        // just-completed action until the next full page/section reload.
+        // The response already carries everything needed to build today's
+        // entry exactly as the server would (qualifiesForStreak, the full
+        // todayActions list) — no extra round-trip required.
+        const todayKey = new Date().toISOString().split('T')[0];
+        setStreakData(prev => {
+          const todayEntryPatch = {
+            date: todayKey,
+            qualifiesForStreak: res.qualifiesForStreak,
+            actions: res.todayActions || [],
+          };
+          const existingIdx = prev.engagementHistory.findIndex(e => e.date === todayKey);
+          const nextHistory = existingIdx === -1
+            ? [...prev.engagementHistory, todayEntryPatch]
+            : prev.engagementHistory.map((e, i) => (i === existingIdx ? { ...e, ...todayEntryPatch } : e));
+          return {
+            ...prev,
+            currentStreak:      res.currentStreak,
+            longestStreak:      res.longestStreak,
+            qualifiesForStreak: res.qualifiesForStreak,
+            todayActions:       res.todayActions || [],
+            engagementHistory:  nextHistory,
+          };
+        });
         if (res.currentStreak !== undefined) {
           setTelemetry(prev => ({ ...prev, streak: res.currentStreak }));
           updateUserStreak(res.currentStreak);
@@ -234,32 +255,9 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
       || modules[0];
   }, [modules, getModuleProgress]);
 
-  // ── Checklist Task 2 (Module Completion) — tiered detection ─────────────
-  // Flat modules (hasTopics === false) need the WHOLE module done; modules
-  // built from topics only need ONE topic done. The curriculum list
-  // (getWorkspaceCurriculum) never includes topics, so fetch the single
-  // module's detail lazily whenever the active module changes.
-  const [activeModuleTopics, setActiveModuleTopics] = useState([]);
-  useEffect(() => {
-    if (!displayModule || displayModule.hasTopics === false) {
-      setActiveModuleTopics([]);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await api.getModule(displayModule._id);
-        const data = res?.data || res;
-        if (!cancelled) setActiveModuleTopics(Array.isArray(data?.topics) ? data.topics : []);
-      } catch (_) {
-        if (!cancelled) setActiveModuleTopics([]);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [displayModule?._id, displayModule?.hasTopics]);
-
-  // Platform-wide admin override: when set, the checklist tracks THIS module
-  // instead of the auto-picked displayModule (see moduleTaskDone below).
+  // Platform-wide admin override: a default suggestion shown when the user
+  // hasn't explicitly opened anything themselves — see trackedModule below,
+  // which puts the user's own pick ahead of this.
   const hotModule = useMemo(
     () => modules.find((m) => m.isHotModule) || null,
     [modules]
@@ -270,29 +268,84 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
   // return), so this stays in sync with TopicTrail's topicId writes.
   const currentModuleEntry = getCurrentModule(user?._id);
 
-  const moduleTaskDone = useMemo(() => {
-    if (hotModule) {
-      if (hotModule.hasTopics === false) {
-        // Type B — ALL cards in the hot module must be done.
-        const { total, done } = getModuleProgress(hotModule);
-        return total > 0 && done >= total;
-      }
-      // Type A — the ACTIVE topic (the one the user is actually on) must be
-      // done, not "any topic" — uses the persisted currentModule.topicId.
-      const hotModuleId = (hotModule._id || hotModule.id || "").toString();
-      if (currentModuleEntry?.moduleId?.toString() !== hotModuleId) return false;
-      const completedTopicIds = (progressData?.completedTopicIds || []).map((id) => id.toString());
-      return !!currentModuleEntry?.topicId && completedTopicIds.includes(currentModuleEntry.topicId.toString());
-    }
+  // Resolves currentModuleEntry.moduleId against the real module list — this
+  // is the module the "Active Module" widget shows PREFERENTIALLY over the
+  // hot module and the algorithm's own displayModule guess (see trackedModule).
+  const userSelectedModule = useMemo(() => {
+    if (!currentModuleEntry?.moduleId) return null;
+    return (
+      modules.find(
+        (m) => (m._id || m.id)?.toString() === currentModuleEntry.moduleId.toString()
+      ) || null
+    );
+  }, [modules, currentModuleEntry]);
 
-    if (!displayModule) return false;
-    if (displayModule.hasTopics === false) {
-      const { total, done } = getModuleProgress(displayModule);
+  // Once the user's own pick is 100% finished (every card in it done — not
+  // just the "one topic" threshold that scratches off the daily checklist
+  // item), it has nothing left to resume, so it should stop pinning the
+  // widget forever. Uses the same total/done card count as every other
+  // full-module check, not the topic-based one, since "the whole module" is
+  // explicitly what determines the handoff back to the Hot Module.
+  const userSelectedModuleFullyDone = useMemo(() => {
+    if (!userSelectedModule) return false;
+    const { total, done } = getModuleProgress(userSelectedModule);
+    return total > 0 && done >= total;
+  }, [userSelectedModule, getModuleProgress]);
+
+  // 🎯 Single resolved module used for BOTH what the widget displays and what
+  // moduleTaskDone checks completion against — they must never diverge.
+  // Priority: (1) the module the user actually, explicitly opened always wins
+  // — an admin's Hot Module pick is a *default suggestion*, not a lock, so it
+  // must never override real navigation — UNLESS the user's pick is already
+  // fully finished, in which case it hands back to (2) the admin's Hot
+  // Module, so the admin's featured pick resurfaces once there's nothing left
+  // to resume; (3) the algorithm's own "smart pick" (displayModule) as the
+  // last-resort fallback.
+  const trackedModule =
+    (userSelectedModule && !userSelectedModuleFullyDone ? userSelectedModule : null) ||
+    hotModule ||
+    displayModule;
+
+  // ── Checklist Task 2 (Module Completion) — tiered detection ─────────────
+  // Flat modules (hasTopics === false) need the WHOLE module done; modules
+  // built from topics only need ONE topic done. The curriculum list
+  // (getWorkspaceCurriculum) never includes topics, so fetch the single
+  // module's detail lazily whenever the tracked module changes.
+  const [activeModuleTopics, setActiveModuleTopics] = useState([]);
+  useEffect(() => {
+    if (!trackedModule || trackedModule.hasTopics === false) {
+      setActiveModuleTopics([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.getModule(trackedModule._id);
+        const data = res?.data || res;
+        if (!cancelled) setActiveModuleTopics(Array.isArray(data?.topics) ? data.topics : []);
+      } catch (_) {
+        if (!cancelled) setActiveModuleTopics([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [trackedModule?._id, trackedModule?.hasTopics]);
+
+  // Tiered by module format, applied uniformly to whichever module is
+  // actually tracked (§ trackedModule) — a flat/HTML module (hasTopics ===
+  // false) needs the WHOLE module done; a topic-based module needs just ONE
+  // topic done. This used to special-case hotModule with a stricter "only the
+  // one specific topic you're currently on counts" rule, which broke the
+  // checklist any time the tracked module didn't exactly match that one
+  // pinned topic — now every module, hot or not, uses this same rule.
+  const moduleTaskDone = useMemo(() => {
+    if (!trackedModule) return false;
+    if (trackedModule.hasTopics === false) {
+      const { total, done } = getModuleProgress(trackedModule);
       return total > 0 && done >= total;
     }
     const completedTopicIds = (progressData?.completedTopicIds || []).map((id) => id.toString());
     return activeModuleTopics.some((t) => completedTopicIds.includes((t._id || t.id || "").toString()));
-  }, [hotModule, currentModuleEntry, displayModule, activeModuleTopics, progressData, getModuleProgress]);
+  }, [trackedModule, activeModuleTopics, progressData, getModuleProgress]);
 
   // â"€â"€ Data fetching â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   // LOOP-BREAK: dep is user?._id (stable primitive) not the full `user` object.
@@ -406,6 +459,20 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
         }
       } catch (_) {}
 
+      // Dashboard news/broadcast feed — same success-wrapped-or-flat defensive
+      // parse used throughout this file, since different endpoints in this
+      // backend aren't consistent about wrapping in `.data`.
+      try {
+        if (typeof api.getNewsFeed === "function") {
+          const newsResponse = await api.getNewsFeed();
+          const cleanNews =
+            newsResponse && newsResponse.success
+              ? newsResponse.data
+              : newsResponse;
+          setNewsFeed(Array.isArray(cleanNews) ? cleanNews : []);
+        }
+      } catch (_) {}
+
       // Modules/curriculum
       try {
         const modulesResponse =
@@ -497,8 +564,6 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
       });
       setIdeaSuccess(true);
       verifyStreak("idea_submission");
-      const todayKey = toDateKey(new Date());
-      markDay(user?._id || "guest", loadHistory(user?._id || "guest"), todayKey, { idea: true });
       setIdeaTitle("");
       setIdeaDescription("");
       setIdeaCategory("Process Improvement");
@@ -551,13 +616,15 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
         user={user}
         navigate={navigate}
         todaysRead={todaysRead}
+        newsFeed={newsFeed}
         modules={modules}
-        displayModule={displayModule}
+        widgetModule={trackedModule}
         hotModule={hotModule}
         moduleTaskDone={moduleTaskDone}
         getModuleProgress={getModuleProgress}
         handleNavigationGate={handleNavigationGate}
         verifyStreak={verifyStreak}
+        streakData={streakData}
       />
     );
   };

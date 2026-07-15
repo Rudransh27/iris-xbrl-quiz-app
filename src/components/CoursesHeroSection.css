@@ -6,16 +6,14 @@
   --neon-pink: #ff006eff;
   --blue-violet: #8338ecff;
   --azure-blue: #3a86ffff;
-
-  --duo-snow-white: #ffffff;
-  --duo-border-light: #e5e5e5;
-  --duo-text-black: #3c3c3c;
-  --duo-text-slate: #5e6c75;
 }
 
 .orbit-home-benefit-section {
   width: 100%;
-  background-color: var(--duo-snow-white);
+  /* Transparent — lets the page's ambient nebula canvas (src/index.css body
+     background) show through continuously from the hero above, instead of
+     each section sitting in its own flat opaque box. */
+  background-color: transparent;
   padding: 64px 24px;
   box-sizing: border-box;
   font-family: "Nunito", system-ui, sans-serif;
@@ -57,7 +55,7 @@
   font-size: 40px;
   font-weight: 900;
   line-height: 1.2;
-  color: var(--duo-text-black);
+  color: var(--orbit-text-heading);
   margin: 0 0 16px 0;
   letter-spacing: -0.5px;
 }
@@ -69,7 +67,7 @@
 .orbit-home-subtitle {
   font-size: 18px;
   font-weight: 700;
-  color: var(--duo-text-slate);
+  color: var(--orbit-text-body);
   max-width: 640px;
   margin: 0;
   line-height: 1.5;
@@ -92,21 +90,26 @@
 }
 
 .duo-benefit-card {
-  background-color: var(--duo-snow-white);
-  border: 2px solid var(--duo-border-light);
-  border-bottom: 5px solid var(--duo-border-light); /* Chunky Duolingo 3D Border */
+  background: var(--orbit-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 2px solid var(--orbit-glass-border);
+  border-bottom: 5px solid var(--orbit-glass-border); /* Chunky Duolingo 3D Border, glass-tinted */
   border-radius: 20px;
   padding: 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  transition: all 0.15s ease;
+  box-shadow: var(--orbit-glass-shadow);
+  background-image: var(--orbit-glass-highlight);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .duo-benefit-card:hover {
   border-color: var(--hover-accent);
   border-bottom-color: var(--hover-shadow);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: var(--orbit-glass-shadow), 0 0 24px -6px var(--hover-accent);
 }
 
 .duo-card-top {
@@ -117,9 +120,9 @@
 }
 
 .duo-card-badge {
-  background-color: var(--duo-card-light);
-  border: 2px solid var(--duo-border-light);
-  color: var(--duo-text-slate);
+  background-color: var(--orbit-glass-bg);
+  border: 2px solid var(--orbit-glass-border);
+  color: var(--orbit-text-body);
   font-size: 10px;
   font-weight: 900;
   padding: 4px 10px;
@@ -135,14 +138,14 @@
 .duo-card-team-title {
   font-size: 20px;
   font-weight: 900;
-  color: var(--duo-text-black);
+  color: var(--orbit-text-heading);
   margin: 0 0 16px 0;
 }
 
 .duo-card-divider {
   width: 100%;
   height: 2px;
-  background-color: var(--duo-border-light);
+  background-color: var(--orbit-border);
   margin-bottom: 18px;
 }
 
@@ -170,13 +173,13 @@
 .block-text {
   font-size: 13px;
   font-weight: 700;
-  color: #555555;
+  color: var(--orbit-text-body);
   margin: 0;
   line-height: 1.4;
 }
 
 .block-text.text-highlight {
-  color: var(--duo-text-black);
+  color: var(--orbit-text-heading);
   font-size: 13.5px;
 }
 
@@ -186,7 +189,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  border-top: 2px solid var(--duo-border-light);
+  border-top: 2px solid var(--orbit-border);
   padding-top: 48px;
   margin-bottom: 48px;
 }
@@ -216,14 +219,14 @@
 .strip-text-group h5 {
   font-size: 15px;
   font-weight: 900;
-  color: var(--duo-text-black);
+  color: var(--orbit-text-heading);
   margin: 0 0 4px 0;
 }
 
 .strip-text-group p {
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--duo-text-slate);
+  color: var(--orbit-text-body);
   margin: 0;
   line-height: 1.4;
 }

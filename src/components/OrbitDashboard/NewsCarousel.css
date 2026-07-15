@@ -1,0 +1,74 @@
+/* src/components/OrbitDashboard/NewsCarousel.css */
+
+.orbit-news-carousel {
+  position: relative;
+}
+
+.orbit-news-carousel__viewport {
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.orbit-news-carousel__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--orbit-border);
+  background: var(--orbit-surface);
+  color: var(--orbit-text-heading);
+  box-shadow: var(--orbit-shadow-sm);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  z-index: 2;
+}
+
+.orbit-news-carousel__arrow:hover {
+  background: var(--orbit-brand-muted);
+  transform: translateY(-50%) scale(1.06);
+}
+
+.orbit-news-carousel__arrow--prev {
+  left: -14px;
+}
+
+.orbit-news-carousel__arrow--next {
+  right: -14px;
+}
+
+.orbit-news-carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.orbit-news-carousel__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: var(--orbit-border);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.orbit-news-carousel__dot--active {
+  background: var(--orbit-brand-dark);
+  transform: scale(1.35);
+}
+
+@media (max-width: 640px) {
+  .orbit-news-carousel__arrow--prev {
+    left: 2px;
+  }
+  .orbit-news-carousel__arrow--next {
+    right: 2px;
+  }
+}

@@ -33,7 +33,7 @@ export default function HomeLeaderboard() {
               <div className="row-right-group">
                 <LightningFill className="xp-bolt-icon" />
                 <span className="xp-score-text font-monospace">{team.xp}</span>
-                <span className="xp-label">XP</span>
+                <span className="xp-label">Plasma</span>
               </div>
             </div>
           ))}

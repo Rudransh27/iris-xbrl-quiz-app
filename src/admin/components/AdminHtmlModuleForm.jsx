@@ -1,13 +1,27 @@
 // src/admin/components/AdminHtmlModuleForm.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Form, Button, Alert, Spinner, Row, Col } from 'react-bootstrap';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-html';
 import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/ext-language_tools';
 import api from '../services/api';
+import AuthContext from '../../context/AuthContext';
 
 export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, setActiveTab }) {
+  // 🔐 Same RBAC mirror as AdminModuleForm.jsx — see that file's comment for
+  // full reasoning. Backend (moduleRoutes.js) remains the actual authority.
+  const { user } = useContext(AuthContext);
+  const isSuperAdmin = user?.role === 'superadmin';
+  // 👤 OWNERSHIP — see AdminModuleForm.jsx's identical comment for full
+  // reasoning: creating a new module trivially makes the current user its
+  // owner; editing one requires its recorded creator to match.
+  const isOwner = !editData || (
+    !!editData.createdBy &&
+    !!user?._id &&
+    (editData.createdBy._id || editData.createdBy).toString() === user._id.toString()
+  );
+  const canUseGlobalScope = isSuperAdmin || isOwner;
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -19,7 +33,7 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
   const [htmlSource, setHtmlSource] = useState('');
   const [baseTimeThresholdSec, setBaseTimeThresholdSec] = useState('');
   const [estimatedDurationMin, setEstimatedDurationMin] = useState('');
-  const [maxPoints, setMaxPoints] = useState('15');
+  const [maxPoints, setMaxPoints] = useState('10');
 
   const [departmentsList, setDepartmentsList] = useState([]);
   const [loadingStructure, setLoadingStructure] = useState(true);
@@ -66,7 +80,7 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
         const sandboxCard = (fullModule.cards || []).find(c => c.card_type === 'html_sandbox');
         if (sandboxCard) {
           setHtmlSource(sandboxCard.content?.htmlSource || '');
-          setMaxPoints(String(sandboxCard.content?.maxPoints ?? 15));
+          setMaxPoints(String(sandboxCard.content?.maxPoints ?? 10));
           setBaseTimeThresholdSec(String(sandboxCard.content?.baseTimeThresholdSec ?? ''));
           setEstimatedDurationMin(String(sandboxCard.content?.estimatedDurationMin ?? ''));
         }
@@ -132,7 +146,7 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
       htmlSource,
       baseTimeThresholdSec: Number(baseTimeThresholdSec) || 0,
       estimatedDurationMin: Number(estimatedDurationMin) || 0,
-      maxPoints: Number(maxPoints) || 15,
+      maxPoints: Number(maxPoints) || 10,
     };
 
     try {
@@ -146,7 +160,7 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
 
       setTitle(''); setDescription(''); setImageUrl('');
       setSelectedDepartment(''); setSelectedTeamIds([]); setVisibility('Global');
-      setHtmlSource(''); setBaseTimeThresholdSec(''); setEstimatedDurationMin(''); setMaxPoints('15');
+      setHtmlSource(''); setBaseTimeThresholdSec(''); setEstimatedDurationMin(''); setMaxPoints('10');
 
       if (onModuleAdded) onModuleAdded();
 
@@ -161,7 +175,29 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
     }
   };
 
-  const availableTeams = departmentsList.find(d => d._id === selectedDepartment)?.teams || [];
+  // 🔐 A Department Admin only ever sees their OWN department here — never
+  // the full company directory. Super Admins see everything.
+  const visibleDepartmentsList = isSuperAdmin
+    ? departmentsList
+    : departmentsList.filter(d => (d._id || '').toString() === (user?.department || '').toString());
+
+  const availableTeams = visibleDepartmentsList.find(d => d._id === selectedDepartment)?.teams || [];
+
+  // 🔐 Keep selectedDepartment permanently locked to the Department Admin's
+  // own department once a non-Global scope is chosen — same rule as
+  // AdminModuleForm.jsx, matching the backend's forced-own-department logic.
+  useEffect(() => {
+    if (isSuperAdmin) return;
+    if (visibility === 'Global') return;
+    if (user?.department && selectedDepartment !== user.department) {
+      setSelectedDepartment(user.department);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuperAdmin, visibility, user?.department]);
+
+  // 👤 See AdminModuleForm.jsx's identical comment for full reasoning.
+  const showGlobalOption = canUseGlobalScope || visibility === 'Global';
+  const lockVisibilityDropdown = !isSuperAdmin && !isOwner && visibility === 'Global';
 
   if (loadingStructure) {
     return (
@@ -206,12 +242,23 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
                   setSelectedTeamIds([]);
                 }}
                 required
+                disabled={lockVisibilityDropdown}
                 className="admin-flat-input text-muted"
               >
-                <option value="Global">Global (All Corporate Specialist Nodes)</option>
+                {showGlobalOption && <option value="Global">Global (All Corporate Specialist Nodes)</option>}
                 <option value="Departmental">Departmental (Isolate to Single Business Line)</option>
                 <option value="Team-Specific">Team-Specific (Restricted to Sub-Team Branches)</option>
               </Form.Select>
+              {lockVisibilityDropdown && (
+                <small className="text-danger d-block mt-1">
+                  This module is Global and was created by someone else — only its creator or a Super Admin can change its scope.
+                </small>
+              )}
+              {!isSuperAdmin && !isOwner && !lockVisibilityDropdown && (
+                <small className="text-muted d-block mt-1">
+                  You didn't create this module, so it can't be set to Global — you can still adjust its scope within your own department.
+                </small>
+              )}
             </Form.Group>
           </Col>
         </Row>
@@ -228,13 +275,19 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
                     setSelectedTeamIds([]);
                   }}
                   required
+                  disabled={!isSuperAdmin}
                   className="admin-flat-input text-muted"
                 >
                   <option value="" disabled>Select Department</option>
-                  {departmentsList.map(d => (
+                  {visibleDepartmentsList.map(d => (
                     <option key={d._id} value={d._id}>{d.name}</option>
                   ))}
                 </Form.Select>
+                {!isSuperAdmin && (
+                  <small className="text-muted d-block mt-1">
+                    Locked to your own department — Department Admins cannot assign modules to other departments.
+                  </small>
+                )}
               </Form.Group>
             </Col>
           </Row>
@@ -279,7 +332,7 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
           </Col>
           <Col md={6}>
             <Form.Group>
-              <Form.Label className="fw-semibold text-dark small">Maximum Base Points / XP</Form.Label>
+              <Form.Label className="fw-semibold text-dark small">Maximum Base Points / Plasma</Form.Label>
               <Form.Control
                 type="number" min="0" value={maxPoints} onChange={(e) => setMaxPoints(e.target.value)}
                 className="admin-flat-input" required

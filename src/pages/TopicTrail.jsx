@@ -1,19 +1,28 @@
 // src/pages/TopicTrail.jsx
-import React, { useState, useEffect, useLayoutEffect, useContext } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useContext, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import TopicCard from '../components/TopicCard';
 import api from '../admin/services/api';
-import { ArrowLeft } from 'react-bootstrap-icons';
+import { ChevronRight, Book, Trophy, ClockHistory } from 'react-bootstrap-icons';
 import './TopicTrail.css';
 import AuthContext from '../context/AuthContext';
 import { setCurrentModule } from '../components/OrbitDashboard/currentModuleStorage';
+
+// "90 min" below an hour, "1.5 hrs" once it crosses 60 — avoids an odd-looking
+// "0.5 hours" for anything short, without needing two separate formats.
+const formatDuration = (totalMinutes) => {
+  if (!totalMinutes) return null;
+  if (totalMinutes < 60) return `${totalMinutes} min`;
+  return `${(totalMinutes / 60).toFixed(1)} hrs`;
+};
 
 export default function TopicTrail() {
     const { moduleId } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useContext(AuthContext); 
+    const { user } = useContext(AuthContext);
 
+    const [moduleInfo, setModuleInfo] = useState(null);
     const [topics, setTopics] = useState([]);
     const [userProgress, setUserProgress] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -32,7 +41,7 @@ export default function TopicTrail() {
             try {
                 console.log("⏳ Fetching module topics and flat user analytics...");
                 const moduleData = await api.getModule(moduleId);
-                
+
                 // 🔀 ARCHITECTURAL INTERCEPTOR: Preserved flat validation handling
                 if (moduleData && moduleData.hasTopics === false) {
                     console.log("⚡ Express flat pipeline detected. Bypassing syllabus grid map.");
@@ -41,8 +50,9 @@ export default function TopicTrail() {
 
                 const progressData = await api.getUserProgress();
 
+                setModuleInfo(moduleData || null);
                 setTopics(moduleData?.topics || []);
-                setUserProgress(progressData); 
+                setUserProgress(progressData);
 
                 setLoading(false);
             } catch (error) {
@@ -58,7 +68,7 @@ export default function TopicTrail() {
     }, [moduleId, navigate, user, location.key]);
 
     const isTopicUnlocked = () => {
-        return true; 
+        return true;
     };
 
     const getTopicProgress = (topic) => {
@@ -70,7 +80,7 @@ export default function TopicTrail() {
         const completedCardIdsInApp = userProgress?.completedCardIds || [];
         const completedTopicIdsInApp = userProgress?.completedTopicIds || [];
         const currentTopicId = topic._id ? topic._id.toString() : '';
-        
+
         const cardsCoveredCount = topic.cards.filter(card => {
             if (!card?._id) return false;
             return completedCardIdsInApp.includes(card._id.toString());
@@ -85,24 +95,103 @@ export default function TopicTrail() {
         };
     };
 
+    // ── Hero metadata: aggregate across every topic, not just this module's
+    // own estimatedTime/pointsReward — those are what actually get awarded
+    // per-topic, so summing them is what "Potential: +X XP" should mean.
+    const { totalTopicsCount, completedTopicsCount, totalDurationMinutes, totalPotentialXp, masterProgressPct } = useMemo(() => {
+        const total = topics.length;
+        let completed = 0;
+        let minutes = 0;
+        let xp = 0;
+
+        topics.forEach((topic) => {
+            if (getTopicProgress(topic).isCompleted) completed += 1;
+            minutes += Number(topic.estimatedTime) || 0;
+            xp += Number(topic.pointsReward) || 0;
+        });
+
+        return {
+            totalTopicsCount: total,
+            completedTopicsCount: completed,
+            totalDurationMinutes: minutes,
+            totalPotentialXp: xp,
+            masterProgressPct: total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0,
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [topics, userProgress]);
+
+    const durationLabel = formatDuration(totalDurationMinutes);
+
     return (
         <div className="topic-trail-page">
+            {/* ================= COSMIC ORBIT AMBIENT BACKGROUND =================
+                Purely decorative (aria-hidden, pointer-events:none): faint SVG
+                rings + a couple of CSS-orbiting glow dots. Fades out via a mask
+                before it reaches the card grid so it never fights with content
+                contrast — see TopicTrail.css for the full mechanics writeup. */}
+            <div className="orbit-bg" aria-hidden="true">
+                <svg className="orbit-bg__rings" viewBox="0 0 900 700" preserveAspectRatio="xMidYMid slice">
+                    <circle cx="620" cy="120" r="140" />
+                    <circle cx="620" cy="120" r="230" />
+                    <circle cx="620" cy="120" r="320" />
+                </svg>
+                <div className="orbit-track orbit-track--1">
+                    <span className="orbit-planet orbit-planet--amber" />
+                </div>
+                <div className="orbit-track orbit-track--2">
+                    <span className="orbit-planet orbit-planet--seagreen" />
+                </div>
+                <div className="orbit-track orbit-track--3">
+                    <span className="orbit-planet orbit-planet--ghost" />
+                </div>
+            </div>
+
             <div className="duo-topic-container">
-                
-                {/* ================= BACK NAVIGATION ROW ================= */}
-                <div className="trail-btn-pos">
-                    <button onClick={() => navigate('/orbit/modules')} className="trail-back-btn">
-                        <ArrowLeft size={16} /> <span>Back to Trails</span>
-                    </button>
+
+                {/* ================= MINIMAL HEADER ================= */}
+                <div className="topic-header">
+                    <nav className="topic-header__breadcrumb" aria-label="Breadcrumb">
+                        <button type="button" onClick={() => navigate('/orbit/modules')}>Learn</button>
+                        <ChevronRight size={10} />
+                        <button type="button" onClick={() => navigate('/orbit/modules')}>Modules</button>
+                        <ChevronRight size={10} />
+                        <span className="topic-header__breadcrumb-current">{moduleInfo?.title || '…'}</span>
+                    </nav>
+
+                    <h1 className="topic-header__title">{moduleInfo?.title || 'Your Learning Topics'}</h1>
+
+                    <div className="topic-header__meta-row">
+                        <span className="topic-header__meta-item">
+                            <Book size={13} /> {totalTopicsCount} {totalTopicsCount === 1 ? 'topic' : 'topics'}
+                        </span>
+                        {durationLabel && (
+                            <span className="topic-header__meta-item">
+                                <ClockHistory size={13} /> {durationLabel}
+                            </span>
+                        )}
+                        {totalPotentialXp > 0 && (
+                            <span className="topic-header__meta-item topic-header__meta-item--xp">
+                                <Trophy size={13} /> +{totalPotentialXp} Plasma
+                            </span>
+                        )}
+                    </div>
                 </div>
 
-                {/* ================= HEADER SUBTITLE PACK ================= */}
-                <div className="topic-page-header text-center">
-                  <h1 className="topic-page-title">Your Learning Topics</h1>
-                  <p className="topic-page-subtitle">
-                    Select a target topic node below to begin your functional simulation journey.
-                  </p>
-                </div>
+                {/* ================= RAZOR-THIN MASTER PROGRESS LINE ================= */}
+                {totalTopicsCount > 0 && (
+                    <div className="topic-progress-line-wrap">
+                        <div className="topic-progress-line-labels">
+                            <span>{completedTopicsCount}/{totalTopicsCount} completed</span>
+                            <span>{masterProgressPct}%</span>
+                        </div>
+                        <div className={`topic-progress-line ${masterProgressPct >= 100 ? 'topic-progress-line--mastered' : ''}`}>
+                            <div
+                                className="topic-progress-line__fill"
+                                style={{ width: `${Math.max(masterProgressPct > 0 ? 2 : 0, masterProgressPct)}%` }}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* ================= TOPICS CARD GRID MATRIX ================= */}
                 <div className="topics-grid-container">
@@ -121,7 +210,7 @@ export default function TopicTrail() {
                         <div className="topic-trail-cards-grid">
                             {topics.map((topic, index) => {
                                 const progress = getTopicProgress(topic);
-                                const isUnlocked = isTopicUnlocked(); 
+                                const isUnlocked = isTopicUnlocked();
                                 const status = progress.isCompleted ? 'completed' : 'unlocked';
 
                                 return (
@@ -132,6 +221,7 @@ export default function TopicTrail() {
                                             title={topic.title}
                                             description={topic.description}
                                             image={topic.image}
+                                            cards={topic.cards}
                                             status={status}
                                             progress={progress}
                                             estimatedTime={topic.estimatedTime}

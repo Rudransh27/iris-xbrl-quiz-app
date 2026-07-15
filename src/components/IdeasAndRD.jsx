@@ -4,7 +4,6 @@ import { Form, Alert, Spinner } from "react-bootstrap";
 import { Lightbulb, ChatLeftText, Tags, Lock, Send, Eye, FileText } from "react-bootstrap-icons";
 import AuthContext from "../context/AuthContext";
 import api from "../admin/services/api";
-import { toDateKey, loadHistory, markDay } from "./OrbitDashboard/dashboardStorage";
 import "./IdeasAndRD.css";
 
 export default function IdeasAndRD() {
@@ -73,10 +72,10 @@ export default function IdeasAndRD() {
       await api.submitIdeaNode(ideaPayload);
       setAlertMsg({ text: "Innovation securely dispatched to Product Council pipeline.", variant: "success" });
       // Checklist Task 3 (Idea Submission): only checks off on a confirmed,
-      // successful submission — never on click.
-      const userId = user?._id || "guest";
-      const todayKey = toDateKey(new Date());
-      markDay(userId, loadHistory(userId), todayKey, { idea: true });
+      // successful submission — never on click. The server (via
+      // verifyDailyStreak) is the sole record of this now; the dashboard
+      // picks it up on its next fetch, so there's no separate local copy to
+      // keep in sync anymore.
       if (typeof api.verifyDailyStreak === "function") {
         api.verifyDailyStreak("idea_submission").catch(() => {});
       }

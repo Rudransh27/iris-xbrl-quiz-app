@@ -1,38 +1,26 @@
-/* src/components/QuizPlayerHeader.css */
-
-:root {
-  --amber-gold: #ffbe0bff;
-  --blaze-orange: #fb5607ff;
-  --neon-pink: #ff006eff;
-  --blue-violet: #8338ecff;
-  --azure-blue: #3a86ffff;
-  --duo-green: #58cc02;
-
-  --duo-snow: #ffffff;
-  --duo-gray-plate: #f7f9fa;
-  --duo-border: #e5e5e5;
-  --duo-text-dark: #3c3c3c;
-  --duo-text-slate: #5e6c75;
-}
+/* src/components/QuizPlayerHeader.css
+   Always-in-flow player header (no more hover-reveal), redesigned onto the
+   same crisp/minimal, amber-primary language as the rest of the card set:
+   flat white, thin neutral borders, a razor-thin gradient progress line
+   instead of the old chunky 3D pill beam. */
 
 .quiz-top-player-header-shell {
   width: 100%;
-  height: 72px;
-  background-color: var(--duo-snow);
-  border-bottom: 2px solid var(--duo-border);
+  flex-shrink: 0;
+  background-color: var(--white, #ffffff);
+  border-bottom: 1px solid #e2e8f0;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   position: relative;
   z-index: 100;
-  font-family: "Nunito", system-ui, sans-serif;
 }
 
 .quiz-header-alignment-container {
   width: 100%;
   max-width: 1140px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 14px 24px;
   display: flex;
   align-items: center;
   gap: 20px;
@@ -42,75 +30,66 @@
 .quiz-header-exit-trigger {
   background-color: transparent;
   border: none;
-  color: #afafaf;
+  color: var(--ink-muted, #4a4558);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
+  padding: 7px;
   border-radius: 50%;
-  transition: all 0.1s ease;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .quiz-header-exit-trigger:hover {
-  color: var(--duo-text-dark);
-  background-color: var(--duo-gray-plate);
+  color: var(--amber-glow-dark, #e08600);
+  background-color: var(--amber-glow-hover, rgba(255, 159, 28, 0.08));
 }
 
-/* ================= 📊 3D CHUNKY PROGRESS BEAM CONTROLLERS ================= */
+/* ================= 📊 RAZOR-THIN PROGRESS RAIL ================= */
 .quiz-header-progress-viewport {
   flex: 1;
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
 }
 
 .quiz-header-progress-base-rail {
   flex: 1;
-  height: 16px;
-  background-color: var(--duo-border);
-  border-radius: 20px;
+  height: 6px;
+  background-color: #eef0f2;
+  border-radius: 999px;
   position: relative;
   overflow: hidden;
 }
 
 .quiz-header-progress-fluid-beam {
   height: 100%;
-  background-color: var(--duo-green);
-  border-radius: 20px;
+  background: linear-gradient(90deg, var(--amber-glow, #ff9f1c), var(--light-sea-green, #2ec4b6));
+  border-radius: 999px;
   position: relative;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Playful inner highlight layer tracking along the beam */
-.quiz-header-progress-fluid-shine {
-  position: absolute;
-  top: 3px;
-  left: 6px;
-  right: 6px;
-  height: 4px;
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 20px;
-}
-
 .quiz-header-step-counter {
   font-size: 11.5px;
-  font-weight: 900;
-  color: var(--duo-text-slate);
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  color: var(--ink-muted, #4a4558);
+  letter-spacing: 0.3px;
   white-space: nowrap;
 }
 
-/* ================= 💫 TACTILE DATA OVERVIEW BADGES ================= */
+/* ================= 💫 SLIM STAT PILLS ================= */
 .quiz-header-stat-capsule {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 6px 14px;
-  border: 2px solid var(--duo-border);
-  border-bottom-width: 4px; /* Chunky flat card bottom look */
-  border-radius: 14px;
-  background-color: var(--duo-snow);
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background-color: var(--white, #ffffff);
+  flex-shrink: 0;
 }
 
 .stat-vector-icon {
@@ -118,28 +97,28 @@
   flex-shrink: 0;
 }
 
-.text-gold-accent { color: var(--amber-gold); }
-.text-red-accent  { color: #ff4b4b; }
+.text-gold-accent { color: var(--amber-glow-dark, #e08600); }
+.text-red-accent  { color: #e5484d; }
 
 .quiz-stat-count-string {
   font-size: 13px;
-  font-weight: 900;
-  color: var(--duo-text-dark);
+  font-weight: 800;
+  color: var(--ink-strong, #1a1523);
 }
 
 .stat-lbl-dim {
   font-size: 10px;
-  font-weight: 800;
-  color: var(--duo-text-slate);
+  font-weight: 700;
+  color: var(--ink-muted, #4a4558);
   letter-spacing: 0.3px;
 }
 
-/* Interactive Color-Fused Hue Tints */
-.xp-node-tint { background-color: #fffdf0; border-color: #ffe89e; }
-.life-node-tint { background-color: #fff5f5; border-color: #ffcccc; }
+/* Tinted pill variants */
+.xp-node-tint { background-color: var(--amber-glow-muted, rgba(255, 159, 28, 0.14)); border-color: rgba(255, 159, 28, 0.3); }
+.life-node-tint { background-color: rgba(229, 72, 77, 0.06); border-color: rgba(229, 72, 77, 0.2); }
 
 @media (max-width: 640px) {
   .quiz-header-step-counter { display: none; }
-  .quiz-header-alignment-container { gap: 12px; }
+  .quiz-header-alignment-container { gap: 12px; padding: 12px 16px; }
   .quiz-header-stat-capsule { padding: 6px 10px; }
 }

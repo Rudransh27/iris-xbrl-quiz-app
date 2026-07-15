@@ -14,7 +14,8 @@
   min-height: 0;
   width: 100%;
   overflow: hidden;
-  background-color: #f8fafc;
+  background-color: var(--white, #ffffff);
   border: 1px solid #e2e8f0;
+  border-top: 3px solid var(--amber-glow, #ff9f1c);
   border-radius: 8px;
 }

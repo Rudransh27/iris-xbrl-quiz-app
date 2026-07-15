@@ -4,7 +4,6 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import AuthContext from "../context/AuthContext";
-import { ThemeContext } from "../context/ThemeContext";
 import SuperAdminDashboard from "../admin/SuperAdminDashboard";
 import Dashboard1 from "../admin/Dashboard1";
 import {
@@ -21,17 +20,15 @@ import {
   Broadcast,
   ArrowLeftRight,
   LightningCharge,
-  SunFill,
-  MoonFill,
 } from "react-bootstrap-icons";
 import "./Layout.css";
+import { resolveViewMode, viewModeStorageKey } from "../utils/viewMode";
 
 export default function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useContext(AuthContext);
-  const { theme, toggleTheme } = useContext(ThemeContext);
 
   const isQuizRoute = location.pathname.startsWith("/quiz");
   const isDashboardRoute = location.pathname.startsWith("/orbit");
@@ -45,20 +42,19 @@ export default function Layout({ children }) {
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const [currentViewMode, setCurrentViewMode] = useState(() => {
-    const savedMode = localStorage.getItem("orbit_view_mode");
-    if (savedMode) return savedMode;
-    if (user?.role === "superadmin") return "superadmin";
-    if (user?.role === "admin") return "admin";
-    return "learner";
-  });
+  // 🔒 Same per-user-scoped, role-clamped view mode as OrbitShell.jsx — see
+  // src/utils/viewMode.js. Never trust a shared/global storage key here:
+  // that's exactly what let one account's "admin" view mode leak onto the
+  // next different account logging in on the same browser.
+  const [currentViewMode, setCurrentViewMode] = useState("learner");
+  const viewModeKey = viewModeStorageKey(user?._id);
 
   useEffect(() => {
-    if (!localStorage.getItem("orbit_view_mode") && user?.role) {
-      if (user.role === "superadmin") setCurrentViewMode("superadmin");
-      else if (user.role === "admin") setCurrentViewMode("admin");
-    }
-  }, [user]);
+    if (!user?.role) return;
+    const saved = viewModeKey ? localStorage.getItem(viewModeKey) : null;
+    setCurrentViewMode(resolveViewMode(user.role, saved));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?._id, user?.role]);
 
   // Current section from URL param — only meaningful on /orbit
   const currentSection = searchParams.get("view") || "home";
@@ -243,7 +239,7 @@ export default function Layout({ children }) {
                 className="nav-item"
                 onClick={() => {
                   setCurrentViewMode("admin");
-                  localStorage.setItem("orbit_view_mode", "admin");
+                  if (viewModeKey) localStorage.setItem(viewModeKey, "admin");
                   navigate("/orbit");
                 }}
               >
@@ -253,7 +249,7 @@ export default function Layout({ children }) {
                 className="nav-item"
                 onClick={() => {
                   setCurrentViewMode("admin");
-                  localStorage.setItem("orbit_view_mode", "admin");
+                  if (viewModeKey) localStorage.setItem(viewModeKey, "admin");
                   navigate("/orbit");
                 }}
               >
@@ -267,7 +263,7 @@ export default function Layout({ children }) {
                 className="nav-item"
                 onClick={() => {
                   setCurrentViewMode("admin");
-                  localStorage.setItem("orbit_view_mode", "admin");
+                  if (viewModeKey) localStorage.setItem(viewModeKey, "admin");
                   navigate("/orbit");
                 }}
               >
@@ -319,30 +315,12 @@ export default function Layout({ children }) {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <button
-              onClick={toggleTheme}
-              style={{
-                background: "var(--curriculum-icon-bg)",
-                border: "none",
-                color: "var(--curriculum-icon-text)",
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {theme === "light" ? <MoonFill size={16} /> : <SunFill size={16} style={{ color: "var(--badge-progress-text)" }} />}
-            </button>
-
             {user?.role === "admin" && (
               <button
                 onClick={() => {
                   const nextMode = currentViewMode === "admin" ? "learner" : "admin";
                   setCurrentViewMode(nextMode);
-                  localStorage.setItem("orbit_view_mode", nextMode);
+                  if (viewModeKey) localStorage.setItem(viewModeKey, nextMode);
                   if (nextMode === "admin") navigate("/orbit/dashboard?tab=overview");
                   else navigate("/orbit");
                 }}
@@ -365,7 +343,7 @@ export default function Layout({ children }) {
                 onChange={(e) => {
                   const selectedMode = e.target.value;
                   setCurrentViewMode(selectedMode);
-                  localStorage.setItem("orbit_view_mode", selectedMode);
+                  if (viewModeKey) localStorage.setItem(viewModeKey, selectedMode);
                   if (selectedMode === "admin") navigate("/orbit/dashboard?tab=overview");
                   else navigate("/orbit");
                 }}
@@ -403,7 +381,7 @@ export default function Layout({ children }) {
                 borderBottom: "4px solid var(--badge-progress-text)",
               }}
             >
-              <LightningCharge size={14} /> {user?.xp || 0} XP
+              <LightningCharge size={14} /> {user?.xp || 0} Plasma
             </span>
 
             <div

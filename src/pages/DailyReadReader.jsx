@@ -1,10 +1,8 @@
 // src/pages/DailyReadReader.jsx
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Calendar3, Person, Bookmark } from "react-bootstrap-icons";
 import api from "../admin/services/api";
-import AuthContext from "../context/AuthContext";
-import { toDateKey, loadHistory, markDay } from "../components/OrbitDashboard/dashboardStorage";
 import "./DailyReadReader.css";
 
 const READ_THRESHOLD_MS = 30000;
@@ -12,7 +10,6 @@ const READ_THRESHOLD_MS = 30000;
 export default function DailyReadReader() {
   const { readId } = useParams();
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -41,7 +38,6 @@ export default function DailyReadReader() {
   const lastTickRef = useRef(0);
   useEffect(() => {
     if (!article) return;
-    const userId = user?._id || "guest";
     let marked = false;
     lastTickRef.current = Date.now();
 
@@ -55,8 +51,13 @@ export default function DailyReadReader() {
 
       if (accumulatedMsRef.current >= READ_THRESHOLD_MS) {
         marked = true;
-        const todayKey = toDateKey(new Date());
-        markDay(userId, loadHistory(userId), todayKey, { read: true });
+        // 🎯 The server (User.engagementHistory, via verifyDailyStreak) is
+        // now the ONLY record of "did the read happen today" — the old
+        // separate localStorage markDay() call here was a second,
+        // independent copy of the same fact that could silently drift out
+        // of sync with the server (see the dashboard calendar bug this
+        // fixed). OrbitWorkspace's dashboard picks this up on its next
+        // mount/fetch, since it always re-fetches fresh streak data.
         if (typeof api.verifyDailyStreak === "function") {
           api.verifyDailyStreak("daily_read").catch(() => {});
         }
@@ -64,7 +65,7 @@ export default function DailyReadReader() {
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [article, user]);
+  }, [article]);
 
   if (loading) {
     return (

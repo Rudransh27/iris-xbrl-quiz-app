@@ -24,12 +24,6 @@
     display: flex;
   }
 
-  /* Collapsing to icon-only doesn't make sense inside an overlay drawer
-     that's already sized for touch — hide the desktop collapse toggle. */
-  .orbit-sidebar-collapse-toggle {
-    display: none !important;
-  }
-
   .orbit-sidebar {
     position: fixed !important;
     inset: 0 auto 0 0;
@@ -44,13 +38,30 @@
     transform: translateX(0);
   }
 
-  /* Touch targets — sidebar nav rows (this also covers the footer's Profile/
-     Exit links, which are built through the same sideNavItem helper) and the
-     Sign Out button all get a 44px-minimum tap area on mobile. */
-  .orbit-nav-item,
-  .orbit-sidebar-signout-btn {
-    min-height: 44px !important;
-    padding: 12px 14px !important;
+  /* The desktop icon-rail's centered icon-on-top/label-below item reads as
+     sparse inside the much wider mobile drawer (min(82vw,300px)) — switch
+     back to a normal icon-left/label-right row, which uses that width
+     properly and is a more familiar mobile nav-list shape. Touch target is
+     still covered by the 44px icon box plus this row's own padding. */
+  .orbit-nav-item {
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 8px 14px !important;
+    margin: 2px 10px !important;
+  }
+
+  .orbit-nav-item__icon {
+    width: 40px !important;
+    height: 40px !important;
+    flex-shrink: 0;
+  }
+
+  .orbit-nav-item span {
+    text-align: left !important;
+    max-width: none !important;
+    font-size: 13.5px !important;
   }
 
   .orbit-hamburger-trigger,

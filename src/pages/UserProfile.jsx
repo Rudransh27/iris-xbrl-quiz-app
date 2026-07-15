@@ -178,14 +178,24 @@ export default function UserProfile() {
   if (!user) return null;
 
   // ── Score engine: compute MCQ vs Descriptive separately ──────────────────
+  // 🎯 CANONICAL POINT RULES (not trusted from the payload): a question's own
+  // reported points/maxPoints is set by whoever authored the sandbox HTML and
+  // is frequently left at an inconsistent placeholder value — summing those
+  // produced nonsense fractions like "5/5" or "50/4". Every MCQ/true_false
+  // question is worth a fixed 5 points; every other type (text, code, or
+  // anything else) is admin-graded and worth up to 10 points.
+  const QUIZ_QUESTION_POINTS = 5;
+  const DESCRIPTIVE_QUESTION_POINTS = 10;
   const computeScores = (questions) => {
-    const qs     = questions || [];
-    const mcqQs  = qs.filter(q => q.type === "mcq" || q.type === "true_false");
-    const descQs = qs.filter(q => q.type === "text" || q.type === "code");
+    const qs    = questions || [];
+    const mcqQs = qs.filter(q => q.type === "mcq" || q.type === "true_false");
+    // Everything that isn't auto-gradable MCQ — text, code, or any other/
+    // unrecognized type — is a single admin-graded bucket, worth up to 10 each.
+    const descQs = qs.filter(q => q.type !== "mcq" && q.type !== "true_false");
     return {
-      autoScore: mcqQs.reduce((s, q) => s + (Number(q.points)    || 0), 0),
-      autoMax:   mcqQs.reduce((s, q) => s + (Number(q.maxPoints) || 0), 0),
-      descMax:   descQs.reduce((s, q) => s + (Number(q.maxPoints) || 0), 0),
+      autoScore: mcqQs.filter(q => q.isCorrect).length * QUIZ_QUESTION_POINTS,
+      autoMax:   mcqQs.length * QUIZ_QUESTION_POINTS,
+      descMax:   descQs.length * DESCRIPTIVE_QUESTION_POINTS,
       mcqCount:  mcqQs.length,
       descCount: descQs.length,
     };
@@ -398,7 +408,7 @@ export default function UserProfile() {
         {/* ── Stats chips row ──────────────────────────────────────────────── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "12px", marginBottom: "24px" }}>
           {[
-            { icon: "⚡", label: "Total XP",     value: user.xp || 0,              bg: "var(--orbit-xp-bg)",      border: "var(--orbit-xp-border)",      color: "var(--orbit-xp-text)" },
+            { icon: "⚡", label: "Total Plasma", value: user.xp || 0,              bg: "var(--orbit-xp-bg)",      border: "var(--orbit-xp-border)",      color: "var(--orbit-xp-text)" },
             { icon: "🏆", label: "Level",         value: currentLevel,               bg: "var(--pastel-modules)",   border: "var(--pastel-modules-border)", color: "var(--pastel-modules-text)" },
             { icon: "🔥", label: "Day Streak",    value: user?.streak || 0,          bg: "var(--pastel-streak)",    border: "var(--pastel-streak-border)",  color: "var(--pastel-streak-text)" },
             { icon: "🃏", label: "Cards Done",    value: stats?.completedCardsCount  ?? "–", bg: "var(--pastel-reads)",  border: "var(--pastel-reads-border)",   color: "var(--pastel-reads-text)" },
@@ -431,7 +441,7 @@ export default function UserProfile() {
                 Level {currentLevel} → Level {currentLevel + 1}
               </p>
               <p style={{ margin: 0, fontSize: "12px", color: "var(--orbit-text-muted)", marginTop: "2px" }}>
-                {currentLevelXP} / {xpPerLevel} XP to next milestone
+                {currentLevelXP} / {xpPerLevel} Plasma to next milestone
               </p>
             </div>
             <span style={{

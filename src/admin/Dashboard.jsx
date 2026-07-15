@@ -21,6 +21,7 @@ import {
   People,
   ShieldCheck,
   Newspaper,
+  Broadcast,
   PeopleFill,
   CpuFill,
   Lightbulb,
@@ -34,6 +35,7 @@ import AdminModuleForm from "./components/AdminModuleForm";
 import AdminTopicForm from "./components/AdminTopicForm";
 import AdminCardForm from "./components/AdminCardForm";
 import AdminDailyReadForm from "./components/AdminDailyReads";
+import AdminBroadcastForm from "./components/AdminBroadcastForm";
 import CreateTeam from "./components/CreateTeam";
 import AdminIdeasReview from "./components/AdminIdeasReview";
 import AdminUserAnalytics from "./components/AdminUserAnalytics";
@@ -254,6 +256,12 @@ export default function Dashboard() {
                 <Newspaper size={15} /> <span>Daily Reads</span>
               </button>
               <button
+                onClick={() => handleFormNavigation("broadcast")}
+                className={`admin-nav-link-btn ${activeTab === "broadcast" ? "active" : ""}`}
+              >
+                <Broadcast size={15} /> <span>Broadcast</span>
+              </button>
+              <button
                 onClick={() => handleFormNavigation("ideas-review")}
                 className={`admin-nav-link-btn ${activeTab === "ideas-review" ? "active" : ""}`}
               >
@@ -451,6 +459,9 @@ export default function Dashboard() {
                   {activeTab === "create-team" && <CreateTeam />}
                   {activeTab === "daily-reads" && (
                     <AdminDailyReadForm setActiveTab={setActiveTab} />
+                  )}
+                  {activeTab === "broadcast" && (
+                    <AdminBroadcastForm setActiveTab={setActiveTab} />
                   )}
                   {activeTab === "ideas-review" && <AdminIdeasReview />}
                 </div>

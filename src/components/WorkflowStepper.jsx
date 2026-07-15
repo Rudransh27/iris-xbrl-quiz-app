@@ -56,7 +56,7 @@ export default function WorkflowStepper() {
               <div className="duo-step-counter">3</div>
             </div>
             <div className="duo-step-text-content">
-              <h4>Test & Earn XP</h4>
+              <h4>Test & Earn Plasma</h4>
               <p>Solve interactive puzzles or fix sandboxed code to sync your accumulated points straight to the system.</p>
             </div>
           </div>

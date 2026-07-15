@@ -6,18 +6,12 @@
   --neon-pink: #ff006eff;
   --blue-violet: #8338ecff;
   --azure-blue: #3a86ffff;
-
-  --duo-white: #ffffff;
-  --duo-gray-bg: #f7f9fa;
-  --duo-line-border: #e5e5e5;
-  --duo-dark-text: #3c3c3c;
-  --duo-slate-text: #5e6c75;
 }
 
 .duo-stepper-section {
   width: 100%;
-  background-color: var(--duo-white);
-  border-top: 2px solid var(--duo-line-border);
+  background-color: transparent; /* lets the page's ambient nebula show through */
+  border-top: 1px solid var(--orbit-glass-border);
   padding: 64px 24px;
   box-sizing: border-box;
   font-family: "Nunito", system-ui, sans-serif;
@@ -39,7 +33,7 @@
 .stepper-main-title {
   font-size: 32px;
   font-weight: 900;
-  color: var(--duo-dark-text);
+  color: var(--orbit-text-heading);
   margin: 0 0 12px 0;
   letter-spacing: -0.5px;
 }
@@ -47,7 +41,7 @@
 .stepper-main-subtitle {
   font-size: 16px;
   font-weight: 700;
-  color: var(--duo-slate-text);
+  color: var(--orbit-text-body);
   max-width: 580px;
   margin: 0 auto;
   line-height: 1.5;
@@ -69,9 +63,12 @@
 }
 
 .duo-step-node {
-  background-color: var(--duo-white);
-  border: 2px solid var(--duo-line-border);
-  border-bottom: 5px solid var(--duo-line-border); /* Chunky, solid light gray 3D border base */
+  background: var(--orbit-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background-image: var(--orbit-glass-highlight);
+  border: 2px solid var(--orbit-glass-border);
+  border-bottom: 5px solid var(--orbit-glass-border); /* Chunky 3D border, glass-tinted */
   border-radius: 20px;
   padding: 32px 24px 24px 24px;
   box-sizing: border-box;
@@ -80,20 +77,22 @@
   align-items: center;
   text-align: center;
   position: relative;
-  transition: all 0.15s ease;
+  box-shadow: var(--orbit-glass-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 /* ================= DESIGN ACCENT OVERRIDES (On Hover or Node Status) ================= */
 .duo-step-node:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
 /* Azure Blue Track Settings */
 .accent-blue:hover {
   border-color: var(--azure-blue);
   border-bottom-color: #1a62d6;
+  box-shadow: var(--orbit-glass-shadow), 0 0 24px -6px var(--azure-blue);
 }
-.accent-blue .duo-step-icon, 
+.accent-blue .duo-step-icon,
 .accent-blue .duo-step-counter {
   color: var(--azure-blue);
 }
@@ -102,8 +101,9 @@
 .accent-pink:hover {
   border-color: var(--neon-pink);
   border-bottom-color: #b3004b;
+  box-shadow: var(--orbit-glass-shadow), 0 0 24px -6px var(--neon-pink);
 }
-.accent-pink .duo-step-icon, 
+.accent-pink .duo-step-icon,
 .accent-pink .duo-step-counter {
   color: var(--neon-pink);
 }
@@ -112,8 +112,9 @@
 .accent-gold:hover {
   border-color: var(--amber-gold);
   border-bottom-color: #e0a300;
+  box-shadow: var(--orbit-glass-shadow), 0 0 24px -6px var(--amber-gold);
 }
-.accent-gold .duo-step-icon, 
+.accent-gold .duo-step-icon,
 .accent-gold .duo-step-counter {
   color: #d69800; /* Darker variant of gold for clean text contrast on white */
 }
@@ -123,8 +124,8 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background-color: var(--duo-gray-bg);
-  border: 2px solid var(--duo-line-border);
+  background-color: var(--orbit-glass-bg);
+  border: 2px solid var(--orbit-glass-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -144,14 +145,14 @@
   left: -4px;
   width: 22px;
   height: 22px;
-  background-color: var(--duo-white);
+  background-color: var(--orbit-glass-bg);
   border-radius: 50%;
   font-size: 12px;
   font-weight: 900;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--duo-line-border);
+  border: 2px solid var(--orbit-glass-border);
   transition: all 0.15s ease;
 }
 
@@ -163,14 +164,14 @@
 .duo-step-text-content h4 {
   font-size: 18px;
   font-weight: 900;
-  color: var(--duo-dark-text);
+  color: var(--orbit-text-heading);
   margin: 0 0 10px 0;
 }
 
 .duo-step-text-content p {
   font-size: 13.5px;
   font-weight: 700;
-  color: var(--duo-slate-text);
+  color: var(--orbit-text-body);
   margin: 0;
   line-height: 1.45;
 }
@@ -181,9 +182,9 @@
   right: -22px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--duo-text-slate);
-  background-color: var(--duo-white);
-  border: 2px solid var(--duo-line-border);
+  color: var(--orbit-text-body);
+  background-color: var(--orbit-glass-bg);
+  border: 2px solid var(--orbit-glass-border);
   border-radius: 50%;
   width: 28px;
   height: 28px;

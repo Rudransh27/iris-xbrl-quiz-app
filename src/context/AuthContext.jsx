@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshUser = async () => {
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) return null;
 
     try {
       const res = await api.validateToken();
@@ -61,9 +61,12 @@ export const AuthProvider = ({ children }) => {
         const userData = normalizeUserData(res.user);
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
+        return userData;
       }
+      return null;
     } catch (err) {
       console.error("Failed to refresh user profile matrix:", err.message);
+      return null;
     }
   };
 
@@ -100,8 +103,12 @@ export const AuthProvider = ({ children }) => {
       if (res.success && res.token) {
         localStorage.setItem("token", res.token);
 
+        // 🎯 BUG FIX: this used to fabricate a "welcome +100 XP" that the
+        // backend never actually granted — the real stored value is 0, so it
+        // silently reverted back to 0 the next time the session revalidated
+        // (app reload, token refresh), making XP appear to vanish. Just show
+        // whatever the server actually returned.
         const userData = normalizeUserData(res.user);
-        if (userData.xp === 0) userData.xp = 100; 
 
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
@@ -136,6 +143,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 🎯 Delta-based, stale-closure-safe XP update — unlike updateUserXP above
+  // (which needs the caller to already know the correct new total, read from
+  // a `user` closure that can go stale), this reads the CURRENT user from
+  // React's own functional setState callback, same safe pattern already used
+  // by updateUserStreak below. Lets any caller (e.g. the quiz engine, or an
+  // effect whose closure was captured much earlier) safely say "add X XP"
+  // without needing to track the current total itself.
+  const addUserXP = useCallback((amount) => {
+    if (!amount) return;
+    setUser(prev => {
+      if (!prev) return prev;
+      const updated = { ...prev, xp: (prev.xp || 0) + amount };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const updateUserStreak = useCallback((newStreak) => {
     setUser(prev => {
       if (!prev || prev.streak === newStreak) return prev;
@@ -155,6 +179,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         verifyEmail,
         updateUserXP,
+        addUserXP,
         updateUserStreak,
         refreshUser,
       }}

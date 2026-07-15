@@ -137,7 +137,7 @@ export default function AdminTeamDashboard({ setActiveTab }) {
 
                     <div className="d-flex align-items-center gap-3">
                       <span className="badge font-monospace border py-1.5 px-2.5 rounded-3" style={{ fontSize: "11px", backgroundColor: "var(--curriculum-icon-bg)", color: "var(--curriculum-icon-text)" }}>
-                        {member.xp} XP
+                        {member.xp} Plasma
                       </span>
                       <span className="badge font-monospace p-1.5 rounded-3 text-uppercase" 
                             style={{ 

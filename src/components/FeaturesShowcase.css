@@ -1,0 +1,118 @@
+/* src/components/FeaturesShowcase.css */
+
+.orbit-features-section {
+  width: 100%;
+  background-color: transparent; /* lets the page's ambient nebula show through */
+  padding: 64px 24px;
+  box-sizing: border-box;
+  font-family: "Nunito", system-ui, sans-serif;
+}
+
+.orbit-features-wrapper {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.orbit-features-header {
+  text-align: center;
+  margin-bottom: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.orbit-features-title {
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--orbit-text-heading);
+  margin: 0 0 16px 0;
+  letter-spacing: -0.5px;
+}
+
+.orbit-features-title .title-accent {
+  color: var(--blue-violet);
+}
+
+.orbit-features-subtitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--orbit-text-body);
+  max-width: 560px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.orbit-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+
+@media (max-width: 920px) {
+  .orbit-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .orbit-features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.orbit-feature-card {
+  background: var(--orbit-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background-image: var(--orbit-glass-highlight);
+  border: 2px solid var(--orbit-glass-border);
+  border-bottom: 5px solid var(--orbit-glass-border);
+  border-radius: 20px;
+  padding: 28px 22px;
+  box-sizing: border-box;
+  box-shadow: var(--orbit-glass-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.orbit-feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--orbit-glass-shadow), 0 0 24px -6px var(--orbit-brand);
+}
+
+.orbit-feature-icon-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  background: var(--orbit-surface-subtle);
+  border: 2px solid var(--orbit-glass-border);
+}
+
+.orbit-feature-icon-badge.text-blaze  { color: var(--blaze-orange); }
+.orbit-feature-icon-badge.text-azure  { color: var(--azure-blue); }
+.orbit-feature-icon-badge.text-gold   { color: var(--amber-gold); }
+.orbit-feature-icon-badge.text-violet { color: var(--blue-violet); }
+.orbit-feature-icon-badge.text-pink   { color: var(--neon-pink); }
+
+.orbit-feature-title {
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--orbit-text-heading);
+  margin: 0 0 8px 0;
+}
+
+.orbit-feature-text {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--orbit-text-body);
+  margin: 0;
+  line-height: 1.5;
+}

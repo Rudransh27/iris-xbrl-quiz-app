@@ -166,14 +166,14 @@ export default function SuperAdminDashboard() {
         </Col>
         <Col>
           <Card className="p-3 border-0 rounded-3 shadow-sm h-100" style={{ backgroundColor: "var(--bg-tactile-cards)", borderBottom: "4px solid var(--border-tactile)" }}>
-            <div className="text-muted text-uppercase font-monospace" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>Avg XP / User</div>
+            <div className="text-muted text-uppercase font-monospace" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>Avg Plasma / User</div>
             <h2 className="fw-bold my-1" style={{ color: "var(--text-primary)" }}>{platformMetrics.avgXp}</h2>
             <div className="font-monospace text-success" style={{ fontSize: "11px" }}><ArrowUpShort /> Mean score</div>
           </Card>
         </Col>
         <Col>
           <Card className="p-3 border-0 rounded-3 shadow-sm h-100" style={{ backgroundColor: "var(--bg-tactile-cards)", borderBottom: "4px solid var(--border-tactile)" }}>
-            <div className="text-muted text-uppercase font-monospace" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>XP Earned (Total)</div>
+            <div className="text-muted text-uppercase font-monospace" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>Plasma Earned (Total)</div>
             <h2 className="fw-bold my-1" style={{ color: "var(--text-primary)" }}>{(platformMetrics.totalXp || 0).toLocaleString()}</h2>
             <div className="font-monospace text-success" style={{ fontSize: "11px" }}><ArrowUpShort /> Platform-wide</div>
           </Card>

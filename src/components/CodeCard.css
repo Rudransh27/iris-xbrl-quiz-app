@@ -2,13 +2,15 @@
 
 .compiler-code-card-shell {
   width: 100%;
-  background-color: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 16px;
+  background-color: var(--white, #ffffff);
+  border: 1px solid #e2e8f0;
+  border-top: 3px solid var(--amber-glow, #ff9f1c);
+  border-radius: 14px;
   padding: 24px;
   position: relative;
   z-index: 5;
   box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
 }
 
 .compiler-card-main-title {
@@ -241,24 +243,24 @@
   outline: none;
   font-size: 0.72rem;
   font-weight: 800;
-  color: #b45309; /* Elegant amber gold hint label focus */
+  color: var(--amber-glow-dark, #e08600);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 0;
 }
-.compiler-hint-toggle-trigger:hover { color: #d97706; }
+.compiler-hint-toggle-trigger:hover { color: var(--amber-glow, #ff9f1c); }
 
 .compiler-hint-floating-drawer {
-  background-color: rgba(217, 119, 6, 0.04);
-  border: 1px dashed rgba(217, 119, 6, 0.2);
+  background-color: var(--amber-glow-hover, rgba(255, 159, 28, 0.08));
+  border: 1px dashed var(--amber-glow-muted, rgba(255, 159, 28, 0.14));
   border-radius: 8px;
   padding: 12px 16px;
   margin-bottom: 18px;
 }
 .compiler-hint-floating-drawer .compiler-markdown-body p {
-  color: #78350f !important;
+  color: var(--ink-strong, #1a1523) !important;
   font-size: 0.88rem !important;
 }
 
@@ -286,20 +288,23 @@
   color: #64748b;
 }
 
+/* Status indicator, not syntax highlighting — was sky-blue (#0284c7),
+   now the shared brand accent. */
 .live-pulse-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background-color: #0284c7;
-  box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.4);
+  background-color: var(--amber-glow, #ff9f1c);
+  box-shadow: 0 0 0 0 rgba(255, 159, 28, 0.4);
   animation: compileDotPulse 1.6s infinite;
 }
 @keyframes compileDotPulse {
-  0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.4); }
-  70% { box-shadow: 0 0 0 5px rgba(2, 132, 199, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(255, 159, 28, 0.4); }
+  70% { box-shadow: 0 0 0 5px rgba(255, 159, 28, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 159, 28, 0); }
 }
 
-/* Hull boundary feedback context shifts */
-.compiler-editor-container-hull.hull-success { border-color: #2e7d32; }
+/* Hull boundary feedback context shifts — success standardized to the
+   shared --light-sea-green token (matches QuizCard's correct-answer color). */
+.compiler-editor-container-hull.hull-success { border-color: var(--light-sea-green, #2ec4b6); }
 .compiler-editor-container-hull.hull-error { border-color: #c2185b; }
 
 /* Overwrite active ace layouts padding parameters dynamically if any */
@@ -330,8 +335,8 @@
    🟢 SUCCESS VERIFIED LOGS DRAWER ARCHITECTURE
    ========================================================================= */
 .compiler-success-feedback-drawer {
-  background-color: rgba(46, 125, 50, 0.04);
-  border: 1px solid rgba(46, 125, 50, 0.15);
+  background-color: rgba(46, 196, 182, 0.06);
+  border: 1px solid rgba(46, 196, 182, 0.2);
   border-radius: 10px;
   padding: 14px 18px;
   margin-top: 20px;
@@ -343,13 +348,13 @@
   gap: 8px;
   font-size: 0.72rem;
   font-weight: 800;
-  color: #2e7d32; /* Pista Green deep variant status track code */
+  color: var(--light-sea-green, #2ec4b6);
   margin-bottom: 10px;
   letter-spacing: 0.2px;
 }
 
 .compiler-success-feedback-drawer .compiler-markdown-body p {
-  color: #1b5e20 !important;
+  color: #14807a !important;
   font-size: 0.88rem !important;
   margin: 0 !important;
 }
