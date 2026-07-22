@@ -1130,6 +1130,140 @@
   color: var(--orbit-lavender-text);
 }
 
+/* Labs — "coming soon" announcement list (not a filterable card grid; the
+   labs program hasn't launched yet, see UPCOMING_LABS in
+   ModulesLabsSection.jsx). */
+.orbit-labs-soon {
+  max-width: 640px;
+  margin: 8px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.orbit-labs-banner,
+.orbit-labs-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--orbit-amber, #e2984c) 12%, var(--orbit-surface-subtle));
+  border: 1px solid color-mix(in srgb, var(--orbit-amber, #e2984c) 30%, var(--orbit-border));
+}
+
+.orbit-labs-banner svg,
+.orbit-labs-tip svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #b9762c;
+}
+
+.orbit-labs-banner strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--orbit-text-heading);
+  margin-bottom: 2px;
+}
+
+.orbit-labs-banner p,
+.orbit-labs-tip p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--orbit-text-body);
+}
+
+.orbit-labs-tip a {
+  color: var(--orbit-lavender-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.orbit-labs-tip a:hover {
+  text-decoration: underline;
+}
+
+.orbit-labs-label {
+  margin: 0 0 -8px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--orbit-text-muted);
+}
+
+.orbit-labs-list {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+  overflow: hidden;
+}
+
+.orbit-labs-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--orbit-border);
+}
+
+.orbit-labs-row:last-child {
+  border-bottom: none;
+}
+
+.orbit-labs-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.orbit-labs-dot--mint  { background: var(--orbit-mint-text); }
+.orbit-labs-dot--sky   { background: var(--orbit-sky-text); }
+.orbit-labs-dot--amber { background: #d98a2b; }
+.orbit-labs-dot--coral { background: #d9534f; }
+
+.orbit-labs-row__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.orbit-labs-row__body h4 {
+  margin: 0 0 3px;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--orbit-text-heading);
+}
+
+.orbit-labs-row__cadence {
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--orbit-text-muted);
+  text-transform: capitalize;
+}
+
+.orbit-labs-row__body p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--orbit-text-muted);
+}
+
+.orbit-labs-soon-pill {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, #d98a2b 16%, transparent);
+  color: #b9762c;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
 .orbit-ml-card {
   position: relative;
   border-radius: 18px;

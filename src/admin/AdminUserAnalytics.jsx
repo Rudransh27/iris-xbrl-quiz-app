@@ -99,7 +99,7 @@ function exportDeptGrading(deptName, deptUsers) {
   const summaryRows = deptUsers.map(u => ({
     "Username":        u.username,
     "Email":           u.email,
-    "Total Lightyear": u.xp,
+    "Total Lightyears": u.xp,
     "Sandbox Cards":   u.sandboxResults.length,
   }));
   const summaryWS = XLSX.utils.json_to_sheet(summaryRows);
@@ -393,7 +393,7 @@ export default function AdminUserAnalytics() {
       const xpTotal = result.results?.filter(r => r.status === "updated").reduce((s, r) => s + (r.xpDelta || 0), 0) || 0;
       setImportStatus({
         success: true,
-        message: `✅ ${updated} record(s) updated — ${xpTotal} total Lightyear awarded. Users notified in real-time.`,
+        message: `✅ ${updated} record(s) updated — ${xpTotal} total Lightyears awarded. Users notified in real-time.`,
       });
       // Refresh user list to reflect new XP
       const usersRes = await api.getAdminUsersList();
@@ -440,7 +440,7 @@ export default function AdminUserAnalytics() {
       <div style={{ display: "flex", flexWrap: "wrap", gap: "14px", marginBottom: "28px" }}>
         <StatCard icon="📚" label="Total Modules"    value={modules.length}          color="var(--orbit-brand)"          bg="var(--orbit-brand-muted)"          border="var(--orbit-brand)" />
         <StatCard icon="👤" label="Registered Users" value={users.length || "—"}     color="var(--pastel-progress-text)" bg="var(--pastel-progress)"            border="var(--pastel-progress-border)" />
-        <StatCard icon="☄️" label="Total Lightyear Earned"  value={stats?.xpStats?.total}   color="var(--pastel-streak-text)"   bg="var(--pastel-streak)"              border="var(--pastel-streak-border)" />
+        <StatCard icon="☄️" label="Total Lightyears Earned"  value={stats?.xpStats?.total}   color="var(--pastel-streak-text)"   bg="var(--pastel-streak)"              border="var(--pastel-streak-border)" />
         <StatCard icon="🏆" label="Top User Lightyear"      value={stats?.xpStats?.max}     color="var(--pastel-reads-text)"    bg="var(--pastel-reads)"               border="var(--pastel-reads-border)" />
       </div>
 
@@ -760,7 +760,7 @@ export default function AdminUserAnalytics() {
               </div>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 {[
-                  { l: "☄️ Lightyear", v: selectedUser.xp || 0, c: "var(--pastel-streak-text)", bg: "var(--pastel-streak)", b: "var(--pastel-streak-border)" },
+                  { l: "☄️ Lightyears", v: selectedUser.xp || 0, c: "var(--pastel-streak-text)", bg: "var(--pastel-streak)", b: "var(--pastel-streak-border)" },
                   { l: "🃏 Cards", v: selectedUser.cardsCompleted || 0, c: "var(--orbit-brand)", bg: "var(--orbit-brand-muted)", b: "var(--orbit-brand)" },
                   { l: "📚 Topics", v: selectedUser.topicsCompleted || 0, c: "var(--pastel-progress-text)", bg: "var(--pastel-progress)", b: "var(--pastel-progress-border)" },
                 ].map((chip, i) => (

@@ -12,7 +12,8 @@ import "./LearnHero.css";
 export default function LearnHero({ moduleCount = 0, inProgressCount = 0, plasmaEarned = 0 }) {
   return (
     <div className="learn-strip">
-      <h1 className="learn-strip__title">Learn</h1>
+      <span className="learn-strip__eyebrow">Learn</span>
+      <h1 className="learn-strip__title">Fuel Your Orbit</h1>
       <p className="learn-strip__subtitle">
         Modules build knowledge. Labs build practice. Complete missions to earn Lightyear and climb the ranks.
       </p>

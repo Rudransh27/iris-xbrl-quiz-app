@@ -1,51 +1,19 @@
 // src/components/OrbitDashboard/ModulesLabsSection.jsx
 import React, { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Search, Globe2, FlaskFill, ArrowRepeat, Compass } from "react-bootstrap-icons";
+import { useSearchParams, Link } from "react-router-dom";
+import { Search, Globe2, PencilFill, Lightbulb } from "react-bootstrap-icons";
 import ModuleLabCard from "./ModuleLabCard";
 
-// No standalone Lab entity exists in the backend (only Module does), so this
-// stays hand-authored rather than an API call — real, curated program
-// content (not placeholder filler). Swap for a real api.getLabs() call once
-// a Lab model/route ships; the card shape below is what that response
-// should match. Each lab carries its own fixed thumb/icon (unlike real
-// modules, which rotate through a generic palette by position) since these
-// are specific, individually-authored missions, not an arbitrary list.
-const LABS = [
-  {
-    id: "lab-xbrl-tag",
-    title: "Lab: Build Your First XBRL Tag",
-    status: "In Progress",
-    pct: 30,
-    points: 150,
-    cadence: "~40 min",
-    takeaway: "Hands-on sandbox — tag a sample filing and validate it live.",
-    thumbGradient: "linear-gradient(135deg, #7a6cc9, #4b8fb0)",
-    thumbIcon: FlaskFill,
-  },
-  {
-    id: "lab-reconciliation",
-    title: "Lab: Reconciliation Challenge",
-    status: "Not Started",
-    pct: 0,
-    points: 120,
-    cadence: "~25 min",
-    takeaway: "Race the clock to reconcile a broken ledger and score Lightyear.",
-    thumbGradient: "linear-gradient(135deg, #c9557c, #b06cc9)",
-    thumbIcon: ArrowRepeat,
-  },
-  {
-    id: "lab-taxonomy-explorer",
-    title: "Lab: Taxonomy Explorer",
-    status: "Completed",
-    pct: 100,
-    points: 90,
-    cadence: "~35 min",
-    takeaway: "Navigate a real taxonomy tree and answer live checkpoints.",
-    thumbGradient: "linear-gradient(135deg, #3f9e79, #4b8fb0)",
-    thumbIcon: Compass,
-  },
-].map((lab) => ({ ...lab, imageUrl: "", durationLabel: lab.cadence, hasTopics: false }));
+// No standalone Lab entity exists in the backend yet, and the labs program
+// itself hasn't launched — this is real, curated announcement copy (not
+// placeholder filler), not a filterable data grid. Swap for a real
+// api.getLabs() call once a Lab model/route ships and labs actually open.
+const UPCOMING_LABS = [
+  { id: "product-lab", dot: "mint", title: "Product Lab", cadence: "weekly", desc: "Use the product like a customer" },
+  { id: "domain-lab", dot: "sky", title: "Domain Lab", cadence: "bi-weekly", desc: "Finance and AI fluency · guest-led sessions" },
+  { id: "deal-lab", dot: "amber", title: "Deal Lab", cadence: "monthly", desc: "One deal deep-dived. Patterns extracted" },
+  { id: "build-lab", dot: "coral", title: "Build Lab", cadence: "monthly", desc: "Half-day prototype sprints" },
+];
 
 const estimateDuration = (total) => `~${Math.max(5, Math.ceil(total * 1.5))} min`;
 
@@ -96,24 +64,22 @@ export default function ModulesLabsSection({
     };
   }), [modules, getModuleProgress]);
 
-  // Filtering is plain Array#filter over whichever dataset is active — no
-  // separate "filtered learn" / "filtered labs" state to keep in sync, just
-  // one `search` string applied at render time to the tab currently showing.
-  const activeCards = tab === "learn" ? learnCards : LABS;
+  // Labs isn't a filterable data grid (see UPCOMING_LABS above), so search
+  // only ever applies to the Learn tab's real module list.
   const cards = useMemo(
-    () => activeCards.filter((card) => matchesSearch(card, search)),
-    [activeCards, search]
+    () => learnCards.filter((card) => matchesSearch(card, search)),
+    [learnCards, search]
   );
 
   return (
     <div>
       <div className="orbit-ml-toolbar">
-        {showSearch && (
+        {showSearch && tab === "learn" && (
           <div className="orbit-learn-search orbit-learn-search--big">
             <Search size={16} />
             <input
               type="text"
-              placeholder={`Search ${tab === "learn" ? "modules" : "labs"}…`}
+              placeholder="Search modules…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -140,45 +106,76 @@ export default function ModulesLabsSection({
         </div>
       </div>
 
-      {!loading && (
-        <p className="orbit-ml-results-count">
-          {cards.length} result{cards.length !== 1 ? "s" : ""}
-        </p>
-      )}
-
-      {loading ? (
-        <div className="orbit-ml-grid orbit-ml-grid--fixed">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="orbit-ml-card orbit-ml-card--skeleton" style={{ animationDelay: `${i * 0.06}s` }}>
-              <div className="orbit-ml-card__thumb" />
-              <div className="orbit-ml-card__body">
-                <div className="orbit-skel-line" style={{ width: "40%" }} />
-                <div className="orbit-skel-line" style={{ width: "85%", height: 16 }} />
-                <div className="orbit-skel-line" style={{ width: "60%" }} />
-              </div>
+      {tab === "labs" ? (
+        <div className="orbit-labs-soon">
+          <div className="orbit-labs-banner">
+            <PencilFill size={16} />
+            <div>
+              <strong>Labs Opening Soon...</strong>
+              <p>Four labs, each does one thing ferociously well. No sign-ups yet — teams being formed.</p>
             </div>
-          ))}
-        </div>
-      ) : cards.length === 0 ? (
-        <div className="orbit-ml-empty">
-          <Globe2 size={26} />
-          <p style={{ margin: 0 }}>
-            {search
-              ? `No ${tab === "learn" ? "modules" : "labs"} match "${search}".`
-              : tab === "learn" ? "No modules assigned yet." : "No labs available yet."}
-          </p>
+          </div>
+
+          <p className="orbit-labs-label">Upcoming</p>
+          <div className="orbit-labs-list">
+            {UPCOMING_LABS.map((lab) => (
+              <div className="orbit-labs-row" key={lab.id}>
+                <span className={`orbit-labs-dot orbit-labs-dot--${lab.dot}`} />
+                <div className="orbit-labs-row__body">
+                  <h4>
+                    {lab.title} <span className="orbit-labs-row__cadence">· {lab.cadence}</span>
+                  </h4>
+                  <p>{lab.desc}</p>
+                </div>
+                <span className="orbit-labs-soon-pill">Soon</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="orbit-labs-tip">
+            <Lightbulb size={16} />
+            <p>
+              You can start suggesting topics in <Link to="/orbit/ideas">Ideas</Link> now. The most upvoted topic
+              in each lab gets scheduled first.
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="orbit-ml-grid orbit-ml-grid--fixed">
-          {cards.map((card, i) => (
-            <ModuleLabCard
-              key={card.id}
-              card={card}
-              index={i}
-              onClick={tab === "learn" ? () => onOpenModule(card.module) : undefined}
-            />
-          ))}
-        </div>
+        <>
+          {!loading && (
+            <p className="orbit-ml-results-count">
+              {cards.length} result{cards.length !== 1 ? "s" : ""}
+            </p>
+          )}
+
+          {loading ? (
+            <div className="orbit-ml-grid orbit-ml-grid--fixed">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="orbit-ml-card orbit-ml-card--skeleton" style={{ animationDelay: `${i * 0.06}s` }}>
+                  <div className="orbit-ml-card__thumb" />
+                  <div className="orbit-ml-card__body">
+                    <div className="orbit-skel-line" style={{ width: "40%" }} />
+                    <div className="orbit-skel-line" style={{ width: "85%", height: 16 }} />
+                    <div className="orbit-skel-line" style={{ width: "60%" }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : cards.length === 0 ? (
+            <div className="orbit-ml-empty">
+              <Globe2 size={26} />
+              <p style={{ margin: 0 }}>
+                {search ? `No modules match "${search}".` : "No modules assigned yet."}
+              </p>
+            </div>
+          ) : (
+            <div className="orbit-ml-grid orbit-ml-grid--fixed">
+              {cards.map((card, i) => (
+                <ModuleLabCard key={card.id} card={card} index={i} onClick={() => onOpenModule(card.module)} />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
