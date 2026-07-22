@@ -246,7 +246,7 @@ export default function AdminUserAnalytics() {
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: xpColor(u.xp) }}>{u.xp} Plasma</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: xpColor(u.xp) }}>{u.xp} Lightyear</div>
                   <div style={{ fontSize: 10.5, color: '#94a3b8' }}>{u.cardsCompleted} cards</div>
                 </div>
               </div>
@@ -296,7 +296,7 @@ export default function AdminUserAnalytics() {
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.72)' }}>{user.email}</div>
             </div>
             <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{user.xp} Plasma</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{user.xp} Lightyear</div>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
                 Joined {new Date(user.joinedAt).toLocaleDateString()}
               </div>
@@ -447,7 +447,7 @@ export default function AdminUserAnalytics() {
                     <div style={{ flex: 1, fontSize: 12.5, color: '#334155' }}>
                       {t.isCompleted ? 'Completed' : 'In progress'}
                     </div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#0f256e' }}>{t.bestXP} Plasma</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#0f256e' }}>{t.bestXP} Lightyear</div>
                   </div>
                 ))}
               </div>

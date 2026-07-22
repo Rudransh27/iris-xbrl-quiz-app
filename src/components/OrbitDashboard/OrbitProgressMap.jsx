@@ -119,7 +119,7 @@ export default function OrbitProgressMap({ xp = 0 }) {
           <div className="opm-sub">Three orbits. You start at the edge, move toward the knowledge core.</div>
         </div>
         <div className="opm-plasma-pill">
-          <RocketTakeoffFill size={12} /> {Math.round(xp).toLocaleString()} Plasma
+          <RocketTakeoffFill size={12} /> {Math.round(xp).toLocaleString()} Lightyear
         </div>
       </div>
 
@@ -224,9 +224,9 @@ export default function OrbitProgressMap({ xp = 0 }) {
                   />
                 </div>
                 <div className="opm-belt-meta">
-                  {o.status === "complete" && `${Math.round(o.ceil - o.floor).toLocaleString()} plasma earned · orbit cleared`}
+                  {o.status === "complete" && `${Math.round(o.ceil - o.floor).toLocaleString()} lightyear earned · orbit cleared`}
                   {o.status === "active" &&
-                    `${Math.round(Math.max(0, xp - o.floor)).toLocaleString()} / ${Math.round(o.ceil - o.floor).toLocaleString()} plasma`}
+                    `${Math.round(Math.max(0, xp - o.floor)).toLocaleString()} / ${Math.round(o.ceil - o.floor).toLocaleString()} lightyear`}
                   {o.status === "locked" && `Unlocks when ${ORBIT_DEFS[i - 1].label} is cleared`}
                 </div>
               </div>
@@ -250,7 +250,7 @@ export default function OrbitProgressMap({ xp = 0 }) {
       <div className="opm-footer">
         {reachedCore
           ? "All orbits cleared — you're at the Knowledge Core."
-          : `${plasmaToNext.toLocaleString()} plasma to ${nextLabel}`}
+          : `${plasmaToNext.toLocaleString()} lightyear to ${nextLabel}`}
       </div>
     </div>
   );

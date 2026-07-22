@@ -184,7 +184,7 @@ export default function TopicTrail() {
                             )}
                             {totalPotentialXp > 0 && (
                                 <span className="topic-header__meta-item topic-header__meta-item--xp">
-                                    <Trophy size={13} /> +{totalPotentialXp} Plasma
+                                    <Trophy size={13} /> +{totalPotentialXp} Lightyear
                                 </span>
                             )}
                         </div>

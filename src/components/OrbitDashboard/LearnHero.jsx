@@ -5,7 +5,8 @@
 // language instead of a card/gradient banner. Same title/subtitle/stats text
 // as before, just restyled.
 import React from "react";
-import { BookHalf, CheckCircleFill, LightningChargeFill } from "react-bootstrap-icons";
+import { BookHalf, CheckCircleFill } from "react-bootstrap-icons";
+import { PiShootingStarFill } from "react-icons/pi";
 import "./LearnHero.css";
 
 export default function LearnHero({ moduleCount = 0, inProgressCount = 0, plasmaEarned = 0 }) {
@@ -13,7 +14,7 @@ export default function LearnHero({ moduleCount = 0, inProgressCount = 0, plasma
     <div className="learn-strip">
       <h1 className="learn-strip__title">Learn</h1>
       <p className="learn-strip__subtitle">
-        Modules build knowledge. Labs build practice. Complete missions to earn Plasma and climb the ranks.
+        Modules build knowledge. Labs build practice. Complete missions to earn Lightyear and climb the ranks.
       </p>
 
       <div className="learn-strip__stats">
@@ -28,9 +29,9 @@ export default function LearnHero({ moduleCount = 0, inProgressCount = 0, plasma
           <span className="learn-strip__stat-label">In Progress</span>
         </div>
         <div className="learn-strip__stat learn-strip__stat--lavender">
-          <LightningChargeFill size={13} />
+          <PiShootingStarFill size={13} />
           <span className="learn-strip__stat-num">{plasmaEarned.toLocaleString()}</span>
-          <span className="learn-strip__stat-label">Plasma</span>
+          <span className="learn-strip__stat-label">Lightyear</span>
         </div>
       </div>
     </div>

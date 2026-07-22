@@ -15,7 +15,7 @@ import {
   PiLockKeyFill, PiSignOutFill, PiLightningFill, PiRocketLaunchFill, PiStackFill,
   PiMedalFill, PiTrophyFill, PiTestTubeFill, PiSparkleFill, PiEnvelopeSimpleFill,
   PiBuildingsFill, PiUsersThreeFill, PiFlaskFill, PiCaretDown, PiChatCircleTextFill,
-  PiListChecksFill, PiTextAaFill,
+  PiListChecksFill, PiTextAaFill, PiShootingStarFill,
 } from "react-icons/pi";
 import "./UserProfile.css";
 
@@ -343,7 +343,7 @@ export default function UserProfile() {
         </div>
         <div className="up-stats-grid">
           {[
-            { icon: PiLightningFill,     label: "Plasma",           value: user.xp || 0,     accent: "lavender" },
+            { icon: PiShootingStarFill,  label: "Lightyear",        value: user.xp || 0,     accent: "lavender" },
             { icon: PiRocketLaunchFill,  label: "Day Streak",       value: user?.streak || 0, accent: "pink" },
             { icon: PiStackFill,         label: "Modules Mastered", value: stats?.completedModulesCount ?? 0, accent: "teal" },
             { icon: PiMedalFill,         label: "Badges Earned",    value: badgesEarned,     accent: "sky" },
@@ -391,8 +391,8 @@ export default function UserProfile() {
                         </div>
                         <p className="up-orbit-tier__xp-label">
                           {orbitTier.xpForNextTier
-                            ? `${orbitTier.xpIntoTier} / ${orbitTier.xpForNextTier} Plasma`
-                            : `${orbitTier.xpIntoTier} Plasma · top orbit`}
+                            ? `${orbitTier.xpIntoTier} / ${orbitTier.xpForNextTier} Lightyear`
+                            : `${orbitTier.xpIntoTier} Lightyear · top orbit`}
                         </p>
                       </>
                     )}

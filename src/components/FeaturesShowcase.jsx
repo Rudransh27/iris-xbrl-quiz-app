@@ -3,12 +3,12 @@ import React from "react";
 import {
   Fire,
   CheckCircleFill,
-  LightningChargeFill,
   TrophyFill,
   Lightbulb,
   RocketTakeoffFill,
   StarFill,
 } from "react-bootstrap-icons";
+import { PiShootingStarFill } from "react-icons/pi";
 import "./FeaturesShowcase.css";
 
 const FEATURES = [
@@ -25,10 +25,10 @@ const FEATURES = [
     text: "Three simple goals reset every day: Today's Read, Module Completion, and Idea Submission — small habits that compound into real progress.",
   },
   {
-    icon: LightningChargeFill,
+    icon: PiShootingStarFill,
     accent: "text-lavender",
-    title: "Plasma & Gamification",
-    text: "Every card, quiz, and topic you finish earns real Plasma. Watch your total climb as you move through modules built the way people actually learn.",
+    title: "Lightyear & Gamification",
+    text: "Every card, quiz, and topic you finish earns real Lightyear. Watch your total climb as you move through modules built the way people actually learn.",
   },
   {
     icon: TrophyFill,

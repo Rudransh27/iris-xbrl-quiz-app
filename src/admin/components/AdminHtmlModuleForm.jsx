@@ -332,7 +332,7 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
           </Col>
           <Col md={6}>
             <Form.Group>
-              <Form.Label className="fw-semibold text-dark small">Maximum Base Points / Plasma</Form.Label>
+              <Form.Label className="fw-semibold text-dark small">Maximum Base Points / Lightyear</Form.Label>
               <Form.Control
                 type="number" min="0" value={maxPoints} onChange={(e) => setMaxPoints(e.target.value)}
                 className="admin-flat-input" required

@@ -93,7 +93,7 @@ export default function TopicCard({
           )}
           {!!pointsReward && (
             <span className="topic-card__meta-item topic-card__meta-item--xp">
-              <StarFill size={11} /> +{pointsReward} Plasma
+              <StarFill size={11} /> +{pointsReward} Lightyear
             </span>
           )}
         </div>

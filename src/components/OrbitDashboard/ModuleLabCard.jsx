@@ -1,9 +1,10 @@
 // src/components/OrbitDashboard/ModuleLabCard.jsx
 import React from "react";
 import {
-  BookHalf, ClockHistory, ArrowRight, LightningCharge,
+  BookHalf, ClockHistory, ArrowRight,
   LeafFill, CpuFill, Diagram3, SignpostSplit, ShieldCheck,
 } from "react-bootstrap-icons";
+import { PiShootingStarFill } from "react-icons/pi";
 
 const STATUS_CLASS = {
   "Not Started": "orbit-ml-card__status--notstarted",
@@ -91,8 +92,8 @@ export default function ModuleLabCard({ card, index = 0, onClick }) {
               <ClockHistory size={14} /> {card.durationLabel}
             </span>
             {card.points > 0 && (
-              <span className="orbit-ml-card__plasma" title={`Earn ${card.points} Plasma on completion`}>
-                <LightningCharge size={12} /> +{card.points} Plasma
+              <span className="orbit-ml-card__plasma" title={`Earn ${card.points} Lightyear on completion`}>
+                <PiShootingStarFill size={12} /> +{card.points} Lightyear
               </span>
             )}
           </div>

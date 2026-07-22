@@ -13,10 +13,11 @@ import SuperAdminDashboard from "../admin/SuperAdminDashboard";
 import Dashboard1 from "../admin/Dashboard1";
 import {
   House, Book, BarChart, Lightbulb, Trophy, PersonCircle,
-  Shield, Building, Broadcast, ArrowLeftRight, LightningCharge, RocketTakeoffFill,
+  Shield, Building, Broadcast, ArrowLeftRight, RocketTakeoffFill,
   SunFill, MoonFill, Activity, BoxArrowRight,
   List, XLg,
 } from "react-bootstrap-icons";
+import { PiShootingStarFill } from "react-icons/pi";
 import "./Layout.css";
 import "./OrbitShell.css";
 import { resolveViewMode, viewModeStorageKey } from "../utils/viewMode";
@@ -109,7 +110,7 @@ export default function OrbitShell() {
       refreshUser?.();
       const toast = {
         id:          notificationId || String(Date.now()),
-        message:     message || `⚡ You've been awarded ${xpAwarded} Plasma for "${moduleTitle}"!`,
+        message:     message || `☄️ You've been awarded ${xpAwarded} Lightyear for "${moduleTitle}"!`,
         xpAwarded:   xpAwarded || 0,
         moduleTitle: moduleTitle || "",
       };
@@ -566,7 +567,7 @@ export default function OrbitShell() {
               </select>
             )}
 
-            {/* XP / Plasma pill — lavender, per the dashboard redesign's chip palette */}
+            {/* XP / Lightyear pill — lavender, per the dashboard redesign's chip palette */}
             <span style={{
               display:     "inline-flex",
               alignItems:  "center",
@@ -579,7 +580,7 @@ export default function OrbitShell() {
               fontSize:    "12px",
               fontWeight:  "800",
             }}>
-              <LightningCharge size={11} /> {liveXP} Plasma
+              <PiShootingStarFill size={11} /> {liveXP} Lightyear
             </span>
 
             {/* Streak pill — pink, rocket-launch icon (not fire) */}
@@ -679,7 +680,7 @@ export default function OrbitShell() {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "22px", lineHeight: 1 }}>⚡</span>
+                <PiShootingStarFill size={22} style={{ flexShrink: 0, color: "var(--orbit-lavender)" }} />
                 <span style={{
                   fontSize:              "13px",
                   fontWeight:            "800",
@@ -688,7 +689,7 @@ export default function OrbitShell() {
                   WebkitTextFillColor:   "transparent",
                   lineHeight:            1.3,
                 }}>
-                  +{toast.xpAwarded} Plasma Awarded!
+                  +{toast.xpAwarded} Lightyear Awarded!
                 </span>
               </div>
               <p style={{ margin: 0, fontSize: "12px", color: "rgba(231,198,255,0.85)", fontWeight: "500", lineHeight: 1.5 }}>

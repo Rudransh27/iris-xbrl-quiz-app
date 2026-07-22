@@ -43,7 +43,7 @@ export default function HomeHero() {
 
       <p className="home-hero__subheading">
         Your home for building skills at IRIS. Work through bite-sized modules,
-        earn Plasma and streaks, and see where you stand on the leaderboard.
+        earn Lightyear and streaks, and see where you stand on the leaderboard.
       </p>
 
       <button className="home-hero__cta" onClick={() => navigate(ctaTarget)}>

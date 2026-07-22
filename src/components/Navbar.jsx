@@ -92,7 +92,7 @@ export default function Navbar() {
                   <div className="d-flex flex-column align-items-start justify-content-center">
                     <span className="duo-username-text">{user.username}</span>
                     <Badge className="duo-xp-badge mt-1">
-                      {user.xp || 0} Plasma
+                      {user.xp || 0} Lightyear
                     </Badge>
                   </div>
                 </Link>
@@ -163,7 +163,7 @@ export default function Navbar() {
                 </div>
                 <span className="duo-username-text">{user.username}</span>
                 <Badge className="duo-xp-badge">
-                  {user.xp || 0} Plasma
+                  {user.xp || 0} Lightyear
                 </Badge>
               </Link>
               <div className="hud-separator"></div>

@@ -125,9 +125,9 @@ export default function AdminPlatformAnalytics() {
 
       {/* ── Top stat cards ── */}
       <div style={{ display: 'flex', gap: 14, marginBottom: 20, flexWrap: 'wrap' }}>
-        <STAT_CARD label="Total Plasma Earned" value={(platform?.xpStats?.total || 0).toLocaleString()} sub="Across all users" color="#0f256e" />
-        <STAT_CARD label="Avg Plasma / User"   value={platform?.xpStats?.avg || 0}                     sub="Mean Plasma score"   color="#3a86ff" />
-        <STAT_CARD label="Top Plasma Score"    value={platform?.xpStats?.max || 0}                     sub="Highest earner"  color="#06d6a0" />
+        <STAT_CARD label="Total Lightyear Earned" value={(platform?.xpStats?.total || 0).toLocaleString()} sub="Across all users" color="#0f256e" />
+        <STAT_CARD label="Avg Lightyear / User"   value={platform?.xpStats?.avg || 0}                     sub="Mean Lightyear score"   color="#3a86ff" />
+        <STAT_CARD label="Top Lightyear Score"    value={platform?.xpStats?.max || 0}                     sub="Highest earner"  color="#06d6a0" />
         <STAT_CARD label="Modules"         value={modules?.length || 0}                            sub="In platform"     color="#8338ec" />
         <STAT_CARD label="Departments"     value={depts?.length || 0}                              sub="Active units"    color="#fb5607" />
       </div>
@@ -159,9 +159,9 @@ export default function AdminPlatformAnalytics() {
         </SECTION>
       </div>
 
-      {/* ── Plasma distribution + Card type donut ── */}
+      {/* ── Lightyear distribution + Card type donut ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, marginBottom: 20 }}>
-        <SECTION title="Plasma Distribution — User Buckets">
+        <SECTION title="Lightyear Distribution — User Buckets">
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={xpData} barSize={32}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -219,8 +219,8 @@ export default function AdminPlatformAnalytics() {
             <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 0.7fr 1fr 1fr 1.2fr 1fr 1fr', gap: 8, padding: '6px 10px', background: '#f8fafc', borderRadius: 8, marginBottom: 6, fontSize: 10.5, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 }}>
               <div>Department</div>
               <div style={{ textAlign: 'center' }}>Users</div>
-              <div style={{ textAlign: 'right' }}>Total Plasma</div>
-              <div style={{ textAlign: 'right' }}>Avg Plasma</div>
+              <div style={{ textAlign: 'right' }}>Total Lightyear</div>
+              <div style={{ textAlign: 'right' }}>Avg Lightyear</div>
               <div style={{ textAlign: 'right' }}>Cards Done</div>
               <div style={{ textAlign: 'right' }}>Topics Done</div>
               <div>Top Earner</div>
@@ -240,7 +240,7 @@ export default function AdminPlatformAnalytics() {
                   {d.topEarner ? (
                     <div>
                       <div style={{ fontWeight: 600, color: '#0f172a', fontSize: 11.5 }}>{d.topEarner.username}</div>
-                      <div style={{ fontSize: 10, color: '#06d6a0', fontWeight: 700 }}>{d.topEarner.xp} Plasma</div>
+                      <div style={{ fontSize: 10, color: '#06d6a0', fontWeight: 700 }}>{d.topEarner.xp} Lightyear</div>
                     </div>
                   ) : <span style={{ color: '#94a3b8', fontSize: 11 }}>—</span>}
                 </div>

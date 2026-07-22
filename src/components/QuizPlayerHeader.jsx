@@ -46,9 +46,9 @@ export default function QuizPlayerHeader({ currentIndex, totalLength, topicXP, c
         </div>
         
         {/* 💫 XP TRACKER CLUSTER */}
-        <div className="quiz-header-stat-capsule xp-node-tint" aria-label={`You have ${topicXP} Plasma`}>
+        <div className="quiz-header-stat-capsule xp-node-tint" aria-label={`You have ${topicXP} Lightyear`}>
           <Trophy size={14} className="stat-vector-icon text-gold-accent" />
-          <span className="quiz-stat-count-string">{topicXP} <span className="stat-lbl-dim">Plasma</span></span>
+          <span className="quiz-stat-count-string">{topicXP} <span className="stat-lbl-dim">Lightyear</span></span>
         </div>
         
         {/* ❤️ LIFE CHANCES TRACKER CLUSTER — meaningless once a module/topic

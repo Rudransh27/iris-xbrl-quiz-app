@@ -19,7 +19,7 @@ export default function Footer() {
           </p>
           <p className="duo-company-description">
             The learning platform for every team at IRIS — bite-sized modules,
-            streaks, Plasma rewards, and a real leaderboard.
+            streaks, Lightyear rewards, and a real leaderboard.
           </p>
         </div>
 

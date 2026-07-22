@@ -19,8 +19,8 @@ import {
   Building,
   Broadcast,
   ArrowLeftRight,
-  LightningCharge,
 } from "react-bootstrap-icons";
+import { PiShootingStarFill } from "react-icons/pi";
 import "./Layout.css";
 import { resolveViewMode, viewModeStorageKey } from "../utils/viewMode";
 
@@ -381,7 +381,7 @@ export default function Layout({ children }) {
                 borderBottom: "4px solid var(--badge-progress-text)",
               }}
             >
-              <LightningCharge size={14} /> {user?.xp || 0} Plasma
+              <PiShootingStarFill size={14} /> {user?.xp || 0} Lightyear
             </span>
 
             <div

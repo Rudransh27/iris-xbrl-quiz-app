@@ -30,7 +30,7 @@ const LABS = [
     pct: 0,
     points: 120,
     cadence: "~25 min",
-    takeaway: "Race the clock to reconcile a broken ledger and score Plasma.",
+    takeaway: "Race the clock to reconcile a broken ledger and score Lightyear.",
     thumbGradient: "linear-gradient(135deg, #c9557c, #b06cc9)",
     thumbIcon: ArrowRepeat,
   },

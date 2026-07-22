@@ -65,7 +65,7 @@ const QuizResults = ({ score, totalQuestions, onReturn, xp = 0, sandboxScore = n
         {/* ================= XP TACTILE BADGE ================= */}
         {xp > 0 && (
           <div className="xp-gain-badge-capsule">
-            <span className="xp-gain-text">+{xp} Plasma EARNED</span>
+            <span className="xp-gain-text">+{xp} Lightyear EARNED</span>
           </div>
         )}
 

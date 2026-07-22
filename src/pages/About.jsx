@@ -8,7 +8,7 @@ const VALUES = [
   {
     icon: RocketTakeoffFill,
     title: "Learning that sticks",
-    text: "Bite-sized modules, daily habits, and real Plasma — built the way people actually retain new skills, not just pass a one-time test.",
+    text: "Bite-sized modules, daily habits, and real Lightyear — built the way people actually retain new skills, not just pass a one-time test.",
   },
   {
     icon: PeopleFill,
@@ -37,7 +37,7 @@ export default function About() {
         <p className="about-lede">
           Iris Orbit is IRIS Regtech Solutions' gamified learning platform — built to turn compliance and
           business-reporting training into something people actually look forward to, one streak, one
-          module, and one Plasma bar at a time.
+          module, and one Lightyear bar at a time.
         </p>
 
         <div className="about-values-grid">
