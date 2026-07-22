@@ -163,8 +163,8 @@ export default function VideoCard({ videoUrl, title, description, thumbnailUrl, 
         )}
 
         <div className="video-session-notes-box rounded-3 border">
-          <div className="notes-header-indicator border-bottom bg-white px-3 py-2 d-flex align-items-center gap-1.5 fw-bold font-monospace">
-            <InfoCircleFill size={12} style={{ color: 'var(--amber-glow-dark, #e08600)' }} />
+          <div className="notes-header-indicator border-bottom px-3 py-2 d-flex align-items-center gap-1.5 fw-bold font-monospace">
+            <InfoCircleFill size={12} style={{ color: 'var(--orbit-lavender-text)' }} />
             <span>SESSION CORE NOTES MATRIX</span>
           </div>
           

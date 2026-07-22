@@ -1,26 +1,16 @@
-/* src/components/Footer.css */
-
-:root {
-  --amber-gold: #ffbe0bff;
-  --blaze-orange: #fb5607ff;
-  --neon-pink: #ff006eff;
-  --blue-violet: #8338ecff;
-  --azure-blue: #3a86ffff;
-
-  --duo-white: #ffffff;
-  --duo-offwhite-bg: #f7f9fa; /* Soft light background for bottom bar grounding */
-  --duo-line-border: #e5e5e5;
-  --duo-dark-text: #3c3c3c;    /* Duolingo clean charcoal black */
-  --duo-slate-text: #5e6c75;
-}
+/* src/components/Footer.css
+   Rewritten onto the shared --orbit-* tokens (src/index.css) — this used to
+   declare its own fixed-light "--duo-*" token set with no [data-theme="dark"]
+   override at all, so the footer stayed white regardless of the site's theme
+   toggle. Now it themes automatically like every other redesigned page. */
 
 .duo-site-footer {
   width: 100%;
-  background-color: var(--duo-white);
-  border-top: 3px solid var(--duo-line-border); /* Chunky structural ground boundary line */
+  background-color: var(--orbit-canvas);
+  border-top: 1px solid var(--orbit-border);
   padding: 56px 24px 0 24px;
   box-sizing: border-box;
-  font-family: "Nunito", system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .duo-footer-container {
@@ -52,9 +42,9 @@
 }
 
 .duo-footer-heading {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 900;
-  color: var(--duo-dark-text); /* Bold charcoal headings */
+  color: var(--orbit-text-heading);
   margin: 0 0 16px 0;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -62,7 +52,7 @@
 
 .duo-footer-text-link a,
 .duo-contact-node a {
-  color: var(--azure-blue);
+  color: var(--orbit-brand);
   text-decoration: none !important;
   font-weight: 800;
   font-size: 14px;
@@ -72,13 +62,13 @@
 .duo-contact-node,
 .duo-social-text {
   font-size: 13.5px;
-  font-weight: 700;
-  color: var(--duo-slate-text);
-  line-height: 1.5;
+  font-weight: 600;
+  color: var(--orbit-text-muted);
+  line-height: 1.55;
   margin: 8px 0 0 0;
 }
 
-/* ================= PRODUCT QUICK LINKS ================= */
+/* ================= QUICK LINKS ================= */
 .duo-footer-ul {
   list-style: none;
   padding: 0;
@@ -92,20 +82,19 @@
   text-decoration: none !important;
   font-size: 14px;
   font-weight: 800;
-  transition: color 0.1s ease;
+  transition: color 0.15s ease;
 }
 
-/* Dynamic color definitions matching product scopes */
-.link-azure { color: var(--azure-blue); }
-.link-pink { color: var(--neon-pink); }
-.link-gold { color: #d69800; }
+.link-azure { color: var(--orbit-sky-text); }
+.link-pink  { color: var(--orbit-pink-text); }
+.link-gold  { color: var(--orbit-lavender-text); }
 
 .product-link:hover {
-  filter: brightness(0.8);
+  color: var(--orbit-brand);
   text-decoration: underline !important;
 }
 
-/* ================= TACTILE 3D SOCIAL MEDIA BUTTONS ================= */
+/* ================= SOCIAL MEDIA BUTTONS ================= */
 .duo-social-icons {
   display: flex;
   align-items: center;
@@ -114,49 +103,51 @@
 }
 
 .duo-social-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background-color: var(--duo-white);
-  border: 2px solid var(--duo-line-border);
-  border-bottom: 4px solid var(--duo-line-border); /* Tactile 3D button styling */
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background-color: var(--orbit-surface);
+  border: 1.5px solid var(--orbit-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 17px;
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: all 0.15s ease;
 }
 
 .duo-social-btn:active {
-  transform: translateY(2px);
-  border-bottom-width: 2px;
+  transform: translateY(1px);
 }
 
-/* Color specific overrides on active interaction loops */
+/* Kept as real brand colors (LinkedIn blue, etc.) — not part of the
+   lavender/white canvas inconsistency, so left untouched on purpose. */
 .social-linkedin { color: #0077b5; }
-.social-linkedin:hover { border-color: #0077b5; border-bottom-color: #005582; }
+.social-linkedin:hover { border-color: #0077b5; }
 
-.social-twitter { color: var(--azure-blue); }
-.social-twitter:hover { border-color: var(--azure-blue); border-bottom-color: #1a62d6; }
+.social-twitter { color: #3a86ff; }
+.social-twitter:hover { border-color: #3a86ff; }
 
 .social-facebook { color: #1877f2; }
-.social-facebook:hover { border-color: #1877f2; border-bottom-color: #0d5ec7; }
+.social-facebook:hover { border-color: #1877f2; }
 
-.social-youtube { color: var(--neon-pink); }
-.social-youtube:hover { border-color: var(--neon-pink); border-bottom-color: #b3004b; }
+.social-youtube { color: #ff006e; }
+.social-youtube:hover { border-color: #ff006e; }
 
 /* ================= BOTTOM METADATA BAND ================= */
 .duo-footer-bottom {
-  border-top: 2px solid var(--duo-line-border);
+  border-top: 1px solid var(--orbit-border);
   padding: 24px 0;
-  background-color: var(--duo-offwhite-bg); /* Distinct grounding panel background */
-  margin: 0 -24px; /* Pull background clean to frame borders edge */
+  background-color: var(--orbit-surface-subtle);
+  margin: 0 -24px;
 }
 
 .duo-footer-bottom p {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
   font-size: 12px;
-  font-weight: 800;
-  color: var(--duo-slate-text);
-  margin: 0;
+  font-weight: 700;
+  color: var(--orbit-text-muted);
+  text-align: center;
 }

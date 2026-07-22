@@ -1,6 +1,8 @@
 // src/pages/DailyReadReader.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ArrowLeft, Calendar3, Person, Bookmark } from "react-bootstrap-icons";
 import api from "../admin/services/api";
 import "./DailyReadReader.css";
@@ -99,7 +101,14 @@ export default function DailyReadReader() {
 
       {/* Main Content Article Panel */}
       <div className="daily-reader-article-card">
-        
+
+        {/* Banner Image */}
+        {article.imageUrl && (
+          <div className="daily-reader-banner-wrap">
+            <img src={article.imageUrl} alt={article.title} className="daily-reader-banner-img" />
+          </div>
+        )}
+
         {/* Tags Stack Ribbon */}
         {article.tags && article.tags.length > 0 && (
           <div className="daily-reader-tags-ribbon">
@@ -122,9 +131,10 @@ export default function DailyReadReader() {
           <span className="meta-item"><Bookmark size={14} /> Departmental Feed</span>
         </div>
 
-        {/* Content Body Display Arena */}
+        {/* Content Body Display Arena — rendered as Markdown for proper
+            headings/emphasis/lists/links instead of one plain-text blob. */}
         <div className="daily-reader-body-content">
-          {article.content}
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.content}</ReactMarkdown>
         </div>
 
         {/* External References Foot Block */}

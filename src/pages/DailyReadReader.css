@@ -62,6 +62,20 @@
   box-sizing: border-box;
 }
 
+/* ================= 🖼️ BANNER IMAGE ================= */
+.daily-reader-banner-wrap {
+  margin: -32px -24px 24px -24px;
+  overflow: hidden;
+  border-radius: 22px 22px 0 0;
+}
+
+.daily-reader-banner-img {
+  display: block;
+  width: 100%;
+  max-height: 340px;
+  object-fit: cover;
+}
+
 .daily-reader-tags-ribbon {
   display: flex;
   flex-wrap: wrap;
@@ -109,13 +123,98 @@
   gap: 6px;
 }
 
-/* Main Content Body Reading Viewport */
+/* Main Content Body Reading Viewport — content is rendered as Markdown, so
+   these rules style the real h1-p-ul-a elements ReactMarkdown emits. */
 .daily-reader-body-content {
   font-size: 15px;
   font-weight: 600;
   line-height: 1.7;
   color: var(--duo-text-dark);
-  white-space: pre-wrap;
+}
+
+.daily-reader-body-content p {
+  margin: 0 0 16px 0;
+}
+
+.daily-reader-body-content p:last-child {
+  margin-bottom: 0;
+}
+
+.daily-reader-body-content h1,
+.daily-reader-body-content h2,
+.daily-reader-body-content h3 {
+  font-weight: 900;
+  color: var(--duo-text-dark);
+  line-height: 1.3;
+  margin: 28px 0 14px 0;
+}
+
+.daily-reader-body-content h1:first-child,
+.daily-reader-body-content h2:first-child,
+.daily-reader-body-content h3:first-child {
+  margin-top: 0;
+}
+
+.daily-reader-body-content h1 { font-size: 22px; }
+.daily-reader-body-content h2 { font-size: 19px; }
+.daily-reader-body-content h3 { font-size: 16px; }
+
+.daily-reader-body-content ul,
+.daily-reader-body-content ol {
+  margin: 0 0 16px 0;
+  padding-left: 24px;
+}
+
+.daily-reader-body-content li {
+  margin-bottom: 6px;
+}
+
+.daily-reader-body-content a {
+  color: var(--blue-violet);
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+.daily-reader-body-content strong {
+  font-weight: 900;
+}
+
+.daily-reader-body-content blockquote {
+  margin: 0 0 16px 0;
+  padding: 10px 16px;
+  border-left: 4px solid var(--azure-blue);
+  background-color: var(--duo-gray-plate);
+  border-radius: 0 10px 10px 0;
+  font-style: italic;
+}
+
+.daily-reader-body-content code {
+  background-color: var(--duo-gray-plate);
+  border: 1px solid var(--duo-border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 13px;
+  font-family: SFMono-Regular, Consolas, Monaco, monospace;
+}
+
+.daily-reader-body-content hr {
+  border: none;
+  border-top: 2px solid var(--duo-border);
+  margin: 24px 0;
+}
+
+.daily-reader-body-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 13.5px;
+}
+
+.daily-reader-body-content th,
+.daily-reader-body-content td {
+  border: 1px solid var(--duo-border);
+  padding: 8px 10px;
+  text-align: left;
 }
 
 /* ================= 🔗 SUPPLEMENTARY EXTERNAL REFERENCE PANEL ================= */

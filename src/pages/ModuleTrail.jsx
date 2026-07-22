@@ -3,6 +3,8 @@ import React, { useState, useEffect, useLayoutEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../admin/services/api";
 import ModulesLabsSection from "../components/OrbitDashboard/ModulesLabsSection";
+import LearnHero from "../components/OrbitDashboard/LearnHero";
+import OrbitFooter from "../components/OrbitDashboard/OrbitFooter";
 import { setCurrentModule } from "../components/OrbitDashboard/currentModuleStorage";
 import AuthContext from "../context/AuthContext";
 import "../components/OrbitDashboard/OrbitDashboard.css";
@@ -92,17 +94,28 @@ export default function ModuleTrail() {
     else navigate(`/orbit/modules/${module._id}/topics`);
   };
 
+  // Hero stats row — all real, derived from the same data ModulesLabsSection
+  // itself computes per-card (no separate/duplicate fetch).
+  const inProgressCount = modules.filter((mod) => {
+    const { pct } = getModuleProgress(mod);
+    return pct > 0 && pct < 100;
+  }).length;
+
   return (
-    <div style={{ maxWidth: 1180, margin: "0 auto", padding: "8px 4px 32px" }}>
+    <div style={{ maxWidth: 1240, margin: "0 auto", padding: "20px 28px 32px", display: "flex", flexDirection: "column", gap: 18 }}>
+      <LearnHero
+        moduleCount={modules.length}
+        inProgressCount={inProgressCount}
+        plasmaEarned={user?.xp ?? 0}
+      />
       <ModulesLabsSection
         modules={modules}
         getModuleProgress={getModuleProgress}
         onOpenModule={handleModuleClick}
         loading={loading}
-        title="Learn"
-        subtitle="Modules build knowledge. Labs build practice."
         showSearch
       />
+      <OrbitFooter />
     </div>
   );
 }

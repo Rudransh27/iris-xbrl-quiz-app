@@ -20,6 +20,17 @@ export const toDateKey = (date) => {
   return `${y}-${m}-${d}`;
 };
 
+// UTC "YYYY-MM-DD" — matches the backend's Daily Read dateKey convention
+// (new Date().toISOString().split("T")[0]), which is also what
+// User.engagementHistory's streak entries use. Distinct from toDateKey
+// above, which renders the LOCAL calendar day for the visual grid.
+export const toUtcDateKey = (date) => new Date(date).toISOString().split("T")[0];
+
+// A Daily Read's calendar day: its own dateKey if present, else derived
+// from createdAt for records saved before dateKey existed.
+export const dailyReadDateKey = (read) =>
+  read?.dateKey || (read?.createdAt ? toUtcDateKey(read.createdAt) : null);
+
 // Converts the server's engagementHistory shape
 // ([{ date: "YYYY-MM-DD", qualifiesForStreak, actions: ['daily_read', ...] }, ...])
 // into the { dateKey: { read, module, idea } } map the calendar and

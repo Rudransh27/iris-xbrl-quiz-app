@@ -165,9 +165,12 @@ export default function AdminIdeasReview() {
   const getTagColorClass = (tagValue) => {
     switch (tagValue?.toLowerCase()) {
       case 'product': return 'primary';
-      case 'market': return 'info text-dark';
       case 'process': return 'warning text-dark';
-      case 'publish': return 'success';
+      case 'technology': return 'info text-dark';
+      case 'culture': return 'success';
+      // 'market'/'publish' are the old, retired tag values — ideas submitted
+      // before this taxonomy change keep displaying their raw tag text fine,
+      // they just fall through to this neutral color instead of a mapped one.
       default: return 'secondary';
     }
   };

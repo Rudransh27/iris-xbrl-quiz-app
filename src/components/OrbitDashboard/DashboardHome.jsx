@@ -3,7 +3,7 @@ import React, { useEffect, useMemo } from "react";
 import "./OrbitDashboard.css";
 import HeroWelcome from "./HeroWelcome";
 import ChecklistCard from "./ChecklistCard";
-import ActivityCalendar from "./ActivityCalendar";
+import OrbitCalendar from "./OrbitCalendar";
 import NewsCarousel from "./NewsCarousel";
 import CurrentModuleCard from "./CurrentModuleCard";
 import SuggestIdeaCard from "./SuggestIdeaCard";
@@ -15,6 +15,7 @@ export default function DashboardHome({
   user,
   navigate,
   todaysRead,
+  allReads,
   newsFeed,
   modules,
   widgetModule,
@@ -138,7 +139,12 @@ export default function DashboardHome({
 
       <div className="orbit-dash__split">
         <ChecklistCard items={checklistItems} />
-        <ActivityCalendar history={history} streak={streak} />
+        <OrbitCalendar
+          history={history}
+          streak={streak}
+          reads={allReads}
+          onSelectRead={(readId) => navigate(`/orbit/daily-read/${readId}`)}
+        />
       </div>
 
       <NewsCarousel newsFeed={newsFeed} />

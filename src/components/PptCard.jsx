@@ -36,36 +36,35 @@ export default function PptCard({ pptUrl, title, description }) {
     <div className="ppt-card-wrapper text-start animate-fade-in">
       <div className="d-flex align-items-center justify-content-between mb-2">
         <div>
-          {title && <h3 className="fw-bold text-dark m-0">{title}</h3>}
-          {description && <p className="text-secondary small m-0 mt-1">{description}</p>}
+          {title && <h3 className="ppt-card-title fw-bold m-0">{title}</h3>}
+          {description && <p className="ppt-card-description small m-0 mt-1">{description}</p>}
         </div>
         {cleanPptUrl && (
-          <span className="badge bg-light text-muted border font-monospace" style={{ fontSize: '10px' }}>
+          <span className="ppt-mode-badge font-monospace" style={{ fontSize: '10px' }}>
             Active View: {engineType.toUpperCase()}
           </span>
         )}
       </div>
 
       <div
-        className="ppt-viewer-canvas-frame border rounded bg-light shadow-sm position-relative"
+        className="ppt-viewer-canvas-frame position-relative"
       >
         {!cleanPptUrl ? (
-          <div className="p-5 text-center text-muted font-monospace small">
+          <div className="ppt-empty-state p-5 text-center font-monospace small">
             ⚠️ No valid presentation resource path assigned.
           </div>
         ) : engineType === 'failed' ? (
           <div className="p-5 text-center d-flex flex-column align-items-center justify-content-center h-100">
             <span style={{ fontSize: '32px' }}>📊</span>
-            <h6 className="fw-bold text-dark mt-2">Inline Presentation Render Stalled</h6>
-            <p className="text-muted small text-center" style={{ maxWidth: '340px' }}>
+            <h6 className="ppt-card-title fw-bold mt-2">Inline Presentation Render Stalled</h6>
+            <p className="ppt-card-description small text-center" style={{ maxWidth: '340px' }}>
               Your network profile or corporate proxy configurations are blocking automated inline viewers from accessing this slide layout deck.
             </p>
-            <a 
+            <a
               href={cleanPptUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-sm px-4 fw-semibold mt-1"
-              style={{ backgroundColor: 'var(--amber-glow, #ff9f1c)', borderColor: 'var(--amber-glow, #ff9f1c)', color: '#fff' }}
+              className="ppt-download-btn btn btn-sm px-4 fw-semibold mt-1"
             >
               Download & Open Slide Deck Directly
             </a>
@@ -81,15 +80,15 @@ export default function PptCard({ pptUrl, title, description }) {
               frameBorder="0"
               allowFullScreen
             ></iframe>
-            
+
             {/* Fail-safe controller button layer overlapping background coordinates */}
-            <div 
-              className="position-absolute bottom-0 start-0 m-2 bg-white p-1 rounded border shadow-sm d-flex gap-1"
+            <div
+              className="ppt-engine-switch-wrap position-absolute bottom-0 start-0 m-2 d-flex gap-1"
               style={{ zIndex: 10 }}
             >
               <button
                 type="button"
-                className="btn btn-light border-0 text-secondary fw-semibold font-monospace"
+                className="ppt-engine-switch-btn fw-semibold font-monospace"
                 style={{ fontSize: '9px', padding: '2px 6px' }}
                 onClick={handleEngineTimeout}
               >
@@ -102,11 +101,11 @@ export default function PptCard({ pptUrl, title, description }) {
 
       {cleanPptUrl && engineType !== 'failed' && (
         <div className="mt-2 text-end">
-          <a 
-            href={cleanPptUrl} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="btn btn-sm btn-outline-secondary font-monospace"
+          <a
+            href={cleanPptUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ppt-open-link-btn btn btn-sm font-monospace"
             style={{ fontSize: '11px', borderRadius: '4px' }}
           >
             ↗ View Native Slide Deck Asset Source

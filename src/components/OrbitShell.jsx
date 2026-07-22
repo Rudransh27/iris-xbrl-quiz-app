@@ -13,7 +13,7 @@ import SuperAdminDashboard from "../admin/SuperAdminDashboard";
 import Dashboard1 from "../admin/Dashboard1";
 import {
   House, Book, BarChart, Lightbulb, Trophy, PersonCircle,
-  Shield, Building, Broadcast, ArrowLeftRight, LightningCharge, Fire,
+  Shield, Building, Broadcast, ArrowLeftRight, LightningCharge, RocketTakeoffFill,
   SunFill, MoonFill, Activity, BoxArrowRight,
   List, XLg,
 } from "react-bootstrap-icons";
@@ -35,6 +35,16 @@ export default function OrbitShell() {
   const [toastQueue,  setToastQueue]  = useState([]);
   const [departmentName, setDepartmentName] = useState("");
   const socketRef = useRef(null);
+  const mainScrollRef = useRef(null);
+
+  // 🎯 BUG FIX ("navigating to a new page lands wherever we last scrolled,
+  // not the top"): OrbitShell itself never unmounts across /orbit/* routes
+  // (only <Outlet/>'s content swaps), so the persistent scroll container
+  // below keeps whatever scrollTop it had on the PREVIOUS page. Reset it
+  // every time the route actually changes.
+  useEffect(() => {
+    mainScrollRef.current?.scrollTo(0, 0);
+  }, [location.pathname]);
 
   // Department label shown in the topbar (replaces the old duplicate
   // "Iris Orbit" wordmark there, now that the single logo lives in the
@@ -56,19 +66,19 @@ export default function OrbitShell() {
   // fetches it) — the topbar needs it too now, so pull it once here via the
   // same endpoint OrbitWorkspace already uses.
   useEffect(() => {
-    if (!user?._id || typeof api.getMyStreak !== "function") return;
+    if (!user?.id || typeof api.getMyStreak !== "function") return;
     let cancelled = false;
     api.getMyStreak().then((res) => {
       if (!cancelled && res?.success) setStreak(res.currentStreak || 0);
     }).catch(() => {});
     return () => { cancelled = true; };
-  }, [user?._id]);
+  }, [user?.id]);
 
   // "learner" is the only safe default before the user's real role is known
   // (AuthContext hydrates asynchronously) — never trust any pre-role-check
   // storage read for the initial render.
   const [currentViewMode, setCurrentViewMode] = useState("learner");
-  const viewModeKey = viewModeStorageKey(user?._id);
+  const viewModeKey = viewModeStorageKey(user?.id);
 
   // One-time cleanup: the old unscoped key could still be sitting in a
   // browser's localStorage from before this fix and must never be read
@@ -80,17 +90,17 @@ export default function OrbitShell() {
     const saved = viewModeKey ? localStorage.getItem(viewModeKey) : null;
     setCurrentViewMode(resolveViewMode(user.role, saved));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?._id, user?.role]);
+  }, [user?.id, user?.role]);
 
   useEffect(() => { if (user?.xp !== undefined) setLiveXP(user.xp); }, [user?.xp]);
 
   useEffect(() => {
-    if (!user?._id) return;
+    if (!user?.id) return;
     const socket = socketIO("http://localhost:5000", {
       transports: ["websocket"], reconnectionAttempts: 5,
     });
     socketRef.current = socket;
-    socket.on("connect", () => { socket.emit("register_session", String(user._id)); });
+    socket.on("connect", () => { socket.emit("register_session", String(user.id)); });
     socket.on("xp_award", (data) => {
       const { xpAwarded, message, moduleTitle, notificationId } = data;
       if (xpAwarded > 0) setLiveXP(prev => prev + xpAwarded);
@@ -107,7 +117,7 @@ export default function OrbitShell() {
       setTimeout(() => setToastQueue(prev => prev.filter(t => t.id !== toast.id)), 6000);
     });
     return () => { socket.disconnect(); };
-  }, [user?._id]);
+  }, [user?.id]);
 
   // ─── Active section detection ────────────────────────────────────────────
   // Derived purely from the real URL now — no more ?view= query param.
@@ -180,11 +190,11 @@ export default function OrbitShell() {
           display:        "flex",
           alignItems:     "center",
           justifyContent: "center",
-          // Active: a solid black fill (--ink-strong is a fixed dark ink
-          // token that doesn't swap with the theme, so this stays black in
-          // both light and dark mode) rather than a colored/pale tint.
-          background:     isActive ? "var(--ink-strong)" : "transparent",
-          color:          isActive ? "#ffffff" : isDanger ? "var(--pastel-streak-text)" : "var(--orbit-text-muted)",
+          // Active: a lavender→sky gradient tile (same fixed pastel in both
+          // themes — matches the Learner Dashboard's redesigned accent
+          // language) rather than the old solid-black fill.
+          background:     isActive ? "linear-gradient(135deg, var(--orbit-lavender), var(--orbit-sky))" : "transparent",
+          color:          isActive ? "#20222f" : isDanger ? "var(--orbit-rose-text)" : "var(--orbit-text-muted)",
           transition:     "background 0.14s ease, color 0.14s ease",
         }}
         onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "var(--orbit-brand-light)"; }}
@@ -198,7 +208,7 @@ export default function OrbitShell() {
         textAlign:  "center",
         lineHeight: 1.2,
         maxWidth:   "76px",
-        color:      isActive ? "var(--orbit-text-heading)" : isDanger ? "var(--pastel-streak-text)" : "var(--orbit-text-muted)",
+        color:      isActive ? "var(--orbit-text-heading)" : isDanger ? "var(--orbit-rose-text)" : "var(--orbit-text-muted)",
       }}>
         {label}
       </span>
@@ -212,8 +222,8 @@ export default function OrbitShell() {
   const sideSection = (label) => <div key={`sec-${label}`} style={{ height: "10px" }} />;
 
   return (
-    <div style={{
-      display: "flex", minHeight: "100vh", background: "var(--orbit-canvas)",
+    <div className="orbit-app-root" style={{
+      display: "flex", height: "100vh", overflow: "hidden", background: "var(--orbit-canvas)",
     }}>
 
       {/* Mobile-only dimmed backdrop behind the drawer — closes it on tap. */}
@@ -226,7 +236,6 @@ export default function OrbitShell() {
       ══════════════════════════════════════════════════════════════════════ */}
       <aside className={`orbit-sidebar ${isMobileDrawerOpen ? "orbit-sidebar--open" : ""}`} style={{
         width:            "92px",
-        background:       "var(--orbit-canvas)",
         borderRight:      "1px solid var(--orbit-border)",
         display:          "flex",
         flexDirection:    "column",
@@ -248,7 +257,13 @@ export default function OrbitShell() {
         <div style={{
           padding:        "10px 7px",
           borderBottom:   "1px solid var(--orbit-glass-border)",
-          background:     "var(--ink-strong)",
+          // The logo artwork is a medium-saturation purple mark on a
+          // transparent background — it reads cleanly on plain white, so
+          // light mode uses the real page surface instead of a dark tile
+          // (which used to apply regardless of theme). Dark mode keeps the
+          // galaxy gradient — plain white there would be a jarring bright
+          // hole in the rest of the dark UI.
+          background:     theme === "dark" ? "linear-gradient(135deg, #2a2140, #232a56)" : "var(--orbit-surface)",
           display:        "flex",
           alignItems:     "center",
           justifyContent: "center",
@@ -287,7 +302,7 @@ export default function OrbitShell() {
                rather than alarming. */}
         
         {/* ── Navigation stack ──────────────────────────────────────── */}
-        <div style={{ flex: 1, padding: "6px 0", overflowY: "auto" }}>
+        <div className="orbit-sidebar-nav" style={{ flex: 1, padding: "6px 0", overflowY: "auto" }}>
 
           {/* LEARNER NAV — shown for the actual learner role, AND for an
               admin/superadmin browsing any non-dashboard-home /orbit/* page
@@ -355,20 +370,53 @@ export default function OrbitShell() {
       ══════════════════════════════════════════════════════════════════════ */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "var(--orbit-canvas)" }}>
 
-        {/* Topbar */}
+        {/* Topbar — true glassmorphism:
+              - sticky (belt-and-suspenders alongside the root's own
+                height:100vh/overflow:hidden fix, which is what actually
+                makes <main> the sole scroll container now)
+              - ~50% transparent background + backdrop blur/saturate, so
+                content scrolling underneath stays faintly, softly visible
+              - a thin semi-transparent border on the top/left/right only
+                (a "specular highlight" edge) — the bottom border is
+                explicitly none so the glass blends into the content below
+                instead of being boxed in
+              - a soft, diffused, low-opacity drop shadow to lift it off
+                the page, no harsh edge
+            The extra sheen layer (a soft light-catching gradient beyond
+            the crisp top border above) is a ::after in OrbitShell.css,
+            since a pseudo-element can't be expressed as an inline style. */}
         <header className="orbit-topbar" style={{
           height:           "56px",
-          background:       "var(--orbit-glass-bg)",
-          backdropFilter:   "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
+          position:         "sticky",
+          top:              0,
+          zIndex:           5,
+          // A distinctly lighter/more saturated indigo than the near-black
+          // page canvas (--orbit-canvas is #0b0a14, --orbit-surface is
+          // #131124) — blending 50% of THOSE colors into themselves reads
+          // as flat black no matter how correct the opacity math is, since
+          // there's no hue/brightness gap for the transparency to reveal.
+          // This tint is deliberately brighter/more violet so the panel
+          // visibly separates from the canvas even at rest.
+          background:       theme === "dark" ? "rgba(64, 54, 112, 0.6)" : "rgba(255, 255, 255, 0.6)",
+          backdropFilter:   "blur(28px) saturate(180%)",
+          WebkitBackdropFilter: "blur(28px) saturate(180%)",
           backgroundImage:  "var(--orbit-glass-highlight)",
-          borderBottom:     "1px solid var(--orbit-glass-border)",
+          borderTop:        "1px solid rgba(255, 255, 255, 0.35)",
+          borderLeft:       "1px solid rgba(255, 255, 255, 0.22)",
+          borderRight:      "1px solid rgba(255, 255, 255, 0.22)",
+          borderBottom:     "none",
           display:          "flex",
           alignItems:       "center",
           justifyContent:   "space-between",
           padding:          "0 clamp(12px, 4vw, 24px)",
           flexShrink:       0,
-          boxShadow:        "var(--orbit-glass-shadow)",
+          // Stronger than before — at the very top of the page (before
+          // anything has scrolled under the sticky header), blur has
+          // nothing behind it to blur, so the panel needs to read as
+          // "glass" from its own border/shadow/tint alone, not just blur.
+          boxShadow:        theme === "dark"
+            ? "0 12px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06)"
+            : "0 12px 40px rgba(31, 38, 50, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
           gap:              "10px",
         }}>
 
@@ -518,14 +566,14 @@ export default function OrbitShell() {
               </select>
             )}
 
-            {/* XP pill */}
+            {/* XP / Plasma pill — lavender, per the dashboard redesign's chip palette */}
             <span style={{
               display:     "inline-flex",
               alignItems:  "center",
               gap:         "4px",
-              background:  "var(--orbit-xp-bg)",
-              border:      "1.5px solid var(--orbit-xp-border)",
-              color:       "var(--orbit-xp-text)",
+              background:  "rgba(201, 184, 255, 0.14)",
+              border:      "1.5px solid var(--orbit-lavender)",
+              color:       "var(--orbit-lavender-text)",
               borderRadius:"var(--radius-full)",
               padding:     "4px 12px",
               fontSize:    "12px",
@@ -534,20 +582,20 @@ export default function OrbitShell() {
               <LightningCharge size={11} /> {liveXP} Plasma
             </span>
 
-            {/* Streak pill */}
+            {/* Streak pill — pink, rocket-launch icon (not fire) */}
             <span style={{
               display:     "inline-flex",
               alignItems:  "center",
               gap:         "4px",
-              background:  "var(--pastel-streak)",
-              border:      "1.5px solid var(--pastel-streak-border)",
-              color:       "var(--pastel-streak-text)",
+              background:  "rgba(255, 158, 207, 0.14)",
+              border:      "1.5px solid var(--orbit-pink)",
+              color:       "var(--orbit-pink-text)",
               borderRadius:"var(--radius-full)",
               padding:     "4px 12px",
               fontSize:    "12px",
               fontWeight:  "800",
             }}>
-              <Fire size={11} /> {streak}
+              <RocketTakeoffFill size={11} /> {streak}
             </span>
 
             {/* Profile avatar — navigates inside shell (no hard redirect) */}
@@ -570,7 +618,7 @@ export default function OrbitShell() {
                 boxShadow:      "0 0 0 3px var(--orbit-brand-muted)",
                 transition:     "box-shadow 0.14s ease",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 0 0 4px rgba(255,159,28,0.4)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 0 0 4px rgba(201,184,255,0.4)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 0 0 3px var(--orbit-brand-muted)"; }}
             >
               {user?.username?.substring(0, 2).toUpperCase() || "OR"}
@@ -587,7 +635,7 @@ export default function OrbitShell() {
             roles. The dashboard/hub override must only apply on the actual
             dashboard screen (bare /orbit, or /orbit/dashboard) — every other
             path always renders its real route via <Outlet />. */}
-        <main className="content-fluid-scroller" style={{ flex: 1, overflowY: "auto", padding: "clamp(12px, 4vw, 24px)" }}>
+        <main ref={mainScrollRef} className="content-fluid-scroller" style={{ flex: 1, overflowY: "auto", padding: "clamp(12px, 4vw, 24px)" }}>
           {isDashboardHome && currentViewMode === "superadmin" ? (
             <SuperAdminDashboard />
           ) : isDashboardHome && currentViewMode === "admin" ? (

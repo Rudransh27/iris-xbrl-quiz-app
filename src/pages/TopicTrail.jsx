@@ -3,8 +3,10 @@ import React, { useState, useEffect, useLayoutEffect, useContext, useMemo } from
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import TopicCard from '../components/TopicCard';
 import api from '../admin/services/api';
-import { ChevronRight, Book, Trophy, ClockHistory } from 'react-bootstrap-icons';
+import { ChevronRight, ArrowLeft, Book, Trophy, ClockHistory } from 'react-bootstrap-icons';
 import './TopicTrail.css';
+import '../components/OrbitDashboard/OrbitDashboard.css';
+import { useStars } from '../components/OrbitDashboard/HeroWelcome';
 import AuthContext from '../context/AuthContext';
 import { setCurrentModule } from '../components/OrbitDashboard/currentModuleStorage';
 
@@ -121,77 +123,89 @@ export default function TopicTrail() {
     }, [topics, userProgress]);
 
     const durationLabel = formatDuration(totalDurationMinutes);
+    const stars = useStars(24);
 
     return (
         <div className="topic-trail-page">
-            {/* ================= COSMIC ORBIT AMBIENT BACKGROUND =================
-                Purely decorative (aria-hidden, pointer-events:none): faint SVG
-                rings + a couple of CSS-orbiting glow dots. Fades out via a mask
-                before it reaches the card grid so it never fights with content
-                contrast — see TopicTrail.css for the full mechanics writeup. */}
-            <div className="orbit-bg" aria-hidden="true">
-                <svg className="orbit-bg__rings" viewBox="0 0 900 700" preserveAspectRatio="xMidYMid slice">
-                    <circle cx="620" cy="120" r="140" />
-                    <circle cx="620" cy="120" r="230" />
-                    <circle cx="620" cy="120" r="320" />
-                </svg>
-                <div className="orbit-track orbit-track--1">
-                    <span className="orbit-planet orbit-planet--amber" />
-                </div>
-                <div className="orbit-track orbit-track--2">
-                    <span className="orbit-planet orbit-planet--seagreen" />
-                </div>
-                <div className="orbit-track orbit-track--3">
-                    <span className="orbit-planet orbit-planet--ghost" />
-                </div>
-            </div>
-
             <div className="duo-topic-container">
 
-                {/* ================= MINIMAL HEADER ================= */}
-                <div className="topic-header">
-                    <nav className="topic-header__breadcrumb" aria-label="Breadcrumb">
-                        <button type="button" onClick={() => navigate('/orbit/modules')}>Learn</button>
-                        <ChevronRight size={10} />
-                        <button type="button" onClick={() => navigate('/orbit/modules')}>Modules</button>
-                        <ChevronRight size={10} />
-                        <span className="topic-header__breadcrumb-current">{moduleInfo?.title || '…'}</span>
-                    </nav>
+                {/* Sits above the hero banner (not inside it) — a plain page-level
+                    back action, distinct from the breadcrumb's fixed "Modules"
+                    destination below.
+                    🎯 BUG FIX ("Back to Learn doesn't always go to Learn"):
+                    this used navigate(-1) — raw browser-history back — so it
+                    could land anywhere depending on how the learner arrived
+                    at this topic (a module card, a search result, a deep
+                    link). A button labeled "Back to Learn" must always go to
+                    the real Learn page, not wherever history happens to be. */}
+                <button
+                    type="button"
+                    className="topic-back-btn"
+                    onClick={() => navigate("/orbit/modules")}
+                >
+                    <ArrowLeft size={14} /> Back to Learn
+                </button>
 
-                    <h1 className="topic-header__title">{moduleInfo?.title || 'Your Learning Topics'}</h1>
-
-                    <div className="topic-header__meta-row">
-                        <span className="topic-header__meta-item">
-                            <Book size={13} /> {totalTopicsCount} {totalTopicsCount === 1 ? 'topic' : 'topics'}
-                        </span>
-                        {durationLabel && (
-                            <span className="topic-header__meta-item">
-                                <ClockHistory size={13} /> {durationLabel}
-                            </span>
-                        )}
-                        {totalPotentialXp > 0 && (
-                            <span className="topic-header__meta-item topic-header__meta-item--xp">
-                                <Trophy size={13} /> +{totalPotentialXp} Plasma
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                {/* ================= RAZOR-THIN MASTER PROGRESS LINE ================= */}
-                {totalTopicsCount > 0 && (
-                    <div className="topic-progress-line-wrap">
-                        <div className="topic-progress-line-labels">
-                            <span>{completedTopicsCount}/{totalTopicsCount} completed</span>
-                            <span>{masterProgressPct}%</span>
-                        </div>
-                        <div className={`topic-progress-line ${masterProgressPct >= 100 ? 'topic-progress-line--mastered' : ''}`}>
-                            <div
-                                className="topic-progress-line__fill"
-                                style={{ width: `${Math.max(masterProgressPct > 0 ? 2 : 0, masterProgressPct)}%` }}
+                {/* ================= HERO HEADER =================
+                    Same galaxy-gradient/starfield/comet shell as the Home and
+                    Learn hero banners, sized down for a sub-page: breadcrumb,
+                    module title, meta row, and the master progress line. */}
+                <div className="orbit-hero orbit-hero--topic">
+                    <div className="orbit-hero__stars" aria-hidden="true">
+                        {stars.map((s) => (
+                            <span
+                                key={s.id}
+                                className="orbit-hero__star"
+                                style={{ top: s.top, left: s.left, width: s.size, height: s.size, animationDelay: s.delay, animationDuration: s.duration }}
                             />
+                        ))}
+                    </div>
+                    <div className="orbit-hero__comet" aria-hidden="true" />
+
+                    <div className="topic-header">
+                        <nav className="topic-header__breadcrumb" aria-label="Breadcrumb">
+                            <button type="button" onClick={() => navigate('/orbit/modules')}>Learn</button>
+                            <ChevronRight size={10} />
+                            <button type="button" onClick={() => navigate('/orbit/modules')}>Modules</button>
+                            <ChevronRight size={10} />
+                            <span className="topic-header__breadcrumb-current">{moduleInfo?.title || '…'}</span>
+                        </nav>
+
+                        <h1 className="topic-header__title">{moduleInfo?.title || 'Your Learning Topics'}</h1>
+
+                        <div className="topic-header__meta-row">
+                            <span className="topic-header__meta-item">
+                                <Book size={13} /> {totalTopicsCount} {totalTopicsCount === 1 ? 'topic' : 'topics'}
+                            </span>
+                            {durationLabel && (
+                                <span className="topic-header__meta-item">
+                                    <ClockHistory size={13} /> {durationLabel}
+                                </span>
+                            )}
+                            {totalPotentialXp > 0 && (
+                                <span className="topic-header__meta-item topic-header__meta-item--xp">
+                                    <Trophy size={13} /> +{totalPotentialXp} Plasma
+                                </span>
+                            )}
                         </div>
                     </div>
-                )}
+
+                    {/* ================= RAZOR-THIN MASTER PROGRESS LINE ================= */}
+                    {totalTopicsCount > 0 && (
+                        <div className="topic-progress-line-wrap">
+                            <div className="topic-progress-line-labels">
+                                <span>{completedTopicsCount}/{totalTopicsCount} completed</span>
+                                <span>{masterProgressPct}%</span>
+                            </div>
+                            <div className={`topic-progress-line ${masterProgressPct >= 100 ? 'topic-progress-line--mastered' : ''}`}>
+                                <div
+                                    className="topic-progress-line__fill"
+                                    style={{ width: `${Math.max(masterProgressPct > 0 ? 2 : 0, masterProgressPct)}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* ================= TOPICS CARD GRID MATRIX ================= */}
                 <div className="topics-grid-container">

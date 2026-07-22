@@ -193,9 +193,9 @@ if (typeof document !== "undefined" && !document.getElementById("orbit-auth-styl
 
 // ── Left panel branding data ──────────────────────────────────────────────────
 const FEATURES = [
-  "Curated XBRL & RegTech learning modules",
+  "Bite-sized learning modules for every team",
   "Ideas inbox reviewed by a real Product Council",
-  "Daily compliance reads with XP streak rewards",
+  "Daily streaks, checklists, and Plasma rewards",
   "Live leaderboard & team progress tracking",
 ];
 
@@ -274,7 +274,7 @@ export default function AuthLayout({ children }) {
             <p style={{
               fontSize: "13.5px", color: "var(--orbit-text-muted)", lineHeight: 1.72, margin: "0 0 34px",
             }}>
-              Compliance knowledge engineered for the people inside the machine.
+              One platform to learn, practice, and grow — built for every team at IRIS.
             </p>
 
             {/* Feature dots */}

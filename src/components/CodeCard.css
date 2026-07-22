@@ -1,36 +1,44 @@
-/* src/components/CodeCard.css */
+/* src/components/CodeCard.css
+   Redesigned onto the shared --orbit-* tokens for the card's own chrome
+   (was hardcoded to a fixed white/light palette). The VS-Code-style
+   reference snippet boxes and the Prism "Tomorrow" token palette are left
+   as their existing fixed-dark colors on purpose — a code block reads the
+   same in both app themes elsewhere in this app too (LearningCard.css).
+   Selected/hint = lavender (was amber), correct = teal (was light-sea-
+   green, same hue family), incorrect = rose (was a plain crimson literal)
+   — kept in sync with QuizCard.css's identical 3-state language. */
 
 .compiler-code-card-shell {
   width: 100%;
-  background-color: var(--white, #ffffff);
-  border: 1px solid #e2e8f0;
-  border-top: 3px solid var(--amber-glow, #ff9f1c);
+  background-color: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  border-top: 3px solid var(--orbit-lavender);
   border-radius: 14px;
   padding: 24px;
   position: relative;
   z-index: 5;
   box-sizing: border-box;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  box-shadow: var(--orbit-shadow-sm);
 }
 
 .compiler-card-main-title {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #0f172a; /* Standard Slate Dark Bold Core */
+  color: var(--orbit-text-heading);
   letter-spacing: -0.5px;
   margin: 0 0 20px 0;
 }
 
 /* =========================================================================
-   📚 CODE SNIPPETS BOX WRAPPERS (No rigid boxes clutter)
+   📚 CODE SNIPPETS BOX WRAPPERS — fixed dark VS-Code look (intentional,
+   same reasoning as the Prism token palette below: a code block reads the
+   same regardless of app theme).
    ========================================================================= */
-/* Update these specific blocks inside src/components/CodeCard.css */
-
 .compiler-code-snippet-box {
   width: 100%;
-  background-color: #1e1e1e !important; /* VS Code official signature flat graphite gray backdrop */
+  background-color: #1e1e1e !important;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--orbit-border);
   overflow: hidden;
   margin-bottom: 18px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -54,7 +62,7 @@
 }
 
 /* Force standard system code font typography rules mapping */
-.compiler-prism-scroller pre, 
+.compiler-prism-scroller pre,
 .compiler-prism-scroller code {
   font-family: 'Fira Code', 'Cascadia Code', Consolas, Monaco, monospace !important;
   font-size: 0.88rem !important;
@@ -164,15 +172,17 @@
   color: #61afef !important;
 }
 
-/* High visibility code element tag for single ticks `like_this` inside questions markdown text */
+/* High visibility code element tag for single ticks `like_this` inside
+   questions markdown text — this sits on the card's own regular surface
+   (not the fixed-dark snippet boxes above), so it's theme-aware. */
 .compiler-markdown-body.markdown-body :not(pre) > code {
-  background-color: #f1f5f9 !important;
-  color: #000000 !important;
+  background-color: var(--orbit-surface-subtle) !important;
+  color: var(--orbit-text-heading) !important;
   font-size: 0.84rem !important;
   font-weight: 700 !important;
   padding: 2px 6px !important;
   border-radius: 6px !important;
-  border: 1px solid #cbd5e1 !important;
+  border: 1px solid var(--orbit-border) !important;
   font-family: 'Fira Code', monospace !important;
 }
 .compiler-copy-btn {
@@ -207,7 +217,7 @@
 }
 
 /* =========================================================================
-   🎯 DESCRIPTIVE QUESTION VIEWPANELS (Slate Contrast Balanced)
+   🎯 DESCRIPTIVE QUESTION VIEWPANELS
    ========================================================================= */
 .compiler-question-prompt-viewport {
   margin: 20px 0;
@@ -217,7 +227,7 @@
 .compiler-markdown-body.markdown-body p,
 .compiler-markdown-body.markdown-body li {
   font-size: 0.94rem !important;
-  color: #334155 !important; /* 🎯 STANDARD: Premium dark gray slate readability focus */
+  color: var(--orbit-text-body) !important;
   line-height: 1.55 !important;
 }
 
@@ -226,7 +236,7 @@
 .compiler-markdown-body.markdown-body h3,
 .compiler-markdown-body.markdown-body h4 {
   font-weight: 700 !important;
-  color: #0f172a !important;
+  color: var(--orbit-text-heading) !important;
 }
 
 /* =========================================================================
@@ -243,24 +253,24 @@
   outline: none;
   font-size: 0.72rem;
   font-weight: 800;
-  color: var(--amber-glow-dark, #e08600);
+  color: var(--orbit-lavender-text);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 0;
 }
-.compiler-hint-toggle-trigger:hover { color: var(--amber-glow, #ff9f1c); }
+.compiler-hint-toggle-trigger:hover { color: var(--orbit-lavender); }
 
 .compiler-hint-floating-drawer {
-  background-color: var(--amber-glow-hover, rgba(255, 159, 28, 0.08));
-  border: 1px dashed var(--amber-glow-muted, rgba(255, 159, 28, 0.14));
+  background-color: rgba(201, 184, 255, 0.08);
+  border: 1px dashed rgba(201, 184, 255, 0.35);
   border-radius: 8px;
   padding: 12px 16px;
   margin-bottom: 18px;
 }
 .compiler-hint-floating-drawer .compiler-markdown-body p {
-  color: var(--ink-strong, #1a1523) !important;
+  color: var(--orbit-text-heading) !important;
   font-size: 0.88rem !important;
 }
 
@@ -269,7 +279,7 @@
    ========================================================================= */
 .compiler-editor-container-hull {
   width: 100%;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--orbit-border-strong);
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 16px;
@@ -280,32 +290,31 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: var(--orbit-surface-subtle);
+  border-bottom: 1px solid var(--orbit-border);
   padding: 8px 14px;
   font-size: 0.7rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--orbit-text-muted);
 }
 
-/* Status indicator, not syntax highlighting — was sky-blue (#0284c7),
-   now the shared brand accent. */
+/* Status indicator, not syntax highlighting. */
 .live-pulse-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background-color: var(--amber-glow, #ff9f1c);
-  box-shadow: 0 0 0 0 rgba(255, 159, 28, 0.4);
+  background-color: var(--orbit-lavender);
+  box-shadow: 0 0 0 0 rgba(201, 184, 255, 0.4);
   animation: compileDotPulse 1.6s infinite;
 }
 @keyframes compileDotPulse {
-  0% { box-shadow: 0 0 0 0 rgba(255, 159, 28, 0.4); }
-  70% { box-shadow: 0 0 0 5px rgba(255, 159, 28, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 159, 28, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(201, 184, 255, 0.4); }
+  70% { box-shadow: 0 0 0 5px rgba(201, 184, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(201, 184, 255, 0); }
 }
 
-/* Hull boundary feedback context shifts — success standardized to the
-   shared --light-sea-green token (matches QuizCard's correct-answer color). */
-.compiler-editor-container-hull.hull-success { border-color: var(--light-sea-green, #2ec4b6); }
-.compiler-editor-container-hull.hull-error { border-color: #c2185b; }
+/* Hull boundary feedback context shifts — kept in sync with QuizCard.css's
+   correct/incorrect colors. */
+.compiler-editor-container-hull.hull-success { border-color: var(--orbit-teal); }
+.compiler-editor-container-hull.hull-error { border-color: var(--orbit-rose); }
 
 /* Overwrite active ace layouts padding parameters dynamically if any */
 #code_editor, #compiler_core_editor {
@@ -320,9 +329,9 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background-color: rgba(194, 24, 91, 0.05);
-  border: 1px solid rgba(194, 24, 91, 0.15);
-  color: #c2185b; /* Rich dark crimson failure string alert color */
+  background-color: rgba(255, 179, 199, 0.10);
+  border: 1px solid rgba(255, 179, 199, 0.35);
+  color: var(--orbit-rose-text);
   padding: 12px 16px;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -335,8 +344,8 @@
    🟢 SUCCESS VERIFIED LOGS DRAWER ARCHITECTURE
    ========================================================================= */
 .compiler-success-feedback-drawer {
-  background-color: rgba(46, 196, 182, 0.06);
-  border: 1px solid rgba(46, 196, 182, 0.2);
+  background-color: rgba(143, 224, 216, 0.10);
+  border: 1px solid rgba(143, 224, 216, 0.30);
   border-radius: 10px;
   padding: 14px 18px;
   margin-top: 20px;
@@ -348,13 +357,13 @@
   gap: 8px;
   font-size: 0.72rem;
   font-weight: 800;
-  color: var(--light-sea-green, #2ec4b6);
+  color: var(--orbit-teal-text);
   margin-bottom: 10px;
   letter-spacing: 0.2px;
 }
 
 .compiler-success-feedback-drawer .compiler-markdown-body p {
-  color: #14807a !important;
+  color: var(--orbit-teal-text) !important;
   font-size: 0.88rem !important;
   margin: 0 !important;
 }

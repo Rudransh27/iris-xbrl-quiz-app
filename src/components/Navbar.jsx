@@ -122,19 +122,6 @@ export default function Navbar() {
               </div>
             )}
 
-            <div className="duo-nav-item-wrapper">
-              <Link to="/about" className={`duo-nav-item ${location.pathname.startsWith('/about') ? 'item-active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
-                About Us
-              </Link>
-            </div>
-
-            <div className="duo-nav-item-wrapper">
-              <Link to="/contact" className={`duo-nav-item ${location.pathname.startsWith('/contact') ? 'item-active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
-                Contact
-              </Link>
-            </div>
-
-
             {/* Mobile View Sidebar Footer Controls Container */}
             <div className="duo-mobile-actions-wrapper">
               <button onClick={toggleTheme} className="duo-theme-toggle-btn text-start gap-3 w-100 mb-2">

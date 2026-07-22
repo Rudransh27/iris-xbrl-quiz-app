@@ -6,8 +6,8 @@ export default function PdfCard({ pdfUrl, title, description }) {
   const cleanPdfUrl = pdfUrl ? pdfUrl.trim().replace(/^"|"$/g, '') : "";
 
   // Rewrites Cloudinary paths dynamically to force an inline view stream instead of a file download
-  const inlinePdfUrl = cleanPdfUrl 
-    ? cleanPdfUrl.replace('/upload/', '/upload/fl_inline/') 
+  const inlinePdfUrl = cleanPdfUrl
+    ? cleanPdfUrl.replace('/upload/', '/upload/fl_inline/')
     : "";
 
   const getEmbedUrl = () => {
@@ -37,21 +37,21 @@ export default function PdfCard({ pdfUrl, title, description }) {
     <div className="pdf-card-wrapper text-start">
       <div className="d-flex align-items-center justify-content-between mb-2">
         <div>
-          {title && <h3 className="fw-bold text-dark m-0">{title}</h3>}
-          {description && <p className="text-secondary small m-0 mt-1">{description}</p>}
+          {title && <h3 className="pdf-card-title fw-bold m-0">{title}</h3>}
+          {description && <p className="pdf-card-description small m-0 mt-1">{description}</p>}
         </div>
         {cleanPdfUrl && (
-          <span className="badge bg-light text-muted border font-monospace" style={{ fontSize: '10px' }}>
+          <span className="pdf-mode-badge font-monospace" style={{ fontSize: '10px' }}>
             Mode: {engineType.toUpperCase()}
           </span>
         )}
       </div>
 
       <div
-        className="pdf-viewer-canvas-frame border rounded bg-light position-relative"
+        className="pdf-viewer-canvas-frame position-relative"
       >
         {!cleanPdfUrl ? (
-          <div className="p-5 text-center text-muted font-monospace small">
+          <div className="pdf-empty-state p-5 text-center font-monospace small">
             ⚠️ No valid cloud path found.
           </div>
         ) : (
@@ -65,11 +65,11 @@ export default function PdfCard({ pdfUrl, title, description }) {
               frameBorder="0"
               allowFullScreen
             ></iframe>
-            
-            <div className="position-absolute bottom-0 start-0 m-2 bg-white p-1 rounded border shadow-sm" style={{ zIndex: 10 }}>
+
+            <div className="pdf-engine-switch-wrap position-absolute bottom-0 start-0 m-2" style={{ zIndex: 10 }}>
               <button
                 type="button"
-                className="btn btn-light border-0 text-secondary fw-semibold font-monospace"
+                className="pdf-engine-switch-btn fw-semibold font-monospace"
                 style={{ fontSize: '10px', padding: '2px 8px' }}
                 onClick={handleEngineCycle}
                 disabled={engineType === 'native'}
@@ -83,11 +83,11 @@ export default function PdfCard({ pdfUrl, title, description }) {
 
       {cleanPdfUrl && (
         <div className="mt-2 text-end">
-          <a 
-            href={inlinePdfUrl} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="btn btn-sm btn-outline-secondary font-monospace"
+          <a
+            href={inlinePdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pdf-open-link-btn btn btn-sm font-monospace"
             style={{ fontSize: '11px' }}
           >
             ↗ Open PDF In New Window

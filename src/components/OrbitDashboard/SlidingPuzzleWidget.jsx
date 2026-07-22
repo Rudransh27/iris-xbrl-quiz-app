@@ -1,14 +1,17 @@
 // src/components/OrbitDashboard/SlidingPuzzleWidget.jsx
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import Confetti from "react-confetti";
-import { ArrowClockwise } from "react-bootstrap-icons";
-import { getTodaysArt } from "./puzzleArtPool";
+import { ArrowClockwise, Stars } from "react-bootstrap-icons";
 import "./SlidingPuzzleWidget.css";
 
 const GRID_SIZE = 3;
 const BLANK_ID = GRID_SIZE * GRID_SIZE - 1;
 const WIDGET_SIZE = 210; // px — compact footprint, divides evenly into 3 tiles
+
+// Rotating pastel-rainbow fill per tile number — same 7-accent family used
+// everywhere else in the redesigned dashboard (checklist, calendar).
+const ACCENTS = ["rose", "pink", "mint", "teal", "sky", "lavender", "lilac"];
 
 const solvedOrder = () => Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, i) => i);
 
@@ -37,7 +40,6 @@ const scramble = (steps = 80) => {
 };
 
 export default function SlidingPuzzleWidget() {
-  const art = useMemo(() => getTodaysArt(), []);
   const [order, setOrder] = useState(() => scramble());
   const [solved, setSolved] = useState(false);
   const [moves, setMoves] = useState(0);
@@ -67,7 +69,7 @@ export default function SlidingPuzzleWidget() {
   return (
     <div className={`orbit-puzzle ${solved ? "orbit-puzzle--solved" : ""}`}>
       <div className="orbit-puzzle__header">
-        <span className="orbit-puzzle__title">Daily Break Room</span>
+        <span className="orbit-puzzle__title"><Stars size={11} /> Daily Break Room</span>
         {solved ? (
           <span className="orbit-puzzle__solved-badge">Solved! ✨</span>
         ) : (
@@ -87,18 +89,11 @@ export default function SlidingPuzzleWidget() {
               key={id}
               layout
               transition={{ type: "spring", stiffness: 420, damping: 32 }}
-              className="orbit-puzzle__tile"
+              className={`orbit-puzzle__tile orbit-puzzle__tile--${ACCENTS[id % ACCENTS.length]}`}
               onClick={() => handleTileClick(pos)}
-              style={{
-                // Double-quoted: Vite's SVG data-URI encoding embeds raw,
-                // unescaped single quotes (e.g. viewBox='0 0 600 600') — an
-                // unquoted CSS url() token can't contain those, so the whole
-                // background-image value was silently invalid without this.
-                backgroundImage: `url("${art}")`,
-                backgroundSize: `${GRID_SIZE * 100}% ${GRID_SIZE * 100}%`,
-                backgroundPosition: `${-(id % GRID_SIZE) * 100}% ${-Math.floor(id / GRID_SIZE) * 100}%`,
-              }}
-            />
+            >
+              {id + 1}
+            </motion.div>
           )
         )}
 
@@ -109,11 +104,13 @@ export default function SlidingPuzzleWidget() {
             numberOfPieces={60}
             recycle={false}
             gravity={0.25}
-            colors={["#ff9f1c", "#ffbf69", "#2ec4b6", "#ffffff"]}
+            colors={["#ffb3c7", "#ff9ecf", "#a8e6cf", "#8fe0d8", "#a9d6ff", "#c9b8ff", "#eab8ff"]}
             style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
           />
         )}
       </div>
+
+      <div className="orbit-puzzle__caption">Align the constellation · order 1–8</div>
     </div>
   );
 }

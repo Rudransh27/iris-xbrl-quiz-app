@@ -4,26 +4,29 @@ import api from "../admin/services/api";
 
 const AuthContext = createContext();
 
+// =========================================================================
+// 🧠 STRUCTURAL DATA NORMALIZATION MATRIX
+// Module-scope (not recreated per render) — it's pure and only reads its own
+// argument, so hoisting it out avoids relying on a "stable" closure over
+// something that was actually a fresh function identity every render.
+// =========================================================================
+const normalizeUserData = (userPayload) => {
+  return {
+    ...userPayload,
+    role: userPayload.role || "user",
+    isAdmin: userPayload.role === "admin" || userPayload.role === "superadmin",
+    xp: userPayload.xp ?? 0,
+    streak: userPayload.streak ?? userPayload.currentStreak ?? 0,
+    avatarUrl: userPayload.avatarUrl || "",
+    avatarId: userPayload.avatarId || "dev",
+    department: userPayload.department || null,
+    team: userPayload.team || null
+  };
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // =========================================================================
-  // 🧠 STRUCTURAL DATA NORMALIZATION MATRIX
-  // =========================================================================
-  const normalizeUserData = (userPayload) => {
-    return {
-      ...userPayload,
-      role: userPayload.role || "user",
-      isAdmin: userPayload.role === "admin" || userPayload.role === "superadmin",
-      xp: userPayload.xp ?? 0,
-      streak: userPayload.streak ?? userPayload.currentStreak ?? 0,
-      avatarUrl: userPayload.avatarUrl || "",
-      avatarId: userPayload.avatarId || "dev",
-      department: userPayload.department || null,
-      team: userPayload.team || null
-    };
-  };
 
   // Load user on app start (Reload Hydration Layer)
   useEffect(() => {
@@ -51,7 +54,14 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const refreshUser = async () => {
+  // 🎯 BUG FIX ("sandbox reviews continuously flickering"): this used to be a
+  // plain function, redefined with a new identity on every AuthProvider
+  // render. Any consumer with refreshUser in a useCallback/useEffect
+  // dependency array (e.g. UserProfile.jsx's syncTelemetry) would then loop
+  // forever: refreshUser() -> setUser() -> re-render -> new refreshUser
+  // reference -> dependent effect re-fires -> refreshUser() again. useCallback
+  // with an empty dependency array gives it a stable identity across renders.
+  const refreshUser = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) return null;
 
@@ -68,7 +78,7 @@ export const AuthProvider = ({ children }) => {
       console.error("Failed to refresh user profile matrix:", err.message);
       return null;
     }
-  };
+  }, []);
 
   const login = async (email, password) => {
     try {

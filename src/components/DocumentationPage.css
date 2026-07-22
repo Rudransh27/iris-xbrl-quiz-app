@@ -7,7 +7,7 @@
   display: flex;
   width: 100%;
   min-height: calc(100vh - 74px); /* Syncs cleanly under core navbar height boundary */
-  background-color: #fafbfe; /* Elegant application canvas background tint */
+  background-color: var(--orbit-canvas); /* Unified site canvas, theme-aware */
   position: relative;
   box-sizing: border-box;
 }

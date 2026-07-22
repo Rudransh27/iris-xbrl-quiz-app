@@ -1,0 +1,35 @@
+/* src/components/OrbitDashboard/SectionHeader.css */
+
+.orbit-section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.orbit-section-header__icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--orbit-brand-muted);
+  color: var(--orbit-brand);
+}
+
+.orbit-section-header__title {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 900;
+  letter-spacing: -0.6px;
+  color: var(--orbit-text-heading);
+}
+
+.orbit-section-header__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--orbit-text-muted);
+  line-height: 1.5;
+}

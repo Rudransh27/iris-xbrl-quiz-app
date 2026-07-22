@@ -4,6 +4,8 @@ import { Form, Alert, Spinner } from "react-bootstrap";
 import { Lightbulb, ChatLeftText, Tags, Lock, Send, Eye, FileText } from "react-bootstrap-icons";
 import AuthContext from "../context/AuthContext";
 import api from "../admin/services/api";
+import SectionHeader from "./OrbitDashboard/SectionHeader";
+import OrbitFooter from "./OrbitDashboard/OrbitFooter";
 import "./IdeasAndRD.css";
 
 export default function IdeasAndRD() {
@@ -91,21 +93,16 @@ export default function IdeasAndRD() {
 
   return (
     <div className="premium-workspace-shell">
+      <SectionHeader
+        icon={Lightbulb}
+        title="Ideas & R&D"
+        subtitle="Submit an idea, track its status, and see what the Product Council decided — every fortnight."
+      />
       <div className="workspace-grid-row">
-        
+
         {/* ================= LEFT CREATION STUDIO ================= */}
         <div className="workspace-column-left">
           <div className="studio-card">
-            <div className="studio-header">
-              <div className="header-icon-box">
-                <Lightbulb size={20} />
-              </div>
-              <div>
-                <h4 className="studio-title">Ideas & R&D Studio</h4>
-                <p className="studio-subtitle">Fortnightly review track by Product Council</p>
-              </div>
-            </div>
-
             {alertMsg.text && (
               <Alert variant={alertMsg.variant} className="studio-alert-banner">
                 {alertMsg.text}
@@ -149,7 +146,7 @@ export default function IdeasAndRD() {
                   <Tags size={13} /> Classification Segment
                 </Form.Label>
                 <div className="chiclet-matrix">
-                  {["product", "market", "process", "publish"].map((tagName) => (
+                  {["product", "process", "technology", "culture"].map((tagName) => (
                     <label 
                       key={tagName} 
                       className={`chiclet-pill-target ${selectedTag === tagName ? "chiclet-active" : ""}`}
@@ -231,6 +228,7 @@ export default function IdeasAndRD() {
         </div>
 
       </div>
+      <OrbitFooter />
     </div>
   );
 }

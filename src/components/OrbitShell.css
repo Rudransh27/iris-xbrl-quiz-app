@@ -6,6 +6,113 @@
    change per-breakpoint (width/position/transform). Everything else in the
    component keeps its existing inline styling untouched on every viewport. */
 
+/* ── Hide scrollbars on the app's two scroll containers (sidebar nav rail +
+   main content area) while keeping them fully scrollable — a deliberate
+   "clean surface" look, not an accessibility regression: scroll is still
+   reachable via wheel/trackpad/touch/keyboard, this only removes the
+   visible track/thumb chrome. */
+.orbit-sidebar-nav,
+.content-fluid-scroller {
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* legacy Edge/IE */
+}
+
+.orbit-sidebar-nav::-webkit-scrollbar,
+.content-fluid-scroller::-webkit-scrollbar {
+  display: none;              /* Chrome/Safari/Chromium-Edge */
+}
+
+/* ── Topbar "glossy mirror" sheen ──────────────────────────────────────────
+   A thin light-catching highlight across the top of the glass header,
+   layered on top of the blur/tint already set inline (background,
+   backdropFilter, backgroundImage) — a pseudo-element since that highlight
+   can't be expressed as a single inline background without clobbering the
+   existing --orbit-glass-highlight tint. Same in both themes: it's an
+   additive white sheen at low opacity, which reads as "light on glass"
+   whether the glass itself is tinted light or dark. */
+.orbit-topbar {
+  /* position: sticky is set inline (OrbitShell.jsx) and already establishes
+     a containing block for the ::after below; isolation keeps that
+     negative z-index pseudo-element scoped to this header's own stacking
+     context instead of leaking behind sibling page content. */
+  isolation: isolate;
+}
+
+.orbit-topbar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.06) 45%, transparent 75%);
+}
+
+/* ── Neutralize a legacy, app-wide token file (src/App.css) ───────────────
+   App.css redeclares the SAME "--text-primary / --bg-global-canvas / ..."
+   legacy variable names as index.css's design-system tokens (both at
+   :root/[data-theme]), with completely different values (a stale
+   cerulean-blue/navy palette, including a literal #f1faee canvas). Because
+   App.css is imported after index.css (via App.jsx), and :root/[data-theme]
+   selectors are equal-specificity, App.css's values were winning — which is
+   exactly why dark-mode text sometimes rendered as near-black/illegible and
+   a stray #f1faee background could show through.
+   This re-pins every colliding name back to the correct, already
+   theme-aware orbit token for anything inside the Orbit app specifically —
+   doubled class selector (0,2,0) beats the bare :root/[data-theme] (0,1,0)
+   regardless of file import order. Scoped here rather than fixed in App.css
+   itself because App.css's tokens are also consumed by Admin dashboard
+   pages outside this redesign's scope — this avoids an unreviewed visual
+   change there. */
+.orbit-app-root.orbit-app-root {
+  --bg-global-canvas:     var(--orbit-canvas);
+  --bg-tactile-cards:     var(--orbit-surface);
+  --border-tactile:       var(--orbit-border);
+  --text-primary:         var(--orbit-text-heading);
+  --text-secondary:       var(--orbit-text-body);
+  --text-inverse:         var(--orbit-text-inverse);
+  --bg-hud-banner:        var(--orbit-brand);
+  --border-hud-tactile:   var(--orbit-brand-dark);
+  --curriculum-icon-bg:   var(--orbit-brand-muted);
+  --curriculum-icon-text: var(--orbit-brand);
+  --curriculum-hover:     var(--orbit-brand-light);
+  --stat-row-border:      var(--orbit-border);
+  --badge-progress-bg:    var(--pastel-reads);
+  --badge-progress-text:  var(--pastel-reads-text);
+  --badge-completed-bg:   var(--pastel-progress);
+  --badge-completed-text: var(--pastel-progress-text);
+  --bg-daily-read:        #2e1065;
+  --border-daily-tactile: #1e0a4a;
+}
+
+/* Faint ambient starfield behind the whole shell in dark mode — a tiling
+   dot pattern pinned to the viewport (background-attachment: fixed) rather
+   than a pseudo-element, so it doesn't scroll away with the dashboard
+   content and needs no extra DOM. Very subtle: this sits behind real UI
+   (nav labels, cards), so it must never fight with foreground legibility. */
+[data-theme="dark"] .content-fluid-scroller {
+  background-image:
+    radial-gradient(1px 1px at 15% 20%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 75% 10%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1.5px 1.5px at 45% 60%, rgba(255, 255, 255, 0.45), transparent),
+    radial-gradient(1px 1px at 90% 75%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 25% 85%, rgba(255, 255, 255, 0.4), transparent);
+  background-size: 340px 340px;
+  background-attachment: fixed;
+}
+
+.orbit-sidebar {
+  background-color: var(--orbit-canvas);
+}
+
+[data-theme="dark"] .orbit-sidebar {
+  background-image:
+    radial-gradient(1px 1px at 30% 15%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 65% 45%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 40% 80%, rgba(255, 255, 255, 0.35), transparent);
+  background-size: 100% 420px;
+  background-attachment: fixed;
+}
+
 .orbit-hamburger-trigger,
 .orbit-mobile-drawer-close {
   display: none;

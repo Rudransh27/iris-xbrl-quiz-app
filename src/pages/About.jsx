@@ -17,7 +17,7 @@ const VALUES = [
   },
   {
     icon: GlobeAmericas,
-    title: "Backed by IRIS Business Services",
+    title: "Backed by IRIS Regtech Solutions",
     text: "A leading provider of software, data formats, and services for global financial and compliance business reporting.",
   },
 ];
@@ -35,7 +35,7 @@ export default function About() {
           About <span className="title-accent">Iris Orbit</span>
         </h1>
         <p className="about-lede">
-          Iris Orbit is IRIS Business Services' gamified learning platform — built to turn compliance and
+          Iris Orbit is IRIS Regtech Solutions' gamified learning platform — built to turn compliance and
           business-reporting training into something people actually look forward to, one streak, one
           module, and one Plasma bar at a time.
         </p>

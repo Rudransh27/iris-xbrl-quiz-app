@@ -46,7 +46,7 @@
 }
 
 .duo-logo-img {
-  height: 92px;
+  height: 38px;
   width: auto;
 }
 
@@ -200,6 +200,30 @@
   color: var(--orbit-brand);
 }
 
+/* =========================================================================
+   🌗 THEME TOGGLE — matches the Iris Orbit dashboard's icon-button treatment
+   (see OrbitShell.jsx) so the light/dark control looks consistent site-wide.
+   ========================================================================= */
+.duo-theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: var(--orbit-brand-muted);
+  border: 1px solid var(--orbit-border-strong);
+  border-radius: 8px;
+  color: var(--orbit-brand);
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.duo-theme-toggle-btn:hover {
+  background: var(--orbit-brand);
+  color: #ffffff;
+}
+
 /* Primary brand-violet Sign In/Log In action button */
 .duo-btn-outline {
   text-decoration: none !important;
@@ -297,6 +321,17 @@
     margin-top: auto;
     padding-top: 20px;
     border-top: 1px solid var(--orbit-glass-border);
+  }
+
+  .duo-theme-toggle-btn {
+    width: 100%;
+    height: auto;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    border-radius: 12px;
   }
 
   .duo-btn-primary {

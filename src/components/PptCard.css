@@ -1,4 +1,7 @@
-/* src/components/PptCard.css */
+/* src/components/PptCard.css
+   Redesigned onto the shared --orbit-* tokens — same Bootstrap-utility-class
+   problem as PdfCard.css (see its header comment for the full rationale). */
+
 .ppt-card-wrapper {
   width: 100%;
   max-width: 100%;
@@ -6,6 +9,25 @@
   display: flex;
   flex-direction: column;
 }
+
+.ppt-card-title {
+  color: var(--orbit-text-heading);
+}
+
+.ppt-card-description {
+  color: var(--orbit-text-muted);
+}
+
+.ppt-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--orbit-surface-subtle);
+  color: var(--orbit-text-muted);
+  border: 1px solid var(--orbit-border);
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+
 /* flex:1 (not a fixed px height) — fills whatever space is actually left in
    the wrapper instead of guessing a magic number that clips/leaves gaps
    depending on viewport size. */
@@ -14,8 +36,50 @@
   min-height: 0;
   width: 100%;
   overflow: hidden;
-  background-color: var(--white, #ffffff);
-  border: 1px solid #e2e8f0;
-  border-top: 3px solid var(--amber-glow, #ff9f1c);
+  background-color: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  border-top: 3px solid var(--orbit-lavender);
   border-radius: 8px;
+  box-shadow: var(--orbit-shadow-sm);
+}
+
+.ppt-empty-state {
+  color: var(--orbit-text-muted);
+}
+
+.ppt-download-btn {
+  background: linear-gradient(135deg, var(--orbit-lavender), var(--orbit-sky));
+  border: 1px solid transparent;
+  color: #20222f;
+}
+.ppt-download-btn:hover {
+  filter: brightness(0.94);
+  color: #20222f;
+}
+
+.ppt-engine-switch-wrap {
+  background-color: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  border-radius: 6px;
+  box-shadow: var(--orbit-shadow-sm);
+}
+
+.ppt-engine-switch-btn {
+  background: transparent;
+  border: none;
+  color: var(--orbit-text-muted);
+  cursor: pointer;
+}
+.ppt-engine-switch-btn:hover {
+  color: var(--orbit-lavender-text);
+}
+
+.ppt-open-link-btn {
+  background: transparent;
+  border: 1px solid var(--orbit-border-strong);
+  color: var(--orbit-text-muted);
+}
+.ppt-open-link-btn:hover {
+  border-color: var(--orbit-lavender);
+  color: var(--orbit-lavender-text);
 }

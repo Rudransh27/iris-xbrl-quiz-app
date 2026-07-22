@@ -10,7 +10,10 @@
 .orbit-dash {
   display: flex;
   flex-direction: column;
-  gap: clamp(16px, 3vw, 28px);
+  /* A little more breathing room between sections (top/bottom only —
+     scoped to this dashboard-specific container, not a global spacing
+     change). */
+  gap: clamp(20px, 3.5vw, 34px);
 }
 
 .orbit-dash__split {
@@ -40,12 +43,14 @@
   min-width: 0;
 }
 
-/* Bottom section: Featured Paths (Popular Modules) at 70%, the Daily Break
-   Room puzzle at 30% — an explicit asymmetrical grid rather than the
-   flex-wrap tricks used elsewhere, since the proportion itself is the point. */
+/* Bottom section: Featured Paths (Popular Modules) gets all the remaining
+   space (so its own auto-fill grid can comfortably wrap 3-5 cards across
+   1-2 rows), the Daily Break Room puzzle gets a fixed column sized to its
+   own max footprint (~210px) rather than a fluid fraction that would make
+   it too wide/narrow depending on the surrounding container. */
 .orbit-dash__bottom-grid {
   display: grid;
-  grid-template-columns: 7fr 3fr;
+  grid-template-columns: minmax(0, 1fr) minmax(230px, 260px);
   gap: clamp(16px, 2.5vw, 28px);
   align-items: start;
 }
@@ -77,23 +82,68 @@
 }
 
 /* ── Section 1: Hero Welcome ─────────────────────────────────────────────── */
+/* Same deep-galaxy gradient in both light and dark theme (per spec) — this
+   card is a deliberate dark "window into space", not a theme-swapping
+   surface, same reasoning as --ink-strong elsewhere in this file. */
 .orbit-hero {
   position: relative;
   overflow: hidden;
   border-radius: 20px;
-  padding: 34px 32px;
-  background: linear-gradient(135deg, var(--amber-glow) 0%, var(--honey-bronze) 100%);
-  box-shadow: 0 10px 32px rgba(255, 159, 28, 0.28);
+  padding: 34px 40px;
+  background: linear-gradient(120deg, #2a2140, #312450, #232a56, #1f3d4d, #2c2450);
+  box-shadow: 0 10px 32px rgba(20, 16, 40, 0.35);
+  isolation: isolate;
 }
 
-.orbit-hero__blob {
+.orbit-hero__stars {
   position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
+  inset: 0;
+  z-index: 0;
   pointer-events: none;
 }
 
+.orbit-hero__star {
+  position: absolute;
+  border-radius: 50%;
+  background: #ffffff;
+  animation-name: orbit-hero-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes orbit-hero-twinkle {
+  0%, 100% { opacity: 0.15; }
+  50%      { opacity: 0.9; }
+}
+
+/* One occasional diagonal comet streak — mostly invisible, flashes across
+   briefly once per cycle rather than looping continuously. */
+.orbit-hero__comet {
+  position: absolute;
+  top: 10%;
+  left: -12%;
+  width: 130px;
+  height: 2px;
+  z-index: 0;
+  background: linear-gradient(90deg, transparent, #ffffff, transparent);
+  opacity: 0;
+  transform: rotate(18deg);
+  animation: orbit-hero-comet 9s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes orbit-hero-comet {
+  0%   { opacity: 0; transform: translate(0, 0) rotate(18deg); }
+  38%  { opacity: 0; }
+  42%  { opacity: 0.9; }
+  58%  { opacity: 0.9; transform: translate(150%, 230%) rotate(18deg); }
+  63%  { opacity: 0; transform: translate(165%, 250%) rotate(18deg); }
+  100% { opacity: 0; }
+}
+
 .orbit-hero__eyebrow {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -102,32 +152,220 @@
   letter-spacing: 1.6px;
   text-transform: uppercase;
   color: var(--white);
-  background: rgba(255, 255, 255, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: var(--radius-full);
   padding: 5px 14px;
   margin-bottom: 16px;
-  position: relative;
 }
 
+.orbit-hero__welcome-kicker {
+  position: relative;
+  z-index: 1;
+  display: block;
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.68);
+  margin-bottom: 4px;
+}
+
+/* Medium-large — spans most of the banner's width without going to an
+   oversized "poster" scale. The orbit rings/moons below are sized in `em`
+   so they scale with this and keep hugging the O at any size. */
 .orbit-hero__heading {
-  margin: 0 0 10px;
-  font-size: clamp(26px, 3.4vw, 40px);
+  position: relative;
+  z-index: 1;
+  margin: 0 0 14px;
+  font-size: clamp(34px, 5.2vw, 60px);
   font-weight: 900;
   letter-spacing: -1px;
   line-height: 1.08;
   color: var(--white);
-  position: relative;
 }
 
+/* ── Orbit rings on the "O" of ORBIT ─────────────────────────────────────── */
+.orbit-hero__orbit-word,
+.orbit-hero__orbit-o {
+  position: relative;
+  display: inline-block;
+}
+
+.orbit-hero__o-glyph {
+  background: linear-gradient(160deg, #ffffff, var(--orbit-lavender));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 0.4em rgba(201, 184, 255, 0.55);
+}
+
+.orbit-hero__rings {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.orbit-hero__ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+}
+
+/* em-based (relative to the heading's own font-size, ~40px in the original
+   spec) so the rings keep hugging the O proportionally at any hero size,
+   instead of a fixed px footprint sized for one specific font-size. */
+.orbit-hero__ring--1 { width: 2.95em; height: 2.95em; animation: orbit-hero-spin 16s linear infinite; }
+.orbit-hero__ring--2 { width: 2em;    height: 2em;    animation: orbit-hero-spin-rev 10s linear infinite; }
+.orbit-hero__ring--3 { width: 1.25em; height: 1.25em; animation: orbit-hero-spin 6s linear infinite; }
+
+@keyframes orbit-hero-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes orbit-hero-spin-rev {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to   { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+.orbit-hero__moon {
+  position: absolute;
+  top: -0.1em;
+  left: 50%;
+  width: 0.2em;
+  height: 0.2em;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 0 0.2em currentColor;
+}
+.orbit-hero__moon--teal { background: var(--orbit-teal); color: var(--orbit-teal); }
+.orbit-hero__moon--pink { background: var(--orbit-pink); color: var(--orbit-pink); }
+.orbit-hero__moon--sky  { background: var(--orbit-sky);  color: var(--orbit-sky); }
+
 .orbit-hero__subheading {
-  margin: 0;
+  position: relative;
+  z-index: 1;
+  margin: 0 0 10px;
   max-width: 560px;
   font-size: 15px;
   font-weight: 600;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.92);
+}
+
+.orbit-hero__caption {
   position: relative;
+  z-index: 1;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--orbit-teal);
+}
+
+/* On mobile: drop the rings, just show the plain "O" — same rule the
+   standalone spec calls for. */
+@media (max-width: 820px) {
+  .orbit-hero {
+    padding: 26px 24px;
+  }
+  .orbit-hero__rings {
+    display: none;
+  }
+}
+
+/* ── Split hero layout — same shell (galaxy gradient/stars/comet) as the
+   Home hero's single centered column, but a two-column layout (copy left,
+   astronaut right). Shared by both the Home dashboard hero and the Learn
+   page hero. ─────────────────────────────────────────────────────────── */
+.orbit-hero--split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 32px 36px;
+}
+
+.orbit-hero__left {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+}
+
+.orbit-hero__astronaut {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: 230px;
+  height: 230px;
+  animation: orbit-hero-astronaut-bob 6s ease-in-out infinite;
+}
+
+@keyframes orbit-hero-astronaut-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+@media (max-width: 960px) {
+  .orbit-hero__astronaut {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+@media (max-width: 720px) {
+  .orbit-hero--split {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .orbit-hero__astronaut {
+    display: none;
+  }
+}
+
+.orbit-learn-hero__heading {
+  margin: 12px 0 10px;
+  font-size: clamp(24px, 3.2vw, 36px);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--white);
+}
+
+.orbit-learn-hero__stats {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.orbit-learn-hero__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.orbit-learn-hero__stat-num {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.orbit-learn-hero__stat--teal .orbit-learn-hero__stat-num     { color: var(--orbit-teal); }
+.orbit-learn-hero__stat--pink .orbit-learn-hero__stat-num     { color: var(--orbit-pink); }
+.orbit-learn-hero__stat--lavender .orbit-learn-hero__stat-num { color: var(--orbit-lavender); }
+
+.orbit-learn-hero__stat-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
 }
 
 /* ── Section 2 (left): Checklist ─────────────────────────────────────────── */
@@ -158,8 +396,6 @@
   gap: 12px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: var(--frozen-water);
-  border: 1px solid rgba(46, 196, 182, 0.28);
   cursor: pointer;
   transition: background 0.15s ease, transform 0.1s ease;
 }
@@ -168,10 +404,14 @@
   transform: translateY(-1px);
 }
 
-.orbit-checklist__item--done {
-  background: rgba(255, 159, 28, 0.10);
-  border-color: rgba(255, 159, 28, 0.30);
-}
+/* Per-row pastel tint — Today's Read (mint), Module (pink), Idea (sky) —
+   a fully OPAQUE fixed-light tint regardless of theme (never a translucent
+   wash, which would let a dark-mode surface show through and make the
+   fixed --ink-strong/--ink-muted text below nearly invisible). Same
+   reasoning as the old --frozen-water background. */
+.orbit-checklist__item--mint { background: #ddf6ec; border: 1px solid var(--orbit-mint); }
+.orbit-checklist__item--pink { background: #ffe3f1; border: 1px solid var(--orbit-pink); }
+.orbit-checklist__item--sky  { background: #dcedff; border: 1px solid var(--orbit-sky); }
 
 .orbit-checklist__bullet {
   flex-shrink: 0;
@@ -185,14 +425,14 @@
   font-weight: 800;
   margin-top: 1px;
   background: var(--white);
-  border: 2px solid var(--light-sea-green);
-  color: var(--light-sea-green);
+  border: 2px solid var(--orbit-teal);
+  color: var(--orbit-teal-text);
 }
 
 .orbit-checklist__bullet--done {
-  background: var(--amber-glow);
-  border-color: var(--amber-glow);
-  color: var(--white);
+  background: linear-gradient(135deg, var(--orbit-mint), var(--orbit-teal));
+  border-color: transparent;
+  color: #20222f;
 }
 
 .orbit-checklist__label {
@@ -222,8 +462,8 @@
 
 .orbit-checklist__footnote {
   margin: 14px 0 0;
-  font-size: 11.5px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--orbit-text-muted);
 }
 
@@ -249,20 +489,6 @@
   vertical-align: -1px;
 }
 
-.orbit-checklist__resume-btn {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--amber-glow-dark);
-  background: var(--white);
-  border: 1px solid var(--amber-glow);
-  border-radius: var(--radius-full);
-  padding: 3px 9px;
-}
-
 .orbit-checklist__module-progress-track {
   margin-top: 8px;
   height: 6px;
@@ -274,7 +500,7 @@
 .orbit-checklist__module-progress-fill {
   height: 100%;
   border-radius: var(--radius-full);
-  background: var(--amber-glow);
+  background: linear-gradient(90deg, var(--orbit-lavender), var(--orbit-sky));
   transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -291,6 +517,36 @@
   font-size: 13.5px;
 }
 
+/* Faint twinkling starfield behind the calendar card — dark theme only,
+   purely decorative (doesn't affect the card's footprint: it's an inset
+   pseudo-element, not extra content). */
+.orbit-calendar-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.orbit-calendar-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  background-image:
+    radial-gradient(1px 1px at 8% 12%,  rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1px 1px at 82% 8%,  rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 92% 38%, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1px 1px at 65% 78%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 22% 68%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1.5px 1.5px at 45% 90%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 12% 92%,  rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 55% 25%,  rgba(255, 255, 255, 0.45), transparent);
+}
+
+[data-theme="dark"] .orbit-calendar-card::before {
+  opacity: 1;
+}
+
 .orbit-calendar__streak {
   display: flex;
   align-items: center;
@@ -298,15 +554,15 @@
   padding: 9px 12px;
   margin-bottom: 12px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(255, 159, 28, 0.14), rgba(255, 191, 105, 0.10));
-  border: 1px solid rgba(255, 159, 28, 0.30);
+  background: linear-gradient(135deg, rgba(255, 158, 207, 0.16), rgba(201, 184, 255, 0.14));
+  border: 1px solid rgba(255, 158, 207, 0.32);
 }
 
 .orbit-calendar__streak-num {
   font-size: 24px;
   font-weight: 900;
   line-height: 1;
-  color: var(--amber-glow);
+  color: var(--orbit-text-heading);
   font-variant-numeric: tabular-nums;
 }
 
@@ -347,7 +603,7 @@
 .orbit-calendar__grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
+  gap: 4px;
   max-width: 260px;
   margin: 0 auto;
 }
@@ -357,62 +613,88 @@
   font-size: 8.5px;
   font-weight: 800;
   color: var(--orbit-text-muted);
-  padding-bottom: 3px;
+  padding-bottom: 4px;
 }
 
+/* Every cell keeps its day number centered and normal-sized regardless of
+   state — badges (done check) and the "has a read" ring are layered on
+   top via absolute positioning / box-shadow, never by shrinking or
+   relocating the number itself. Keeps the grid readable at a glance
+   instead of every state rearranging the cell's contents differently. */
 .orbit-calendar__cell {
   position: relative;
   aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  font-size: 9.5px;
+  border-radius: 8px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--orbit-text-body);
-  background: transparent;
+  background: var(--orbit-surface-subtle);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .orbit-calendar__cell--out {
   opacity: 0.28;
 }
 
-/* Qualified day: the checkmark is the primary graphic (per spec — a crisp
-   tick inside the cell, not just a background tint); the date number
-   shrinks into the corner so the day is still identifiable at a glance. */
-.orbit-calendar__cell--qualified {
-  background: var(--light-sea-green);
-  color: var(--white);
-}
+/* Qualified day: rotating pastel-rainbow fill (purely decorative variety
+   across the month) + a small check badge in the corner. Fixed dark ink
+   throughout since these fills don't swap with the theme. */
+.orbit-calendar__cell--qualified { color: var(--ink-strong); font-weight: 800; }
+.orbit-calendar__cell--rose     { background: var(--orbit-rose); }
+.orbit-calendar__cell--pink     { background: var(--orbit-pink); }
+.orbit-calendar__cell--mint     { background: var(--orbit-mint); }
+.orbit-calendar__cell--teal     { background: var(--orbit-teal); }
+.orbit-calendar__cell--sky      { background: var(--orbit-sky); }
+.orbit-calendar__cell--lavender { background: var(--orbit-lavender); }
+.orbit-calendar__cell--lilac    { background: var(--orbit-lilac); }
 
-.orbit-calendar__cell-daynum {
+.orbit-calendar__cell-check {
   position: absolute;
-  top: 1px;
-  left: 2px;
-  font-size: 6.5px;
-  font-weight: 700;
-  opacity: 0.75;
-}
-
-.orbit-calendar__cell--today {
-  box-shadow: 0 0 0 1.5px var(--amber-glow);
-}
-
-.orbit-calendar__cell-dot {
-  position: absolute;
-  bottom: 1px;
-  right: 1px;
-  width: 4px;
-  height: 4px;
+  bottom: 2px;
+  right: 2px;
+  background: var(--ink-strong);
+  color: #fff;
   border-radius: 50%;
-  background: var(--honey-bronze);
+  width: 11px;
+  height: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 1.5px var(--orbit-surface);
+}
+
+/* Today always wins visually over the "has a read" ring below (both are
+   box-shadow rings; today is the more contextually important one to read
+   unambiguously at a glance). */
+.orbit-calendar__cell--today {
+  box-shadow: inset 0 0 0 2px var(--orbit-lavender);
+}
+
+/* Merged Daily Read indicator — a day with a published article is
+   clickable (cursor + hover lift) regardless of whether it also qualifies
+   for the streak. A ring rather than a fill/icon so it layers cleanly over
+   any qualified-day accent color without competing for the same corner. */
+.orbit-calendar__cell--has-read {
+  cursor: pointer;
+}
+
+.orbit-calendar__cell--has-read:not(.orbit-calendar__cell--today) {
+  box-shadow: inset 0 0 0 1.5px var(--orbit-sky-text);
+}
+
+.orbit-calendar__cell--has-read:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1.5px var(--orbit-sky-text), 0 3px 8px rgba(0, 0, 0, 0.14);
 }
 
 .orbit-calendar__legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 12px;
   font-size: 9.5px;
   font-weight: 600;
   color: var(--orbit-text-muted);
@@ -425,21 +707,19 @@
 }
 
 .orbit-calendar__legend-swatch {
-  width: 8px;
-  height: 8px;
-  border-radius: 3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 4px;
   flex-shrink: 0;
 }
 
 .orbit-calendar__legend-swatch--check {
-  width: 12px;
-  height: 12px;
+  background: var(--ink-strong);
+}
+
+.orbit-calendar__legend-swatch--read {
   border-radius: 4px;
-  background: var(--light-sea-green);
-  color: var(--white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-shadow: inset 0 0 0 1.5px var(--orbit-sky-text);
 }
 
 /* ── Section 3: Today's Read (full-width standout banner) ──────────────── */
@@ -523,13 +803,18 @@
   transform: translateY(-2px);
 }
 
-/* ── Section 4 (left): Current Module ───────────────────────────────────── */
+/* ── Section 4 (left): Current Module (Resume) — sky tint ───────────────── */
+.orbit-card--sky {
+  background: linear-gradient(160deg, rgba(169, 214, 255, 0.14), var(--orbit-surface) 65%);
+  border-color: rgba(169, 214, 255, 0.35);
+}
+
 .orbit-module-card__eyebrow {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--amber-glow);
+  color: var(--orbit-sky-text);
   margin-bottom: 8px;
 }
 
@@ -559,13 +844,13 @@
 .orbit-module-card__fill {
   height: 100%;
   border-radius: 6px;
-  background: linear-gradient(90deg, var(--amber-glow), var(--honey-bronze));
+  background: linear-gradient(90deg, var(--orbit-lavender), var(--orbit-sky));
   transition: width 0.5s ease;
 }
 
 .orbit-module-card__cta {
-  background: var(--amber-glow);
-  color: var(--white);
+  background: linear-gradient(135deg, var(--orbit-sky), var(--orbit-lavender));
+  color: #20222f;
   border: none;
   border-radius: 10px;
   padding: 11px 22px;
@@ -575,24 +860,29 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.15s ease;
+  transition: filter 0.15s ease;
 }
 
 .orbit-module-card__cta:hover {
-  background: #c8b1db;
+  filter: brightness(0.94);
 }
 
-/* ── Section 4 (right): Suggest Your Idea ───────────────────────────────── */
+/* ── Section 4 (right): Suggest Your Idea — mint tint, dashed border ──────
+   Opaque fixed tint (not translucent) for the same reason as the checklist
+   rows above — this card's title/subtext use fixed --ink-strong/--ink-muted,
+   so the surface behind them must be a fixed light color in both themes. */
 .orbit-idea-card {
-  border-radius: 16px;
-  padding: 22px 22px;
+  position: relative;
+  overflow: hidden;
   cursor: pointer;
+  border-radius: 16px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 12px;
-  background: linear-gradient(135deg, var(--frozen-water) 0%, rgba(203, 243, 240, 0.4) 100%);
-  border: 1.5px dashed var(--light-sea-green);
+  gap: 10px;
+  background: linear-gradient(135deg, #ddf6ec 0%, #d6f2ef 100%);
+  border: 1.5px dashed var(--orbit-mint);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -601,20 +891,63 @@
   box-shadow: var(--orbit-shadow-md);
 }
 
+/* Soft ambient glow tucked in the corner — purely decorative, matches the
+   twinkling/glow motifs used elsewhere in the space theme. */
+.orbit-idea-card__glow {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(143, 224, 216, 0.55), transparent 70%);
+  pointer-events: none;
+}
+
+.orbit-idea-card__top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .orbit-idea-card__icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--light-sea-green);
-  color: var(--white);
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--orbit-mint), var(--orbit-teal));
+  color: #0d3327;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 0 0 5px rgba(143, 224, 216, 0.22);
+}
+
+/* Fixed dark teal, NOT the theme-flipping --orbit-teal-text — this card's
+   background is a permanently fixed light mint tint (see .orbit-idea-card
+   above), so in dark mode --orbit-teal-text would resolve to the raw
+   (light/bright) pastel, which is nearly invisible on this always-light
+   badge background. Same fixed-ink reasoning as __title/__icon below. */
+.orbit-idea-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #2f9e79;
+  background: rgba(143, 224, 216, 0.28);
+  padding: 4px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .orbit-idea-card__title {
-  margin: 0;
-  font-size: 17px;
+  position: relative;
+  margin: 2px 0 0;
+  font-size: 18px;
   font-weight: 800;
   /* Fixed ink — this card's frozen-water background is fixed regardless
      of theme, same reasoning as .orbit-checklist__label above. */
@@ -622,6 +955,7 @@
 }
 
 .orbit-idea-card__subtext {
+  position: relative;
   margin: 0;
   font-size: 13px;
   color: var(--ink-muted);
@@ -629,12 +963,25 @@
 }
 
 .orbit-idea-card__cta {
+  position: relative;
+  align-self: flex-start;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  margin-top: 4px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--orbit-mint), var(--orbit-teal));
+  color: #0d3327;
+  font-size: 12.5px;
   font-weight: 800;
-  color: #0d7d73;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.orbit-idea-card__cta:hover {
+  filter: brightness(0.94);
 }
 
 /* ── Section 5: Modules & Labs ───────────────────────────────────────────── */
@@ -662,8 +1009,30 @@
 /* #d7bdf4 0%, #b0adde */
 
 .orbit-toggle__btn--active {
-  background: var(--amber-glow);
-  color: var(--white);
+  background: linear-gradient(135deg, var(--orbit-lavender), var(--orbit-sky));
+  color: #20222f;
+}
+
+/* Centered search-then-filter-pill stack, matching the Google-Skills-style
+   layout used by the Home hero and Learn page heading above it. */
+.orbit-ml-toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.orbit-toggle--pill {
+  align-self: center;
+}
+
+.orbit-ml-results-count {
+  text-align: center;
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--orbit-text-muted);
 }
 
 /* ── Learn page search bar ────────────────────────────────────────────── */
@@ -681,6 +1050,19 @@
   max-width: 420px;
 }
 
+/* Bigger, rounded-full variant used on the Learn page toolbar — same visual
+   weight as the Home hero's search bar. */
+.orbit-learn-search--big {
+  margin-top: 0;
+  width: 100%;
+  max-width: 560px;
+  height: 52px;
+  padding: 0 8px 0 20px;
+  border-radius: var(--radius-full);
+  background: var(--orbit-surface-subtle);
+}
+.orbit-learn-search--big input { font-size: 14.5px; }
+
 .orbit-learn-search input {
   flex: 1;
   min-width: 0;
@@ -694,8 +1076,8 @@
 .orbit-learn-search__clear {
   flex-shrink: 0;
   border: none;
-  background: var(--amber-glow-muted);
-  color: var(--amber-glow-dark);
+  background: rgba(201, 184, 255, 0.16);
+  color: var(--orbit-lavender-text);
   font-size: 11px;
   font-weight: 700;
   padding: 4px 10px;
@@ -708,6 +1090,44 @@
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 18px;
   margin-top: 20px;
+}
+
+/* Learn page's module grid: pinned 3/2/1 columns (not auto-fill) so it
+   matches the spec's exact breakpoints instead of however many 260px
+   columns happen to fit — used only here, not by the dashboard's Featured
+   Paths row (PopularModulesRow), which still wants auto-fill's flexible
+   wrapping next to the puzzle's fixed-width column. */
+.orbit-ml-grid--fixed {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 1080px) {
+  .orbit-ml-grid--fixed {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .orbit-ml-grid--fixed {
+    grid-template-columns: 1fr;
+  }
+}
+
+.orbit-ml-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 32px;
+  padding: 24px;
+  text-align: center;
+  color: var(--orbit-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.orbit-ml-empty svg {
+  color: var(--orbit-lavender-text);
 }
 
 .orbit-ml-card {
@@ -748,12 +1168,15 @@
   background: var(--orbit-border);
 }
 
-/* Real module image when available (imageUrl), otherwise a brand-gradient
-   fallback with a plain book icon — matches the fallback the app already
-   used elsewhere before this card's screenshot-matched redesign dropped it. */
+/* Real module image when available (imageUrl); otherwise a rotating
+   pastel-rainbow gradient (assigned per card by ModuleLabCard, cycling
+   through a fixed palette by list position — see MODULE_THUMB_PALETTE)
+   with a large centered icon matching that gradient's theme. The
+   `background-image` fallback below only ever shows if neither an image
+   nor a palette entry resolves (defensive, shouldn't normally happen). */
 .orbit-ml-card__thumb {
   position: relative;
-  height: 80px;
+  height: 96px;
   flex-shrink: 0;
   background-size: cover;
   background-position: center;
@@ -761,12 +1184,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .orbit-ml-card__thumb svg {
-  width: 18px;
-  height: 18px;
+  width: 32px;
+  height: 32px;
 }
 
 .orbit-ml-card__status {
@@ -781,10 +1204,12 @@
   border-radius: 999px;
 }
 
-.orbit-ml-card__status--notstarted { background: rgba(255,255,255,0.92); color: var(--orbit-text-muted); }
-.orbit-ml-card__status--inprogress { background: var(--badge-progress-bg); color: var(--badge-progress-text); }
-.orbit-ml-card__status--completed  { background: var(--badge-completed-bg); color: var(--badge-completed-text); }
-.orbit-ml-card__status--soon       { background: rgba(255,255,255,0.92); color: var(--orbit-text-muted); }
+/* NEW = pink, IN PROGRESS = lavender, COMPLETED = teal — per the Learn
+   page spec's status-pill palette. */
+.orbit-ml-card__status--notstarted { background: var(--orbit-pink); color: #3a1024; }
+.orbit-ml-card__status--inprogress { background: var(--orbit-lavender); color: #241a40; }
+.orbit-ml-card__status--completed  { background: var(--orbit-teal); color: #0d3327; }
+.orbit-ml-card__status--soon       { background: var(--orbit-pink); color: #3a1024; }
 
 .orbit-ml-card__body {
   padding: 12px 16px 14px;
@@ -926,4 +1351,306 @@
   background: var(--orbit-brand);
   color: #ffffff;
   transform: scale(1.06);
+}
+
+/* ============================================================
+   Progress tab — module activity table
+   ============================================================ */
+.orbit-progress-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.orbit-progress-table thead th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--orbit-text-muted);
+  padding: 0 12px 10px 12px;
+  border-bottom: 2px solid var(--orbit-border);
+  white-space: nowrap;
+}
+
+.orbit-progress-row td {
+  padding: 12px;
+  border-bottom: 1px solid var(--orbit-border);
+  color: var(--orbit-text-body);
+  white-space: nowrap;
+}
+
+.orbit-progress-row {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.orbit-progress-row:hover td {
+  background: var(--orbit-surface-subtle);
+}
+
+.orbit-progress-row:last-child td {
+  border-bottom: none;
+}
+
+.orbit-progress-activity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--orbit-text-heading);
+  white-space: normal;
+}
+
+.orbit-progress-passed-true {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--orbit-teal-text);
+  font-weight: 700;
+}
+
+.orbit-progress-passed-false {
+  /* 🎯 BUG FIX ("progress page hard to read"): this reused the same faint
+     --orbit-text-muted token as the table headers — since "not yet passed"
+     is the common case for anyone mid-course, that made the majority of this
+     column barely legible. --orbit-text-body has the same contrast as every
+     other data cell in this table, just without teal's "success" connotation. */
+  color: var(--orbit-text-body);
+  font-weight: 600;
+}
+
+/* ============================================================
+   Leaderboard page — replaces the old bespoke "tactile" inline-style
+   cards with the same .orbit-card design language as the rest of the app.
+   ============================================================ */
+.orbit-lb-yourank {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  background: var(--orbit-brand-muted);
+  border: 1.5px solid var(--orbit-brand);
+}
+
+.orbit-lb-yourank__label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--orbit-brand);
+}
+
+.orbit-lb-yourank__value {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--orbit-text-heading);
+}
+
+.orbit-lb-yourank__xp {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--orbit-xp-text);
+  background: var(--orbit-xp-bg);
+  border: 1px solid var(--orbit-xp-border);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+
+.orbit-lb-you-pill {
+  display: inline-block;
+  margin-left: 7px;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: var(--orbit-brand);
+  background: var(--orbit-brand-muted);
+  padding: 2px 7px;
+  border-radius: 6px;
+  vertical-align: middle;
+}
+
+/* ── Podium (top 3) ───────────────────────────────────────────────────── */
+.orbit-lb-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  padding-top: 10px;
+}
+
+.orbit-lb-podium__col {
+  flex: 1;
+  max-width: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px 18px;
+  border-radius: 16px;
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+  text-align: center;
+}
+
+.orbit-lb-podium__col--rank1 {
+  order: 2;
+  padding-top: 22px;
+  padding-bottom: 24px;
+  background: linear-gradient(160deg, rgba(245, 158, 11, 0.14), var(--orbit-surface) 70%);
+  border-color: #f59e0b;
+  box-shadow: var(--orbit-shadow-md);
+}
+.orbit-lb-podium__col--rank2 { order: 1; }
+.orbit-lb-podium__col--rank3 { order: 3; }
+
+.orbit-lb-podium__col--me {
+  border-color: var(--orbit-brand);
+}
+
+.orbit-lb-medal {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+}
+.orbit-lb-medal--gold   { background: #f59e0b; }
+.orbit-lb-medal--silver { background: #94a3b8; }
+.orbit-lb-medal--bronze { background: #cd7c3a; }
+
+.orbit-lb-podium__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--orbit-brand);
+}
+.orbit-lb-podium__col--rank1 .orbit-lb-podium__avatar { width: 58px; height: 58px; font-size: 17px; background: #f59e0b; }
+.orbit-lb-podium__col--rank2 .orbit-lb-podium__avatar { background: #94a3b8; }
+.orbit-lb-podium__col--rank3 .orbit-lb-podium__avatar { background: #cd7c3a; }
+
+.orbit-lb-podium__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--orbit-text-heading);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orbit-lb-podium__xp {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--orbit-xp-text);
+}
+
+/* ── Flat list (rank 4+) ──────────────────────────────────────────────── */
+.orbit-lb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.orbit-lb-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+}
+
+.orbit-lb-row--me {
+  border-color: var(--orbit-brand);
+  background: var(--orbit-brand-muted);
+}
+
+.orbit-lb-row__rank {
+  flex-shrink: 0;
+  width: 28px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--orbit-text-muted);
+}
+
+.orbit-lb-row__avatar {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--orbit-text-heading);
+  background: var(--orbit-border);
+}
+
+.orbit-lb-row__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.orbit-lb-row__name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--orbit-text-heading);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 4px;
+}
+
+.orbit-lb-row__track {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--orbit-border);
+  overflow: hidden;
+}
+
+.orbit-lb-row__fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--orbit-lavender), var(--orbit-sky));
+  transition: width 0.6s ease;
+}
+
+.orbit-lb-row__xp {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--orbit-xp-text);
+}
+
+@media (max-width: 640px) {
+  .orbit-lb-podium { flex-wrap: wrap; }
+  .orbit-lb-podium__col { flex: 1 1 40%; order: initial !important; padding-top: 16px !important; }
+  .orbit-lb-podium__col--rank1 { flex-basis: 100%; order: -1 !important; }
 }

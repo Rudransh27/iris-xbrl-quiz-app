@@ -1,14 +1,15 @@
 /* src/components/QuizPlayerHeader.css
-   Always-in-flow player header (no more hover-reveal), redesigned onto the
-   same crisp/minimal, amber-primary language as the rest of the card set:
-   flat white, thin neutral borders, a razor-thin gradient progress line
-   instead of the old chunky 3D pill beam. */
+   Always-in-flow player header, redesigned onto the shared --orbit-* theme
+   tokens (was hardcoded to a fixed white/light palette, no dark-mode
+   override — see Quiz.css's header comment). Lavender is now the primary
+   accent (was amber), teal marks progress/completion (was light-sea-green),
+   rose marks the "lives" pill (was a plain red). */
 
 .quiz-top-player-header-shell {
   width: 100%;
   flex-shrink: 0;
-  background-color: var(--white, #ffffff);
-  border-bottom: 1px solid #e2e8f0;
+  background-color: var(--orbit-surface);
+  border-bottom: 1px solid var(--orbit-border);
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -30,7 +31,7 @@
 .quiz-header-exit-trigger {
   background-color: transparent;
   border: none;
-  color: var(--ink-muted, #4a4558);
+  color: var(--orbit-text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -42,8 +43,28 @@
 }
 
 .quiz-header-exit-trigger:hover {
-  color: var(--amber-glow-dark, #e08600);
-  background-color: var(--amber-glow-hover, rgba(255, 159, 28, 0.08));
+  color: var(--orbit-lavender-text);
+  background-color: rgba(201, 184, 255, 0.12);
+}
+
+/* ================= 🔄 REATTEMPT: RESET/REATTEMPT TRIGGER ================= */
+.quiz-header-reset-trigger {
+  background-color: transparent;
+  border: none;
+  color: var(--orbit-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.quiz-header-reset-trigger:hover {
+  color: var(--orbit-rose-text);
+  background-color: rgba(255, 179, 199, 0.14);
 }
 
 /* ================= 📊 RAZOR-THIN PROGRESS RAIL ================= */
@@ -58,7 +79,7 @@
 .quiz-header-progress-base-rail {
   flex: 1;
   height: 6px;
-  background-color: #eef0f2;
+  background-color: var(--orbit-border);
   border-radius: 999px;
   position: relative;
   overflow: hidden;
@@ -66,7 +87,7 @@
 
 .quiz-header-progress-fluid-beam {
   height: 100%;
-  background: linear-gradient(90deg, var(--amber-glow, #ff9f1c), var(--light-sea-green, #2ec4b6));
+  background: linear-gradient(90deg, var(--orbit-lavender), var(--orbit-teal));
   border-radius: 999px;
   position: relative;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -75,7 +96,7 @@
 .quiz-header-step-counter {
   font-size: 11.5px;
   font-weight: 700;
-  color: var(--ink-muted, #4a4558);
+  color: var(--orbit-text-muted);
   letter-spacing: 0.3px;
   white-space: nowrap;
 }
@@ -86,9 +107,9 @@
   align-items: center;
   gap: 8px;
   padding: 6px 14px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--orbit-border);
   border-radius: 999px;
-  background-color: var(--white, #ffffff);
+  background-color: var(--orbit-surface);
   flex-shrink: 0;
 }
 
@@ -97,25 +118,30 @@
   flex-shrink: 0;
 }
 
-.text-gold-accent { color: var(--amber-glow-dark, #e08600); }
-.text-red-accent  { color: #e5484d; }
+.text-gold-accent { color: var(--orbit-lavender-text); }
+.text-red-accent  { color: var(--orbit-rose-text); }
 
 .quiz-stat-count-string {
   font-size: 13px;
   font-weight: 800;
-  color: var(--ink-strong, #1a1523);
+  color: var(--orbit-text-heading);
 }
 
 .stat-lbl-dim {
   font-size: 10px;
   font-weight: 700;
-  color: var(--ink-muted, #4a4558);
+  color: var(--orbit-text-muted);
   letter-spacing: 0.3px;
 }
 
 /* Tinted pill variants */
-.xp-node-tint { background-color: var(--amber-glow-muted, rgba(255, 159, 28, 0.14)); border-color: rgba(255, 159, 28, 0.3); }
-.life-node-tint { background-color: rgba(229, 72, 77, 0.06); border-color: rgba(229, 72, 77, 0.2); }
+.xp-node-tint { background-color: rgba(201, 184, 255, 0.14); border-color: rgba(201, 184, 255, 0.3); }
+.life-node-tint { background-color: rgba(255, 179, 199, 0.14); border-color: rgba(255, 179, 199, 0.32); }
+/* 🎯 REVIEW MODE: replaces the LIVES pill once a module/topic is already
+   fully completed — teal to read as "settled/done", not an active warning. */
+.review-node-tint { background-color: rgba(143, 224, 216, 0.16); border-color: rgba(143, 224, 216, 0.35); }
+.review-node-tint .stat-vector-icon { color: var(--orbit-teal-text); }
+.review-node-tint .stat-lbl-dim { color: var(--orbit-teal-text); }
 
 @media (max-width: 640px) {
   .quiz-header-step-counter { display: none; }

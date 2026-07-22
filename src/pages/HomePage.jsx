@@ -16,11 +16,8 @@
 import React, { useContext, useLayoutEffect } from "react";
 import { Navigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
-import HeroEntryCard from "../components/HeroEntryCard";
+import HomeHero from "../components/HomeHero";
 import FeaturesShowcase from "../components/FeaturesShowcase";
-import CoursesSection from "../components/CoursesHeroSection";
-import WorkflowStepper from "../components/WorkflowStepper";
-import HomeLeaderboard from "../components/HomeLeaderboard";
 
 // ── Pastel loading screen ─────────────────────────────────────────────────
 // Shown while AuthContext is validating the stored token against the backend.
@@ -106,13 +103,22 @@ export default function HomePage() {
   // ─── Phase 3: Marketing page (authenticated OR returning visitor) ─────────
   // We deliberately do NOT auto-redirect to /orbit here — doing so caused the
   // infinite loop when "Exit to Web" was clicked from OrbitShell.
+  //
+  // 🎯 BUG FIX ("landing page background must be white, not this tint"):
+  // <body>'s decorative "nebula" background (index.css) is intentionally
+  // used site-wide, including under Auth/Onboarding — but the blended peach/
+  // lavender/cream blobs read as an unwanted tint specifically on this plain
+  // marketing page. An explicit opaque canvas color here masks the body's
+  // blobs on this one route without touching the shared global background.
+  //
+  // paddingTop (not the hero's old margin-top) is deliberate — a child's top
+  // margin collapses through a parent with no padding/border between them,
+  // which would leave that gap unpainted by this div's own background and
+  // show the body's nebula through it instead. Padding never collapses.
   return (
-    <div>
-      <HeroEntryCard />
+    <div style={{ background: "var(--orbit-canvas)", minHeight: "100vh", paddingTop: "56px" }}>
+      <HomeHero />
       <FeaturesShowcase />
-      <CoursesSection />
-      <WorkflowStepper />
-      <HomeLeaderboard />
     </div>
   );
 }

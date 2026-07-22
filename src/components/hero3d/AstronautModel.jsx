@@ -2,7 +2,7 @@
 import React from "react";
 import { useGLTF } from "@react-three/drei";
 
-const MODEL_PATH = "/models/astronaut.glb";
+const MODEL_PATH = "/models/astronaut_boy.glb";
 
 // Tuned against the actual file's glTF bounding box (parsed directly from
 // its JSON chunk): native size ~2.60 x 3.07 x 2.45 (w,h,d), native center at

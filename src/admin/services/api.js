@@ -1,5 +1,19 @@
 // src/admin/services/api.js
-import { API_BASE_URL, IMAGE_BASE_URL } from './config'; 
+import { API_BASE_URL, IMAGE_BASE_URL } from './config';
+
+// Streak/engagement-history bucketing on the server must key off the
+// USER's local calendar day, not the server's UTC day (see
+// quiz-backend/src/utils/localDate.js) — otherwise, for anyone not at
+// UTC+0, "today" can silently resolve to the wrong date for hours at a
+// time, making an already-qualified day look like it still applies. Sent
+// alongside every streak-related call below.
+function localDateKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 // 🛡️ GLOBAL RESPONSE INTEGRITY INTERCEPTOR
 const handleFetchResponse = async (response) => {
@@ -71,6 +85,39 @@ async function getUserProgress() {
   }
 }
 
+// 🎯 LINEAR LOCKING + REVIEW MODE: ordered per-card progress+answers for one
+// module/topic scope — the single hydration source useQuizEngine calls on
+// mount to know which cards are reached/correct and what was submitted.
+async function getModuleScopeState(moduleId, topicId) {
+  try {
+    const params = new URLSearchParams({ moduleId });
+    if (topicId) params.set('topicId', topicId);
+    const response = await fetch(`${API_BASE_URL}/progress/module-scope-state?${params.toString()}`, {
+      headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  } catch (error) {
+    console.error('Module Scope State API Error:', error);
+    throw error;
+  }
+}
+
+// 🎯 REATTEMPT: learner self-service reset — archives this module's/topic's
+// progress, claws back its XP, and returns a clean slate.
+async function resetModuleProgress(moduleId, topicId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/progress/module-reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify({ moduleId, topicId }),
+    });
+    return await handleFetchResponse(response);
+  } catch (error) {
+    console.error('Module Reset API Error:', error);
+    throw error;
+  }
+}
+
 // ---------------- Authentication ----------------
 async function login(email, password) {
   try {
@@ -119,6 +166,7 @@ async function validateToken() {
     const response = await fetch(`${API_BASE_URL}/auth/validate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify({ localDate: localDateKey() }),
     });
     return await handleFetchResponse(response);
   } catch (error) {
@@ -350,6 +398,33 @@ async function getAllDailyReads() {
   }
 }
 
+async function updateDailyRead(id, readData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/daily-reads/admin/daily-reads/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify(readData),
+    });
+    return await handleFetchResponse(response);
+  } catch (error) {
+    console.error('Update Daily Read API Error:', error);
+    throw error;
+  }
+}
+
+async function deleteDailyRead(id) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/daily-reads/admin/daily-reads/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  } catch (error) {
+    console.error('Delete Daily Read API Error:', error);
+    throw error;
+  }
+}
+
 // ---------------- News/Broadcast Architecture ----------------
 async function getDashboardNews() {
   try {
@@ -435,6 +510,8 @@ async function createNewsPost(newsData) {
 const api = {
   recordCardCompletion,
   getUserProgress,
+  getModuleScopeState,
+  resetModuleProgress,
   login,
   register,
   verifyEmail,
@@ -452,6 +529,8 @@ const api = {
   getTodaysRead,
   createDailyRead,
   getAllDailyReads,
+  updateDailyRead,
+  deleteDailyRead,
   getDashboardNews,
   getNewsFeed,
   uploadBroadcastVideo,
@@ -476,6 +555,33 @@ getWorkspaceCurriculum: async () => {
     throw error;
   }
 },
+
+  getMyGamification: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/me/gamification`, {
+        method: 'GET',
+        headers: getAuthHeader(),
+      });
+      return await handleFetchResponse(response);
+    } catch (error) {
+      console.error('Fetch Gamification Summary API Error:', error);
+      throw error;
+    }
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      return await handleFetchResponse(response);
+    } catch (error) {
+      console.error('Change Password API Error:', error);
+      throw error;
+    }
+  },
   // =========================================================================
   // 💡 FIXED: IDEAS ENGINE INTEGRATION ENDPOINTS WITH UNIFORM LITERALS
   // =========================================================================
@@ -852,13 +958,13 @@ getWorkspaceCurriculum: async () => {
     const response = await fetch(`${API_BASE_URL}/progress/streak/verify`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-      body:    JSON.stringify({ actionType }),
+      body:    JSON.stringify({ actionType, localDate: localDateKey() }),
     });
     return handleFetchResponse(response);
   },
 
   getMyStreak: async () => {
-    const response = await fetch(`${API_BASE_URL}/progress/streak`, {
+    const response = await fetch(`${API_BASE_URL}/progress/streak?localDate=${localDateKey()}`, {
       headers: getAuthHeader(),
     });
     return handleFetchResponse(response);

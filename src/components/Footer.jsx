@@ -1,5 +1,6 @@
 // src/components/Footer.jsx
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Footer.css';
 import { FaFacebook, FaTwitter, FaLinkedin, FaYoutube } from 'react-icons/fa';
 
@@ -7,37 +8,33 @@ export default function Footer() {
   return (
     <footer className="duo-site-footer">
       <div className="duo-footer-container">
-        
-        {/* Company Cluster */}
+
+        {/* Brand */}
         <div className="duo-footer-section company-info">
-          <h3 className="duo-footer-heading">IRIS RegTech</h3>
+          <h3 className="duo-footer-heading">IRIS Orbit</h3>
           <p className="duo-footer-text-link">
             <a href="https://irisbusiness.com/" target="_blank" rel="noopener noreferrer">
-              www.irisregtech.com
+              irisbusiness.com
             </a>
           </p>
           <p className="duo-company-description">
-            Leading provider of software, data formats, and services for global financial and compliance business reporting.
+            The learning platform for every team at IRIS — bite-sized modules,
+            streaks, Plasma rewards, and a real leaderboard.
           </p>
         </div>
 
-        {/* Products Link Cluster */}
+        {/* Quick Links — real in-app destinations, not external product sites */}
         <div className="duo-footer-section products">
-          <h3 className="duo-footer-heading">Our Products</h3>
+          <h3 className="duo-footer-heading">Quick Links</h3>
           <ul className="duo-footer-ul">
-            <li>
-              <a href="http://irisifile.com/" target="_blank" rel="noopener noreferrer" className="product-link link-azure">iFile</a>
-            </li>
-            <li>
-              <a href="https://iriscarbon.com/" target="_blank" rel="noopener noreferrer" className="product-link link-pink">Carbon</a>
-            </li>
-            <li>
-              <a href="https://irisbusiness.com/iris-ideal/" target="_blank" rel="noopener noreferrer" className="product-link link-gold">iDEAL</a>
-            </li>
+            <li><Link to="/orbit/modules" className="product-link link-azure">Learn</Link></li>
+            <li><Link to="/orbit/progress" className="product-link link-pink">Progress</Link></li>
+            <li><Link to="/orbit/leaderboard" className="product-link link-gold">Leaderboard</Link></li>
+            <li><Link to="/orbit/ideas" className="product-link link-azure">Ideas & R&D</Link></li>
           </ul>
         </div>
-        
-        {/* Contact Cluster */}
+
+        {/* Contact */}
         <div className="duo-footer-section contact">
           <h3 className="duo-footer-heading">Contact Us</h3>
           <p className="duo-contact-node">022 6723 1000</p>
@@ -45,8 +42,8 @@ export default function Footer() {
             <a href="mailto:hello@irisbusiness.com">hello@irisbusiness.com</a>
           </p>
         </div>
-        
-        {/* Social Media Connected Links */}
+
+        {/* Social */}
         <div className="duo-footer-section social-media">
           <h3 className="duo-footer-heading">Follow Along</h3>
           <p className="duo-social-text">Stay connected with our global circles for updates and news release logs.</p>
@@ -70,7 +67,7 @@ export default function Footer() {
 
       {/* Bottom Legal Band */}
       <div className="duo-footer-bottom text-center">
-        <p>© {new Date().getFullYear()} IRIS Business Services. Made with Orbit Engine.</p>
+        <p>© {new Date().getFullYear()} IRIS Regtech Solutions. Made with Orbit Engine.</p>
         <p style={{ fontSize: "11px", opacity: 0.7, marginTop: "4px" }}>
           3D astronaut model "Falling Spaceman (FanArt)" by wallmasterr, licensed{" "}
           <a

@@ -7,14 +7,31 @@ import {
   TrophyFill,
   LightningCharge,
   Search,
-  StarFill,
   CheckLg,
   SendFill,
+  BookHalf,
+  BarChart,
 } from "react-bootstrap-icons";
 import AuthContext from "../context/AuthContext";
 import api from "../admin/services/api";
 import DashboardHome from "../components/OrbitDashboard/DashboardHome";
+import OrbitProgressMap from "../components/OrbitDashboard/OrbitProgressMap";
+import SectionHeader from "../components/OrbitDashboard/SectionHeader";
+import OrbitFooter from "../components/OrbitDashboard/OrbitFooter";
 import { getCurrentModule, setCurrentModule } from "../components/OrbitDashboard/currentModuleStorage";
+
+// ============================================================
+// DATE FORMATTING  --  for the Progress tab's activity table
+// ============================================================
+const formatModuleDate = (dateStr) => {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  const diffDays = Math.floor((Date.now() - d.getTime()) / 86400000);
+  if (diffDays <= 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+};
 
 // ============================================================
 // PROGRESS RING  --  SVG circular progress indicator
@@ -91,8 +108,11 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
   // â"€â"€ Shared data â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   const [modules, setModules] = useState([]);
   const [todaysRead, setTodaysRead] = useState(null);
+  const [allReads, setAllReads] = useState([]);
   const [newsFeed, setNewsFeed] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [myLeaderboardRank, setMyLeaderboardRank] = useState(null);
+  const [myLeaderboardXp, setMyLeaderboardXp] = useState(0);
   const [departmentsList, setDepartmentsList] = useState([]);
   const [completedCardIds, setCompletedCardIds] = useState([]);
   const [progressData, setProgressData] = useState(null);
@@ -372,9 +392,11 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
       // User progress
       try {
         const progressResponse = await api.getUserProgress();
+        // getUserProgress's actual response is flat ({ success, completedCardIds, ... })
+        // with no nested "data" — fall back to the response itself when .data isn't present.
         const progressRes =
           progressResponse && progressResponse.success
-            ? progressResponse.data
+            ? progressResponse.data || progressResponse
             : progressResponse;
         if (progressRes) {
           currentActiveId =
@@ -413,6 +435,12 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
               ? boardResponse.data
               : boardResponse;
           if (Array.isArray(serverRankings)) setLeaderboard(serverRankings);
+          // myRank/myXp are only present on the { success, data, myRank, myXp }
+          // shape (the plain-array fallback above is the older/legacy shape).
+          if (boardResponse && boardResponse.success) {
+            setMyLeaderboardRank(boardResponse.myRank ?? null);
+            setMyLeaderboardXp(boardResponse.myXp ?? 0);
+          }
         }
       } catch (_) {} finally {
         setLoadingLeaderboard(false);
@@ -457,6 +485,16 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
             content: cleanArticle.content,
           });
         }
+      } catch (_) {}
+
+      // Full Daily Read history — powers the Daily Reads Calendar widget.
+      try {
+        const allReadsResponse = await api.getAllDailyReads();
+        const cleanReads =
+          allReadsResponse && allReadsResponse.success
+            ? allReadsResponse.data
+            : allReadsResponse;
+        setAllReads(Array.isArray(cleanReads) ? cleanReads : []);
       } catch (_) {}
 
       // Dashboard news/broadcast feed — same success-wrapped-or-flat defensive
@@ -616,6 +654,7 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
         user={user}
         navigate={navigate}
         todaysRead={todaysRead}
+        allReads={allReads}
         newsFeed={newsFeed}
         modules={modules}
         widgetModule={trackedModule}
@@ -996,176 +1035,25 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
   // ============================================================
   const renderProgress = () => {
     const totalXp = liveXp;
-    // Simple level calculation: every 500 XP is one level
-    const level = Math.floor(totalXp / 500) + 1;
-    const xpIntoLevel = totalXp % 500;
-    const xpToNextLevel = 500;
-    const levelPct = Math.round((xpIntoLevel / xpToNextLevel) * 100);
-
-    const totalCards =
-      progressData?.completedCardsCount || telemetry.cardsRead;
-    const totalTopics =
-      progressData?.completedTopicsCount || 0;
-    const totalModulesDone =
-      progressData?.completedModulesCount || telemetry.modulesCompleted;
 
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        {/* XP Level bar */}
-        <div style={tactilePanelStyle}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "16px",
-            }}
-          >
-            <div>
-              <h3
-                style={{
-                  fontSize: "18px",
-                  fontWeight: "800",
-                  color: "var(--text-primary)",
-                  margin: 0,
-                }}
-              >
-                Level {level}
-              </h3>
-              <p
-                style={{
-                  fontSize: "13px",
-                  color: "var(--text-secondary)",
-                  margin: "2px 0 0 0",
-                  fontWeight: "600",
-                }}
-              >
-                {xpIntoLevel} / {xpToNextLevel} XP to Level {level + 1}
-              </p>
-            </div>
-            <div
-              style={{
-                background: "var(--badge-progress-bg)",
-                border: "2px solid var(--badge-progress-text)",
-                borderBottom: "4px solid var(--badge-progress-text)",
-                color: "var(--badge-progress-text)",
-                padding: "8px 18px",
-                borderRadius: "12px",
-                fontSize: "16px",
-                fontWeight: "900",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <LightningCharge size={15} /> {totalXp.toLocaleString()} XP
-            </div>
-          </div>
-          <div
-            style={{
-              height: "10px",
-              background: "var(--stat-row-border)",
-              borderRadius: "6px",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                height: "100%",
-                width: `${levelPct}%`,
-                background: "var(--bg-hud-banner)",
-                borderRadius: "6px",
-                transition: "width 0.6s ease",
-              }}
-            />
-          </div>
-        </div>
+        <SectionHeader
+          icon={BarChart}
+          title="Progress"
+          subtitle="Track your orbit tier, module completion, and where each module stands."
+        />
 
-        {/* Stats summary tiles */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-            gap: "16px",
-          }}
-        >
-          {[
-            {
-              label: "Total XP",
-              value: totalXp.toLocaleString(),
-              color: "var(--bg-daily-read)",
-              sub: "experience points",
-            },
-            {
-              label: "Cards Done",
-              value: totalCards,
-              color: "var(--curriculum-icon-text)",
-              sub: "learning cards",
-            },
-            {
-              label: "Topics Done",
-              value: totalTopics,
-              color: "#10b981",
-              sub: "completed topics",
-            },
-            {
-              label: "Modules Done",
-              value: totalModulesDone,
-              color: "#8b5cf6",
-              sub: "full completions",
-            },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              style={{
-                ...tactilePanelStyle,
-                padding: "20px",
-                textAlign: "center",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "28px",
-                  fontWeight: "900",
-                  color: stat.color,
-                  lineHeight: 1,
-                }}
-              >
-                {stat.value}
-              </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  fontWeight: "800",
-                  color: "var(--text-primary)",
-                  marginTop: "6px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
-                }}
-              >
-                {stat.label}
-              </div>
-              <div
-                style={{
-                  fontSize: "11px",
-                  color: "var(--text-secondary)",
-                  marginTop: "2px",
-                  fontWeight: "600",
-                }}
-              >
-                {stat.sub}
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Orbit map */}
+        <OrbitProgressMap xp={totalXp} />
 
-        {/* Module-by-module progress */}
-        <div style={tactilePanelStyle}>
+        {/* Module activity table */}
+        <div className="orbit-card">
           <h5
             style={{
               fontSize: "15px",
               fontWeight: "800",
-              color: "var(--text-primary)",
+              color: "var(--orbit-text-heading)",
               textTransform: "uppercase",
               margin: "0 0 20px 0",
               letterSpacing: "0.5px",
@@ -1178,7 +1066,7 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
               style={{
                 textAlign: "center",
                 padding: "32px",
-                color: "var(--text-secondary)",
+                color: "var(--orbit-text-muted)",
                 fontWeight: "700",
               }}
             >
@@ -1189,127 +1077,72 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
               style={{
                 textAlign: "center",
                 padding: "32px",
-                color: "var(--text-secondary)",
+                color: "var(--orbit-text-muted)",
               }}
             >
               No modules assigned.
             </div>
           ) : (
-            modules.map((mod, index) => {
-              const { total, done, pct } = getModuleProgress(mod);
-              const isCompleted = total > 0 && pct === 100;
-              const isInProgress = pct > 0 && !isCompleted;
-              return (
-                <div
-                  key={mod._id || mod.id || index}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                    padding: "14px 0",
-                    borderBottom:
-                      index < modules.length - 1
-                        ? "2px solid var(--stat-row-border)"
-                        : "none",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "36px",
-                      height: "36px",
-                      borderRadius: "10px",
-                      background: isCompleted
-                        ? "rgba(16,185,129,0.12)"
-                        : isInProgress
-                        ? "var(--curriculum-icon-bg)"
-                        : "rgba(100,116,139,0.08)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      color: isCompleted
-                        ? "#10b981"
-                        : "var(--curriculum-icon-text)",
-                    }}
-                  >
-                    {isCompleted ? (
-                      <CheckCircleFill size={16} />
-                    ) : (
-                      <PlayFill size={16} />
-                    )}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: "14px",
-                        fontWeight: "800",
-                        color: "var(--text-primary)",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        marginBottom: "6px",
-                      }}
-                    >
-                      {mod.title}
-                    </div>
-                    <div
-                      style={{
-                        height: "5px",
-                        background: "var(--stat-row-border)",
-                        borderRadius: "4px",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: "100%",
-                          width: `${pct}%`,
-                          background: isCompleted
-                            ? "#10b981"
-                            : "var(--curriculum-icon-text)",
-                          borderRadius: "4px",
-                          transition: "width 0.4s ease",
-                        }}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "11px",
-                        color: "var(--text-secondary)",
-                        marginTop: "3px",
-                        fontWeight: "700",
-                      }}
-                    >
-                      {done}/{total || "?"} cards
-                    </div>
-                  </div>
-                  <span
-                    style={{
-                      flexShrink: 0,
-                      fontSize: "11px",
-                      fontWeight: "800",
-                      padding: "4px 12px",
-                      borderRadius: "8px",
-                      textTransform: "uppercase",
-                      background: isCompleted
-                        ? "rgba(16,185,129,0.12)"
-                        : isInProgress
-                        ? "var(--badge-progress-bg)"
-                        : "rgba(100,116,139,0.08)",
-                      color: isCompleted
-                        ? "#10b981"
-                        : isInProgress
-                        ? "var(--badge-progress-text)"
-                        : "var(--text-secondary)",
-                    }}
-                  >
-                    {pct}%
-                  </span>
-                </div>
-              );
-            })
+            <div style={{ overflowX: "auto" }}>
+              <table className="orbit-progress-table">
+                <thead>
+                  <tr>
+                    <th>Activity</th>
+                    <th>Type</th>
+                    <th>Date started</th>
+                    <th>Date finished</th>
+                    <th>Score</th>
+                    <th>Passed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {modules.map((mod) => {
+                    const modId = (mod._id || mod.id)?.toString();
+                    const { total, pct } = getModuleProgress(mod);
+                    const passed = total > 0 && pct === 100;
+                    const dates = progressData?.moduleDatesMap?.[modId];
+                    const typeLabel =
+                      mod.hasTopics === false ? "Quick Module" : "Multi-Topic";
+                    return (
+                      <tr
+                        key={modId}
+                        className="orbit-progress-row"
+                        onClick={() => handleNavigationGate(mod)}
+                      >
+                        <td>
+                          <span className="orbit-progress-activity">
+                            <BookHalf size={14} />
+                            {mod.title || "Untitled Module"}
+                          </span>
+                        </td>
+                        <td>{typeLabel}</td>
+                        <td>{formatModuleDate(dates?.startedAt)}</td>
+                        <td>{passed ? formatModuleDate(dates?.lastActivityAt) : "—"}</td>
+                        <td>{pct > 0 ? `${pct}%` : "—"}</td>
+                        <td
+                          className={
+                            passed
+                              ? "orbit-progress-passed-true"
+                              : "orbit-progress-passed-false"
+                          }
+                        >
+                          {passed ? (
+                            <>
+                              <CheckCircleFill size={12} /> True
+                            </>
+                          ) : (
+                            "False"
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
+        <OrbitFooter />
       </div>
     );
   };
@@ -1319,277 +1152,99 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
   // ============================================================
   const renderLeaderboard = () => {
     const topXp = leaderboard.length > 0 ? leaderboard[0].xp || 1 : 1;
+    const podium = leaderboard.slice(0, 3);
+    const rest = leaderboard.slice(3);
+    const isMeFn = (item) =>
+      item.isMe ||
+      item.userId === user?.id?.toString() ||
+      item.userId === user?._id?.toString();
+    // Podium is displayed 2nd/1st/3rd (classic center-tallest layout) but keeps
+    // each item's real rank/medal — this array just controls display order.
+    const podiumDisplayOrder = [podium[1], podium[0], podium[2]].filter(Boolean);
+    const medalClass = ["orbit-lb-medal--gold", "orbit-lb-medal--silver", "orbit-lb-medal--bronze"];
 
     return (
       <div>
-        <h2
-          style={{
-            fontSize: "20px",
-            fontWeight: "800",
-            color: "var(--text-primary)",
-            margin: "0 0 24px 0",
-            textTransform: "uppercase",
-            letterSpacing: "0.5px",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          <TrophyFill size={18} color="var(--bg-daily-read)" />
-          Department Standings
-        </h2>
-
+        <SectionHeader
+          icon={TrophyFill}
+          title="Leaderboard"
+          subtitle="See how you and your department stack up this month."
+        />
+        <div className="orbit-card">
         {loadingLeaderboard ? (
-          <div
-            style={{
-              ...tactilePanelStyle,
-              textAlign: "center",
-              padding: "60px",
-              color: "var(--text-secondary)",
-              fontWeight: "700",
-            }}
-          >
-            Decrypting department rankings...
+          <div style={{ textAlign: "center", padding: "60px", color: "var(--orbit-text-muted)", fontWeight: "700" }}>
+            Loading rankings…
           </div>
         ) : leaderboard.length === 0 ? (
-          <div
-            style={{
-              ...tactilePanelStyle,
-              textAlign: "center",
-              padding: "60px",
-              color: "var(--text-secondary)",
-            }}
-          >
+          <div style={{ textAlign: "center", padding: "60px", color: "var(--orbit-text-muted)" }}>
             No rankings available yet.
           </div>
         ) : (
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-          >
-            {leaderboard.map((item, index) => {
-              const isMe =
-                item.isMe ||
-                item.userId === user?.id?.toString() ||
-                item.userId === user?._id?.toString();
-              const rankColor =
-                item.class === "gold"
-                  ? "#f59e0b"
-                  : item.class === "silver"
-                  ? "#94a3b8"
-                  : item.class === "bronze"
-                  ? "#cd7c3a"
-                  : "var(--text-secondary)";
-              const xpBarPct = Math.round(
-                ((item.xp || 0) / topXp) * 100
-              );
+          <>
+            {/* Your rank — always visible regardless of whether you're in the
+                top 10 shown below, using the backend's myRank/myXp fields. */}
+            {myLeaderboardRank && (
+              <div className="orbit-lb-yourank">
+                <span className="orbit-lb-yourank__label">Your rank</span>
+                <span className="orbit-lb-yourank__value">#{myLeaderboardRank}</span>
+                <span className="orbit-lb-yourank__xp"><LightningCharge size={12} /> {myLeaderboardXp.toLocaleString()} XP</span>
+              </div>
+            )}
 
-              return (
-                <div
-                  key={`full-lb-${index}`}
-                  style={{
-                    ...tactilePanelStyle,
-                    padding: "18px 24px",
-                    background: isMe
-                      ? "rgba(0,174,255,0.06)"
-                      : "var(--bg-tactile-cards)",
-                    borderLeft: isMe
-                      ? "4px solid var(--curriculum-icon-text)"
-                      : "4px solid transparent",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "16px",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    {/* Rank badge */}
-                    <div
-                      style={{
-                        width: "36px",
-                        height: "36px",
-                        borderRadius: "10px",
-                        background:
-                          index === 0
-                            ? "rgba(245,158,11,0.15)"
-                            : index === 1
-                            ? "rgba(148,163,184,0.15)"
-                            : index === 2
-                            ? "rgba(205,124,58,0.15)"
-                            : "var(--curriculum-icon-bg)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: "900",
-                        fontSize: "14px",
-                        color: rankColor,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {index < 3 ? (
-                        <StarFill size={14} color={rankColor} />
-                      ) : (
-                        `#${item.rank}`
-                      )}
+            {/* Podium — top 3 */}
+            {podium.length > 0 && (
+              <div className="orbit-lb-podium">
+                {podiumDisplayOrder.map((item) => {
+                  const rank = item.rank;
+                  const isMe = isMeFn(item);
+                  return (
+                    <div key={`podium-${rank}`} className={`orbit-lb-podium__col orbit-lb-podium__col--rank${rank} ${isMe ? "orbit-lb-podium__col--me" : ""}`}>
+                      <div className={`orbit-lb-medal ${medalClass[rank - 1] || ""}`}>{rank === 1 ? <TrophyFill size={16} /> : `#${rank}`}</div>
+                      <div className="orbit-lb-podium__avatar">{item.avatar}</div>
+                      <div className="orbit-lb-podium__name">{item.name}{isMe && <span className="orbit-lb-you-pill">YOU</span>}</div>
+                      <div className="orbit-lb-podium__xp"><LightningCharge size={11} /> {(item.xp || 0).toLocaleString()}</div>
                     </div>
+                  );
+                })}
+              </div>
+            )}
 
-                    {/* Avatar */}
-                    <div
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "50%",
-                        background: isMe
-                          ? "var(--curriculum-icon-text)"
-                          : item.class === "gold"
-                          ? "#f59e0b"
-                          : item.class === "silver"
-                          ? "#94a3b8"
-                          : item.class === "bronze"
-                          ? "#cd7c3a"
-                          : "var(--stat-row-border)",
-                        color:
-                          isMe || item.class !== "plain"
-                            ? "var(--text-inverse)"
-                            : "var(--text-primary)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "13px",
-                        fontWeight: "800",
-                        flexShrink: 0,
-                        border:
-                          index === 0
-                            ? "2px solid #f59e0b"
-                            : isMe
-                            ? "2px solid var(--curriculum-icon-text)"
-                            : "none",
-                      }}
-                    >
-                      {item.avatar}
-                    </div>
-
-                    {/* Name + rank label */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          fontSize: "15px",
-                          fontWeight: isMe ? "900" : "700",
-                          color: "var(--text-primary)",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {item.name}
-                        {isMe && (
-                          <span
-                            style={{
-                              color: "var(--curriculum-icon-text)",
-                              fontSize: "10px",
-                              marginLeft: "8px",
-                              fontWeight: "800",
-                              background: "rgba(0,174,255,0.12)",
-                              padding: "2px 7px",
-                              borderRadius: "6px",
-                            }}
-                          >
-                            YOU
-                          </span>
-                        )}
+            {/* Flat list — rank 4+ */}
+            {rest.length > 0 && (
+              <div className="orbit-lb-list">
+                {rest.map((item) => {
+                  const isMe = isMeFn(item);
+                  const xpBarPct = Math.round(((item.xp || 0) / topXp) * 100);
+                  return (
+                    <div key={`lb-row-${item.rank}`} className={`orbit-lb-row ${isMe ? "orbit-lb-row--me" : ""}`}>
+                      <span className="orbit-lb-row__rank">#{item.rank}</span>
+                      <span className="orbit-lb-row__avatar">{item.avatar}</span>
+                      <div className="orbit-lb-row__body">
+                        <div className="orbit-lb-row__name">
+                          {item.name}
+                          {isMe && <span className="orbit-lb-you-pill">YOU</span>}
+                        </div>
+                        <div className="orbit-lb-row__track">
+                          <div className="orbit-lb-row__fill" style={{ width: `${xpBarPct}%` }} />
+                        </div>
                       </div>
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color:
-                            rankColor !== "var(--text-secondary)"
-                              ? rankColor
-                              : "var(--text-secondary)",
-                          fontWeight: "700",
-                          marginTop: "1px",
-                        }}
-                      >
-                        Rank #{item.rank}
-                        {index === 0 ? "  --  Top Performer" : ""}
-                      </div>
+                      <span className="orbit-lb-row__xp"><LightningCharge size={12} /> {(item.xp || 0).toLocaleString()}</span>
                     </div>
-
-                    {/* XP pill */}
-                    <div
-                      style={{
-                        flexShrink: 0,
-                        background:
-                          index === 0
-                            ? "rgba(245,158,11,0.12)"
-                            : "var(--curriculum-icon-bg)",
-                        border: `2px solid ${
-                          index === 0
-                            ? "#f59e0b"
-                            : "var(--curriculum-icon-text)"
-                        }`,
-                        borderBottom: `4px solid ${
-                          index === 0
-                            ? "#d97706"
-                            : "var(--border-hud-tactile)"
-                        }`,
-                        color:
-                          index === 0
-                            ? "#f59e0b"
-                            : "var(--curriculum-icon-text)",
-                        padding: "6px 16px",
-                        borderRadius: "10px",
-                        fontSize: "14px",
-                        fontWeight: "900",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "5px",
-                      }}
-                    >
-                      <LightningCharge size={13} />
-                      {(item.xp || 0).toLocaleString()} XP
-                    </div>
-                  </div>
-
-                  {/* Relative XP bar */}
-                  <div
-                    style={{
-                      marginLeft: "92px",
-                      height: "6px",
-                      background: "var(--stat-row-border)",
-                      borderRadius: "4px",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        width: `${xpBarPct}%`,
-                        background:
-                          index === 0
-                            ? "#f59e0b"
-                            : isMe
-                            ? "var(--curriculum-icon-text)"
-                            : rankColor !== "var(--text-secondary)"
-                            ? rankColor
-                            : "var(--border-tactile)",
-                        borderRadius: "4px",
-                        transition: "width 0.6s ease",
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
+        </div>
+        <OrbitFooter />
       </div>
     );
   };
 
   // ============================================================
-  // SECTION: IDEAS
+  // SECTION: IDEAS (unused — the real /orbit/ideas route renders
+  // src/components/IdeasAndRD.jsx directly via <Outlet/>, not this function)
   // ============================================================
   const renderIdeas = () => {
     const CATEGORIES = [

@@ -1,4 +1,12 @@
-/* src/components/PdfCard.css */
+/* src/components/PdfCard.css
+   Redesigned onto the shared --orbit-* tokens. This card previously relied
+   on raw Bootstrap utility classes (text-dark/text-secondary/text-muted/
+   bg-light/bg-white/btn-light/btn-outline-secondary) for every color —
+   Bootstrap's defaults are fixed light-mode colors that never adapt to
+   this app's theme toggle, so nothing on this card ever changed in dark
+   mode. Replaced with custom classes below; Bootstrap's layout-only
+   utilities (d-flex, position-*, m-2, rounded, etc.) are untouched. */
+
 .pdf-card-wrapper {
   width: 100%;
   max-width: 100%;
@@ -6,6 +14,25 @@
   display: flex;
   flex-direction: column;
 }
+
+.pdf-card-title {
+  color: var(--orbit-text-heading);
+}
+
+.pdf-card-description {
+  color: var(--orbit-text-muted);
+}
+
+.pdf-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--orbit-surface-subtle);
+  color: var(--orbit-text-muted);
+  border: 1px solid var(--orbit-border);
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+
 /* flex:1 (not a fixed px height) — fills whatever space is actually left in
    the wrapper instead of guessing a magic number that clips/leaves gaps
    depending on viewport size. */
@@ -14,8 +41,43 @@
   min-height: 0;
   width: 100%;
   overflow: hidden;
-  background-color: var(--white, #ffffff);
-  border: 1px solid #e2e8f0;
-  border-top: 3px solid var(--amber-glow, #ff9f1c);
+  background-color: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  border-top: 3px solid var(--orbit-lavender);
   border-radius: 8px;
+}
+
+.pdf-empty-state {
+  color: var(--orbit-text-muted);
+}
+
+.pdf-engine-switch-wrap {
+  background-color: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  border-radius: 6px;
+  box-shadow: var(--orbit-shadow-sm);
+}
+
+.pdf-engine-switch-btn {
+  background: transparent;
+  border: none;
+  color: var(--orbit-text-muted);
+  cursor: pointer;
+}
+.pdf-engine-switch-btn:hover:not(:disabled) {
+  color: var(--orbit-lavender-text);
+}
+.pdf-engine-switch-btn:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
+
+.pdf-open-link-btn {
+  background: transparent;
+  border: 1px solid var(--orbit-border-strong);
+  color: var(--orbit-text-muted);
+}
+.pdf-open-link-btn:hover {
+  border-color: var(--orbit-lavender);
+  color: var(--orbit-lavender-text);
 }

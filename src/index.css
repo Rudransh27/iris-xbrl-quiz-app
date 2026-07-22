@@ -8,7 +8,7 @@
 
 :root {
   /* ── Canvas & surfaces ─────────────────────────────────────────────────── */
-  --orbit-canvas:          #f8f5ff;      /* Ultra-light lavender canvas */
+  --orbit-canvas:          #ffffff;      /* Pure white canvas (light mode) */
   --orbit-surface:         #ffffff;      /* Card / panel surface */
   --orbit-surface-subtle:  #f7f5ff;      /* Slightly raised surface */
 
@@ -21,7 +21,7 @@
   /* ── Typography ────────────────────────────────────────────────────────── */
   --orbit-text-heading:    #1a1523;      /* Deep warm near-black */
   --orbit-text-body:       #4a4558;      /* Warm medium gray */
-  --orbit-text-muted:      #8b8399;      /* Placeholder / muted labels */
+  --orbit-text-muted:      #6b6478;      /* Placeholder / muted labels — darkened from #8b8399 for ~5.6:1 contrast on white (was ~3.6:1, below WCAG's 4.5:1 minimum) */
   --orbit-text-inverse:    #ffffff;
 
   /* ── Borders ───────────────────────────────────────────────────────────── */
@@ -158,6 +158,33 @@
      swap either. */
   --ink-strong: #1a1523;
   --ink-muted:  #4a4558;
+
+  /* ── Orbit pastel-rainbow accent set (Learner Dashboard redesign) ────────
+     A second, deliberately no-orange/no-yellow accent family for the
+     IRIS Orbit learner dashboard (src/components/OrbitDashboard/) and the
+     OrbitShell sidebar/topbar. Kept separate from --amber-glow/--honey-bronze
+     and the --pastel-streak/--pastel-reads/--pastel-ideas category tokens
+     above (those stay exactly as-is for Quiz, TopicTrail, CodeCard, Ideas,
+     Daily Reads, and everywhere else that already renders correctly) — only
+     components that explicitly opt into these new var names are affected.
+     Raw pastels (fills/gradients) are identical in both themes; the "-text"
+     variants are darkened for legibility on light surfaces here, and swap
+     to the raw pastel in dark mode below. */
+  --orbit-rose:     #ffb3c7;
+  --orbit-pink:     #ff9ecf;
+  --orbit-mint:     #a8e6cf;
+  --orbit-teal:     #8fe0d8;
+  --orbit-sky:      #a9d6ff;
+  --orbit-lavender: #c9b8ff;
+  --orbit-lilac:    #eab8ff;
+
+  --orbit-rose-text:     #c8557c;
+  --orbit-pink-text:     #c8508f;
+  --orbit-mint-text:     #2f9e79;
+  --orbit-teal-text:     #2f9a90;
+  --orbit-sky-text:      #3f7fc6;
+  --orbit-lavender-text: #6f5fc0;
+  --orbit-lilac-text:    #a24fc0;
 }
 
 /* ── Eye-soothing slate / deep-indigo dark mode ────────────────────────────
@@ -178,7 +205,7 @@
   /* ── Typography ───────────────────────────────────────────────────────── */
   --orbit-text-heading:    #f0eeff;
   --orbit-text-body:       #b0a8d0;
-  --orbit-text-muted:      #6a6390;
+  --orbit-text-muted:      #8b83ad;      /* Lightened from #6a6390 for ~5.3:1 contrast on the dark surface (was ~3.4:1) */
   --orbit-text-inverse:    #0b0a14;
 
   /* ── Purple-tinted borders ────────────────────────────────────────────── */
@@ -257,6 +284,18 @@
   --badge-progress-text:    var(--pastel-reads-text);
   --badge-completed-bg:     var(--pastel-progress);
   --badge-completed-text:   var(--pastel-progress-text);
+
+  /* ── Orbit pastel-rainbow "-text" variants — dark mode ──────────────────
+     Raw pastels (--orbit-rose, --orbit-pink, etc.) stay identical to the
+     light block above; only the legible-on-light darkened text tints flip
+     to the raw pastel itself, since dark surfaces don't need the darkening. */
+  --orbit-rose-text:     var(--orbit-rose);
+  --orbit-pink-text:     var(--orbit-pink);
+  --orbit-mint-text:     var(--orbit-mint);
+  --orbit-teal-text:     var(--orbit-teal);
+  --orbit-sky-text:      var(--orbit-sky);
+  --orbit-lavender-text: var(--orbit-lavender);
+  --orbit-lilac-text:    var(--orbit-lilac);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

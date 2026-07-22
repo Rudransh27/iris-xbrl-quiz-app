@@ -34,7 +34,7 @@
 }
 
 .orbit-features-title .title-accent {
-  color: var(--blue-violet);
+  color: var(--orbit-brand);
 }
 
 .orbit-features-subtitle {
@@ -96,11 +96,12 @@
   border: 2px solid var(--orbit-glass-border);
 }
 
-.orbit-feature-icon-badge.text-blaze  { color: var(--blaze-orange); }
-.orbit-feature-icon-badge.text-azure  { color: var(--azure-blue); }
-.orbit-feature-icon-badge.text-gold   { color: var(--amber-gold); }
-.orbit-feature-icon-badge.text-violet { color: var(--blue-violet); }
-.orbit-feature-icon-badge.text-pink   { color: var(--neon-pink); }
+.orbit-feature-icon-badge.text-rose     { color: var(--orbit-rose-text); }
+.orbit-feature-icon-badge.text-sky      { color: var(--orbit-sky-text); }
+.orbit-feature-icon-badge.text-lavender { color: var(--orbit-lavender-text); }
+.orbit-feature-icon-badge.text-teal     { color: var(--orbit-teal-text); }
+.orbit-feature-icon-badge.text-pink     { color: var(--orbit-pink-text); }
+.orbit-feature-icon-badge.text-mint     { color: var(--orbit-mint-text); }
 
 .orbit-feature-title {
   font-size: 17px;

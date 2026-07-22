@@ -1,0 +1,59 @@
+/* src/components/OrbitDashboard/OrbitFooter.css */
+
+.orbit-footer {
+  margin-top: 40px;
+  padding: 32px 20px 24px;
+  border-top: 1px solid var(--orbit-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.orbit-footer__logo {
+  height: 28px;
+  width: auto;
+  opacity: 0.9;
+}
+
+.orbit-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 22px;
+}
+
+.orbit-footer__link {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--orbit-text-body);
+  text-decoration: none;
+}
+
+.orbit-footer__link:hover {
+  color: var(--orbit-brand);
+  text-decoration: underline;
+}
+
+.orbit-footer__social {
+  display: flex;
+  gap: 14px;
+}
+
+.orbit-footer__social a {
+  color: var(--orbit-text-muted);
+  font-size: 16px;
+  transition: color 0.15s ease;
+}
+
+.orbit-footer__social a:hover {
+  color: var(--orbit-brand);
+}
+
+.orbit-footer__copyright {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--orbit-text-muted);
+}

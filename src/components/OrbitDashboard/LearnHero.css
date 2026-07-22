@@ -1,0 +1,61 @@
+/* src/components/OrbitDashboard/LearnHero.css
+   Plain, centered heading — no card, no gradient. Matches the Google-Skills-
+   style layout used by the public Home hero and the shared SectionHeader. */
+
+.learn-strip {
+  text-align: center;
+  padding: 8px 12px 0;
+  margin-bottom: 8px;
+}
+
+.learn-strip__title {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 900;
+  letter-spacing: -0.8px;
+  color: var(--orbit-text-heading);
+}
+
+.learn-strip__subtitle {
+  margin: 0 auto 20px;
+  max-width: 520px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--orbit-text-muted);
+}
+
+.learn-strip__stats {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.learn-strip__stat {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+}
+
+.learn-strip__stat-num {
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--orbit-text-heading);
+}
+
+.learn-strip__stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--orbit-text-muted);
+}
+
+.learn-strip__stat--teal svg     { color: var(--orbit-teal-text); }
+.learn-strip__stat--pink svg     { color: var(--orbit-pink-text); }
+.learn-strip__stat--lavender svg { color: var(--orbit-lavender-text); }

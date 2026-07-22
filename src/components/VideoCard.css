@@ -1,11 +1,15 @@
-/* src/components/VideoCard.css */
+/* src/components/VideoCard.css
+   Redesigned onto the shared --orbit-* tokens (was hardcoded to a fixed
+   white/light palette). Accent = lavender (was amber). The player viewport
+   itself stays a fixed near-black (a video letterbox reads the same in
+   both themes, same reasoning as the code-block backgrounds elsewhere). */
 
 .video-training-card {
-  background: var(--white, #ffffff);
+  background: var(--orbit-surface);
   border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
-  border: 1px solid #e2e8f0;
-  border-top: 3px solid var(--amber-glow, #ff9f1c);
+  box-shadow: var(--orbit-shadow-sm);
+  border: 1px solid var(--orbit-border);
+  border-top: 3px solid var(--orbit-lavender);
   overflow: hidden;
   width: 100%;
   max-width: 800px;
@@ -21,7 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 4px solid var(--amber-glow, #ff9f1c);
+  border-bottom: 4px solid var(--orbit-lavender);
 }
 
 .video-player-container-box {
@@ -46,16 +50,16 @@
 
 .video-component-headline {
   font-size: 22px;
-  color: #1e293b;
+  color: var(--orbit-text-heading);
   letter-spacing: -0.3px;
   margin-bottom: 12px;
 }
 
 /* Tags Badge Style Adjustments */
 .video-custom-badge-pill {
-  background: var(--amber-glow-muted, rgba(255, 159, 28, 0.14));
-  color: var(--amber-glow-dark, #e08600);
-  border: 1px solid var(--amber-glow, #ff9f1c);
+  background: rgba(201, 184, 255, 0.14);
+  color: var(--orbit-lavender-text);
+  border: 1px solid var(--orbit-lavender);
   padding: 4px 12px;
   border-radius: 6px;
   font-size: 11px;
@@ -66,20 +70,22 @@
 
 /* Content Documentation Frame Notes System */
 .video-session-notes-box {
-  background-color: #f8fafc;
-  border-color: #e2e8f0;
+  background-color: var(--orbit-surface-subtle);
+  border-color: var(--orbit-border) !important;
   margin-top: 18px;
 }
 
 .notes-header-indicator {
   font-size: 11px;
   letter-spacing: 0.5px;
-  color: #475569;
+  color: var(--orbit-text-muted);
+  background-color: transparent;
+  border-color: var(--orbit-border) !important;
 }
 
 .video-markdown-body {
   font-size: 14px;
-  color: #334155;
+  color: var(--orbit-text-body);
   line-height: 1.6;
 }
 

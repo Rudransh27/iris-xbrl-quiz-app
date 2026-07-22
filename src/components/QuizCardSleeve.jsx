@@ -106,10 +106,17 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
     /* 🚀 EMBEDDED LAUNCHPAD FOR INTERACTIVE HTML FULLSCREEN CARD TYPES */
     if (currentCard.card_type === "html_sandbox") {
       // ⚡ FIX: Added currentCard.content?.html fallback checks to guard against empty strings
-      const rawHtmlPayload = currentCard.content?.htmlSource || 
-                             currentCard.content?.html || 
-                             currentCard.content?.text || 
+      const rawHtmlPayload = currentCard.content?.htmlSource ||
+                             currentCard.content?.html ||
+                             currentCard.content?.text ||
                              "";
+
+      // 🎯 REVIEW MODE (relaunch, not rehydrate): a sandbox card has no
+      // built-in contract for restoring its exact prior DOM state, so
+      // relaunching always opens a fresh interactive iframe (see Quiz.jsx's
+      // fullscreen overlay) — this line just shows the learner their history
+      // before they do, sourced from the hook's progressByCardId cache.
+      const priorSubmission = state?.progressByCardId?.[currentCard._id];
 
       return (
         <div className="sandbox-launcher-card-housing">
@@ -119,9 +126,16 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
             <p className="sandbox-launcher-explanation-text">
               This section contains an interactive, native simulation workspace assignment. Launch the fullscreen container stage below to complete your execution tasks.
             </p>
+            {priorSubmission?.attempted && (
+              <p className="sandbox-prior-submission-note">
+                📋 Previous submission: {priorSubmission.score}/{priorSubmission.maxScore || 0}
+                {priorSubmission.timesAttempted > 1 ? ` · attempted ${priorSubmission.timesAttempted}×` : ""}
+                {" "}— relaunching starts a fresh attempt.
+              </p>
+            )}
           </div>
 
-          <button 
+          <button
             type="button"
             className="sandbox-fullscreen-trigger-btn"
             onClick={() => {

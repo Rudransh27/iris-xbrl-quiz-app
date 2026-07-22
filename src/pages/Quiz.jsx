@@ -39,7 +39,19 @@ const Quiz = () => {
       : `/orbit/modules/${moduleId}/topics`;
   };
 
-  const { state, handleAction, handlePrev, updateFields, applyAutoSaveXp, verifyModuleProgressIfComplete } = useQuizEngine(moduleId, topicId, navigate);
+  const {
+    state,
+    handleAction,
+    handlePrev,
+    updateFields,
+    applyAutoSaveXp,
+    verifyModuleProgressIfComplete,
+    jumpToIndex,
+    goToNextOrFinish,
+    resetModule,
+    isCardReached,
+    isCardCorrect,
+  } = useQuizEngine(moduleId, topicId, navigate);
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -88,6 +100,10 @@ const Quiz = () => {
   // 🚀 REFACTORED: 'html_sandbox' is an interactive asset, NOT a passive reading card!
   const isPassiveNavCard = currentCard && ["knowledge", "video", "pdf", "ppt"].includes(currentCard.card_type);
   const isHtmlSandboxCard = currentCard && currentCard.card_type === "html_sandbox";
+  // A whole-module sandbox is the entire module's content, IS the single card
+  // shown (nothing left to browse to afterward) — as opposed to a legacy
+  // sandbox embedded as one card among several in a standard multi-card module.
+  const isWholeModuleSandbox = state.moduleType === "html_sandbox";
 
   // 🚀 CROSS-FRAME MESSAGE LISTENER PIPELINE
   useEffect(() => {
@@ -144,18 +160,46 @@ const Quiz = () => {
           }).catch(e => console.warn('Auto-save sandbox progress failed:', e));
         }
 
-        // Throw a beautiful user notification so the trainee knows their score hit the cluster boundaries
+        // Throw a beautiful user notification so the trainee knows their score hit the cluster boundaries.
+        // Non-blocking (Sweetalert2 toasts render outside React's tree), so it
+        // keeps showing over whatever comes next without holding up the exit below.
         Swal.fire({
           toast: true,
           position: 'top-end',
           icon: 'success',
           title: 'Simulation Results Captured!',
-          text: `Score: ${event.data.score}/${event.data.maxPossibleScore}. Click Continue to save progress.`,
+          text: `Score: ${event.data.score}/${event.data.maxPossibleScore}`,
           showConfirmButton: false,
-          timer: 2800,
-          background: '#e8f7f2',
+          timer: 2200,
+          background: '#e3faf5',
           color: '#0f6e56'
         });
+
+        // 🎯 AUTO-EXIT ("must exit automatically, no rocket click needed",
+        // "fast, no white page"): the embedded HTML module's own
+        // "Complete & Finish Module" button already fires this exact
+        // message — that click IS the learner's intent to leave. It also
+        // separately (and independently of this app) tries its own
+        // self-navigation ~700ms later (window.location.replace("about:
+        // blank")) as a fallback for when it's opened with no parent at
+        // all — if OUR exit is slower than that, the learner briefly sees
+        // that blank white iframe before this overlay finally closes. A
+        // short, fixed 300ms here (not tied to the toast's own timer, which
+        // used to be 2800ms) safely wins that race every time, while still
+        // giving the rocket's liftoff animation a moment to register instead
+        // of vanishing with zero transition. Always closes the fullscreen
+        // overlay; whole-module sandboxes additionally land on the results
+        // screen (same quizFinished transition the manual eject already
+        // used, so earned XP/score still shows) — a sandbox embedded as one
+        // card among several in a bigger module just returns to the standard
+        // flow instead, since there may be more cards ahead.
+        setIsEjecting(true);
+        setTimeout(() => {
+          updateFields("activeSandboxPayload", null);
+          if (isWholeModuleSandbox) {
+            updateFields("quizFinished", true);
+          }
+        }, 300);
       }
     };
 
@@ -163,7 +207,49 @@ const Quiz = () => {
     return () => {
       window.removeEventListener("message", handleIframeMessageInterceptor);
     };
-  }, [currentCard?._id, updateFields, isExpressFlatModule, topicId, moduleId]);
+  }, [currentCard?._id, updateFields, isExpressFlatModule, topicId, moduleId, isWholeModuleSandbox]);
+
+  // 🎯 BUG FIX ("second attempt has no exit/rocket button"): on a fresh
+  // attempt the learner sees a briefing card with a manual "Launch Fullscreen
+  // Workspace" button, which is what opens the overlay (and its rocket exit
+  // control) the first time. On a REVISIT of an already-completed
+  // whole-module sandbox, isModuleReviewOnly is true and the card never gets
+  // manually launched — the learner instead sees a plain "Finish Track" dock
+  // button with no fullscreen overlay at all, so the rocket never appears.
+  // Auto-launching the same fullscreen workspace on revisit keeps both
+  // attempts consistent and guarantees the rocket/exit control is always
+  // reachable, not just on a first attempt.
+  useEffect(() => {
+    if (
+      isWholeModuleSandbox &&
+      state.isModuleReviewOnly &&
+      isHtmlSandboxCard &&
+      !state.activeSandboxPayload
+    ) {
+      const rawHtmlPayload =
+        currentCard.content?.htmlSource ||
+        currentCard.content?.html ||
+        currentCard.content?.text ||
+        "";
+      if (rawHtmlPayload.trim() !== "") {
+        updateFields("activeSandboxPayload", rawHtmlPayload);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isWholeModuleSandbox, state.isModuleReviewOnly, isHtmlSandboxCard, currentCard?._id]);
+
+  // 🎯 BUG FIX ("rocket flies up and vanishes immediately on reattempt"):
+  // isEjecting only ever gets set to true (by the eject/auto-exit flow
+  // above) and was never reset back to false anywhere. If the overlay is
+  // reopened later in the same component lifetime (e.g. auto-relaunched on a
+  // revisit, right after the previous attempt's eject), the rocket button
+  // mounts with the leftover eject-liftoff CSS class already applied — so it
+  // plays its fly-away animation instantly instead of sitting still until
+  // actually clicked. Resetting isEjecting the moment the overlay opens
+  // guarantees a fresh rocket every time, regardless of what closed it before.
+  useEffect(() => {
+    if (state.activeSandboxPayload) setIsEjecting(false);
+  }, [state.activeSandboxPayload]);
 
   // Flush temporary score buffers whenever the active index shifts
   useEffect(() => {
@@ -186,12 +272,53 @@ const Quiz = () => {
       text: 'Any unsaved progress in this current learning track will be lost.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#ff9f1c',
-      cancelButtonColor: '#64748b',
+      confirmButtonColor: '#c8557c',
+      cancelButtonColor: '#8b8399',
       confirmButtonText: 'Yes, exit track',
       cancelButtonText: 'Cancel'
-    }).then((res) => { 
-      if (res.isConfirmed) navigate(getExitRedirectPath()); 
+    }).then((res) => {
+      if (res.isConfirmed) navigate(getExitRedirectPath());
+    });
+  };
+
+  // 🎯 REATTEMPT: a STANDARD module's reset only ever scopes to the current
+  // topic (that's all this session has moduleId+topicId for) — sibling
+  // topics of the same module are untouched, hence the dynamic wording.
+  const resetScopeLabel = isExpressFlatModule ? 'Module' : 'Topic';
+
+  const handleResetModule = () => {
+    Swal.fire({
+      title: `Reset this ${resetScopeLabel}?`,
+      text: `All progress, submitted answers, and XP earned in this ${resetScopeLabel.toLowerCase()} will be permanently erased, and you'll start over from Card 1. This cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#c8557c',
+      cancelButtonColor: '#8b8399',
+      confirmButtonText: `Yes, reset ${resetScopeLabel.toLowerCase()}`,
+      cancelButtonText: 'Cancel'
+    }).then(async (res) => {
+      if (!res.isConfirmed) return;
+      try {
+        await resetModule();
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Reset complete — starting fresh!',
+          showConfirmButton: false,
+          timer: 2200,
+          background: '#e3faf5',
+          color: '#0f6e56'
+        });
+      } catch (e) {
+        console.error('Module reset failed:', e);
+        Swal.fire({
+          icon: 'error',
+          title: 'Reset failed',
+          text: 'Something went wrong — please try again.',
+          confirmButtonColor: '#c8557c'
+        });
+      }
     });
   };
 
@@ -227,7 +354,12 @@ const Quiz = () => {
     );
   }
 
-  const completedCardIdsInApp = state.completedCardIds || [];
+  // 🎯 LINEAR LOCKING + REVIEW MODE: "reached" (a submission already exists,
+  // right or wrong) is what makes a card revisitable/skippable-past without
+  // re-submitting — this replaces the old `state.completedCardIds` reference
+  // that Quiz.jsx read but the hook never actually populated, so locking
+  // silently never worked before.
+  const isCurrentCardReached = currentCard ? isCardReached(currentCard) : false;
 
   const isInputProvided = (currentCard?.card_type === "quiz" && state.selectedOption !== null) ||
                           (currentCard?.card_type === "code" && state.userCodeAnswer && state.userCodeAnswer.trim() !== "");
@@ -235,12 +367,16 @@ const Quiz = () => {
   // 🚀 CONTROL DOCK STATE LOGIC FIXES
   const isButtonDisabled = isHtmlSandboxCard ? !state.answered : (!state.answered && !isPassiveNavCard && !isInputProvided);
 
+  const isLastCard = state.currentIndex === state.content.length - 1;
+
   // Dynamic button string resolution text labels
   let buttonText = "Check";
   if (isHtmlSandboxCard) {
-    buttonText = state.answered ? (state.currentIndex === state.content.length - 1 ? "Finish Track" : "Continue") : "Complete Assignment inside Workspace";
-  } else if (state.answered || isPassiveNavCard || completedCardIdsInApp.includes(currentCard?._id?.toString())) {
-    buttonText = state.currentIndex === state.content.length - 1 ? "Finish" : "Continue";
+    buttonText = state.answered ? (isLastCard ? "Finish Track" : "Continue") : "Complete Assignment inside Workspace";
+  } else if (state.isModuleReviewOnly && isLastCard) {
+    buttonText = "Finish Review";
+  } else if (state.answered || isPassiveNavCard || isCurrentCardReached) {
+    buttonText = isLastCard ? "Finish" : "Continue";
   }
 
   const handleOnVideoPlaybackCompletion = () => {
@@ -257,7 +393,7 @@ const Quiz = () => {
           icon: 'warning',
           title: 'Challenge Pending!',
           text: 'Please navigate through the workspace, complete the final challenge step, and hit "Submit for AI Feedback" inside the simulation card first.',
-          confirmButtonColor: '#ff9f1c'
+          confirmButtonColor: '#6f5fc0'
         });
         return;
       }
@@ -277,22 +413,47 @@ const Quiz = () => {
     }
   };
 
+  // 🎯 REVIEW MODE: the current card already has a stored answer — whether
+  // it was just submitted this same click (Case B already ran and marked it
+  // reached) or it's being revisited from history — so the dock's job here
+  // is purely "advance to the next card", never re-submit/re-score. Routing
+  // through goToNextOrFinish (not handleAction) is also what fixes the
+  // pre-existing "next card renders blank even though it's already answered"
+  // gap: goToNextOrFinish rehydrates the target index from progressByCardId,
+  // where handleAction's own advance path used to unconditionally blank it.
+  const handleDockClick = () => {
+    if (currentCard && isCurrentCardReached) {
+      if (state.isModuleReviewOnly && isLastCard) {
+        navigate(getExitRedirectPath());
+      } else {
+        goToNextOrFinish();
+      }
+    } else {
+      handleProcessDockAction();
+    }
+  };
+
+  // 🎯 LINEAR LOCKING: a card is accessible if it's already reached (any
+  // submission exists, right or wrong — matches the life system already
+  // letting a learner continue forward past a wrong quiz answer) or every
+  // card ahead of it in sequence is reached/passive. Jumps always rehydrate
+  // via the hook's jumpToIndex, not a raw currentIndex write.
   const handleSidebarNodeJump = (targetIndex) => {
     if (targetIndex === state.currentIndex) return;
-    
+
     let canJump = true;
     for (let i = 0; i < targetIndex; i++) {
       const cardBefore = state.content[i];
       const isCardBeforePassive = ["knowledge", "video", "pdf", "ppt", "html_sandbox"].includes(cardBefore.card_type);
-      
-      if (!completedCardIdsInApp.includes(cardBefore._id?.toString()) && !isCardBeforePassive) {
+
+      if (!isCardReached(cardBefore) && !isCardBeforePassive) {
         canJump = false;
         break;
       }
     }
 
     if (canJump) {
-      updateFields('currentIndex', targetIndex);
+      jumpToIndex(targetIndex);
     } else {
       Swal.fire({
         toast: true,
@@ -302,8 +463,8 @@ const Quiz = () => {
         text: 'Please solve the prerequisite interactive challenges first.',
         showConfirmButton: false,
         timer: 1800,
-        background: '#fff5f5',
-        color: '#991b1b'
+        background: '#ffeef2',
+        color: '#c8557c'
       });
     }
   };
@@ -315,7 +476,7 @@ const Quiz = () => {
     // 🎯 Whole-module sandboxes (moduleType 'html_sandbox') have nothing left to "return to" —
     // exiting must land the learner back on the Learn page. Card-embedded sandboxes (legacy,
     // multi-card modules) keep the old "close overlay, return to flow" behavior.
-    const isWholeModuleSandbox = state.moduleType === 'html_sandbox';
+    // (isWholeModuleSandbox is computed once, higher up, and reused here.)
     const handleExitSandbox = () => {
       if (isWholeModuleSandbox) {
         // 🎯 BUG FIX (HTML module XP not visible): this used to navigate
@@ -412,7 +573,16 @@ const Quiz = () => {
         topicXP={state.topicXP}
         chances={state.chances}
         onExit={handleExit}
+        reviewMode={state.isModuleReviewOnly}
+        onReset={handleResetModule}
+        resetScopeLabel={resetScopeLabel}
       />
+
+      {state.isModuleReviewOnly && (
+        <div className="quiz-review-mode-banner">
+          📖 Review Mode — you've already completed this {resetScopeLabel.toLowerCase()}. Browse freely; nothing here is re-scored.
+        </div>
+      )}
 
       <div className="main-flexible-workspace-deck d-flex position-relative">
         
@@ -428,21 +598,40 @@ const Quiz = () => {
             <span className="sidebar-rails-header-label">Course Syllabus</span>
           </div>
           <div className="sidebar-scrollable-menu-nodes cb-sidebar-scroll-track">
-            {state.content.map((card, idx) => {
+            {(() => {
+              // 🎯 SIDEBAR DEDUP: a wrong quiz/code answer re-appends the same
+              // card object onto state.content for another attempt (see the
+              // hook's retry-loop). Rendering one row per raw array index
+              // would show the same card twice, both flipping "done" in
+              // lockstep the instant either occurrence is solved — instead,
+              // render only each card's first-occurrence index; jumping there
+              // shows identical rehydrated data regardless of which index the
+              // live session is actually sitting on.
+              const seenCardIds = new Set();
+              const sidebarRows = [];
+              state.content.forEach((card, idx) => {
+                const cid = card._id?.toString();
+                if (seenCardIds.has(cid)) return;
+                seenCardIds.add(cid);
+                sidebarRows.push({ card, idx });
+              });
+              return sidebarRows;
+            })().map(({ card, idx }) => {
               const isActive = idx === state.currentIndex;
               const isCardPassive = ["knowledge", "video", "pdf", "ppt", "html_sandbox"].includes(card.card_type);
-              const isDone = completedCardIdsInApp.includes(card._id?.toString()) || isCardPassive;
-              
+              const reached = isCardReached(card) || isCardPassive;
+              const correct = isCardCorrect(card) || isCardPassive;
+
               let isSequenceSelectable = true;
               for (let k = 0; k < idx; k++) {
                 const prevCard = state.content[k];
                 const isPrevCardPassive = ["knowledge", "video", "pdf", "ppt", "html_sandbox"].includes(prevCard.card_type);
-                if (!completedCardIdsInApp.includes(prevCard._id?.toString()) && !isPrevCardPassive) {
+                if (!isCardReached(prevCard) && !isPrevCardPassive) {
                   isSequenceSelectable = false;
                 }
               }
 
-              const isNodeAccessible = isDone || isSequenceSelectable;
+              const isNodeAccessible = reached || isSequenceSelectable;
 
               return (
                 <div
@@ -466,7 +655,7 @@ const Quiz = () => {
                   </div>
 
                   <div className="row-status-lock-marker flex-shrink-0 ms-2">
-                    {isDone ? (
+                    {correct ? (
                       <CheckCircleFill className="sidebar-status-done" size={13} />
                     ) : (
                       !isNodeAccessible ? <LockFill className="sidebar-status-locked" size={11} /> : <div className="pending-dot-pulse"></div>
@@ -503,12 +692,12 @@ const Quiz = () => {
             )}
           </div>
           <div className="dock-right-wing">
-            <button 
-              className={`dock-nav-btn submit-action-trigger ${(state.answered || isPassiveNavCard || completedCardIdsInApp.includes(currentCard?._id?.toString())) ? 'action-node-pulsing' : ''}`} 
-              onClick={handleProcessDockAction} 
+            <button
+              className={`dock-nav-btn submit-action-trigger ${(state.answered || isPassiveNavCard || isCurrentCardReached) ? 'action-node-pulsing' : ''}`}
+              onClick={handleDockClick}
               disabled={isButtonDisabled}
               style={{
-                backgroundColor: isButtonDisabled ? '#cbd5e1' : 'var(--amber-glow, #ff9f1c)',
+                background: isButtonDisabled ? '#cbd5e1' : 'linear-gradient(135deg, var(--orbit-lavender), var(--orbit-sky))',
                 cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
                 minWidth: isHtmlSandboxCard ? '280px' : 'auto'
               }}

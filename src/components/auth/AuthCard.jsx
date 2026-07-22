@@ -284,7 +284,7 @@ export default function AuthCard() {
             Create your account.
           </h1>
           <p style={{ fontSize: "14px", color: "var(--orbit-text-muted)", margin: "0 0 24px", lineHeight: 1.6 }}>
-            Join IRIS Orbit and start your compliance learning journey.
+            Join IRIS Orbit and start leveling up your skills.
           </p>
 
           {error   && <div className="auth-alert-error"   style={{ marginBottom: "14px" }}>{error}</div>}

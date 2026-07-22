@@ -14,25 +14,25 @@ import "./FeaturesShowcase.css";
 const FEATURES = [
   {
     icon: Fire,
-    accent: "text-blaze",
+    accent: "text-rose",
     title: "Daily Streak & Calendar",
     text: "Every qualifying action — a read, a completed topic, a submitted idea — lights up your streak. A full activity calendar tracks your consistency over time.",
   },
   {
     icon: CheckCircleFill,
-    accent: "text-azure",
+    accent: "text-sky",
     title: "Daily Checklist",
     text: "Three simple goals reset every day: Today's Read, Module Completion, and Idea Submission — small habits that compound into real progress.",
   },
   {
     icon: LightningChargeFill,
-    accent: "text-gold",
+    accent: "text-lavender",
     title: "Plasma & Gamification",
     text: "Every card, quiz, and topic you finish earns real Plasma. Watch your total climb as you move through modules built the way people actually learn.",
   },
   {
     icon: TrophyFill,
-    accent: "text-violet",
+    accent: "text-teal",
     title: "Team Leaderboard",
     text: "See how your team stacks up against every other team in the organization — friendly competition that keeps learning momentum alive.",
   },
@@ -44,7 +44,7 @@ const FEATURES = [
   },
   {
     icon: RocketTakeoffFill,
-    accent: "text-azure",
+    accent: "text-mint",
     title: "Hot Modules",
     text: "Admins can spotlight one platform-wide \"hot\" module at a time — surfacing exactly what's most important to learn right now.",
   },

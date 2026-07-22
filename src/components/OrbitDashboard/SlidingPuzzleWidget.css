@@ -15,8 +15,8 @@
 }
 
 .orbit-puzzle--solved {
-  border-color: var(--amber-glow);
-  box-shadow: 0 0 0 1px var(--amber-glow), 0 0 24px 4px var(--amber-glow-muted);
+  border-color: var(--orbit-lavender);
+  box-shadow: 0 0 0 1px var(--orbit-lavender), 0 0 24px 4px rgba(201, 184, 255, 0.32);
 }
 
 .orbit-puzzle__header {
@@ -27,6 +27,9 @@
 }
 
 .orbit-puzzle__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.3px;
@@ -34,10 +37,14 @@
   color: var(--orbit-text-muted);
 }
 
+.orbit-puzzle__title svg {
+  color: var(--orbit-lavender-text);
+}
+
 .orbit-puzzle__solved-badge {
   font-size: 11px;
   font-weight: 800;
-  color: var(--amber-glow-dark);
+  color: var(--orbit-lavender-text);
 }
 
 .orbit-puzzle__reshuffle {
@@ -56,7 +63,7 @@
 
 .orbit-puzzle__reshuffle:hover {
   background: var(--orbit-canvas);
-  color: var(--amber-glow-dark);
+  color: var(--orbit-lavender-text);
 }
 
 .orbit-puzzle__moves {
@@ -67,10 +74,7 @@
 }
 
 /* Sized purely via CSS (not a JS px constant) so it scales smoothly on any
-   viewport with zero image distortion: background-size/background-position
-   on each tile are already percentage-based, so shrinking this container
-   shrinks the image slices proportionally instead of clipping/stretching
-   them. The 138px floor keeps individual tiles (container/3) at ~46px —
+   viewport. The 138px floor keeps individual tiles (container/3) at ~46px —
    comfortably above the 44px touch-target minimum even on the narrowest
    phones. */
 .orbit-puzzle__grid {
@@ -80,7 +84,7 @@
   grid-template-rows: repeat(3, 1fr);
   width: clamp(138px, 46vw, 210px);
   height: clamp(138px, 46vw, 210px);
-  gap: 2px;
+  gap: 6px;
   border-radius: 10px;
   overflow: hidden;
   background: var(--orbit-canvas);
@@ -90,19 +94,49 @@
   touch-action: manipulation;
 }
 
+/* Numbered pastel-rainbow tiles — fixed opaque fills + fixed dark ink,
+   legible in both themes regardless of the page canvas behind the grid.
+   No `transition` on `transform` here: framer-motion's `layout` animation
+   (see SlidingPuzzleWidget.jsx) drives this element's transform directly
+   via its own spring physics on every slide — a competing CSS transition
+   on the same property fights it frame-by-frame, which is exactly what
+   made the tiles look janky instead of gliding smoothly into place. Tap
+   feedback below uses `filter`/`box-shadow` instead, so it never touches
+   the property framer-motion owns. */
 .orbit-puzzle__tile {
   cursor: pointer;
-  border-radius: 3px;
-  background-repeat: no-repeat;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(16px, 6vw, 22px);
+  font-weight: 800;
+  color: var(--ink-strong);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.12s ease;
+  transition: filter 0.1s ease;
 }
 
+.orbit-puzzle__tile--rose     { background: var(--orbit-rose); }
+.orbit-puzzle__tile--pink     { background: var(--orbit-pink); }
+.orbit-puzzle__tile--mint     { background: var(--orbit-mint); }
+.orbit-puzzle__tile--teal     { background: var(--orbit-teal); }
+.orbit-puzzle__tile--sky      { background: var(--orbit-sky); }
+.orbit-puzzle__tile--lavender { background: var(--orbit-lavender); }
+.orbit-puzzle__tile--lilac    { background: var(--orbit-lilac); }
+
 .orbit-puzzle__tile:active {
-  transform: scale(0.97);
+  filter: brightness(0.9);
 }
 
 .orbit-puzzle__blank {
   background: var(--orbit-canvas);
+  border-radius: 8px;
+}
+
+.orbit-puzzle__caption {
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--orbit-text-muted);
 }

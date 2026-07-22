@@ -1,7 +1,7 @@
 /* src/admin/CurriculumBuilder.css */
 
 .iris-curriculum-builder-workspace {
-  background-color: #fafbfe; /* Elegant website canvas bright light backdrop */
+  background-color: var(--orbit-canvas); /* Unified site canvas, theme-aware */
   width: 100%;
   box-sizing: border-box;
 }

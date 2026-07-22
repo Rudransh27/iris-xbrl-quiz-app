@@ -10,14 +10,12 @@ import {
 import { AuthProvider, default as AuthContext } from "./context/AuthContext";
 import { Container, Spinner } from "react-bootstrap";
 import HomePage from "./pages/HomePage";
-import About from "./pages/About";
 import TopicTrail from "./pages/TopicTrail";
 import Quiz from "./pages/Quiz";
 import ModuleTrail from "./pages/ModuleTrail";
 import ModuleDetail from "./components/ModuleDetail";
 import Layout from "./components/Layout";
 import DocumentationPage from "./components/DocumentationPage";
-import Contact from "./components/Contact";
 import AuthPage from "./pages/Auth";
 import SsoCallback from "./pages/SsoCallback";
 import CompleteProfile from "./pages/CompleteProfile";
@@ -166,8 +164,6 @@ const AppContent = () => {
         {/* ── PUBLIC PAGES ─────────────────────────────────────────── */}
         <Route path="/onboarding" element={<OrbitOnboarding />} />
         <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
 
         {/* ── LEGACY PUBLIC MODULE ROUTES (kept for backward compat) ── */}
         <Route path="/modules" element={<ProtectedRoute><ModuleTrail /></ProtectedRoute>} />

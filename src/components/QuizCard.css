@@ -1,16 +1,21 @@
-/* src/components/QuizCard.css */
+/* src/components/QuizCard.css
+   Redesigned onto the shared --orbit-* tokens (was hardcoded to a fixed
+   white/light palette, no dark-mode override). Selected = lavender (was
+   amber), correct = teal (was light-sea-green, kept the same hue family),
+   incorrect = rose (was a plain crimson literal) — this exact 3-state
+   language is also used by CodeCard.css; keep both in sync. */
 
 .question-card {
   width: 100%;
-  background-color: var(--white, #ffffff);
-  border: 1px solid #e2e8f0;
-  border-top: 3px solid var(--amber-glow, #ff9f1c);
+  background-color: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  border-top: 3px solid var(--orbit-lavender);
   border-radius: 14px;
   padding: 24px;
   position: relative;
   z-index: 5;
   box-sizing: border-box;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  box-shadow: var(--orbit-shadow-sm);
 }
 
 /* 🖼️ Optional Quiz Illustration Adjustments */
@@ -20,8 +25,8 @@
   object-fit: contain;
   border-radius: 10px;
   margin-bottom: 20px;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
 }
 
 /* Mascot/Tom Img Layout Adjustment if any */
@@ -34,7 +39,7 @@
 }
 
 /* =========================================================================
-   🎯 QUESTION MARKDOWN TEXT CORE (Standard Premium Slate Charcoal)
+   🎯 QUESTION MARKDOWN TEXT CORE
    ========================================================================= */
 .quiz-question-text {
   margin-bottom: 24px;
@@ -47,13 +52,13 @@
 .quiz-question-text.markdown-body h3 {
   font-size: 1.15rem !important;
   font-weight: 700 !important;
-  color: #0f172a !important; /* 🎯 STANDARD: Premium core text visibility focus */
+  color: var(--orbit-text-heading) !important;
   line-height: 1.45 !important;
   margin: 0 !important;
 }
 
 /* =========================================================================
-   🎮 OPTIONS GRID ARCHITECTURE (Duolingo Style Mechanics)
+   🎮 OPTIONS GRID
    ========================================================================= */
 .options-grid {
   display: grid;
@@ -71,13 +76,13 @@
 
 .option-button {
   width: 100%;
-  background-color: #ffffff;
-  border: 2px solid #e2e8f0;
+  background-color: var(--orbit-surface);
+  border: 2px solid var(--orbit-border);
   border-radius: 12px;
   padding: 14px 20px;
   font-size: 0.94rem;
   font-weight: 600;
-  color: #334155; /* 🎯 STANDARD: Carbon Slate text weight for high readability */
+  color: var(--orbit-text-body);
   text-align: left;
   cursor: pointer;
   outline: none;
@@ -88,35 +93,33 @@
 
 /* Hover conditions when user hasn't submitted yet */
 .option-button:hover:not(:disabled) {
-  background-color: var(--amber-glow-hover, rgba(255, 159, 28, 0.08));
-  border-color: var(--amber-glow, #ff9f1c);
-  color: #0f172a;
+  background-color: rgba(201, 184, 255, 0.10);
+  border-color: var(--orbit-lavender);
+  color: var(--orbit-text-heading);
 }
 
-/* 💻 Option State 1: Active Selection Profile before submission.
-   Was the "IRIS corporate blue" (#0f256e) — now the app's one primary
-   accent, since this state is exactly "the thing you've actively chosen." */
+/* 💻 Option State 1: Active Selection Profile before submission — the one
+   thing you've actively chosen, not yet graded. */
 .option-button.selected {
-  background-color: var(--amber-glow-muted, rgba(255, 159, 28, 0.14));
-  border-color: var(--amber-glow, #ff9f1c);
-  color: var(--amber-glow-dark, #e08600) !important;
+  background-color: rgba(201, 184, 255, 0.16);
+  border-color: var(--orbit-lavender);
+  color: var(--orbit-lavender-text) !important;
   font-weight: 700;
 }
 
-/* 🟢 Option State 2: SUCCESS VERIFIED LOGIC (Correct Answer) —
-   standardized to the shared --light-sea-green success token. */
+/* 🟢 Option State 2: SUCCESS VERIFIED LOGIC (Correct Answer) */
 .option-button.correct {
-  background-color: rgba(46, 196, 182, 0.1) !important;
-  border-color: var(--light-sea-green, #2ec4b6) !important;
-  color: #14807a !important;
+  background-color: rgba(143, 224, 216, 0.14) !important;
+  border-color: var(--orbit-teal) !important;
+  color: var(--orbit-teal-text) !important;
   font-weight: 700;
 }
 
 /* 🔴 Option State 3: EXCEPTION CRASH LOGIC (Incorrect Selection) */
 .option-button.incorrect {
-  background-color: rgba(194, 24, 91, 0.06) !important;
-  border-color: #c2185b !important; /* Premium Pink/Crimson failure accent */
-  color: #c2185b !important;
+  background-color: rgba(255, 179, 199, 0.14) !important;
+  border-color: var(--orbit-rose) !important;
+  color: var(--orbit-rose-text) !important;
   font-weight: 700;
 }
 
@@ -130,8 +133,8 @@
    ========================================================================= */
 .quiz-explanation {
   margin-top: 24px;
-  background-color: #f8fafc; /* Crisp inner grey sub-bedding canvas */
-  border-top: 2px dashed #cbd5e1; /* Clear micro divider notch line */
+  background-color: var(--orbit-surface-subtle);
+  border-top: 2px dashed var(--orbit-border-strong);
   padding: 16px 20px;
   border-radius: 0 0 14px 14px;
 }
@@ -139,7 +142,7 @@
 .quiz-explanation h4 {
   font-size: 0.9rem;
   font-weight: 800;
-  color: #0f172a; /* Sharp Title tracking labels */
+  color: var(--orbit-text-heading);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0 0 8px 0;
@@ -148,15 +151,15 @@
 /* Internal text rendering inside explanation markdown node */
 .quiz-explanation .markdown-body p {
   font-size: 0.88rem !important;
-  color: #334155 !important; /* Soft Carbon Reading standard Gray applied safely */
+  color: var(--orbit-text-body) !important;
   line-height: 1.5 !important;
   margin: 0 !important;
 }
 
 /* Format internal standard sub-elements blocks if code hints occur */
-.quiz-explanation .markdown-body pre, 
+.quiz-explanation .markdown-body pre,
 .quiz-explanation .markdown-body code {
-  background-color: #e2e8f0 !important;
-  color: #0f172a !important;
+  background-color: var(--orbit-border) !important;
+  color: var(--orbit-text-heading) !important;
   font-size: 0.8rem !important;
 }

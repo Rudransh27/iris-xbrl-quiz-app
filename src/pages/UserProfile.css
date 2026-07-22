@@ -1,337 +1,672 @@
-/* src/pages/UserProfile.css */
+/* src/pages/UserProfile.css
+   Token-driven styles for the Profile page, deliberately matching the same
+   visual system as src/components/OrbitDashboard/OrbitDashboard.css and
+   OrbitProgressMap.css (card shell, title casing, pill shapes, the
+   pastel-rainbow --orbit-rose/pink/mint/teal/sky/lavender accent family, and
+   the lavender→sky progress-bar gradient) rather than inventing a separate
+   look for this one page. Only genuinely data-driven values (progress-bar
+   width, dynamic avatar background image) stay inline in UserProfile.jsx. */
 
-:root {
-  --amber-gold: #ffbe0bff;
-  --blaze-orange: #fb5607ff;
-  --neon-pink: #ff006eff;
-  --blue-violet: #8338ecff;
-  --azure-blue: #3a86ffff;
-
-  --duo-snow-white: #ffffff;
-  --duo-border-light: #e5e5e5;
-  --duo-text-dark: #3c3c3c;
-  --duo-text-slate: #5e6c75;
+.up-page {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--orbit-text-body);
+  min-height: 100%;
 }
 
-.duo-profile-page-canvas {
-  width: 100%;
-  min-height: 100vh;
-  background-color: var(--duo-snow-white);
-  box-sizing: border-box;
-  font-family: "Nunito", system-ui, sans-serif;
-}
-
-/* ================= THE HIGH-SATURATION GLASS CARD ARCHITECTURE ================= */
-.duo-profile-glass-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  border: 2px solid var(--duo-border-light);
-  border-bottom: 5px solid var(--duo-border-light); /* Tactile 3D thick flat shadow line */
-  border-radius: 24px;
-  overflow: hidden;
+/* ── Banner ─────────────────────────────────────────────────────────────── */
+.up-banner {
+  height: 132px;
   position: relative;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+  overflow: hidden;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(135deg, var(--orbit-lavender) 0%, var(--orbit-brand) 60%, var(--orbit-brand-dark) 100%);
 }
 
-/* Glossy diagonal shine overlay layer */
-.duo-card-shine::before {
-  content: "";
+.up-banner__ring {
   position: absolute;
-  top: 0; left: -100%; width: 50%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transform: skewX(-25deg);
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  animation: up-ring-pulse 9s ease-in-out infinite;
+}
+
+@keyframes up-ring-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+
+.up-back-btn {
+  position: absolute;
+  top: 14px;
+  left: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.up-back-btn:hover { background: rgba(255, 255, 255, 0.36); }
+
+.up-role-badge {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 5px 13px;
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(8px);
+}
+
+/* ── Header body (card wrapping banner + identity row) — same shell as
+   .orbit-card (radius/border/shadow), just without top padding since the
+   banner already fills that role. ─────────────────────────────────────── */
+.up-header-card {
+  background: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  border-radius: 16px;
+  box-shadow: var(--orbit-shadow-sm);
+  overflow: visible;
+  margin-bottom: 18px;
+}
+
+.up-header-body {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  padding: 0 22px 20px;
+  margin-top: -46px;
+  flex-wrap: wrap;
+}
+
+.up-avatar-wrap {
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.up-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 18px;
+  border: 4px solid var(--orbit-surface);
+  box-shadow: var(--orbit-shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+
+.up-avatar__emoji { font-size: 34px; line-height: 1; }
+
+.up-avatar__cam-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  gap: 3px;
   pointer-events: none;
 }
-.duo-profile-glass-card:hover .duo-card-shine::before {
-  left: 200%;
-  transition: left 0.6s ease-in-out;
+.up-avatar-wrap:hover .up-avatar__cam-overlay { opacity: 1; }
+
+.up-identity { flex: 1; min-width: 200px; padding-bottom: 4px; }
+
+.up-name-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
 }
 
-/* ================= LEFT MAIN PROFILES SPECIALIZATION ELEMENT ================= */
-.duo-profile-glass-card.identity-card:hover {
-  border-color: var(--azure-blue);
-  border-bottom-color: #1a62d6;
+.up-name {
+  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 900;
+  color: var(--orbit-text-heading);
+  margin: 0;
+  letter-spacing: -0.4px;
 }
 
-.duo-avatar-trigger-container {
-  width: 110px;
-  height: 110px;
-  margin: 0 auto;
-  position: relative;
+/* Plain filled pills — same shape/weight as .orbit-ml-card__pill and
+   .opm-you-badge (no border, no uppercase) rather than a bordered chip. */
+.up-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+.up-pill--role     { background: var(--orbit-brand-muted); color: var(--orbit-brand); }
+.up-pill--verified { background: rgba(143, 224, 216, 0.18); color: var(--orbit-teal-text); }
+.up-pill--pending  { background: rgba(255, 158, 207, 0.16); color: var(--orbit-pink-text); }
+
+.up-bio {
+  font-size: 13.5px;
+  color: var(--orbit-brand);
+  font-weight: 600;
+  margin: 0 0 4px;
+  font-style: italic;
+}
+.up-bio--empty { color: var(--orbit-text-muted); }
+
+.up-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--orbit-text-muted);
+  font-weight: 600;
+}
+.up-meta-row span { display: inline-flex; align-items: center; gap: 5px; }
+
+.up-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.up-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 15px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
+  font-family: inherit;
+  border: 1px solid var(--orbit-border);
+  background: var(--orbit-surface);
+  color: var(--orbit-text-body);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.up-btn:hover { border-color: var(--orbit-brand); background: var(--orbit-brand-muted); color: var(--orbit-brand); }
+.up-btn--danger { border-color: rgba(255, 158, 207, 0.4); color: var(--orbit-pink-text); }
+.up-btn--danger:hover { background: rgba(255, 158, 207, 0.14); border-color: var(--orbit-pink); color: var(--orbit-pink-text); }
+
+/* ── Avatar preset editor ──────────────────────────────────────────────── */
+.up-editor {
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+  border-radius: 14px;
+  padding: 20px;
+  margin: 0 22px 20px;
+  animation: up-fade-up 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes up-fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+.up-editor__title {
+  margin: 0 0 14px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--orbit-text-heading);
 }
 
-.duo-avatar-core-circle {
+.up-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.up-preset-card {
+  padding: 14px 8px;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid var(--orbit-border);
+  background: var(--orbit-surface);
+  transition: all 0.15s;
+}
+.up-preset-card:hover,
+.up-preset-card--active { border-color: var(--orbit-brand); background: var(--orbit-brand-muted); }
+.up-preset-card__emoji { font-size: 26px; margin-bottom: 6px; }
+.up-preset-card__label { font-size: 11px; font-weight: 700; color: var(--orbit-text-body); line-height: 1.3; }
+.up-preset-card--active .up-preset-card__label { color: var(--orbit-brand); }
+
+.up-upload-btn {
   width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background-color: #f7f9fa;
-  border: 4px solid var(--duo-border-light);
+  padding: 11px;
+  background: none;
+  border: 1.5px dashed var(--orbit-border);
+  border-radius: 12px;
+  color: var(--orbit-text-muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+}
+
+/* ── Generic card shell — identical to .orbit-card in OrbitDashboard.css,
+   reused here so every section on this page reads as the same component
+   the dashboard already uses everywhere else. ───────────────────────────── */
+.up-card {
+  background: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  border-radius: 16px;
+  box-shadow: var(--orbit-shadow-sm);
+  padding: 22px 22px 20px;
+  margin-bottom: 18px;
+}
+
+.up-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* Same as .orbit-card__title — plain sentence case, no uppercase/letter-
+   spacing treatment (the dashboard never uppercases section titles). */
+.up-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--orbit-text-heading);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Same trio of tokens as the topbar/dashboard's own Plasma pill
+   (--orbit-xp-bg/border/text), so "special" pills read as the same
+   currency/status indicator wherever they show up. */
+.up-rank-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 5px 13px;
+  border-radius: var(--radius-full);
+  background: var(--orbit-xp-bg);
+  color: var(--orbit-xp-text);
+  border: 1.5px solid var(--orbit-xp-border);
+  white-space: nowrap;
+}
+
+/* ── Your Stats — 4-tile grid. Each tile reuses the same translucent-wash +
+   solid-border technique as OrbitShell's XP/streak topbar pills and the
+   dashboard calendar's streak banner (rgba wash of the raw pastel + a
+   solid var(--orbit-<color>) border), so the same 4 accent hues you already
+   see in the topbar/dashboard carry through here. ─────────────────────── */
+.up-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.up-stat-tile {
+  padding: 16px 12px;
+  border-radius: 14px;
+  text-align: center;
+  border: 1px solid transparent;
+  transition: transform 0.14s, box-shadow 0.14s;
+}
+.up-stat-tile:hover { transform: translateY(-2px); box-shadow: var(--orbit-shadow-md); }
+.up-stat-tile__icon { font-size: 20px; margin-bottom: 6px; display: flex; justify-content: center; }
+.up-stat-tile__value { font-size: 22px; font-weight: 900; letter-spacing: -0.4px; line-height: 1; }
+.up-stat-tile__label { font-size: 10.5px; font-weight: 700; color: var(--orbit-text-muted); margin-top: 5px; }
+
+.up-stat-tile--lavender { background: rgba(201, 184, 255, 0.14); border-color: var(--orbit-lavender); }
+.up-stat-tile--pink     { background: rgba(255, 158, 207, 0.14); border-color: var(--orbit-pink); }
+.up-stat-tile--teal     { background: rgba(143, 224, 216, 0.14); border-color: var(--orbit-teal); }
+.up-stat-tile--sky      { background: rgba(169, 214, 255, 0.14); border-color: var(--orbit-sky); }
+
+.up-stat-tile--lavender .up-stat-tile__icon, .up-stat-tile--lavender .up-stat-tile__value { color: var(--orbit-lavender-text); }
+.up-stat-tile--pink .up-stat-tile__icon,     .up-stat-tile--pink .up-stat-tile__value     { color: var(--orbit-pink-text); }
+.up-stat-tile--teal .up-stat-tile__icon,     .up-stat-tile--teal .up-stat-tile__value     { color: var(--orbit-teal-text); }
+.up-stat-tile--sky .up-stat-tile__icon,      .up-stat-tile--sky .up-stat-tile__value      { color: var(--orbit-sky-text); }
+
+/* ── Your Orbit — styled as the same "belt" glass cards as
+   OrbitProgressMap.css's .opm-belt (left accent stripe, glass background,
+   small solid-accent badge circle, thin 4px progress track) instead of a
+   separate bespoke tier design. ─────────────────────────────────────────── */
+.up-orbit-list { display: flex; flex-direction: column; gap: 10px; }
+
+.up-orbit-tier {
+  border: 1px solid var(--orbit-glass-border);
+  border-left: 4px solid var(--orbit-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--orbit-glass-bg);
+  background-image: var(--orbit-glass-highlight);
+  box-shadow: var(--orbit-glass-shadow);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  gap: 14px;
+  transition: opacity 0.3s ease, border-color 0.3s ease;
+}
+.up-orbit-tier--current {
+  border-left-color: var(--orbit-lavender);
+}
+.up-orbit-tier--locked { opacity: 0.55; }
+
+.up-orbit-tier__badge {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 11px;
+  color: #fff;
+  background: var(--orbit-border-strong);
+  margin-top: 1px;
+}
+.up-orbit-tier--current .up-orbit-tier__badge {
+  background: var(--orbit-lavender-text);
+}
+
+.up-orbit-tier__body { flex: 1; min-width: 0; }
+
+.up-orbit-tier__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.up-orbit-tier__title { font-size: 13px; font-weight: 700; color: var(--orbit-text-heading); }
+
+/* Same three-state tag treatment as .opm-belt-tag--active/--complete/--locked. */
+.up-orbit-tier__status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+.up-orbit-tier--current .up-orbit-tier__status { background: var(--orbit-brand-muted); color: var(--orbit-brand); }
+.up-orbit-tier--locked .up-orbit-tier__status  { background: var(--orbit-surface-subtle); color: var(--orbit-text-muted); }
+
+.up-orbit-tier__desc { font-size: 11px; color: var(--orbit-text-muted); margin: 0 0 8px; line-height: 1.4; }
+
+.up-orbit-tier__rail {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--orbit-ring-empty);
   overflow: hidden;
-  transition: all 0.2s ease;
 }
-
-.duo-avatar-img-element {
-  width: 100%;
+.up-orbit-tier__fill {
   height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--orbit-lavender), var(--orbit-sky));
+  transition: width 0.5s ease;
+}
+.up-orbit-tier__xp-label { font-size: 10.5px; color: var(--orbit-text-muted); font-weight: 600; margin-top: 6px; }
+
+/* ── Two-up section (streak + achievements) ─────────────────────────── */
+.up-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
 }
 
-.duo-avatar-emoji-font {
-  font-size: 48px;
-}
+/* ── Streak strip ──────────────────────────────────────────────────────── */
+.up-streak-count { font-size: 28px; font-weight: 900; color: var(--orbit-text-heading); line-height: 1; margin: 0 0 14px; }
+.up-streak-count span { font-size: 12.5px; font-weight: 700; color: var(--orbit-text-muted); margin-left: 6px; }
 
-/* Duolingo image overlay change photo link */
-.duo-avatar-lens-overlay {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-  color: #ffffff;
+.up-streak-strip { display: flex; gap: 6px; }
+.up-streak-day {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 900;
-  opacity: 0;
-  transition: opacity 0.15s ease;
+  gap: 6px;
 }
-.duo-avatar-trigger-container:hover .duo-avatar-lens-overlay {
-  opacity: 1;
-}
-
-.duo-profile-title-name {
-  font-size: 22px;
-  font-weight: 900;
-  color: var(--duo-text-dark);
-}
-
-.duo-profile-sub-role {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--duo-text-slate);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Multi-colored status custom badges mapping */
-.duo-status-badge {
-  font-size: 11px;
-  font-weight: 900;
-  padding: 4px 12px;
-  border-radius: 10px;
-  text-transform: uppercase;
-  border: 2px solid transparent;
-}
-.badge-azure { background-color: #f0f6ff; color: var(--azure-blue); border-color: rgba(58, 134, 255, 0.2); }
-.badge-green { background-color: #f2fdf0; color: #58cc02; border-color: rgba(88, 204, 2, 0.2); }
-.badge-gold { background-color: #fdf8eb; color: #c28b00; border-color: rgba(255, 190, 11, 0.2); }
-
-/* Embedded Presets Selector Drawer */
-.duo-avatar-selector-drawer {
-  background-color: #f7f9fa;
-  border: 2px solid var(--duo-border-light);
-  border-radius: 16px;
-  margin-top: 12px;
-}
-.drawer-lbl-micro {
-  font-size: 9px;
-  font-weight: 900;
-  color: #a0a0a0;
-  letter-spacing: 0.5px;
-}
-.duo-preset-node {
-  background-color: #ffffff;
-  border: 2px solid var(--duo-border-light);
-  border-bottom-width: 4px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.1s ease;
-}
-.duo-preset-node.active {
-  border-color: var(--azure-blue);
-  border-bottom-color: #1a62d6;
-  background-color: #f0f6ff;
-}
-.preset-label-text {
-  font-size: 10px;
-  font-weight: 900;
-  color: var(--duo-text-dark);
-}
-
-/* ================= RIGHT DATA PANELS ELEMENTS ================= */
-.duo-profile-glass-card.info-strip-card {
-  min-height: 72px;
-}
-.strip-meta-lbl {
-  font-size: 10px;
-  font-weight: 900;
-  color: var(--duo-text-slate);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  display: block;
-}
-.strip-main-val {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--duo-text-dark);
-  display: block;
-}
-
-/* Colorful Icon circle boundaries */
-.strip-icon-box, .panel-header-icon-box {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+.up-streak-day__label { font-size: 10px; font-weight: 700; color: var(--orbit-text-muted); }
+.up-streak-day__dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  border: 2px solid transparent;
+  font-size: 13px;
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+  color: var(--orbit-text-muted);
 }
-.icon-azure { color: var(--azure-blue); background-color: #f0f6ff; border-color: rgba(58, 134, 255, 0.15); }
-.icon-green { color: #58cc02; background-color: #f2fdf0; border-color: rgba(88, 204, 2, 0.15); }
-.icon-gold { color: #d69800; background-color: #fdf8eb; border-color: rgba(255, 190, 11, 0.15); }
-.icon-pink { color: var(--neon-pink); background-color: #fff0f5; border-color: rgba(255, 0, 110, 0.15); }
+/* Same mint→teal "done" gradient as .orbit-checklist__bullet--done. */
+.up-streak-day--done .up-streak-day__dot {
+  background: linear-gradient(135deg, var(--orbit-mint), var(--orbit-teal));
+  border-color: transparent;
+  color: #0d3327;
+}
 
-/* Core Panel Typography Header */
-.panel-title-text {
-  font-size: 16px;
-  font-weight: 900;
-  color: var(--duo-text-dark);
-  margin: 0;
+/* ── Achievements gallery ─────────────────────────────────────────────── */
+.up-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
-.panel-subtitle-text {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--duo-text-slate);
-  margin: 2px 0 0 0;
-}
-.duo-xp-total-pill {
-  font-size: 12px;
-  font-weight: 900;
-  padding: 6px 14px;
+.up-badge-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
   border-radius: 12px;
-  background-color: var(--blue-violet);
-  color: #ffffff;
+  text-align: center;
+  border: 1px solid transparent;
 }
+.up-badge-tile__icon { font-size: 18px; }
+.up-badge-tile__label { font-size: 10px; font-weight: 700; color: var(--orbit-text-body); line-height: 1.3; }
 
-/* ================= XP PROGRESS RAILS SYSTEM ================= */
-.duo-xp-progress-track-container {
-  background: #f7f9fa;
-  border: 2px solid var(--duo-border-light);
-  border-radius: 16px;
+/* Rotating pastel-rainbow accents per badge — same rotation logic as the
+   dashboard calendar's --orbit-rose/pink/mint/teal/sky/lavender cells. */
+.up-badge-tile--rose     { background: rgba(255, 179, 199, 0.16); border-color: var(--orbit-rose); }
+.up-badge-tile--pink     { background: rgba(255, 158, 207, 0.16); border-color: var(--orbit-pink); }
+.up-badge-tile--mint     { background: rgba(168, 230, 207, 0.18); border-color: var(--orbit-mint); }
+.up-badge-tile--teal     { background: rgba(143, 224, 216, 0.16); border-color: var(--orbit-teal); }
+.up-badge-tile--sky      { background: rgba(169, 214, 255, 0.16); border-color: var(--orbit-sky); }
+.up-badge-tile--lavender { background: rgba(201, 184, 255, 0.16); border-color: var(--orbit-lavender); }
+
+.up-badge-tile--rose .up-badge-tile__icon     { color: var(--orbit-rose-text); }
+.up-badge-tile--pink .up-badge-tile__icon     { color: var(--orbit-pink-text); }
+.up-badge-tile--mint .up-badge-tile__icon     { color: var(--orbit-mint-text); }
+.up-badge-tile--teal .up-badge-tile__icon     { color: var(--orbit-teal-text); }
+.up-badge-tile--sky .up-badge-tile__icon      { color: var(--orbit-sky-text); }
+.up-badge-tile--lavender .up-badge-tile__icon { color: var(--orbit-lavender-text); }
+
+.up-badge-tile--locked {
+  background: var(--orbit-surface-subtle);
+  border-color: var(--orbit-border);
+  opacity: 0.5;
 }
-.progress-track-lbl { font-size: 12px; font-weight: 800; color: var(--duo-text-slate); }
-.progress-track-val { font-size: 13px; font-weight: 900; color: var(--duo-text-dark); }
-.progress-track-val .muted-text { color: #a0a0a0; font-weight: 700; }
+.up-badge-tile--locked .up-badge-tile__icon,
+.up-badge-tile--locked .up-badge-tile__label { color: var(--orbit-text-muted); }
 
-.duo-progress-rail-base {
-  width: 100%;
-  height: 12px;
-  background-color: var(--duo-border-light);
-  border-radius: 8px;
+/* ── Account details grid ─────────────────────────────────────────────── */
+.up-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.up-info-tile { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.up-info-tile__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--orbit-brand-muted);
+  color: var(--orbit-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.up-info-tile__label { margin: 0; font-size: 10px; font-weight: 700; color: var(--orbit-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.up-info-tile__value { margin: 2px 0 0; font-size: 13px; font-weight: 700; color: var(--orbit-text-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Sandbox reviews — same card shell as .orbit-ml-card (radius, border,
+   shadow, hover lift on the graded/interactive variant). ────────────────── */
+.up-sandbox-list { display: flex; flex-direction: column; gap: 12px; }
+
+.up-sandbox-card {
+  border: 1px solid var(--orbit-border);
+  border-radius: 14px;
+  box-shadow: var(--orbit-shadow-sm);
   overflow: hidden;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
 }
-.duo-progress-fill-beam {
-  height: 100%;
-  border-radius: 8px;
-  background: linear-gradient(90deg, var(--azure-blue), #5fa1ff);
-  transition: width 0.4s ease;
-}
+.up-sandbox-card--graded { border-color: var(--orbit-brand); box-shadow: var(--orbit-shadow-md); }
 
-/* ================= STATS SUMMARY BOX GRID BLOCKS ================= */
-.duo-stats-summary-box {
-  background-color: rgba(255,255,255,0.4);
-  border: 2px solid var(--duo-border-light);
-  border-bottom-width: 5px;
-  border-radius: 18px;
-  padding: 16px;
-  transition: all 0.1s ease;
+.up-sandbox-card__header {
+  padding: 14px 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
-.duo-stats-summary-box:hover {
-  transform: translateY(-2px);
+.up-sandbox-card--graded .up-sandbox-card__header { background: var(--orbit-brand-muted); }
+
+.up-sandbox-card__title { font-size: 13.5px; font-weight: 800; color: var(--orbit-text-heading); }
+.up-sandbox-card__module { font-size: 11.5px; color: var(--orbit-text-muted); margin-top: 2px; }
+
+.up-score-chip {
+  padding: 5px 12px;
+  border-radius: 9px;
+  font-size: 11.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
 }
-.duo-stats-summary-box h2 {
-  font-size: 26px;
-  font-weight: 900;
-  margin: 0;
-  letter-spacing: -0.5px;
+.up-score-chip--mcq   { background: var(--orbit-brand-muted); color: var(--orbit-brand); }
+.up-score-chip--desc  { background: var(--orbit-surface-subtle); color: var(--orbit-text-muted); }
+.up-score-chip--desc-graded { background: rgba(143, 224, 216, 0.18); color: var(--orbit-teal-text); }
+.up-score-chip--total { background: var(--orbit-surface-subtle); border: 1px solid var(--orbit-border); color: var(--orbit-text-heading); font-weight: 800; }
+
+.up-sandbox-card__detail { padding: 0 18px 18px; border-top: 1px solid var(--orbit-border); }
+
+.up-feedback-banner {
+  margin: 14px 0;
+  padding: 13px 15px;
+  background: var(--orbit-brand-muted);
+  border-radius: 12px;
+  border-left: 3px solid var(--orbit-brand);
 }
-.duo-stats-summary-box span {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--duo-text-slate);
-  display: block;
+.up-feedback-banner__label { margin: 0 0 4px; font-size: 10px; font-weight: 800; color: var(--orbit-brand); text-transform: uppercase; letter-spacing: 0.6px; }
+.up-feedback-banner__text { margin: 0; font-size: 13px; color: var(--orbit-text-body); line-height: 1.6; font-style: italic; }
+
+.up-question {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+  margin-bottom: 10px;
+}
+.up-question:last-child { margin-bottom: 0; }
+.up-question__head { display: flex; align-items: flex-start; gap: 10px; }
+.up-question__type {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: var(--radius-full);
   margin-top: 2px;
 }
+.up-question__type--mcq  { background: var(--orbit-brand-muted); color: var(--orbit-brand); }
+.up-question__type--desc { background: rgba(169, 214, 255, 0.18); color: var(--orbit-sky-text); }
+.up-question__text { margin: 0; font-size: 12.5px; font-weight: 600; color: var(--orbit-text-body); line-height: 1.5; flex: 1; }
 
-/* Color track border mappings for individual statistics tiles */
-.duo-stats-summary-box.color-azure { color: var(--azure-blue); }
-.duo-stats-summary-box.color-azure:hover { border-color: var(--azure-blue); border-bottom-color: #1a62d6; }
-
-.duo-stats-summary-box.color-pink { color: var(--neon-pink); }
-.duo-stats-summary-box.color-pink:hover { border-color: var(--neon-pink); border-bottom-color: #b3004b; }
-
-.duo-stats-summary-box.color-gold { color: #c28b00; }
-.duo-stats-summary-box.color-gold:hover { border-color: var(--amber-gold); border-bottom-color: #e0a300; }
-
-.duo-empty-placeholder {
-  background-color: #f7f9fa;
-  border: 2px dashed var(--duo-border-light);
-  border-radius: 16px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #afafaf;
-}
-
-/* ================= CHUNKY ACTION CTA SELECTIONS ================= */
-.duo-btn-outline-compact {
-  background-color: #ffffff;
-  color: var(--duo-text-slate);
-  border: 2px solid var(--duo-border-light);
-  border-bottom: 4px solid var(--duo-border-light);
-  padding: 8px 16px;
-  border-radius: 12px;
+/* Same literal solid-fill + fixed-dark-ink pattern as
+   .orbit-ml-card__status--completed / --notstarted. */
+.up-question__correctness {
+  flex-shrink: 0;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.1s ease;
+  padding: 3px 10px;
+  border-radius: 8px;
 }
-.duo-btn-outline-compact:hover {
-  color: var(--duo-text-dark);
-  background-color: #f7f9fa;
-}
-.duo-btn-outline-compact:active {
-  transform: translateY(2px);
-  border-bottom-width: 2px;
-}
+.up-question__correctness--right { background: var(--orbit-teal); color: #0d3327; }
+.up-question__correctness--wrong { background: var(--orbit-pink); color: #3a1024; }
 
-/* Dynamic Core Initial Loader Spinner Element */
-.duo-profile-loader-box {
-  width: 100%;
-  min-height: 60vh;
+.up-question__answer {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--orbit-surface);
+  border-radius: 8px;
+  border: 1px solid var(--orbit-border);
+}
+.up-question__answer-label { margin: 0 0 4px; font-size: 10px; font-weight: 700; color: var(--orbit-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.up-question__answer-text { margin: 0; font-size: 12px; color: var(--orbit-text-body); white-space: pre-wrap; word-break: break-word; line-height: 1.6; }
+
+.up-empty-state {
+  border: 1px dashed var(--orbit-border);
+  border-radius: 16px;
+  padding: 40px 20px;
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
+  color: var(--orbit-text-muted);
 }
-.duo-profile-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid var(--duo-border-light);
-  border-top-color: var(--azure-blue);
-  border-radius: 50%;
-  animation: duoSpin 0.8s linear infinite;
+.up-empty-state__icon { font-size: 30px; opacity: 0.4; }
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .up-two-col { grid-template-columns: 1fr; }
 }
-@keyframes duoSpin {
-  100% { transform: rotate(360deg); }
+
+@media (max-width: 720px) {
+  .up-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .up-info-grid { grid-template-columns: repeat(2, 1fr); }
+  .up-badge-grid { grid-template-columns: repeat(3, 1fr); }
+  .up-header-body { flex-direction: column; align-items: center; text-align: center; }
+  .up-identity { text-align: center; }
+  .up-name-row, .up-meta-row { justify-content: center; }
+  .up-header-actions { width: 100%; }
+  .up-header-actions .up-btn { flex: 1; justify-content: center; }
+}
+
+@media (max-width: 480px) {
+  .up-info-grid { grid-template-columns: 1fr; }
+  .up-stats-grid { grid-template-columns: repeat(2, 1fr); }
 }

@@ -5,6 +5,41 @@ import AuthContext from "../context/AuthContext";
 import * as validators from "../utils/validators";
 import Swal from "sweetalert2";
 
+// Card types with no "correctness" concept — a UserCardProgress doc existing
+// at all (attempted) is the whole story for these, both for the forward-lock
+// prefix-walk AND the sidebar checkmark. quiz/code split those two into
+// separate predicates (see isCardReached vs isCardCorrect below) because the
+// life system explicitly lets a learner continue forward past a wrong quiz
+// answer — "reached" must not require "correct".
+const PASSIVE_CARD_TYPES = ["knowledge", "video", "pdf", "ppt", "html_sandbox"];
+
+// Derives the in-session UI fields (selectedOption/userCodeAnswer/answered/
+// isCorrect) a card should show the moment it becomes current — either a
+// genuine read-only replay of a previously-submitted answer (Review Mode),
+// or a clean blank slate for a not-yet-attempted card. Centralized here so
+// jumpToIndex, goToNextOrFinish, and the initial mount all agree.
+const deriveFieldsForCard = (card, progressByCardId) => {
+  const progress = card ? progressByCardId?.[card._id] : null;
+  if (!progress || !progress.attempted) {
+    return { selectedOption: null, userCodeAnswer: "", answered: false, isCorrect: null, validationError: null };
+  }
+  return {
+    selectedOption: (progress.selectedOption !== undefined && progress.selectedOption !== null) ? progress.selectedOption : null,
+    userCodeAnswer: progress.userCodeAnswer || "",
+    answered: true,
+    isCorrect: !!progress.isCorrect,
+    validationError: null,
+  };
+};
+
+// Merges a fresh completion into the local progressByCardId cache so
+// isCardReached/isCardCorrect reflect it immediately, without waiting on a
+// full module-scope-state refetch.
+const markCardReached = (progressByCardId, cardId, patch) => ({
+  ...progressByCardId,
+  [cardId]: { ...(progressByCardId[cardId] || {}), attempted: true, ...patch },
+});
+
 export const useQuizEngine = (moduleId, topicId, navigate) => {
   const { addUserXP, refreshUser } = useContext(AuthContext);
 
@@ -33,7 +68,17 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
     quizFinished: false,
     topicXP: 0,
     moduleType: 'standard',
+    // 🎯 LINEAR LOCKING + REVIEW MODE
+    progressByCardId: {},
+    isModuleReviewOnly: false,
   });
+
+  // 🎯 Holds the pristine, server-ordered card list from the moment it was
+  // first fetched — BEFORE any wrong-answer retry-duplicates get pushed onto
+  // state.content during the session (see Case B below). resetModule() uses
+  // this to restore a genuinely clean slate locally, without a network
+  // round-trip (Card documents themselves aren't touched by a reset).
+  const originalContentRef = useRef(null);
 
   // ⚡ LOCK INGESTION: Load content AND previous progress on mount adaptively
   useEffect(() => {
@@ -85,12 +130,42 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
         }
 
         if (cardsPayload && cardsPayload.length > 0) {
+          // 3. 🎯 LINEAR LOCKING + REVIEW MODE: fetch the ordered per-card
+          // progress+answers for this exact module/topic scope — this is
+          // what actually drives sidebar locking and read-only rehydration
+          // (previously `state.completedCardIds` was read in Quiz.jsx but
+          // never populated anywhere, so locking silently never worked).
+          let progressByCardId = {};
+          try {
+            const scopeState = await api.getModuleScopeState(moduleId, isExpressFlatTrack ? undefined : topicId);
+            (scopeState?.cards || []).forEach((c) => {
+              progressByCardId[c.cardId] = c;
+            });
+          } catch (scopeErr) {
+            console.error("⚠️ Failed to load module-scope progress state (locking/review will default to a fresh start):", scopeErr);
+          }
+
+          originalContentRef.current = cardsPayload;
+
+          // Resume at the first not-yet-reached card; if every card is
+          // already reached, the whole session opens in Review Mode.
+          const firstUnreachedIdx = cardsPayload.findIndex(
+            (c) => !progressByCardId[c._id]?.attempted
+          );
+          const isModuleReviewOnly = firstUnreachedIdx === -1;
+          const startIndex = isModuleReviewOnly ? 0 : firstUnreachedIdx;
+          const startFields = deriveFieldsForCard(cardsPayload[startIndex], progressByCardId);
+
           setState((prev) => ({
             ...prev,
             content: cardsPayload,
             loading: false,
             topicXP: historicalXP,
             moduleType: moduleData?.moduleType || 'standard',
+            progressByCardId,
+            isModuleReviewOnly,
+            currentIndex: startIndex,
+            ...startFields,
           }));
         } else {
           console.warn(
@@ -108,6 +183,7 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
     };
 
     fetchContentAndProgress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicId, moduleId, isExpressFlatTrack]);
 
   const getResetCardState = () => ({
@@ -235,6 +311,7 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
           ...prev,
           quizFinished: true,
           topicXP: prev.topicXP + serverXpChange,
+          progressByCardId: markCardReached(prev.progressByCardId, currentCard._id, { isCorrect: true }),
         }));
       } else {
         setState((prev) => ({
@@ -242,6 +319,7 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
           currentIndex: nextIndex,
           ...getResetCardState(),
           topicXP: prev.topicXP + serverXpChange,
+          progressByCardId: markCardReached(prev.progressByCardId, currentCard._id, { isCorrect: true }),
         }));
       }
       return;
@@ -269,6 +347,16 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
       }
     }
 
+    // 🎯 REVIEW MODE: persist the actual submitted answer alongside
+    // correctness so a later revisit/reopen can show a genuine read-only
+    // replay instead of a blank card.
+    let answerPayload = null;
+    if (currentCard.card_type === "quiz") {
+      answerPayload = { selectedOption: state.selectedOption };
+    } else if (currentCard.card_type === "code") {
+      answerPayload = { userCodeAnswer: state.userCodeAnswer };
+    }
+
     try {
       const timeSpentDelta = Math.round((Date.now() - cardStartTimeRef.current) / 1000);
       const backendResponse = await api.recordCardCompletion(
@@ -276,7 +364,7 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
         isExpressFlatTrack ? null : topicId,
         moduleId,
         isCurrentCorrect,
-        null,
+        answerPayload,
         timeSpentDelta,
       );
 
@@ -323,6 +411,11 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
           content: updatedContent,
           quizFinished: nextFinishedState,
           topicXP: prev.topicXP + verifiedXpChange,
+          progressByCardId: markCardReached(prev.progressByCardId, currentCard._id, {
+            isCorrect: isCurrentCorrect,
+            selectedOption: currentCard.card_type === "quiz" ? state.selectedOption : (prev.progressByCardId[currentCard._id]?.selectedOption ?? null),
+            userCodeAnswer: currentCard.card_type === "code" ? state.userCodeAnswer : (prev.progressByCardId[currentCard._id]?.userCodeAnswer ?? ""),
+          }),
         };
       });
     } catch (err) {
@@ -330,19 +423,99 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
     }
   };
 
+  // 🎯 LINEAR LOCKING + REVIEW MODE: the single place that decides whether
+  // navigating to a target index should rehydrate a genuine past answer
+  // (the target card is reached) or start blank (it isn't) — both the
+  // sidebar's click handler and handlePrev go through this now, instead of
+  // Quiz.jsx directly poking `currentIndex` and skipping rehydration.
+  const jumpToIndex = useCallback((targetIndex) => {
+    setState((prev) => {
+      if (!prev.content || targetIndex < 0 || targetIndex >= prev.content.length) return prev;
+      const targetCard = prev.content[targetIndex];
+      const fields = deriveFieldsForCard(targetCard, prev.progressByCardId);
+      return { ...prev, currentIndex: targetIndex, ...fields };
+    });
+  }, []);
+
+  // 🎯 REVIEW MODE: paging through an ALREADY-reached card must never
+  // re-submit/re-score it — this is what the dock button calls instead of
+  // handleAction/handleProcessDockAction whenever the current card is
+  // already reached, so Case B's validation logic is simply never invoked
+  // for a pure review page-through.
+  const goToNextOrFinish = useCallback(() => {
+    setState((prev) => {
+      if (!prev.content) return prev;
+      if (prev.currentIndex >= prev.content.length - 1) {
+        return { ...prev, quizFinished: true };
+      }
+      const nextIndex = prev.currentIndex + 1;
+      const nextCard = prev.content[nextIndex];
+      const fields = deriveFieldsForCard(nextCard, prev.progressByCardId);
+      return { ...prev, currentIndex: nextIndex, ...fields };
+    });
+  }, []);
+
   const handlePrev = () => {
-    if (state.currentIndex > 0) {
-      setState((prev) => ({
-        ...prev,
-        currentIndex: prev.currentIndex - 1,
-        ...getResetCardState(),
-      }));
-    }
+    if (state.currentIndex > 0) jumpToIndex(state.currentIndex - 1);
   };
+
+  // 🎯 REATTEMPT: archives this module's/topic's progress+answers server-side
+  // (claws back its XP), then restores a genuinely clean local slate from the
+  // pristine card list captured on first load — no network round-trip needed
+  // to re-fetch module content, since Card documents aren't touched by a reset.
+  const resetModule = useCallback(async () => {
+    const response = await api.resetModuleProgress(moduleId, isExpressFlatTrack ? undefined : topicId);
+    setState((prev) => ({
+      ...prev,
+      content: originalContentRef.current || prev.content,
+      currentIndex: 0,
+      score: 0,
+      chances: 5,
+      quizFinished: false,
+      isModuleReviewOnly: false,
+      progressByCardId: {},
+      topicXP: 0,
+      ...getResetCardState(),
+    }));
+    // Full server refetch so the XP clawback is reflected correctly — do NOT
+    // also call addUserXP here, that would double-subtract against the
+    // server-true value refreshUser lands on.
+    try { await refreshUser(); } catch (e) {}
+    return response;
+  }, [moduleId, topicId, isExpressFlatTrack, refreshUser]);
+
   // ✅ Fixed
   const updateFields = useCallback((field, value) => {
     setState((prev) => ({ ...prev, [field]: value }));
   }, []); // empty deps — setState setter is stable
 
-  return { state, handleAction, handlePrev, updateFields, applyAutoSaveXp, verifyModuleProgressIfComplete };
+  // 🎯 "Reached" (any submission exists, right or wrong) drives the forward-
+  // lock prefix-walk and backward click-ability. "Correct" drives only the
+  // sidebar checkmark / whether a revisit shows "you got this right" styling.
+  const isCardReached = useCallback((card) => {
+    if (!card) return false;
+    return !!state.progressByCardId?.[card._id]?.attempted;
+  }, [state.progressByCardId]);
+
+  const isCardCorrect = useCallback((card) => {
+    if (!card) return false;
+    const progress = state.progressByCardId?.[card._id];
+    if (!progress) return false;
+    if (PASSIVE_CARD_TYPES.includes(card.card_type)) return !!progress.attempted;
+    return !!progress.isCorrect;
+  }, [state.progressByCardId]);
+
+  return {
+    state,
+    handleAction,
+    handlePrev,
+    updateFields,
+    applyAutoSaveXp,
+    verifyModuleProgressIfComplete,
+    jumpToIndex,
+    goToNextOrFinish,
+    resetModule,
+    isCardReached,
+    isCardCorrect,
+  };
 };

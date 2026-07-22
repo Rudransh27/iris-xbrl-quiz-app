@@ -14,10 +14,14 @@ const IS_COARSE_POINTER =
 // Owns the idle bob/yaw + mouse-follow tilt on a <group> wrapper, so the same
 // animation applies identically whether the real model or the placeholder is
 // currently mounted inside it (neither AstronautModel nor AstronautFallback
-// carries any animation logic of their own).
-export default function AstronautRig({ position = [2.1, BASE_Y, 0] }) {
+// carries any animation logic of their own). `Model` defaults to the
+// original astronaut.glb loader (AstronautModel) so the homepage's existing
+// CosmicHeroCanvas usage is unaffected — pass a different one (e.g.
+// AstronautBoyModel) to swap the mounted figure without touching this rig.
+export default function AstronautRig({ position = [2.1, BASE_Y, 0], Model }) {
   const groupRef = useRef();
   const reducedMotion = useReducedMotion();
+  const AstronautComponent = Model || AstronautModel;
 
   useFrame((state, delta) => {
     const group = groupRef.current;
@@ -52,7 +56,7 @@ export default function AstronautRig({ position = [2.1, BASE_Y, 0] }) {
     <group ref={groupRef} position={position}>
       <CanvasErrorBoundary fallback={<AstronautFallback />}>
         <Suspense fallback={<AstronautFallback />}>
-          <AstronautModel />
+          <AstronautComponent />
         </Suspense>
       </CanvasErrorBoundary>
     </group>

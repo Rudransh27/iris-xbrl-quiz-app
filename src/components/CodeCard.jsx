@@ -40,19 +40,23 @@ const CodeCard = ({
   const [attemptLogged, setAttemptLogged] = useState(false);
   const [editorTheme, setEditorTheme] = useState("github");
 
-  // Live active system dark/light tracker
+  // Live active system dark/light tracker — the app's theme toggle
+  // (src/context/ThemeContext.jsx) sets a `data-theme` ATTRIBUTE on
+  // <html>, not a `dark-theme` CLASS on <body>; watching the wrong node/
+  // attribute meant this never actually fired, so the Ace editor always
+  // rendered in "github" (light) regardless of the app's real theme.
   useEffect(() => {
     const checkActiveTheme = () => {
-      const isDark = document.body.classList.contains("dark-theme");
+      const isDark = document.documentElement.getAttribute("data-theme") === "dark";
       setEditorTheme(isDark ? "monokai" : "github");
     };
 
     checkActiveTheme();
 
     const observer = new MutationObserver(checkActiveTheme);
-    observer.observe(document.body, {
+    observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["class"],
+      attributeFilter: ["data-theme"],
     });
     return () => observer.disconnect();
   }, []);

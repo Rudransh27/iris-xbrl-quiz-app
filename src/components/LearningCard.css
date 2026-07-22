@@ -1,34 +1,26 @@
 /* src/components/LearningCard.css
-   Recolored to the shared crisp/minimal card language (matches TopicCard):
-   flat white, a single thin neutral border, a soft ambient shadow instead
-   of a chunky 3D ridge, and a top accent line as the one intentional
-   --amber-glow touch. The old --azure-blue token was declared but never
-   actually used anywhere in this file — dropped rather than carried along. */
-
-:root {
-  --duo-snow: #ffffff;
-  --duo-border: #e5e5e5;
-  --duo-text-dark: #3c3c3c;
-  --duo-text-slate: #5e6c75;
-}
+   Redesigned onto the shared --orbit-* tokens (was hardcoded to a fixed
+   white/light palette, no dark-mode override) — matches TopicCard/QuizCard:
+   theme-aware surface, a thin neutral border, a soft ambient shadow, and a
+   lavender top accent line (was amber). */
 
 .knowledge-card {
   width: 100%;
   box-sizing: border-box;
-  font-family: "Nunito", system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   margin: 12px 0;
 }
 
 .knowledge-text {
   width: 100%;
-  background-color: var(--white, var(--duo-snow));
-  border: 1px solid #e2e8f0;
-  border-top: 3px solid var(--amber-glow, #ff9f1c);
+  background-color: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  border-top: 3px solid var(--orbit-lavender);
   border-radius: 14px;
   padding: 24px;
   position: relative; /* Gives context coordinate mappings to the mascot element */
   box-sizing: border-box;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  box-shadow: var(--orbit-shadow-sm);
 }
 
 /* 🎯 FIXED: Absolute anchoring loops targeting the internal top-right edge boundaries */
@@ -47,7 +39,7 @@
 .knowledge-title {
   font-size: 20px;
   font-weight: 900;
-  color: var(--duo-text-dark);
+  color: var(--orbit-text-heading);
   margin: 0 0 14px 0;
   padding-right: 64px; /* Creates explicit buffer window space */
   letter-spacing: -0.5px;
@@ -57,11 +49,11 @@
 /* ================= 🖼️ EMBEDDED GRAPHICS BLOCKS ================= */
 .card-image-viewport-wrapper {
   width: 100%;
-  border: 2px solid var(--duo-border);
+  border: 2px solid var(--orbit-border);
   border-radius: 16px;
   overflow: hidden;
   margin-bottom: 16px;
-  background-color: #f7f9fa;
+  background-color: var(--orbit-surface-subtle);
 }
 
 .card-img1 {
@@ -79,7 +71,7 @@
 .knowledge-content {
   font-size: 14.5px;
   font-weight: 700;
-  color: var(--duo-text-slate);
+  color: var(--orbit-text-body);
   line-height: 1.6;
 }
 
@@ -90,7 +82,9 @@
   margin-bottom: 0;
 }
 
-/* Prism syntax formatting block sheets */
+/* Prism syntax formatting block sheets — deliberately fixed dark regardless
+   of app theme (a code block reads the same either way, matching CodeCard's
+   own Prism palette). */
 .knowledge-content pre {
   background-color: #182730 !important;
   border-radius: 12px !important;

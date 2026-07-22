@@ -1,12 +1,20 @@
-/* src/pages/Quiz.css */
+/* src/pages/Quiz.css
+   Redesigned onto the shared --orbit-* design tokens (src/index.css) —
+   this whole flow was hardcoded to a fixed white/light palette in every
+   theme (var(--white, ...) always resolves to opaque white since --white
+   is a deliberately fixed, non-theme-swapping token used elsewhere; there
+   was no [data-theme="dark"] override anywhere in this file). Also unifies
+   the "selected / correct / incorrect" language with the rest of the app:
+   lavender = selected/active, teal = correct/done, rose = incorrect —
+   replacing the old amber-glow/light-sea-green/crimson trio. */
 
 :root {
-  --duo-green: #58cc02;
-  --duo-snow: #ffffff;
-  --duo-gray-plate: #f7f9fa;
-  --duo-border: #e5e5e5;
-  --duo-text-dark: #3c3c3c;
-  --duo-text-slate: #5e6c75;
+  --duo-green: var(--orbit-teal);
+  --duo-snow: var(--orbit-surface);
+  --duo-gray-plate: var(--orbit-canvas);
+  --duo-border: var(--orbit-border);
+  --duo-text-dark: var(--orbit-text-heading);
+  --duo-text-slate: var(--orbit-text-muted);
 }
 
 /* Base structural layout configuration rules */
@@ -16,9 +24,24 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--white, var(--duo-snow));
-  font-family: "Nunito", system-ui, sans-serif;
+  background-color: var(--orbit-canvas);
+  font-family: 'Inter', system-ui, sans-serif;
   position: relative;
+}
+
+/* 🎯 REVIEW MODE: a persistent, low-key banner shown when the whole
+   module/topic was already completed on a previous visit — nothing here
+   re-scores, it's a pure browse-through. */
+.quiz-review-mode-banner {
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 8px 20px;
+  color: var(--orbit-lavender-text);
+  background: rgba(201, 184, 255, 0.14);
+  border-bottom: 1px solid var(--orbit-border);
 }
 
 .main-flexible-workspace-deck {
@@ -35,8 +58,8 @@
 /* ================= 🎛️ THE TAXONOMY SYLLABUS RAIL SYSTEM ================= */
 .quiz-dynamic-sidebar-rails {
   height: 100%;
-  background-color: var(--white, var(--duo-snow));
-  border-right: 1px solid #e2e8f0;
+  background-color: var(--orbit-surface);
+  border-right: 1px solid var(--orbit-border);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -50,15 +73,15 @@
 
 .sidebar-rails-header {
   padding: 16px 18px 12px;
-  border-bottom: 1px solid #e2e8f0;
-  background-color: var(--white, var(--duo-snow));
+  border-bottom: 1px solid var(--orbit-border);
+  background-color: var(--orbit-surface);
   text-align: left;
 }
 
 .sidebar-rails-header-label {
   font-size: 11px;
   font-weight: 800;
-  color: var(--ink-strong, #1a1523);
+  color: var(--orbit-text-heading);
   text-transform: uppercase;
   letter-spacing: 0.6px;
 }
@@ -84,7 +107,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #f1f2f4;
+  border-bottom: 1px solid var(--orbit-border);
   border-left: 3px solid transparent;
   transition: background-color 0.15s ease, border-color 0.15s ease;
   box-sizing: border-box;
@@ -95,45 +118,45 @@
   align-items: center;
   flex-shrink: 0;
   font-size: 15px;
-  color: var(--ink-muted, #9aa1ab);
+  color: var(--orbit-text-muted);
 }
 
 .sidebar-node-title {
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--ink-strong, #1a1523);
+  color: var(--orbit-text-heading);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .sidebar-nav-item-row.active-row-node {
-  background-color: var(--amber-glow-muted, rgba(255, 159, 28, 0.14));
-  border-left-color: var(--amber-glow, #ff9f1c);
+  background-color: rgba(201, 184, 255, 0.16);
+  border-left-color: var(--orbit-lavender);
 }
 .sidebar-nav-item-row.active-row-node .sidebar-node-title {
-  color: var(--amber-glow-dark, #e08600);
+  color: var(--orbit-lavender-text);
   font-weight: 800;
 }
 .sidebar-nav-item-row.active-row-node .row-icon-indicator {
-  color: var(--amber-glow-dark, #e08600);
+  color: var(--orbit-lavender-text);
 }
 
 .clickable-row { cursor: pointer; }
-.clickable-row:hover:not(.active-row-node) { background-color: #f8fafc; }
+.clickable-row:hover:not(.active-row-node) { background-color: var(--orbit-surface-subtle); }
 
 .hard-locked-row {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-.sidebar-status-done { color: var(--light-sea-green, #2ec4b6); }
-.sidebar-status-locked { color: #b0b4bb; }
+.sidebar-status-done { color: var(--orbit-teal-text); }
+.sidebar-status-locked { color: var(--orbit-text-muted); }
 
 .pending-dot-pulse {
   width: 7px;
   height: 7px;
-  background-color: var(--amber-glow, #ff9f1c);
+  background-color: var(--orbit-lavender);
   border-radius: 50%;
   animation: duoNodePulse 1s infinite alternate;
 }
@@ -143,7 +166,7 @@
   flex-grow: 1;
   height: 100%;
   overflow-y: auto;
-  background-color: var(--duo-gray-plate);
+  background-color: var(--orbit-canvas);
   padding: 32px 16px;
   box-sizing: border-box;
   /* 🎯 REMOVED SCROLLBAR: Standard cross-browser string hide overrides */
@@ -168,12 +191,12 @@
   position: absolute;
   top: 16px;
   z-index: 100;
-  background-color: var(--white, var(--duo-snow));
-  border: 1px solid #e2e8f0;
-  color: var(--ink-muted, #4a4558);
+  background-color: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  color: var(--orbit-text-muted);
   padding: 8px 10px;
   border-radius: 10px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+  box-shadow: var(--orbit-shadow-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -185,8 +208,8 @@
 .iris-drawer-toggle-trigger.trigger-flush { left: 16px; }
 
 .iris-drawer-toggle-trigger:hover {
-  border-color: var(--amber-glow, #ff9f1c);
-  color: var(--amber-glow-dark, #e08600);
+  border-color: var(--orbit-lavender);
+  color: var(--orbit-lavender-text);
 }
 
 .iris-drawer-toggle-trigger:active {
@@ -197,8 +220,8 @@
 .quiz-action-control-dock {
   width: 100%;
   height: 84px;
-  background-color: var(--white, var(--duo-snow));
-  border-top: 1px solid #e2e8f0;
+  background-color: var(--orbit-surface);
+  border-top: 1px solid var(--orbit-border);
   display: flex;
   align-items: center;
   box-sizing: border-box;
@@ -230,16 +253,16 @@
 }
 
 .prev-action-trigger {
-  background-color: var(--white, var(--duo-snow));
-  border: 1px solid #e2e8f0;
-  color: var(--ink-muted, #4a4558);
+  background-color: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  color: var(--orbit-text-muted);
   cursor: pointer;
 }
-.prev-action-trigger:hover { background-color: #f8fafc; border-color: #cbd5e1; }
+.prev-action-trigger:hover { background-color: var(--orbit-surface-subtle); border-color: var(--orbit-border-strong); }
 .prev-action-trigger:active { transform: scale(0.97); }
 
 .submit-action-trigger {
-  color: #ffffff;
+  color: #20222f;
   border: none;
 }
 .submit-action-trigger:not(:disabled):hover {
@@ -260,7 +283,7 @@
   z-index: 99999;
   display: flex;
   flex-direction: column;
-  background-color: var(--duo-snow);
+  background-color: var(--orbit-canvas);
 }
 
 /* Permanent top-right "Abort Mission" rocket control — no hover tracking
@@ -278,10 +301,10 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(15, 21, 30, 0.1);
-  background-color: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--orbit-border);
+  background-color: var(--orbit-glass-bg);
   backdrop-filter: blur(6px);
-  color: var(--ink-muted, #4a4558);
+  color: var(--orbit-text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -291,14 +314,14 @@
   touch-action: manipulation;
 }
 
-/* Idle → ready-to-launch: a subtle shake + amber halo, like the engines are
-   warming up. Desktop-only micro-interaction (hover has no equivalent on
-   touch, so mobile just gets the plain idle state — no janky stuck-hover). */
+/* Idle → ready-to-launch: a subtle shake + lavender halo, like the engines
+   are warming up. Desktop-only micro-interaction (hover has no equivalent
+   on touch, so mobile just gets the plain idle state — no janky stuck-hover). */
 @media (hover: hover) {
   .sandbox-exit-icon-btn:hover {
-    color: var(--amber-glow-dark, #e08600);
-    border-color: var(--amber-glow, #ff9f1c);
-    box-shadow: 0 0 0 6px var(--amber-glow-muted, rgba(255, 159, 28, 0.14)), 0 2px 10px rgba(16, 24, 40, 0.15);
+    color: var(--orbit-lavender-text);
+    border-color: var(--orbit-lavender);
+    box-shadow: 0 0 0 6px rgba(201, 184, 255, 0.18), 0 2px 10px rgba(16, 24, 40, 0.15);
     animation: rocketWarmup 0.5s ease-in-out infinite;
   }
 }
@@ -347,7 +370,7 @@
 .eject-modal-card {
   width: 100%;
   max-width: 380px;
-  background-color: #ffffff;
+  background-color: var(--orbit-surface);
   border-radius: 18px;
   padding: 28px 24px 24px;
   box-sizing: border-box;
@@ -359,7 +382,7 @@
 .eject-modal-title {
   font-size: 19px;
   font-weight: 900;
-  color: #0b0a14;
+  color: var(--orbit-text-heading);
   margin: 0 0 12px 0;
   letter-spacing: -0.3px;
 }
@@ -367,7 +390,7 @@
 .eject-modal-body {
   font-size: 14px;
   font-weight: 500;
-  color: #0b0a14;
+  color: var(--orbit-text-body);
   line-height: 1.55;
   margin: 0 0 24px 0;
 }
@@ -391,18 +414,18 @@
 }
 
 .eject-modal-btn--stay {
-  background-color: #ffffff;
-  border: 1.5px solid #e2e8f0;
-  color: #0b0a14;
+  background-color: var(--orbit-surface);
+  border: 1.5px solid var(--orbit-border);
+  color: var(--orbit-text-heading);
 }
-.eject-modal-btn--stay:hover { background-color: #f8fafc; border-color: #cbd5e1; }
+.eject-modal-btn--stay:hover { background-color: var(--orbit-surface-subtle); border-color: var(--orbit-border-strong); }
 
 .eject-modal-btn--go {
-  background-color: var(--amber-glow, #ff9f1c);
-  border: 1.5px solid var(--amber-glow, #ff9f1c);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--orbit-lavender), var(--orbit-sky));
+  border: 1.5px solid transparent;
+  color: #20222f;
 }
-.eject-modal-btn--go:hover { background-color: var(--amber-glow-dark, #e08600); border-color: var(--amber-glow-dark, #e08600); }
+.eject-modal-btn--go:hover { filter: brightness(0.94); }
 
 .eject-modal-btn:active { transform: scale(0.96); }
 
@@ -430,21 +453,21 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  background-color: var(--duo-gray-plate);
+  background-color: var(--orbit-canvas);
 }
 
 .cyber-loading-container span {
   font-size: 12px;
   font-weight: 900;
-  color: var(--duo-text-slate);
+  color: var(--orbit-text-muted);
   letter-spacing: 0.8px;
 }
 
 .cyber-spinner {
   width: 36px;
   height: 36px;
-  border: 4px solid var(--duo-border);
-  border-top-color: var(--amber-glow, #ff9f1c);
+  border: 4px solid var(--orbit-border);
+  border-top-color: var(--orbit-lavender);
   border-radius: 50%;
   animation: duoPlayerSpin 0.7s linear infinite;
 }
@@ -452,7 +475,7 @@
 .no-modules-placeholder {
   font-size: 13px;
   font-weight: 800;
-  color: #c2185b;
+  color: var(--orbit-rose-text);
   padding: 40px;
 }
 

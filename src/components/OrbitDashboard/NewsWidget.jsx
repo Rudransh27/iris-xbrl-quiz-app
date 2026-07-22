@@ -1,6 +1,6 @@
 // src/components/OrbitDashboard/NewsWidget.jsx
 import React from "react";
-import { Broadcast, ExclamationTriangleFill } from "react-bootstrap-icons";
+import { Broadcast, Stars } from "react-bootstrap-icons";
 import "./NewsWidget.css";
 
 // Same YouTube-URL-vs-native-file heuristic already used by VideoCard.jsx —
@@ -32,33 +32,25 @@ export function NewsCard({ news }) {
   if (!news) return <NewsEmptyCard />;
 
   const youtubeId = news.contentType === "video" ? getYouTubeEmbedUrl(news.mediaUrl) : null;
+  const hasMedia = (news.contentType === "image" || news.contentType === "video") && !!news.mediaUrl;
 
   return (
     <div className={`orbit-news-widget ${news.isBreaking ? "orbit-news-widget--breaking" : ""}`}>
-      <div className="orbit-news-widget__body">
-        {news.isBreaking ? (
-          <span className="orbit-news-widget__tag orbit-news-widget__tag--breaking">
-            <ExclamationTriangleFill size={11} /> BREAKING NEWS
-          </span>
-        ) : (
-          <span className="orbit-news-widget__tag">
-            <Broadcast size={11} /> BROADCAST
-          </span>
-        )}
+      <div className={`orbit-news-widget__body ${hasMedia ? "orbit-news-widget__body--split" : ""}`}>
+        <div className="orbit-news-widget__text-col">
+          {news.isBreaking ? (
+            <span className="orbit-news-widget__tag orbit-news-widget__tag--breaking">
+              <Stars size={11} /> BREAKING NEWS
+            </span>
+          ) : (
+            <span className="orbit-news-widget__tag">
+              <Broadcast size={11} /> BROADCAST
+            </span>
+          )}
 
-        {news.isBreaking ? (
-          <div className="orbit-news-widget__marquee">
-            <div className="orbit-news-widget__marquee-track">
-              <span>{news.title} — {news.content}</span>
-              <span aria-hidden="true">{news.title} — {news.content}</span>
-            </div>
-          </div>
-        ) : (
-          <>
-            <h3 className="orbit-news-widget__title">{news.title}</h3>
-            <p className="orbit-news-widget__text">{news.content}</p>
-          </>
-        )}
+          <h3 className="orbit-news-widget__title">{news.title}</h3>
+          <p className="orbit-news-widget__text">{news.content}</p>
+        </div>
 
         {news.contentType === "image" && news.mediaUrl && (
           <img className="orbit-news-widget__media-image" src={news.mediaUrl} alt={news.title} />
