@@ -124,7 +124,7 @@ async function login(email, password) {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: getPublicHeader(),
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, localDate: localDateKey() }),
     });
     return await handleFetchResponse(response);
   } catch (error) {
@@ -609,6 +609,22 @@ getWorkspaceCurriculum: async () => {
       return await handleFetchResponse(response);
     } catch (error) {
       console.error('Get User Ideas API Error:', error);
+      throw error;
+    }
+  },
+
+  // Admin/superadmin Product Council view — every idea in-scope (department-
+  // filtered for admins, all departments for superadmin), NOT just the
+  // caller's own submissions. See getUserIdeas above for that.
+  getCouncilBoard: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/ideas/council-board`, {
+        method: 'GET',
+        headers: getAuthHeader()
+      });
+      return await handleFetchResponse(response);
+    } catch (error) {
+      console.error('Get Council Board API Error:', error);
       throw error;
     }
   },

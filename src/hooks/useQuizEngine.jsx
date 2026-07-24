@@ -41,7 +41,7 @@ const markCardReached = (progressByCardId, cardId, patch) => ({
 });
 
 export const useQuizEngine = (moduleId, topicId, navigate) => {
-  const { addUserXP, refreshUser } = useContext(AuthContext);
+  const { addUserXP, refreshUser, celebrateStreakAction } = useContext(AuthContext);
 
   // Normalize checking whether the layout parameters route identifies a Flat/Express Module path
   const isExpressFlatTrack =
@@ -232,10 +232,10 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
   const verifyModuleProgressIfComplete = useCallback((backendResponse) => {
     const covered = backendResponse?.cardsCovered ?? backendResponse?.data?.cardsCovered;
     const total = backendResponse?.totalCards ?? backendResponse?.data?.totalCards;
-    if (total > 0 && covered === total && typeof api.verifyDailyStreak === "function") {
-      api.verifyDailyStreak("module_progress").catch(() => {});
+    if (total > 0 && covered === total) {
+      celebrateStreakAction("module_progress");
     }
-  }, []);
+  }, [celebrateStreakAction]);
 
   // 🚀 REFACTORED: Now accepts an optional telemetryPayload sent up from custom cards (like HTML Sandboxes)
   const handleAction = async (telemetryPayload = null) => {

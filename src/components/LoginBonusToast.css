@@ -1,0 +1,64 @@
+/* src/components/LoginBonusToast.css */
+
+/* Overrides react-toastify's default toast chrome so this one reads as a
+   small on-brand pill rather than a generic wide notification card. */
+.Toastify__toast.login-bonus-toast {
+  min-height: unset;
+  border-radius: 999px;
+  padding: 6px 8px 6px 16px;
+  background: var(--orbit-glass-bg, #ffffff);
+  border: 1px solid var(--orbit-glass-border, #e5e0f7);
+  box-shadow: 0 8px 24px -8px rgba(124, 110, 247, 0.35);
+  width: fit-content;
+  max-width: 92vw;
+}
+
+.Toastify__toast.login-bonus-toast .Toastify__toast-body {
+  padding: 0;
+  margin: 0;
+}
+
+.login-bonus-toast-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Nunito", system-ui, sans-serif;
+}
+
+.login-bonus-toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--orbit-brand-muted, #ede9fe);
+  color: var(--orbit-brand, #7c6ef7);
+  flex-shrink: 0;
+}
+
+.login-bonus-toast-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--orbit-text-heading, #1f1533);
+  white-space: nowrap;
+}
+
+.login-bonus-toast-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+  color: #ffffff;
+  background: var(--orbit-brand, #7c6ef7);
+  border-radius: 999px;
+  padding: 3px 10px;
+  animation: login-bonus-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes login-bonus-pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  70% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}

@@ -100,7 +100,7 @@ const tactilePanelStyle = {
 // MAIN COMPONENT
 // ============================================================
 export default function OrbitWorkspace({ currentViewMode = "learner" }) {
-  const { user, updateUserStreak } = useContext(AuthContext);
+  const { user, updateUserStreak, celebrateStreakAction } = useContext(AuthContext);
   const navigate = useNavigate();
   const { section } = useParams();
   const currentSection = section || "home";
@@ -134,8 +134,13 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
 
   const verifyStreak = useCallback(async (actionType) => {
     try {
-      if (typeof api.verifyDailyStreak !== "function") return;
-      const res = await api.verifyDailyStreak(actionType);
+      // 🎯 Delegates the actual network call + AuthContext xp/streak sync +
+      // celebration-overlay trigger to the shared celebrateStreakAction, so
+      // this dashboard-side "catch-up" detection path (see DashboardHome's
+      // moduleTaskDone effect, the only caller of this function) shows the
+      // exact same celebration as the 3 direct in-page triggers do, instead
+      // of silently missing it via its own separate api.verifyDailyStreak call.
+      const res = await celebrateStreakAction(actionType);
       if (res?.success) {
         // 🎯 Upsert TODAY's entry into engagementHistory client-side instead
         // of just updating the top-level counters — the calendar (and the
@@ -167,11 +172,10 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
         });
         if (res.currentStreak !== undefined) {
           setTelemetry(prev => ({ ...prev, streak: res.currentStreak }));
-          updateUserStreak(res.currentStreak);
         }
       }
     } catch (_) {}
-  }, [updateUserStreak]);
+  }, [celebrateStreakAction]);
 
   // â"€â"€ Loading flags â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   const [loadingModules, setLoadingModules] = useState(false);

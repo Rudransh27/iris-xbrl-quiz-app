@@ -9,7 +9,7 @@ import OrbitFooter from "./OrbitDashboard/OrbitFooter";
 import "./IdeasAndRD.css";
 
 export default function IdeasAndRD() {
-  const { user } = useContext(AuthContext);
+  const { user, celebrateStreakAction } = useContext(AuthContext);
 
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
@@ -77,10 +77,9 @@ export default function IdeasAndRD() {
       // successful submission — never on click. The server (via
       // verifyDailyStreak) is the sole record of this now; the dashboard
       // picks it up on its next fetch, so there's no separate local copy to
-      // keep in sync anymore.
-      if (typeof api.verifyDailyStreak === "function") {
-        api.verifyDailyStreak("idea_submission").catch(() => {});
-      }
+      // keep in sync anymore. celebrateStreakAction also arms the
+      // celebration overlay if this is today's first qualifying action.
+      celebrateStreakAction("idea_submission");
       setTitle("");
       setDetails("");
       fetchUserIdeasHistory();

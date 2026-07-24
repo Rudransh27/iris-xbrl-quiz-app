@@ -30,6 +30,7 @@ import OrbitWorkspaceContainer from "./pages/OrbitWorkspaceContainer";
 import DailyReadReader from "./pages/DailyReadReader";
 import OrbitShell from "./components/OrbitShell";
 import OrbitOnboarding from "./pages/OrbitOnboarding";
+import StreakCelebrationOverlay from "./components/StreakCelebrationOverlay";
 import "./App.css";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -146,8 +147,9 @@ const AppContent = () => {
   }, [user?.id]);
 
   return (
-    <Layout>
-      <Routes>
+    <>
+      <Layout>
+        <Routes>
         {/* 🔐 Auth & Verification Streams (Public Access Routes) */}
         <Route path="/login" element={<AuthPage />} />
         <Route path="/register" element={<AuthPage />} />
@@ -220,8 +222,10 @@ const AppContent = () => {
           path="*"
           element={<h1 className="text-center p-5">404 Not Found</h1>}
         />
-      </Routes>
-    </Layout>
+        </Routes>
+      </Layout>
+      <StreakCelebrationOverlay />
+    </>
   );
 };
 

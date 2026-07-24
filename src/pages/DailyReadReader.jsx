@@ -1,10 +1,11 @@
 // src/pages/DailyReadReader.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowLeft, Calendar3, Person, Bookmark } from "react-bootstrap-icons";
 import api from "../admin/services/api";
+import AuthContext from "../context/AuthContext";
 import "./DailyReadReader.css";
 
 const READ_THRESHOLD_MS = 30000;
@@ -12,6 +13,7 @@ const READ_THRESHOLD_MS = 30000;
 export default function DailyReadReader() {
   const { readId } = useParams();
   const navigate = useNavigate();
+  const { celebrateStreakAction } = useContext(AuthContext);
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -60,9 +62,9 @@ export default function DailyReadReader() {
         // of sync with the server (see the dashboard calendar bug this
         // fixed). OrbitWorkspace's dashboard picks this up on its next
         // mount/fetch, since it always re-fetches fresh streak data.
-        if (typeof api.verifyDailyStreak === "function") {
-          api.verifyDailyStreak("daily_read").catch(() => {});
-        }
+        // celebrateStreakAction (AuthContext) both syncs xp/streak here and
+        // arms the celebration overlay if this is today's first qualifying action.
+        celebrateStreakAction("daily_read");
       }
     }, 1000);
 

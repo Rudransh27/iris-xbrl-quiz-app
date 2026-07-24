@@ -1,6 +1,8 @@
 // src/context/AuthContext.js
 import React, { createContext, useState, useEffect, useCallback } from "react";
+import { toast } from "react-toastify";
 import api from "../admin/services/api";
+import LoginBonusToast from "../components/LoginBonusToast";
 
 const AuthContext = createContext();
 
@@ -24,9 +26,29 @@ const normalizeUserData = (userPayload) => {
   };
 };
 
+// 🎯 "+1 for showing up today" — fired from wherever the server first tells
+// us the bonus was actually claimed this call (initAuth/refreshUser's
+// /validate roundtrip, or a fresh /login), never guessed client-side, so it
+// can never fire twice for the same day no matter which path gets there first.
+const maybeShowLoginBonusToast = (res) => {
+  if (res?.loginBonusAwarded) {
+    toast(<LoginBonusToast />, {
+      position: "top-center",
+      autoClose: 3500,
+      hideProgressBar: true,
+      closeButton: false,
+      className: "login-bonus-toast",
+    });
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  // 🎉 Set the moment a daily-action streak day is first claimed (see
+  // celebrateStreakAction below) — StreakCelebrationOverlay renders whenever
+  // this is non-null and clears it itself after the celebration plays.
+  const [celebration, setCelebration] = useState(null);
 
   // Load user on app start (Reload Hydration Layer)
   useEffect(() => {
@@ -39,6 +61,7 @@ export const AuthProvider = ({ children }) => {
             const userData = normalizeUserData(res.user);
             setUser(userData);
             localStorage.setItem("user", JSON.stringify(userData));
+            maybeShowLoginBonusToast(res);
           } else {
             logout();
           }
@@ -71,6 +94,7 @@ export const AuthProvider = ({ children }) => {
         const userData = normalizeUserData(res.user);
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
+        maybeShowLoginBonusToast(res);
         return userData;
       }
       return null;
@@ -88,6 +112,7 @@ export const AuthProvider = ({ children }) => {
       const userData = normalizeUserData(res.user);
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
+      maybeShowLoginBonusToast(res);
       return { success: true };
     } catch (err) {
       return { success: false, message: err.response?.data?.message || err.message || 'Login failed' };
@@ -179,6 +204,39 @@ export const AuthProvider = ({ children }) => {
     });
   }, []);
 
+  // 🎯 Single entry point for all 3 daily-action streak triggers (daily
+  // read, module/topic completion, idea submission). Callers just fire-and-
+  // await this instead of hitting api.verifyDailyStreak directly — it syncs
+  // XP/streak into this context AND arms StreakCelebrationOverlay whenever
+  // the server confirms THIS call is the one that first qualified today
+  // (streakIncremented), so no caller needs to guess whether it "won" the
+  // race to be first. Returns the raw response so callers with their own
+  // local bookkeeping (e.g. OrbitWorkspace's calendar/checklist state) can
+  // still read it.
+  const celebrateStreakAction = useCallback(async (actionType) => {
+    try {
+      const res = await api.verifyDailyStreak(actionType);
+      if (res?.success) {
+        if (res.currentStreak !== undefined) updateUserStreak(res.currentStreak);
+        if (res.pointsAwarded) addUserXP(res.pointsAwarded);
+        if (res.streakIncremented) {
+          setCelebration({
+            actionType,
+            points: res.pointsAwarded,
+            previousStreak: res.previousStreak,
+            newStreak: res.currentStreak,
+          });
+        }
+      }
+      return res;
+    } catch (err) {
+      console.error("celebrateStreakAction failed:", err);
+      return null;
+    }
+  }, [addUserXP, updateUserStreak]);
+
+  const dismissCelebration = useCallback(() => setCelebration(null), []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -192,6 +250,9 @@ export const AuthProvider = ({ children }) => {
         addUserXP,
         updateUserStreak,
         refreshUser,
+        celebration,
+        celebrateStreakAction,
+        dismissCelebration,
       }}
     >
       {children}

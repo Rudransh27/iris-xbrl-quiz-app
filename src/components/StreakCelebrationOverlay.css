@@ -1,0 +1,122 @@
+/* src/components/StreakCelebrationOverlay.css */
+
+.streak-celebration-confetti {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 2000;
+}
+
+.streak-celebration-card {
+  position: fixed;
+  top: 14%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2100;
+  width: 300px;
+  max-width: 88vw;
+  box-sizing: border-box;
+  padding: 22px 20px 18px;
+  border-radius: 20px;
+  text-align: center;
+  font-family: "Nunito", system-ui, sans-serif;
+  background: var(--orbit-glass-bg, #ffffff);
+  background-image: var(--orbit-glass-highlight, none);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--orbit-glass-border, #e5e0f7);
+  box-shadow: 0 24px 48px -16px rgba(124, 110, 247, 0.45);
+  animation: streak-celebration-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes streak-celebration-in {
+  0%   { transform: translateX(-50%) translateY(-16px) scale(0.9); opacity: 0; }
+  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+}
+
+.streak-celebration-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--orbit-text-muted, #8b829e);
+  cursor: pointer;
+}
+
+.streak-celebration-close:hover {
+  background: var(--orbit-brand-muted, #ede9fe);
+  color: var(--orbit-brand, #7c6ef7);
+}
+
+.streak-celebration-icon-wrap {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--orbit-brand-muted, #ede9fe);
+  color: var(--orbit-brand, #7c6ef7);
+}
+
+.streak-celebration-label {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--orbit-text-heading, #1f1533);
+  margin-bottom: 8px;
+}
+
+.streak-celebration-points {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 900;
+  color: #ffffff;
+  background: var(--orbit-brand, #7c6ef7);
+  padding: 4px 14px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.streak-celebration-streak-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.streak-celebration-streak-caption {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--orbit-text-muted, #8b829e);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.streak-celebration-streak-num {
+  display: inline-block;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--orbit-brand, #7c6ef7);
+}
+
+.streak-celebration-message {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--orbit-text-body, #4a4460);
+}

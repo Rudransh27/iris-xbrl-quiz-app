@@ -43,40 +43,19 @@ export default function AdminIdeasReview() {
     setLoading(true);
     setError(null);
     try {
-      let data = [];
-      
-      // 🚀 CONNECTING THE LIVE BRIDGE:
-      if (typeof api.getUserIdeas === 'function') {
-        const response = await api.getUserIdeas();
-        data = response?.data || response || [];
-      } else {
-        // Fallback matrix if network calls are offline during local assembly builds
-        data = [
-          {
-            _id: "idea-1",
-            userName: "Thomas PKX",
-            createdAt: "2026-04-29T10:00:00.000Z",
-            tag: "product",
-            title: "hands on play with AI session for 3 hrs. to solve a practical problem using AI only approach",
-            details: "A raw prototyping sprint.",
-            status: "parked",
-            departmentId: user?.department || "dept-carbon"
-          }
-        ];
-      }
+      // Council board: every idea in-scope for this admin/superadmin, not
+      // just ideas the admin themselves submitted (that's getUserIdeas,
+      // used by the regular Ideas & R&D page). The backend already scopes
+      // this correctly — admins get their own department, superadmin gets
+      // everything — so no further department filtering is needed here.
+      const response = await api.getCouncilBoard();
+      const data = response?.data || response || [];
 
-      // Enforce SaaS Department-Wise Multi-Tenant Filter safely
-      let filteredData = data;
-      if (!isSuperAdmin && user?.department) {
-        const adminDeptStr = user.department.toString();
-        filteredData = data.filter(item => 
-          item.departmentId?.toString() === adminDeptStr || 
-          item.departmentId === adminDeptStr ||
-          item.userId === user.id
-        );
-      } else if (isSuperAdmin && selectedDeptFilter) {
-        filteredData = data.filter(item => item.departmentId?.toString() === selectedDeptFilter);
-      }
+      // Superadmin can still narrow the global board down to one department
+      // via the dropdown above; admins already only ever receive their own.
+      const filteredData = isSuperAdmin && selectedDeptFilter
+        ? data.filter(item => item.departmentId?.toString() === selectedDeptFilter)
+        : data;
 
       setIdeas(filteredData);
 
