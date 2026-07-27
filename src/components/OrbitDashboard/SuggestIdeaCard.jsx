@@ -12,7 +12,7 @@ export default function SuggestIdeaCard({ onClick }) {
           <LightbulbFill size={22} />
         </div>
         <span className="orbit-idea-card__badge">
-          <StarFill size={10} /> Earns Lightyear
+          <StarFill size={10} /> Earns Lightyears
         </span>
       </div>
 

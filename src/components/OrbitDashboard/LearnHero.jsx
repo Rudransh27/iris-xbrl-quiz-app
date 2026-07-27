@@ -15,7 +15,7 @@ export default function LearnHero({ moduleCount = 0, inProgressCount = 0, plasma
       <span className="learn-strip__eyebrow">Learn</span>
       <h1 className="learn-strip__title">Fuel Your Orbit</h1>
       <p className="learn-strip__subtitle">
-        Modules build knowledge. Labs build practice. Complete missions to earn Lightyear and climb the ranks.
+        Modules build knowledge. Labs build practice. Complete missions to earn Lightyears and climb the ranks.
       </p>
 
       <div className="learn-strip__stats">
@@ -32,7 +32,7 @@ export default function LearnHero({ moduleCount = 0, inProgressCount = 0, plasma
         <div className="learn-strip__stat learn-strip__stat--lavender">
           <PiShootingStarFill size={13} />
           <span className="learn-strip__stat-num">{plasmaEarned.toLocaleString()}</span>
-          <span className="learn-strip__stat-label">Lightyear</span>
+          <span className="learn-strip__stat-label">Lightyears</span>
         </div>
       </div>
     </div>

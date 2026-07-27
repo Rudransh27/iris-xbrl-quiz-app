@@ -511,7 +511,7 @@ export default function AdminUserAnalytics() {
         <StatCard icon="📚" label="Total Modules"    value={modules.length}          color="var(--orbit-brand)"          bg="var(--orbit-brand-muted)"          border="var(--orbit-brand)" />
         <StatCard icon="👤" label="Registered Users" value={users.length || "—"}     color="var(--pastel-progress-text)" bg="var(--pastel-progress)"            border="var(--pastel-progress-border)" />
         <StatCard icon="☄️" label="Total Lightyears Earned"  value={stats?.xpStats?.total}   color="var(--pastel-streak-text)"   bg="var(--pastel-streak)"              border="var(--pastel-streak-border)" />
-        <StatCard icon="🏆" label="Top User Lightyear"      value={stats?.xpStats?.max}     color="var(--pastel-reads-text)"    bg="var(--pastel-reads)"               border="var(--pastel-reads-border)" />
+        <StatCard icon="🏆" label="Top User Lightyears"      value={stats?.xpStats?.max}     color="var(--pastel-reads-text)"    bg="var(--pastel-reads)"               border="var(--pastel-reads-border)" />
       </div>
 
       {/* ── Charts row ──────────────────────────────────────────────────────── */}
@@ -571,7 +571,7 @@ export default function AdminUserAnalytics() {
         <div style={{ flex: 1, height: "1.5px", background: "var(--orbit-border)" }} />
       </div>
       <p style={{ fontSize: "12px", color: "var(--orbit-text-muted)", margin: "0 0 20px" }}>
-        Export a complete department grading workbook, score descriptive questions, then re-upload to sync Lightyear and notify users in real-time.
+        Export a complete department grading workbook, score descriptive questions, then re-upload to sync Lightyears and notify users in real-time.
       </p>
 
       {/* Dept export + import side-by-side */}
@@ -611,7 +611,7 @@ export default function AdminUserAnalytics() {
         <div style={{ background: "var(--orbit-surface)", border: "1.5px solid var(--orbit-border)", borderRadius: "18px", padding: "22px" }}>
           <h4 style={{ fontSize: "13px", fontWeight: "800", color: "var(--orbit-text-heading)", margin: "0 0 6px" }}>Import Graded Report</h4>
           <p style={{ fontSize: "11px", color: "var(--orbit-text-muted)", margin: "0 0 14px", lineHeight: 1.6 }}>
-            Re-upload the completed workbook. Scores sync instantly, Lightyear is recalculated, and each user receives a <strong>live notification</strong>.
+            Re-upload the completed workbook. Scores sync instantly, Lightyears is recalculated, and each user receives a <strong>live notification</strong>.
           </p>
 
           <div

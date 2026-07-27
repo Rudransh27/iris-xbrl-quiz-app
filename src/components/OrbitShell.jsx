@@ -110,7 +110,7 @@ export default function OrbitShell() {
       refreshUser?.();
       const toast = {
         id:          notificationId || String(Date.now()),
-        message:     message || `☄️ You've been awarded ${xpAwarded} Lightyear for "${moduleTitle}"!`,
+        message:     message || `☄️ You've been awarded ${xpAwarded} Lightyears for "${moduleTitle}"!`,
         xpAwarded:   xpAwarded || 0,
         moduleTitle: moduleTitle || "",
       };
@@ -142,6 +142,18 @@ export default function OrbitShell() {
   // ideas, etc.) is a real, purposeful navigation and must always render
   // its own routed page too.
   const isDashboardHome = p.startsWith("/orbit/dashboard");
+
+  // 🎯 BUG FIX ("Admin pill shows selected but the page is Learner, and
+  // clicking it does nothing"): currentViewMode is resolved from the
+  // user's ROLE alone (see resolveViewMode) and stays "admin"/"superadmin"
+  // even on bare /orbit, where isDashboardHome is false and the Learner
+  // workspace is what's actually rendered. The mode-switcher pills used to
+  // highlight raw currentViewMode, so an admin landed on Learner content
+  // with "Admin" already shown active — and since the click handler's
+  // no-op guard also compared against currentViewMode, clicking that
+  // already-"active" Admin pill did nothing. The switcher must reflect
+  // what's actually on screen, exactly like the badge above already does.
+  const displayedViewMode = isDashboardHome ? currentViewMode : "learner";
 
   const goTo = (dest) => {
     if (dest === "modules")  return navigate("/orbit/modules");
@@ -528,10 +540,10 @@ export default function OrbitShell() {
                     key={key}
                     type="button"
                     role="tab"
-                    aria-selected={currentViewMode === key}
-                    className={`orbit-mode-pill ${currentViewMode === key ? "orbit-mode-pill--active" : ""}`}
+                    aria-selected={displayedViewMode === key}
+                    className={`orbit-mode-pill ${displayedViewMode === key ? "orbit-mode-pill--active" : ""}`}
                     onClick={() => {
-                      if (currentViewMode === key) return;
+                      if (displayedViewMode === key) return;
                       setCurrentViewMode(key);
                       if (viewModeKey) localStorage.setItem(viewModeKey, key);
                       navigate(key === "learner" ? "/orbit" : "/orbit/dashboard?tab=overview");
@@ -544,7 +556,7 @@ export default function OrbitShell() {
               </div>
             )}
 
-            {/* XP / Lightyear pill — lavender, per the dashboard redesign's chip palette */}
+            {/* XP / Lightyears pill — lavender, per the dashboard redesign's chip palette */}
             <span style={{
               display:     "inline-flex",
               alignItems:  "center",
@@ -557,7 +569,7 @@ export default function OrbitShell() {
               fontSize:    "12px",
               fontWeight:  "800",
             }}>
-              <PiShootingStarFill size={11} /> {liveXP} Lightyear
+              <PiShootingStarFill size={11} /> {liveXP} Lightyears
             </span>
 
             {/* Streak pill — pink, rocket-launch icon (not fire) */}
@@ -666,7 +678,7 @@ export default function OrbitShell() {
                   WebkitTextFillColor:   "transparent",
                   lineHeight:            1.3,
                 }}>
-                  +{toast.xpAwarded} Lightyear Awarded!
+                  +{toast.xpAwarded} Lightyears Awarded!
                 </span>
               </div>
               <p style={{ margin: 0, fontSize: "12px", color: "rgba(231,198,255,0.85)", fontWeight: "500", lineHeight: 1.5 }}>

@@ -197,7 +197,7 @@ export default function ModuleCardEach({
               overflow:     "hidden",
               textOverflow: "ellipsis",
             }}>
-              {shortLabel}: {pct}% Complete{total > 0 ? ` — ${xpEarned}/${xpTotal} Lightyear Earned` : ""}
+              {shortLabel}: {pct}% Complete{total > 0 ? ` — ${xpEarned}/${xpTotal} Lightyears Earned` : ""}
             </div>
             <div style={{
               height:       "6px",

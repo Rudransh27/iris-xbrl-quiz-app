@@ -195,7 +195,7 @@ if (typeof document !== "undefined" && !document.getElementById("orbit-auth-styl
 const FEATURES = [
   "Bite-sized learning modules for every team",
   "Ideas inbox reviewed by a real Product Council",
-  "Daily streaks, checklists, and Lightyear rewards",
+  "Daily streaks, checklists, and Lightyears rewards",
   "Live leaderboard & team progress tracking",
 ];
 

@@ -119,7 +119,7 @@ export default function OrbitProgressMap({ xp = 0 }) {
           <div className="opm-sub">Three orbits. You start at the edge, move toward the knowledge core.</div>
         </div>
         <div className="opm-plasma-pill">
-          <RocketTakeoffFill size={12} /> {Math.round(xp).toLocaleString()} Lightyear
+          <RocketTakeoffFill size={12} /> {Math.round(xp).toLocaleString()} Lightyears
         </div>
       </div>
 

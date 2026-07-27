@@ -83,7 +83,7 @@ export default function StreakCelebrationOverlay() {
 
         <div className="streak-celebration-points">
           <StarFill size={13} />
-          <span>+{celebration.points} Lightyear</span>
+          <span>+{celebration.points} Lightyears</span>
         </div>
 
         <div className="streak-celebration-streak-row">

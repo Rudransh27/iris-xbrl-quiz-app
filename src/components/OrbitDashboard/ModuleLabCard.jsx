@@ -92,8 +92,8 @@ export default function ModuleLabCard({ card, index = 0, onClick }) {
               <ClockHistory size={14} /> {card.durationLabel}
             </span>
             {card.points > 0 && (
-              <span className="orbit-ml-card__plasma" title={`Earn ${card.points} Lightyear on completion`}>
-                <PiShootingStarFill size={12} /> +{card.points} Lightyear
+              <span className="orbit-ml-card__plasma" title={`Earn ${card.points} Lightyears on completion`}>
+                <PiShootingStarFill size={12} /> +{card.points} Lightyears
               </span>
             )}
           </div>
