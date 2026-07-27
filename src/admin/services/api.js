@@ -697,6 +697,35 @@ getWorkspaceCurriculum: async () => {
     }
   },
 
+  // ---------------- Team Hub ----------------
+  getTeamHub: async (departmentId) => {
+    const response = await fetch(`${API_BASE_URL}/teams/hub/${departmentId}`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  requestTeamTransfer: async (userId, toTeamId) => {
+    const response = await fetch(`${API_BASE_URL}/teams/transfer-request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify({ userId, toTeamId }),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  getTransferRequests: async () => {
+    const response = await fetch(`${API_BASE_URL}/teams/transfer-requests`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  respondTransferRequest: async (requestId, approve) => {
+    const response = await fetch(`${API_BASE_URL}/teams/transfer-requests/${requestId}/respond`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify({ approve }),
+    });
+    return await handleFetchResponse(response);
+  },
+
   getModules: async () => {
     const response = await fetch(`${API_BASE_URL}/modules`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
@@ -890,6 +919,31 @@ getWorkspaceCurriculum: async () => {
 
   getAdminModuleEngagement: async () => {
     const response = await fetch(`${API_BASE_URL}/progress/admin/module-engagement`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  getAdminTeamStats: async (teamId) => {
+    const qs = teamId ? `?teamId=${teamId}` : '';
+    const response = await fetch(`${API_BASE_URL}/progress/admin/team-stats${qs}`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  getModuleCompletionReal: async (teamId) => {
+    const qs = teamId ? `?teamId=${teamId}` : '';
+    const response = await fetch(`${API_BASE_URL}/progress/admin/module-completion${qs}`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  getDailyReadParticipation: async (teamId) => {
+    const params = new URLSearchParams({ localDate: localDateKey() });
+    if (teamId) params.set('teamId', teamId);
+    const response = await fetch(`${API_BASE_URL}/progress/admin/daily-read-participation?${params.toString()}`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  getQuizScoreDistribution: async (teamId) => {
+    const qs = teamId ? `?teamId=${teamId}` : '';
+    const response = await fetch(`${API_BASE_URL}/progress/admin/quiz-score-distribution${qs}`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 

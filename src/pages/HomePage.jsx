@@ -16,8 +16,7 @@
 import React, { useContext, useLayoutEffect } from "react";
 import { Navigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
-import HomeHero from "../components/HomeHero";
-import FeaturesShowcase from "../components/FeaturesShowcase";
+import IrisOrbitHome from "../components/homepage/IrisOrbitHome";
 
 // ── Pastel loading screen ─────────────────────────────────────────────────
 // Shown while AuthContext is validating the stored token against the backend.
@@ -115,10 +114,5 @@ export default function HomePage() {
   // margin collapses through a parent with no padding/border between them,
   // which would leave that gap unpainted by this div's own background and
   // show the body's nebula through it instead. Padding never collapses.
-  return (
-    <div style={{ background: "var(--orbit-canvas)", minHeight: "100vh", paddingTop: "56px" }}>
-      <HomeHero />
-      <FeaturesShowcase />
-    </div>
-  );
+  return <IrisOrbitHome />;
 }

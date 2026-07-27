@@ -44,7 +44,9 @@ export default function SsoCallback() {
         return;
       }
 
-      const redirect = localStorage.getItem("redirectPath") || "/";
+      // A logged-in user always lands straight in the Orbit dashboard —
+      // "/" (the marketing homepage) is only ever for logged-out visitors.
+      const redirect = localStorage.getItem("redirectPath") || "/orbit";
       localStorage.removeItem("redirectPath");
       navigate(redirect, { replace: true });
     })();

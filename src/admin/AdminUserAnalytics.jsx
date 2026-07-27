@@ -4,9 +4,10 @@
 // Score display computes MCQ vs Descriptive separately from the questions[]
 // array to avoid the raw score/maxScore mismatch bug (e.g. "40/5").
 // ─────────────────────────────────────────────────────────────────────────────
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import * as XLSX from "xlsx";
 import api from "./services/api";
+import AuthContext from "../context/AuthContext";
 
 // ── Chart colour tokens ───────────────────────────────────────────────────────
 const BAR_COLORS = [
@@ -196,11 +197,21 @@ async function processDeptGradeImport(file) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AdminUserAnalytics() {
+  const { user: currentUser } = useContext(AuthContext);
   const [stats,   setStats]   = useState(null);
   const [modules, setModules] = useState([]);
   const [users,   setUsers]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
+
+  // Team-segregated, real-data analytics — replaces the old fabricated
+  // module-completion/daily-reads/quiz-distribution charts.
+  const [teamsList,        setTeamsList]        = useState([]);
+  const [teamFilter,       setTeamFilter]        = useState("");
+  const [moduleCompletion, setModuleCompletion]  = useState([]);
+  const [dailyReadStats,   setDailyReadStats]    = useState([]);
+  const [quizDistribution, setQuizDistribution]  = useState({ bands: [], avgPct: 0 });
+  const [loadingRealData,  setLoadingRealData]   = useState(true);
 
   // Dept export state
   const [deptData,        setDeptData]        = useState(null);   // { department, users }
@@ -258,6 +269,37 @@ export default function AdminUserAnalytics() {
     load();
     return () => { cancelled = true; };
   }, []);
+
+  // ── Teams list, for the segregation filter ──────────────────────────────────
+  useEffect(() => {
+    const departmentId = currentUser?.department?._id || currentUser?.department;
+    if (!departmentId) return;
+    api.getTeams(departmentId)
+      .then((res) => setTeamsList(Array.isArray(res) ? res : res?.data || []))
+      .catch(() => setTeamsList([]));
+  }, [currentUser]);
+
+  // ── Real, team-segregated analytics — module completion, daily-read
+  // participation, quiz score distribution. Re-fetches whenever the team
+  // filter changes so switching "All Teams" <-> a specific team reflects
+  // real, differently-scoped data (not just a client-side re-slice). ──────────
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingRealData(true);
+    Promise.allSettled([
+      api.getModuleCompletionReal(teamFilter || undefined),
+      api.getDailyReadParticipation(teamFilter || undefined),
+      api.getQuizScoreDistribution(teamFilter || undefined),
+    ]).then(([modRes, dailyRes, quizRes]) => {
+      if (cancelled) return;
+      if (modRes.status === "fulfilled" && modRes.value?.success) setModuleCompletion(modRes.value.modules);
+      if (dailyRes.status === "fulfilled" && dailyRes.value?.success) setDailyReadStats(dailyRes.value.days);
+      if (quizRes.status === "fulfilled" && quizRes.value?.success) {
+        setQuizDistribution({ bands: quizRes.value.bands, avgPct: quizRes.value.avgPct });
+      }
+    }).finally(() => { if (!cancelled) setLoadingRealData(false); });
+    return () => { cancelled = true; };
+  }, [teamFilter]);
 
   // ── Load sandbox detail when a user is selected ─────────────────────────────
   const selectedUserId = selectedUser?._id;
@@ -340,21 +382,29 @@ export default function AdminUserAnalytics() {
     u.email?.toLowerCase().includes(userSearch.toLowerCase())
   );
 
-  const moduleRows = modules.map((m, i) => ({
-    label: m.title || m.name || `Module ${i + 1}`,
-    pct:   Math.min(100, Math.max(18, ((m.totalCards || m.cardCount || 3) * 7 + i * 13) % 100)),
+  // Real per-module completion % (attempted vs completed), fetched from
+  // GET /progress/admin/module-completion — see moduleCompletion state.
+  const moduleRows = moduleCompletion.slice(0, 8).map((m, i) => ({
+    label: m.title || `Module ${i + 1}`,
+    pct: m.pct,
     color: BAR_COLORS[i % BAR_COLORS.length],
   }));
 
-  const DAY_LABELS    = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const DAILY_WEIGHTS = [0.62, 0.78, 0.91, 0.85, 0.72, 0.44, 0.38];
-  const userBase  = users.length || 20;
-  const dailyData = DAY_LABELS.map((d, i) => ({ label: d, value: Math.round(userBase * DAILY_WEIGHTS[i]) }));
-  const maxDaily  = Math.max(...dailyData.map(d => d.value), 1);
+  // Real 7-day daily-read participation, fetched from
+  // GET /progress/admin/daily-read-participation — see dailyReadStats state.
+  const DAY_LABELS = dailyReadStats.map((d) => {
+    const parsed = new Date(`${d.date}T00:00:00`);
+    return Number.isNaN(parsed.getTime()) ? d.date : parsed.toLocaleDateString("en-US", { weekday: "short" });
+  });
+  const dailyData = dailyReadStats.map((d, i) => ({ label: DAY_LABELS[i], value: d.count }));
+  const maxDaily = Math.max(...dailyData.map((d) => d.value), 1);
+  const peakIdx = dailyData.reduce((best, d, i) => (d.value > (dailyData[best]?.value ?? -1) ? i : best), 0);
 
-  const BANDS      = ["0–20", "21–40", "41–60", "61–80", "81–100"];
+  // Real quiz score band distribution, fetched from
+  // GET /progress/admin/quiz-score-distribution — see quizDistribution state.
   const BAND_COLORS = ["var(--pastel-quiz-text)", "var(--pastel-reads-text)", "var(--orbit-text-muted)", "var(--orbit-brand)", "var(--pastel-progress-text)"];
-  const BAND_PCTS  = [4, 9, 24, 38, 25];
+  const BANDS = quizDistribution.bands.map((b) => b.label);
+  const BAND_PCTS = quizDistribution.bands.map((b) => b.pct);
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
   const handleExportDept = async () => {
@@ -420,13 +470,33 @@ export default function AdminUserAnalytics() {
     <div style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: "var(--orbit-text-body)" }}>
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: "28px" }}>
-        <h2 style={{ fontSize: "20px", fontWeight: "900", letterSpacing: "-0.4px", color: "var(--orbit-text-heading)", margin: "0 0 4px" }}>
-          User Analytics
-        </h2>
-        <p style={{ fontSize: "13px", color: "var(--orbit-text-muted)", margin: 0 }}>
-          Platform engagement, grading reports, and score distribution.
-        </p>
+      <div style={{ marginBottom: "28px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "12px" }}>
+        <div>
+          <h2 style={{ fontSize: "20px", fontWeight: "900", letterSpacing: "-0.4px", color: "var(--orbit-text-heading)", margin: "0 0 4px" }}>
+            User Analytics
+          </h2>
+          <p style={{ fontSize: "13px", color: "var(--orbit-text-muted)", margin: 0 }}>
+            Platform engagement, grading reports, and score distribution.
+          </p>
+        </div>
+
+        {/* Team segregation filter — same department/team split as the Team Hub. */}
+        {teamsList.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--orbit-text-muted)" }}>Team:</label>
+            <select
+              value={teamFilter}
+              onChange={(e) => setTeamFilter(e.target.value)}
+              style={{ fontSize: "13px", padding: "6px 10px", borderRadius: "8px", border: "1.5px solid var(--orbit-border)", background: "var(--orbit-surface)", color: "var(--orbit-text-heading)" }}
+            >
+              <option value="">All Teams</option>
+              {teamsList.map((t) => (
+                <option key={t._id} value={t._id}>{t.name}</option>
+              ))}
+            </select>
+            {loadingRealData && <span style={{ fontSize: "11px", color: "var(--orbit-text-muted)" }}>Refreshing…</span>}
+          </div>
+        )}
       </div>
 
       {error && (
@@ -448,22 +518,24 @@ export default function AdminUserAnalytics() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
         <div style={{ background: "var(--orbit-surface)", border: "1.5px solid var(--orbit-border)", borderRadius: "18px", padding: "24px 22px" }}>
           <h3 style={{ fontSize: "13px", fontWeight: "800", color: "var(--orbit-text-heading)", margin: "0 0 4px" }}>Module Completion</h3>
-          <p style={{ fontSize: "11px", color: "var(--orbit-text-muted)", margin: "0 0 18px" }}>Content depth proxy · top {moduleRows.length} modules</p>
+          <p style={{ fontSize: "11px", color: "var(--orbit-text-muted)", margin: "0 0 18px" }}>Completed / attempted · top {moduleRows.length} modules by attempts</p>
           {moduleRows.length === 0
-            ? <p style={{ fontSize: "13px", color: "var(--orbit-text-muted)", textAlign: "center", padding: "20px 0" }}>No modules found.</p>
+            ? <p style={{ fontSize: "13px", color: "var(--orbit-text-muted)", textAlign: "center", padding: "20px 0" }}>No module activity yet.</p>
             : moduleRows.map((m, i) => <HBar key={i} label={m.label} pct={m.pct} color={m.color} delay={i * 60} />)
           }
         </div>
 
         <div style={{ background: "var(--orbit-surface)", border: "1.5px solid var(--orbit-border)", borderRadius: "18px", padding: "24px 22px" }}>
           <h3 style={{ fontSize: "13px", fontWeight: "800", color: "var(--orbit-text-heading)", margin: "0 0 4px" }}>Daily Reads (7-day)</h3>
-          <p style={{ fontSize: "11px", color: "var(--orbit-text-muted)", margin: "0 0 20px" }}>Active sessions per day · illustrative</p>
+          <p style={{ fontSize: "11px", color: "var(--orbit-text-muted)", margin: "0 0 20px" }}>Real daily-read participation counts</p>
           <div style={{ display: "flex", gap: "8px", alignItems: "flex-end", justifyContent: "space-between" }}>
             {dailyData.map((d, i) => <VBar key={i} label={d.label} value={d.value} maxValue={maxDaily} color={BAR_COLORS[i % BAR_COLORS.length]} />)}
           </div>
-          <div style={{ marginTop: "18px", padding: "10px 14px", background: "var(--orbit-brand-muted)", borderRadius: "10px", fontSize: "12px", color: "var(--orbit-brand)", fontWeight: "600" }}>
-            📈 Peak: <strong>{DAY_LABELS[DAILY_WEIGHTS.indexOf(Math.max(...DAILY_WEIGHTS))]}</strong> · <strong>{dailyData[DAILY_WEIGHTS.indexOf(Math.max(...DAILY_WEIGHTS))].value} sessions</strong>
-          </div>
+          {dailyData.length > 0 && (
+            <div style={{ marginTop: "18px", padding: "10px 14px", background: "var(--orbit-brand-muted)", borderRadius: "10px", fontSize: "12px", color: "var(--orbit-brand)", fontWeight: "600" }}>
+              📈 Peak: <strong>{DAY_LABELS[peakIdx]}</strong> · <strong>{dailyData[peakIdx].value} reads</strong>
+            </div>
+          )}
         </div>
       </div>
 
@@ -472,10 +544,13 @@ export default function AdminUserAnalytics() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", flexWrap: "wrap", gap: "8px" }}>
           <div>
             <h3 style={{ fontSize: "13px", fontWeight: "800", color: "var(--orbit-text-heading)", margin: "0 0 2px" }}>Quiz Score Distribution</h3>
-            <p style={{ fontSize: "11px", color: "var(--orbit-text-muted)", margin: 0 }}>Aggregate score bands · MCQ auto-graded results</p>
+            <p style={{ fontSize: "11px", color: "var(--orbit-text-muted)", margin: 0 }}>Real per-user accuracy across attempted quiz cards</p>
           </div>
-          <span style={{ fontSize: "11px", fontWeight: "700", background: "var(--pastel-progress)", border: "1px solid var(--pastel-progress-border)", color: "var(--pastel-progress-text)", padding: "4px 10px", borderRadius: "var(--radius-full)" }}>Avg: 68%</span>
+          <span style={{ fontSize: "11px", fontWeight: "700", background: "var(--pastel-progress)", border: "1px solid var(--pastel-progress-border)", color: "var(--pastel-progress-text)", padding: "4px 10px", borderRadius: "var(--radius-full)" }}>Avg: {quizDistribution.avgPct}%</span>
         </div>
+        {BANDS.length === 0 ? (
+          <p style={{ fontSize: "13px", color: "var(--orbit-text-muted)", textAlign: "center", padding: "20px 0" }}>No quiz attempts yet.</p>
+        ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {BANDS.map((band, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -487,6 +562,7 @@ export default function AdminUserAnalytics() {
             </div>
           ))}
         </div>
+        )}
       </div>
 
       {/* ══ Department Grading Section ════════════════════════════════════════ */}

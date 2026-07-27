@@ -13,7 +13,7 @@ import SuperAdminDashboard from "../admin/SuperAdminDashboard";
 import Dashboard1 from "../admin/Dashboard1";
 import {
   House, Book, BarChart, Lightbulb, Trophy, PersonCircle,
-  Shield, Building, Broadcast, ArrowLeftRight, RocketTakeoffFill,
+  Shield, Building, Broadcast, RocketTakeoffFill,
   SunFill, MoonFill, Activity, BoxArrowRight,
   List, XLg,
 } from "react-bootstrap-icons";
@@ -507,64 +507,41 @@ export default function OrbitShell() {
               {theme === "light" ? <MoonFill size={13} /> : <SunFill size={13} />}
             </button>
 
-            {/* Admin view toggle */}
-            {user?.role === "admin" && (
-              <button
-                onClick={() => {
-                  const next = currentViewMode === "admin" ? "learner" : "admin";
-                  setCurrentViewMode(next);
-                  if (viewModeKey) localStorage.setItem(viewModeKey, next);
-                  navigate(next === "admin" ? "/orbit/dashboard?tab=overview" : "/orbit");
-                }}
-                style={{
-                  background:   "var(--orbit-brand)",
-                  color:        "#fff",
-                  border:       "none",
-                  borderBottom: "3px solid var(--orbit-brand-dark)",
-                  borderRadius: "8px",
-                  padding:      "5px 12px",
-                  fontSize:     "11.5px",
-                  fontWeight:   "700",
-                  cursor:       "pointer",
-                  display:      "flex",
-                  alignItems:   "center",
-                  gap:          "5px",
-                }}
-              >
-                <ArrowLeftRight size={11} />
-                {currentViewMode === "admin" ? "My Learning" : "Admin Panel"}
-              </button>
-            )}
-
-            {/* Superadmin mode picker */}
-            {user?.role === "superadmin" && (
-              <select
-                value={currentViewMode}
-                onChange={(e) => {
-                  const m = e.target.value;
-                  setCurrentViewMode(m);
-                  if (viewModeKey) localStorage.setItem(viewModeKey, m);
-                  // "learner" goes Home (/orbit); "superadmin"/"admin" both
-                  // go to the dashboard/hub screen — bare /orbit is never
-                  // the dashboard, regardless of which mode is picked here.
-                  navigate(m === "learner" ? "/orbit" : "/orbit/dashboard?tab=overview");
-                }}
-                style={{
-                  background:   "var(--orbit-brand)",
-                  border:       "none",
-                  borderBottom: "3px solid var(--orbit-brand-dark)",
-                  color:        "#fff",
-                  padding:      "5px 10px",
-                  borderRadius: "8px",
-                  fontSize:     "11.5px",
-                  cursor:       "pointer",
-                  fontWeight:   "700",
-                }}
-              >
-                <option value="superadmin">Superadmin</option>
-                <option value="admin">Admin Proxy</option>
-                <option value="learner">Learner View</option>
-              </select>
+            {/* View-mode switcher — one segmented control for both roles.
+                "learner" always goes Home (/orbit); "admin"/"superadmin" both
+                go to the dashboard/hub screen — bare /orbit is never the
+                dashboard, regardless of which mode is picked here. */}
+            {(user?.role === "admin" || user?.role === "superadmin") && (
+              <div className="orbit-mode-switch" role="tablist" aria-label="View mode">
+                {(user.role === "superadmin"
+                  ? [
+                      { key: "superadmin", label: "Superadmin", Icon: Shield },
+                      { key: "admin", label: "Admin", Icon: Building },
+                      { key: "learner", label: "Learner", Icon: PersonCircle },
+                    ]
+                  : [
+                      { key: "admin", label: "Admin", Icon: Building },
+                      { key: "learner", label: "Learner", Icon: PersonCircle },
+                    ]
+                ).map(({ key, label, Icon }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={currentViewMode === key}
+                    className={`orbit-mode-pill ${currentViewMode === key ? "orbit-mode-pill--active" : ""}`}
+                    onClick={() => {
+                      if (currentViewMode === key) return;
+                      setCurrentViewMode(key);
+                      if (viewModeKey) localStorage.setItem(viewModeKey, key);
+                      navigate(key === "learner" ? "/orbit" : "/orbit/dashboard?tab=overview");
+                    }}
+                  >
+                    <Icon size={12} />
+                    <span className="orbit-mode-pill-label">{label}</span>
+                  </button>
+                ))}
+              </div>
             )}
 
             {/* XP / Lightyear pill — lavender, per the dashboard redesign's chip palette */}

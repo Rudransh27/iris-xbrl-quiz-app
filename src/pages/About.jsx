@@ -63,7 +63,7 @@ export default function About() {
 
         <div className="about-cta-row">
           <button className="about-cta-btn" onClick={() => navigate("/orbit")}>
-            Go to Iris Orbit →
+           Launch IRIS Orbit →
           </button>
           <button className="about-cta-btn-outline" onClick={() => navigate("/contact")}>
             Contact Us
