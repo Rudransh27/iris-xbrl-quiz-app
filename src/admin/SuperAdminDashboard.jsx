@@ -111,7 +111,7 @@ export default function SuperAdminDashboard() {
   if (loading) {
     return (
       <div className="text-center p-5">
-        <Spinner animation="border" style={{ color: "#4C3D9E" }} />
+        <Spinner animation="border" style={{ color: "var(--orbit-brand)" }} />
         <div className="text-muted font-monospace mt-2" style={{ fontSize: '13px' }}>Syncing global infrastructure indices...</div>
       </div>
     );

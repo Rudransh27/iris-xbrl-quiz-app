@@ -1,0 +1,159 @@
+/* src/admin/components/AdminIdeasReview.css
+   Flat, square-cornered, theme-aware styling — no left accent borders, no
+   heavy border-radius, no drop-shadow-on-hover. Reuses the same --orbit-*
+   tokens the rest of the Orbit shell already defines for light/dark mode. */
+
+.ideas-heading-text {
+  color: var(--orbit-text-heading);
+}
+
+.ideas-body-text {
+  color: var(--orbit-text-body);
+}
+
+.ideas-muted-text {
+  color: var(--orbit-text-muted);
+}
+
+.ideas-dept-picker {
+  background: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+}
+
+.ideas-flat-select,
+.ideas-flat-input {
+  border-radius: 4px !important;
+  background: var(--orbit-surface) !important;
+  border: 1px solid var(--orbit-border) !important;
+  color: var(--orbit-text-heading) !important;
+}
+
+.ideas-flat-alert {
+  border-radius: 4px;
+}
+
+.ideas-spinner {
+  color: var(--orbit-brand);
+}
+
+.ideas-empty-state {
+  background: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  color: var(--orbit-text-muted);
+}
+
+/* ── Filter chips — square corners, flat, active state uses brand fill ──── */
+.ideas-filter-row {
+  border-bottom: 1px solid var(--orbit-border);
+  padding-bottom: 10px;
+}
+
+.ideas-filter-chip {
+  background: transparent;
+  border: 1px solid var(--orbit-border);
+  color: var(--orbit-text-muted);
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.ideas-filter-chip:hover {
+  background: var(--orbit-surface-subtle);
+}
+
+.ideas-filter-chip--active {
+  background: var(--orbit-brand);
+  border-color: var(--orbit-brand);
+  color: var(--orbit-text-inverse);
+  font-weight: 700;
+}
+
+.ideas-filter-count {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+  padding: 0 6px;
+  font-size: 10.5px;
+}
+
+.ideas-filter-chip--active .ideas-filter-count {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Idea card — no left border, no border-radius, thin uniform border ──── */
+.ideas-card {
+  background: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  padding: 16px;
+}
+
+.ideas-card-meta-strip {
+  border-bottom: 1px solid var(--orbit-border);
+}
+
+.ideas-flat-badge {
+  border-radius: 3px;
+}
+
+.ideas-status-badge {
+  border-radius: 3px;
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border-strong);
+  color: var(--orbit-text-body);
+}
+
+.ideas-id-badge {
+  border-radius: 3px;
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+  color: var(--orbit-text-muted);
+}
+
+.ideas-curator-box {
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+}
+
+/* ── Action buttons — flat, square, brand-consistent ─────────────────────── */
+.ideas-btn {
+  border-radius: 4px;
+  border-width: 1px;
+}
+
+.ideas-btn-primary {
+  background: var(--orbit-brand);
+  border-color: var(--orbit-brand);
+  color: var(--orbit-text-inverse);
+}
+
+.ideas-btn-primary:hover,
+.ideas-btn-primary:focus {
+  background: var(--orbit-brand-dark) !important;
+  border-color: var(--orbit-brand-dark) !important;
+}
+
+.ideas-btn-accept {
+  background: var(--pastel-progress-text);
+  border-color: var(--pastel-progress-text);
+  color: #fff;
+}
+
+.ideas-btn-accept:hover,
+.ideas-btn-accept:focus {
+  filter: brightness(0.92);
+}
+
+.ideas-btn-park {
+  background: var(--orbit-surface);
+  border-color: var(--orbit-border-strong);
+  color: var(--orbit-text-body);
+}
+
+.ideas-btn-park:hover,
+.ideas-btn-park:focus {
+  background: var(--orbit-surface-subtle) !important;
+  color: var(--orbit-text-heading) !important;
+}
+
+.ideas-btn:disabled {
+  opacity: 0.5;
+}

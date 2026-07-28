@@ -546,7 +546,7 @@ export default function OrbitShell() {
                       if (displayedViewMode === key) return;
                       setCurrentViewMode(key);
                       if (viewModeKey) localStorage.setItem(viewModeKey, key);
-                      navigate(key === "learner" ? "/orbit" : "/orbit/dashboard?tab=overview");
+                      navigate(key === "learner" ? "/orbit" : "/orbit/dashboard");
                     }}
                   >
                     <Icon size={12} />

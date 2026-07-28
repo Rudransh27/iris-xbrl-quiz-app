@@ -211,7 +211,7 @@ export default function AdminProgressDashboard() {
                             onClick={() => handleExportCsv(row)}
                             disabled={exportingId === row.moduleId}
                             style={{
-                              padding: "6px 12px", background: "var(--orbit-brand)", color: "#fff", border: "none",
+                              padding: "6px 12px", background: "var(--orbit-brand)", color: "var(--orbit-text-inverse)", border: "none",
                               borderRadius: "8px", fontSize: "11px", fontWeight: "700",
                               cursor: exportingId === row.moduleId ? "not-allowed" : "pointer",
                             }}

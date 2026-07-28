@@ -736,6 +736,25 @@ getWorkspaceCurriculum: async () => {
     return await handleFetchResponse(response);
   },
 
+  rateModule: async (id, { rating, reviewText }) => {
+    const response = await fetch(`${API_BASE_URL}/modules/${id}/rate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify({ rating, reviewText }),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  getModuleReviews: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/modules/${id}/reviews`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  getMyModuleReview: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/modules/${id}/my-review`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
   createModule: async (moduleData) => {
     const response = await fetch(`${API_BASE_URL}/modules`, {
       method: 'POST',

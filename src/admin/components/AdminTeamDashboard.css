@@ -1,0 +1,185 @@
+/* src/admin/components/AdminTeamDashboard.css
+   Team Hub — responsive grid replacing the old fixed-width horizontal-
+   scroll row, and the same flat/square/theme-aware design language used
+   elsewhere in the admin console this session (no left accent border, no
+   heavy border-radius, colors via var(--orbit-*) so it reacts to the
+   dark/light toggle). */
+
+.team-hub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.team-hub-title {
+  color: var(--orbit-text-heading);
+  font-size: 19px;
+  margin: 0;
+}
+
+.team-hub-subtitle {
+  color: var(--orbit-text-muted);
+  font-size: 12px;
+  margin: 4px 0 0 0;
+}
+
+.team-hub-dept-picker {
+  background: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  color: var(--orbit-text-heading);
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 10px;
+}
+
+.team-hub-new-btn {
+  background: var(--orbit-brand);
+  border: 1px solid var(--orbit-brand);
+  color: var(--orbit-text-inverse);
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-hub-new-btn:hover {
+  background: var(--orbit-brand-dark);
+  border-color: var(--orbit-brand-dark);
+}
+
+/* ── Pending requests panel ──────────────────────────────────────────── */
+.team-hub-pending-panel {
+  background: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.team-hub-pending-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-top: 1px solid var(--orbit-border);
+  font-size: 12.5px;
+  color: var(--orbit-text-body);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── Responsive team grid — the actual fix for the horizontal-scroll bug:
+   teams wrap onto new rows instead of forcing an overflow-x rail. ──────── */
+.team-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.team-hub-column {
+  background: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  padding: 14px;
+  transition: border-color 0.15s ease;
+}
+
+.team-hub-column--drop-active {
+  border-color: var(--orbit-brand);
+}
+
+.team-hub-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.team-hub-column-name {
+  color: var(--orbit-text-heading);
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-hub-member-count {
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+  color: var(--orbit-text-muted);
+  font-size: 10px;
+  font-family: var(--bs-font-monospace);
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+
+.team-hub-admins-line {
+  font-size: 11px;
+  color: var(--orbit-text-muted);
+  margin-bottom: 10px;
+}
+
+.team-hub-no-admin {
+  color: #dc2626;
+}
+
+.team-hub-member-list {
+  min-height: 60px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.team-hub-empty-members {
+  color: var(--orbit-text-muted);
+  text-align: center;
+  font-size: 12px;
+  padding: 20px 0;
+}
+
+/* ── Member card ──────────────────────────────────────────────────────── */
+.team-hub-member-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  margin-bottom: 6px;
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+}
+
+.team-hub-member-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 11px;
+  flex-shrink: 0;
+  background: var(--orbit-brand-muted);
+  color: var(--orbit-brand);
+  object-fit: cover;
+}
+
+.team-hub-member-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--orbit-text-heading);
+}
+
+.team-hub-member-xp {
+  background: var(--orbit-brand-muted);
+  color: var(--orbit-brand);
+  font-family: var(--bs-font-monospace);
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 3px;
+}

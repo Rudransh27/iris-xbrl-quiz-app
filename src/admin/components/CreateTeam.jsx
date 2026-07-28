@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import AuthContext from "../../context/AuthContext"; // 🔒 Imported to read admin context boundaries
 
-const CreateTeam = ({ onTeamCreated, setActiveTab }) => {
+const CreateTeam = ({ onTeamCreated, setActiveTab, embedded = false }) => {
   const { user } = useContext(AuthContext); // Extract active administrator privileges
   const [teamName, setTeamName] = useState("");
   const [teamCode, setTeamCode] = useState("");
@@ -19,9 +19,14 @@ const CreateTeam = ({ onTeamCreated, setActiveTab }) => {
 
   const navigate = useNavigate();
 
+  // 🎯 `embedded` (true when rendered inside Team Hub's "New Team" Modal)
+  // skips the page-scroll-reset and the standalone full-page centering
+  // chrome below — a Modal already provides its own frame, so this
+  // component's own minHeight:80vh/Card wrapper would just make the modal
+  // absurdly tall if left in place.
   useLayoutEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    if (!embedded) window.scrollTo(0, 0);
+  }, [embedded]);
 
   // 📡 Load corporate structure map and enforce tenant routing filters
   useEffect(() => {
@@ -107,26 +112,40 @@ const CreateTeam = ({ onTeamCreated, setActiveTab }) => {
 
   const isSuperAdmin = user?.role === "superadmin";
 
+  // 🎯 `embedded`: Team Hub's "New Team" Modal already supplies a header/
+  // frame, so skip this component's own standalone-page centering + Card
+  // chrome and just render the form fields directly into the Modal body.
+  const OuterWrapper = embedded ? React.Fragment : 'div';
+  const outerProps = embedded ? {} : {
+    className: "admin-page-container d-flex align-items-center justify-content-center p-4 w-100 animate-fade-in",
+    style: { minHeight: "80vh" },
+  };
+  const InnerWrapper = embedded ? React.Fragment : Card;
+  const innerProps = embedded ? {} : {
+    className: "shadow-sm border-slate w-100",
+    style: { maxWidth: "500px", borderRadius: "12px" },
+  };
+  const BodyWrapper = embedded ? React.Fragment : Card.Body;
+  const bodyProps = embedded ? {} : { className: "p-4 text-start" };
+
   return (
-    <div
-      className="admin-page-container d-flex align-items-center justify-content-center p-4 w-100 animate-fade-in"
-      style={{ minHeight: "80vh" }}
-    >
-      <Card
-        className="shadow-sm border-slate w-100"
-        style={{ maxWidth: "500px", borderRadius: "12px" }}
-      >
-        <Card.Body className="p-4 text-start">
-          <h2
-            className="mb-2"
-            style={{ fontWeight: "700", letterSpacing: "-0.5px" }}
-          >
-            Create New Team
-          </h2>
-          <p className="text-muted small mb-4">
-            Provision a new operational sub-team under a designated parent
-            business line.
-          </p>
+    <OuterWrapper {...outerProps}>
+      <InnerWrapper {...innerProps}>
+        <BodyWrapper {...bodyProps}>
+          {!embedded && (
+            <>
+              <h2
+                className="mb-2"
+                style={{ fontWeight: "700", letterSpacing: "-0.5px" }}
+              >
+                Create New Team
+              </h2>
+              <p className="text-muted small mb-4">
+                Provision a new operational sub-team under a designated parent
+                business line.
+              </p>
+            </>
+          )}
 
           {error && (
             <Alert
@@ -269,9 +288,9 @@ const CreateTeam = ({ onTeamCreated, setActiveTab }) => {
               </Button>
             </div>
           </Form>
-        </Card.Body>
-      </Card>
-    </div>
+        </BodyWrapper>
+      </InnerWrapper>
+    </OuterWrapper>
   );
 };
 

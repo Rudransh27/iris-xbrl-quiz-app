@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useLayoutEffect, useContext } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 import ModuleCardEach from './ModuleCardEach';
+import ModuleReviews from './ModuleReviews';
 import api from '../admin/services/api';
 import { ArrowLeft, ChevronDown, JournalText, Book, CodeSquare, PlayCircle, FileEarmarkPdf, FileEarmarkPpt, CheckCircle } from 'react-bootstrap-icons'; // 🌟 Imported icons for card formatting types
 import './ModuleDetail.css';
@@ -93,14 +94,27 @@ export default function ModuleDetail() {
     );
   }
 
+  // 🏢 A module can now belong to several departments — prefer the one
+  // matching this learner's own department (so the badge/theming reflects
+  // their own context), else fall back to the first target department.
+  const getOwnDept = () => {
+    const depts = Array.isArray(module.departments) ? module.departments : [];
+    if (depts.length === 0) return null;
+    const ownDeptId = (user?.department?._id || user?.department || "").toString();
+    const match = depts.find(d => (d?._id || d)?.toString() === ownDeptId);
+    return match || depts[0];
+  };
+
   const getDeptCode = () => {
-    if (!module.department) return "global";
-    return typeof module.department === "object" ? module.department.code || "global" : module.department;
+    const dept = getOwnDept();
+    if (!dept) return "global";
+    return typeof dept === "object" ? dept.code || "global" : dept;
   };
 
   const getDeptName = () => {
-    if (!module.department) return "GLOBAL";
-    return typeof module.department === "object" ? module.department.name || "GLOBAL" : module.department;
+    const dept = getOwnDept();
+    if (!dept) return "GLOBAL";
+    return typeof dept === "object" ? dept.name || "GLOBAL" : dept;
   };
 
   const currentTopics = module.topics || [];
@@ -195,7 +209,7 @@ export default function ModuleDetail() {
               <ModuleCardEach
                 title={module.title}
                 description={module.description}
-                department={module.department}
+                department={getOwnDept()}
                 isButtonVisible={true}
                 buttonText="Start Learning Trail"
                 onButtonClick={(e) => handleStartTrail(e)} 
@@ -204,6 +218,8 @@ export default function ModuleDetail() {
           </div>
 
         </div>
+
+        <ModuleReviews moduleId={module._id || module.id} />
 
       </div>
     </div>

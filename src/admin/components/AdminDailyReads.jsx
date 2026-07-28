@@ -202,7 +202,7 @@ export default function AdminDailyReadForm({ setActiveTab }) {
   };
 
   return (
-    <Card className="border-0 shadow-sm animate-fade-in" style={{ borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+    <Card className="border-0 shadow-sm animate-fade-in" style={{ borderRadius: '12px', border: '1px solid var(--orbit-border)' }}>
       <Card.Body className="p-4">
         <div className="d-flex align-items-center justify-content-between mb-1">
           <h4 className="fw-bold text-dark-title m-0">Daily Reads</h4>
@@ -327,7 +327,7 @@ export default function AdminDailyReadForm({ setActiveTab }) {
                 onDelete={() => setDeleteTarget(selectedRead)}
               />
             ) : isSelectedToday ? (
-              <div className="text-center p-5 border rounded-3" style={{ borderColor: '#e2e8f0', borderStyle: 'dashed' }}>
+              <div className="text-center p-5 border rounded-3" style={{ borderColor: 'var(--orbit-border)', borderStyle: 'dashed' }}>
                 <p className="text-muted mb-3">Nothing posted yet today.</p>
                 <Button
                   variant="primary"
@@ -339,7 +339,7 @@ export default function AdminDailyReadForm({ setActiveTab }) {
                 </Button>
               </div>
             ) : (
-              <div className="text-center p-5 border rounded-3" style={{ borderColor: '#e2e8f0', borderStyle: 'dashed' }}>
+              <div className="text-center p-5 border rounded-3" style={{ borderColor: 'var(--orbit-border)', borderStyle: 'dashed' }}>
                 <CalendarX size={22} className="text-muted mb-2" />
                 <p className="text-muted mb-0">Nothing was posted on this date.</p>
               </div>
@@ -368,7 +368,7 @@ export default function AdminDailyReadForm({ setActiveTab }) {
 // ================================================================
 function DailyReadPreview({ read, canManage, onEdit, onDelete }) {
   return (
-    <Card className="border" style={{ borderRadius: '10px', borderColor: '#e2e8f0' }}>
+    <Card className="border" style={{ borderRadius: '10px', borderColor: 'var(--orbit-border)' }}>
       {read.imageUrl && (
         <Card.Img
           variant="top"
@@ -526,7 +526,7 @@ function DailyReadForm({
         />
       </Form.Group>
 
-      <div className="d-flex justify-content-end gap-2 border-top pt-3" style={{ borderColor: '#f1f5f9' }}>
+      <div className="d-flex justify-content-end gap-2 border-top pt-3" style={{ borderColor: 'var(--orbit-border)' }}>
         <Button variant="light" type="button" onClick={onCancel} disabled={loading} style={{ borderRadius: '6px', fontSize: '13.5px', fontWeight: '500' }}>
           Cancel
         </Button>

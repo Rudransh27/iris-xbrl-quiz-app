@@ -45,7 +45,7 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
 
   // 🛡️ THREE-LAYER VISIBILITY CONTROL STATES
   const [visibility, setVisibility] = useState('Global'); // Options: 'Global', 'Departmental', 'Team-Specific'
-  const [selectedDepartment, setSelectedDepartment] = useState(''); // Stores Department ID string
+  const [selectedDepartments, setSelectedDepartments] = useState([]); // Array of checked department ID strings
   const [selectedTeams, setSelectedTeamIds] = useState([]); // Array of checked sub-team ID strings
 
   // 📡 METADATA DICTIONARIES
@@ -90,11 +90,13 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
       setIsPopular(!!editData.isPopular);
       setEstimatedTime(editData.estimatedTime ? String(editData.estimatedTime) : '');
 
-      const deptId = editData.department?._id || editData.department || '';
-      setSelectedDepartment(deptId);
-      
-      const teamIds = Array.isArray(editData.targetTeams) 
-        ? editData.targetTeams.map(t => t._id || t) 
+      const deptIds = Array.isArray(editData.departments)
+        ? editData.departments.map(d => d._id || d)
+        : [];
+      setSelectedDepartments(deptIds);
+
+      const teamIds = Array.isArray(editData.targetTeams)
+        ? editData.targetTeams.map(t => t._id || t)
         : [];
       setSelectedTeamIds(teamIds);
     }
@@ -102,8 +104,15 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
 
   // Track checked/unchecked choices inside the team selector grid panel
   const handleTeamCheckboxToggle = (teamId) => {
-    setSelectedTeamIds(prev => 
+    setSelectedTeamIds(prev =>
       prev.includes(teamId) ? prev.filter(id => id !== teamId) : [...prev, teamId]
+    );
+  };
+
+  // Track checked/unchecked choices inside the department selector grid panel
+  const handleDepartmentCheckboxToggle = (deptId) => {
+    setSelectedDepartments(prev =>
+      prev.includes(deptId) ? prev.filter(id => id !== deptId) : [...prev, deptId]
     );
   };
 
@@ -132,8 +141,8 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
     if (uploadingImage) { setError('Please wait for the image upload pipeline to finish.'); return; }
     
     // Cross-validate context constraints before dispatching API mutations
-    if (visibility !== 'Global' && !selectedDepartment) {
-      setError('Validation Error: You must pick a target parent department for this scope selection.');
+    if (visibility !== 'Global' && selectedDepartments.length === 0) {
+      setError('Validation Error: You must pick at least one target department for this scope selection.');
       return;
     }
     if (visibility === 'Team-Specific' && selectedTeams.length === 0) {
@@ -149,7 +158,7 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
       description,
       engineStrategy, 
       visibility,
-      department: visibility === 'Global' ? null : selectedDepartment,
+      departments: visibility === 'Global' ? [] : selectedDepartments,
       targetTeams: visibility === 'Team-Specific' ? selectedTeams : [],
       imageUrl: imageUrl || "https://example.com/images/default-xbrl-module.png",
       estimatedTime: Number(estimatedTime) || 0
@@ -180,7 +189,7 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
       }
 
       setTitle(''); setDescription(''); setImageUrl('');
-      setSelectedDepartment(''); setSelectedTeamIds([]); setVisibility('Global');
+      setSelectedDepartments([]); setSelectedTeamIds([]); setVisibility('Global');
       setEngineStrategy('STANDARD');
       setIsHotModule(false); setIsPopular(false); setEstimatedTime('');
 
@@ -203,19 +212,32 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
     ? departmentsList
     : departmentsList.filter(d => (d._id || '').toString() === (user?.department || '').toString());
 
-  // Compute sub-team options available for selection depending on parent choice matrix
-  const availableTeams = visibleDepartmentsList.find(d => d._id === selectedDepartment)?.teams || [];
+  // Compute sub-team options available for selection — the de-duplicated
+  // union of teams across every checked department. Once more than one
+  // department is selected, each team is labeled with its own department so
+  // same-named teams in different departments don't look interchangeable.
+  const selectedDeptObjects = visibleDepartmentsList.filter(d => selectedDepartments.includes(d._id));
+  const availableTeamsMap = new Map();
+  selectedDeptObjects.forEach(d => {
+    (d.teams || []).forEach(team => {
+      if (!availableTeamsMap.has(team._id)) {
+        availableTeamsMap.set(team._id, { ...team, deptName: d.name });
+      }
+    });
+  });
+  const availableTeams = Array.from(availableTeamsMap.values());
 
-  // 🔐 Keep selectedDepartment permanently locked to the Department Admin's
-  // own department the instant a non-Global scope is chosen — covers both
-  // creating a new module and editing an existing one (e.g. promoting a
+  // 🔐 Keep selectedDepartments permanently locked to just the Department
+  // Admin's own department the instant a non-Global scope is chosen — covers
+  // both creating a new module and editing an existing one (e.g. promoting a
   // Global module back to Departmental), matching the backend's identical
-  // "always forced to req.user.department" rule.
+  // "always forced to [req.user.department]" rule. Multi-department
+  // assignment is a Superadmin-only capability.
   useEffect(() => {
     if (isSuperAdmin) return;
     if (visibility === 'Global') return;
-    if (user?.department && selectedDepartment !== user.department) {
-      setSelectedDepartment(user.department);
+    if (user?.department && (selectedDepartments.length !== 1 || selectedDepartments[0] !== user.department)) {
+      setSelectedDepartments([user.department]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuperAdmin, visibility, user?.department]);
@@ -270,7 +292,7 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
                 value={visibility}
                 onChange={(e) => {
                   setVisibility(e.target.value);
-                  setSelectedDepartment(''); // Flush stale states
+                  setSelectedDepartments([]); // Flush stale states
                   setSelectedTeamIds([]);
                 }}
                 required
@@ -365,51 +387,61 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
           </Col>
         </Row>
 
-        {/* 🎛️ LAYER 2 DYNAMIC PARENT SELECTOR */}
+        {/* 🎛️ LAYER 2 DYNAMIC PARENT SELECTOR — multi-select checkbox grid,
+            mirroring the team selector below. A Superadmin can publish one
+            module to several departments at once; a Department Admin stays
+            locked to just their own (checked, disabled). */}
         {visibility !== 'Global' && (
-          <Row className="mb-3">
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label className="fw-semibold text-dark small">Target Parent Department</Form.Label>
-                <Form.Select
-                  value={selectedDepartment}
-                  onChange={(e) => {
-                    setSelectedDepartment(e.target.value);
-                    setSelectedTeamIds([]); // Clear child check fields when department shifts
-                  }}
-                  required
-                  disabled={!isSuperAdmin}
-                  className="admin-flat-input text-muted"
-                >
-                  <option value="" disabled>Select Department</option>
-                  {visibleDepartmentsList.map(d => (
-                    <option key={d._id} value={d._id}>{d.name}</option>
-                  ))}
-                </Form.Select>
-                {!isSuperAdmin && (
-                  <small className="text-muted d-block mt-1">
-                    Locked to your own department — Department Admins cannot assign modules to other departments.
-                  </small>
-                )}
-              </Form.Group>
-            </Col>
-          </Row>
+          <div className="mb-3 bg-light p-3 border rounded-3 animate-fade-in">
+            <Form.Label className="fw-semibold text-dark small d-block mb-2">Target Departments (Select One or More)</Form.Label>
+            {visibleDepartmentsList.length === 0 ? (
+              <small className="text-danger italic ps-1">Notice: No departments are currently provisioned.</small>
+            ) : (
+              <Row>
+                {visibleDepartmentsList.map(d => (
+                  <Col sm={4} xs={6} key={d._id} className="mb-1">
+                    <Form.Check
+                      type="checkbox"
+                      id={`dept-chk-${d._id}`}
+                      label={d.name}
+                      checked={selectedDepartments.includes(d._id)}
+                      onChange={() => {
+                        handleDepartmentCheckboxToggle(d._id);
+                        setSelectedTeamIds([]); // Clear child check fields when department set shifts
+                      }}
+                      disabled={!isSuperAdmin}
+                      className="small fw-medium text-secondary"
+                      style={{ fontSize: '13px', cursor: isSuperAdmin ? 'pointer' : 'default' }}
+                    />
+                  </Col>
+                ))}
+              </Row>
+            )}
+            {!isSuperAdmin && (
+              <small className="text-muted d-block mt-1">
+                Locked to your own department — Department Admins cannot assign modules to other departments.
+              </small>
+            )}
+          </div>
         )}
 
-        {/* 🎛️ LAYER 3 DYNAMIC SUB-TEAM MULTI-SELECT CHECKBOX BOX */}
-        {visibility === 'Team-Specific' && selectedDepartment && (
+        {/* 🎛️ LAYER 3 DYNAMIC SUB-TEAM MULTI-SELECT CHECKBOX BOX — union of
+            teams across every selected department; each team is labeled
+            with its own department once more than one is selected, so
+            same-named teams in different departments aren't ambiguous. */}
+        {visibility === 'Team-Specific' && selectedDepartments.length > 0 && (
           <div className="mb-3 bg-light p-3 border rounded-3 animate-fade-in">
             <Form.Label className="fw-semibold text-dark small d-block mb-2">Target Teams Boundaries (Select Multiple)</Form.Label>
             {availableTeams.length === 0 ? (
-              <small className="text-danger italic ps-1">Notice: Zero sub-teams are currently provisioned under this department asset category directory.</small>
+              <small className="text-danger italic ps-1">Notice: Zero sub-teams are currently provisioned under the selected department(s).</small>
             ) : (
               <Row>
                 {availableTeams.map(team => (
                   <Col sm={4} xs={6} key={team._id} className="mb-1">
-                    <Form.Check 
+                    <Form.Check
                       type="checkbox"
                       id={`team-chk-${team._id}`}
-                      label={team.name}
+                      label={selectedDepartments.length > 1 ? `${team.name} (${team.deptName})` : team.name}
                       checked={selectedTeams.includes(team._id)}
                       onChange={() => handleTeamCheckboxToggle(team._id)}
                       className="small fw-medium text-secondary"

@@ -12,40 +12,39 @@
 }
 
 /* =========================================================================
-   🚀 MINIMALIST PRISTINE SIDEBAR (Wipeout Chunky Dark Blue)
+   🚀 MINIMALIST PRISTINE SIDEBAR
    ========================================================================= */
 .admin-sidebar-nav-panel {
-  background: #ffffff !important;
-  border-right: 1px solid #e2e8f0 !important;
+  background: var(--orbit-surface) !important;
+  border-right: 1px solid var(--orbit-border) !important;
   display: flex;
   flex-direction: column;
   height: 100vh;
   padding: 0 !important;
-  box-shadow: 2px 0 12px rgba(15, 37, 110, 0.005);
 }
 
 /* Sidebar Branding Header Block */
 .admin-sidebar-header {
   padding: 24px 20px 18px 20px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--orbit-border);
   text-align: left;
 }
 
 .text-dark-title {
-  color: #1e293b !important;
+  color: var(--orbit-text-heading) !important;
   font-size: 16px;
   letter-spacing: -0.3px;
 }
 
 .text-primary-brand {
-  color: #0f256e !important; /* IRIS Deep Blue Accent Token */
+  color: var(--orbit-brand) !important;
 }
 
 /* Developer Mini Tag Badge */
 .admin-role-badge {
   display: inline-block;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--orbit-surface-subtle);
+  color: var(--orbit-text-muted);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.6px;
@@ -65,43 +64,32 @@
   width: 100%;
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 11px 14px;
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #475569;
+  color: var(--orbit-text-muted);
   font-size: 13.5px;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 /* Hover: Delicate Highlight Overlay */
 .admin-nav-link-btn:hover {
-  background-color: #f8fafc;
-  color: #0f256e;
+  background-color: var(--orbit-surface-subtle);
+  color: var(--orbit-brand);
 }
 
-/* Active Focus Route (Apple Style) */
+/* Active Focus Route */
 .admin-nav-link-btn.active {
-  background-color: #f0f4ff !important;
-  color: #0f256e !important;
+  background-color: var(--orbit-brand-muted) !important;
+  color: var(--orbit-brand) !important;
   font-weight: 600;
 }
-
-.admin-nav-link-btn.active::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 20%;
-  height: 60%;
-  width: 3.5px;
-  background-color: #0f256e;
-  border-radius: 0 4px 4px 0;
-} 
 
 /* =========================================================================
    📦 OPERATIONAL WORKSPACE FLIGHT DECK (Independent Inner Scrolls)
@@ -125,42 +113,40 @@
 }
 
 /* =========================================================================
-   📊 HIGH-FIDELITY REFINED METRIC CARD HUD RIBBON 
+   📊 HIGH-FIDELITY REFINED METRIC CARD HUD RIBBON
    ========================================================================= */
 .dashboard-metric-hud-card {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 10px rgba(15, 37, 110, 0.015) !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.dashboard-metric-hud-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(15, 37, 110, 0.03) !important;
+  background: var(--orbit-surface) !important;
+  border: 1px solid var(--orbit-border) !important;
 }
 
 /* Round Badge Shape wrapper for icons inside HUD */
+/* Background tint derived from --hud-accent via color-mix so each metric
+   card's categorical icon color still looks right against either theme's
+   surface, instead of a solid light-pastel hex that would float oddly on a
+   dark canvas. */
 .hud-icon-wrapper {
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: color-mix(in srgb, var(--hud-accent, var(--orbit-brand)) 14%, var(--orbit-surface));
+  color: var(--hud-accent, var(--orbit-brand));
 }
 
 .hud-metric-label {
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--orbit-text-muted);
   letter-spacing: -0.1px;
 }
 
 .hud-metric-value {
   font-size: 22px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--orbit-text-heading);
   margin: 2px 0 0 0;
   letter-spacing: -0.5px;
 }
@@ -186,4 +172,105 @@
 @keyframes adminEntrance {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================================
+   🚀 ADMIN CONSOLE LAUNCHER — card-grid home replacing the old flat button row
+   Flat, square-cornered, no left accent border — a plain uniform border on
+   every tile regardless of category; color lives only in the small icon
+   chip, whose tint is derived from --card-accent via color-mix so it looks
+   right in both light and dark mode without a second hardcoded value.
+   ========================================================================= */
+.admin-launcher-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--orbit-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin: 4px 0 12px 2px;
+}
+
+.admin-launcher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.admin-launcher-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+  padding: 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-launcher-card:hover {
+  background: var(--orbit-surface-subtle);
+  border-color: var(--orbit-border-strong);
+}
+
+.admin-launcher-card-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--card-accent, var(--orbit-brand)) 14%, var(--orbit-surface));
+  color: var(--card-accent, var(--orbit-brand));
+}
+
+.admin-launcher-card-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--orbit-text-heading);
+  margin: 0 0 2px 0;
+}
+
+.admin-launcher-card-desc {
+  font-size: 11.5px;
+  color: var(--orbit-text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Slim "you are here" bar shown on every non-launcher admin console tab,
+   replacing the old always-visible 13-button row. */
+.admin-back-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--orbit-border);
+}
+
+.admin-back-bar-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+  padding: 7px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--orbit-text-body);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.admin-back-bar-btn:hover {
+  background: var(--orbit-brand-muted);
+  color: var(--orbit-brand);
+}
+
+.admin-back-bar-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--orbit-text-heading);
 }

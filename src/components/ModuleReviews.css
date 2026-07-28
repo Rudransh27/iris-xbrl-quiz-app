@@ -1,0 +1,126 @@
+/* src/components/ModuleReviews.css */
+.module-reviews-section {
+  margin-top: 32px;
+  padding: 24px;
+  background: var(--orbit-surface);
+  border: 1px solid var(--orbit-border);
+}
+
+.module-reviews-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--orbit-border);
+}
+
+.module-reviews-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--orbit-text-heading);
+  margin: 0;
+}
+
+.module-reviews-aggregate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.module-reviews-avg-number {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--orbit-text-heading);
+}
+
+.module-reviews-count {
+  font-size: 12.5px;
+  color: var(--orbit-text-muted);
+}
+
+.module-reviews-form {
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.module-reviews-form-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--orbit-text-body);
+}
+
+.module-reviews-textarea {
+  background: var(--orbit-surface) !important;
+  border: 1px solid var(--orbit-border) !important;
+  color: var(--orbit-text-heading) !important;
+  border-radius: 4px !important;
+  font-size: 13px;
+}
+
+.module-reviews-submit-btn {
+  background: var(--orbit-brand) !important;
+  border-color: var(--orbit-brand) !important;
+  color: var(--orbit-text-inverse) !important;
+  border-radius: 4px !important;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 18px;
+}
+
+.module-reviews-submit-btn:hover:not(:disabled) {
+  background: var(--orbit-brand-dark) !important;
+  border-color: var(--orbit-brand-dark) !important;
+}
+
+.module-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.module-reviews-empty {
+  color: var(--orbit-text-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.module-review-card {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--orbit-border);
+}
+
+.module-review-card:last-child {
+  border-bottom: none;
+}
+
+.module-review-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.module-review-author {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--orbit-text-heading);
+}
+
+.module-review-date {
+  font-size: 11.5px;
+  color: var(--orbit-text-muted);
+  margin-left: auto;
+}
+
+.module-review-text {
+  font-size: 13px;
+  color: var(--orbit-text-body);
+  line-height: 1.5;
+  margin: 0;
+}

@@ -11,15 +11,15 @@
 }
 
 .border-bottom-slate {
-  border-bottom: 1px solid #e2e8f0 !important;
+  border-bottom: 1px solid var(--orbit-border) !important;
 }
 
 /* =========================================================================
    📁 COLUMN 1: LEFT SIDEBAR WORKSPACE HOUSING (Duolingo Style Panel)
    ========================================================================= */
 .cb-sidebar-panel-container {
-  background-color: #ffffff;
-  border-right: 1px solid #cbd5e1;
+  background-color: var(--orbit-surface);
+  border-right: 1px solid var(--orbit-border-strong);
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -31,8 +31,8 @@
 
 .cb-sidebar-header {
   padding: 20px 16px;
-  border-bottom: 1px solid #f1f5f9;
-  background-color: #ffffff;
+  border-bottom: 1px solid var(--orbit-border);
+  background-color: var(--orbit-surface);
 }
 
 .cb-sidebar-header h5 {
@@ -53,13 +53,13 @@
 /* Curriculum Accordion Tree Customizations */
 .cb-accordion-item {
   border: none !important;
-  border-bottom: 1px solid #f1f5f9 !important;
-  background-color: #ffffff !important;
+  border-bottom: 1px solid var(--orbit-border) !important;
+  background-color: var(--orbit-surface) !important;
 }
 
 .cb-accordion-root .accordion-button {
-  background-color: #ffffff !important;
-  color: #334155 !important;
+  background-color: var(--orbit-surface) !important;
+  color: var(--orbit-text-heading) !important;
   font-weight: 700;
   font-size: 0.92rem;
   padding: 14px 16px;
@@ -80,13 +80,13 @@
 
 /* Inner Topic elements inside nested drawer blocks list loggers */
 .cb-sidebar-inline-trigger-strip {
-  background-color: #f8fafc;
+  background-color: var(--orbit-surface-subtle);
 }
 
 .cb-btn-ghost-action {
   background: none !important;
-  border: 1px dashed #cbd5e1 !important;
-  color: #64748b !important;
+  border: 1px dashed var(--orbit-border-strong) !important;
+  color: var(--orbit-text-muted) !important;
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -97,17 +97,17 @@
 .cb-btn-ghost-action:hover {
   border-color: #0f256e !important;
   color: #0f256e !important;
-  background-color: #ffffff !important;
+  background-color: var(--orbit-surface) !important;
 }
 
 .cb-topic-list-group .cb-topic-list-item {
   border: none !important;
-  border-bottom: 1px solid #f8fafc !important;
+  border-bottom: 1px solid var(--orbit-border) !important;
   padding: 11px 16px 11px 20px !important;
   font-size: 0.86rem;
   font-weight: 500;
-  color: #475569 !important;
-  background-color: #ffffff !important;
+  color: var(--orbit-text-body) !important;
+  background-color: var(--orbit-surface) !important;
   cursor: pointer;
   transition: all 0.15s ease-in-out;
 }
@@ -177,14 +177,14 @@
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--orbit-text-muted);
   letter-spacing: 0.5px;
 }
 
 .cb-main-topic-heading-title {
   font-size: 1.6rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--orbit-text-heading);
   letter-spacing: -0.5px;
   margin: 0;
 }
@@ -192,19 +192,19 @@
 .cb-workspace-subtitle-label {
   font-size: 1.05rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--orbit-text-heading);
 }
 
 /* 🎯 THE SPECIFICATION: Main container grid item boxes get crisp 12px curves borders */
 .cb-resource-item-card {
-  border: 1px solid #cbd5e1 !important;
+  border: 1px solid var(--orbit-border-strong) !important;
   border-radius: 12px !important; /* Premium curved profile boundary alignment */
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .cb-resource-item-card:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(15, 37, 110, 0.03) !important;
-  border-color: #94a3b8 !important;
+  border-color: var(--orbit-border-strong) !important;
 }
 
 /* Avatars colored code based matching dynamic resource types tracking modules */
@@ -229,12 +229,12 @@
 /* 🎯 STRICLY INSTAGRAM: Action items menus inside dropdown sliders options */
 .cb-dropdown-menu-slate {
   border-radius: 0px !important; /* ❌ Sharp flat rectangular corners mapping */
-  border: 1px solid #cbd5e1 !important;
+  border: 1px solid var(--orbit-border-strong) !important;
   padding: 4px 0 !important;
 }
 
 .cb-dropdown-trigger-icon-btn:hover {
-  background-color: #f1f5f9 !important;
+  background-color: var(--orbit-surface-subtle) !important;
   border-radius: 50%;
 }
 
@@ -254,7 +254,7 @@
 /* Empty state layout configurations checks placeholders elements wrapper bounds */
 .cb-empty-state-card {
   border-radius: 12px !important;
-  border: 1px dashed #cbd5e1 !important;
+  border: 1px dashed var(--orbit-border-strong) !important;
 }
 
 .cb-btn-primary {
@@ -294,7 +294,7 @@
     height: auto;
     width: 100%;
     border-right: none;
-    border-bottom: 1px solid #cbd5e1;
+    border-bottom: 1px solid var(--orbit-border-strong);
   }
   .cb-workspace-main-canvas {
     height: auto;

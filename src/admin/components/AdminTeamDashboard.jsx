@@ -5,12 +5,30 @@
 // dragging a member to another team is gated by that team's own admin (see
 // requestTeamTransfer's approve/auto-approve split on the backend).
 import React, { useState, useEffect, useContext, useCallback } from "react";
-import { Spinner, Alert, Badge } from "react-bootstrap";
+import { Spinner, Alert, Modal } from "react-bootstrap";
 import { DndContext, useDraggable, useDroppable, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { PersonBadgeFill, TrophyFill, ShieldLockFill, PlusCircleFill, CheckCircleFill, HourglassSplit } from "react-bootstrap-icons";
+import { TrophyFill, ShieldLockFill, PlusCircleFill, CheckCircleFill, HourglassSplit } from "react-bootstrap-icons";
 import api from "../services/api";
 import AuthContext from "../../context/AuthContext";
 import CreateTeam from "./CreateTeam";
+import "./AdminTeamDashboard.css";
+
+function MemberAvatar({ member }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const initials = (member.username || "US").substring(0, 2).toUpperCase();
+
+  if (member.avatarUrl && !imgFailed) {
+    return (
+      <img
+        src={member.avatarUrl}
+        alt={member.username}
+        className="team-hub-member-avatar"
+        onError={() => setImgFailed(true)}
+      />
+    );
+  }
+  return <div className="team-hub-member-avatar">{initials}</div>;
+}
 
 function MemberCard({ member, isTopPerformer, sourceTeamId }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -31,70 +49,51 @@ function MemberCard({ member, isTopPerformer, sourceTeamId }) {
       style={style}
       {...listeners}
       {...attributes}
-      className="d-flex align-items-center justify-content-between p-2 rounded-3 mb-2"
+      className="team-hub-member-card"
       title="Drag to move this member to another team"
       data-testid={`member-card-${member._id}`}
     >
       <div className="d-flex align-items-center gap-2">
-        <div
-          className="rounded-circle d-flex align-items-center justify-content-center fw-bold"
-          style={{
-            width: "30px", height: "30px",
-            backgroundColor: "var(--bg-hud-banner)", color: "var(--text-inverse)",
-            fontSize: "11px", flexShrink: 0,
-          }}
-        >
-          {(member.username || "US").substring(0, 2).toUpperCase()}
-        </div>
-        <div>
-          <div className="fw-semibold" style={{ fontSize: "13px", color: "var(--text-primary)" }}>
-            {member.username}
-            {isTopPerformer && <TrophyFill className="ms-1" size={11} color="#d4a017" title="Top performer" />}
-          </div>
+        <MemberAvatar member={member} />
+        <div className="team-hub-member-name">
+          {member.username}
+          {isTopPerformer && <TrophyFill className="ms-1" size={11} color="#d4a017" title="Top performer" />}
         </div>
       </div>
-      <Badge className="font-monospace" style={{ fontSize: "10px", backgroundColor: "var(--curriculum-icon-bg)", color: "var(--curriculum-icon-text)" }}>
-        {member.xp || 0} XP
-      </Badge>
+      <span className="team-hub-member-xp">{member.xp || 0} XP</span>
     </div>
   );
 }
 
-function TeamColumn({ team, currentUserId }) {
+function TeamColumn({ team }) {
   const { setNodeRef, isOver } = useDroppable({ id: team._id, data: { team } });
   const topPerformerId = team.topPerformer?._id;
 
   return (
     <div
       ref={setNodeRef}
-      className="p-3 rounded-4 flex-shrink-0"
+      className={`team-hub-column ${isOver ? "team-hub-column--drop-active" : ""}`}
       data-testid={`team-column-${team._id}`}
-      style={{
-        width: "280px",
-        backgroundColor: "var(--bg-tactile-cards)",
-        border: isOver ? "2px solid var(--bg-hud-banner)" : "2px solid var(--border-tactile)",
-        transition: "border-color 120ms ease",
-      }}
     >
-      <div className="d-flex align-items-center justify-content-between mb-1">
-        <h6 className="fw-bold m-0" style={{ color: "var(--text-primary)", fontSize: "14px" }}>
+      <div className="team-hub-column-header">
+        <h6 className="team-hub-column-name">
           {team.name}
-          {team.isCouncil && <ShieldLockFill className="ms-1" size={12} color="var(--bg-hud-banner)" title="Council — department-wide admin" />}
+          {team.isCouncil && <ShieldLockFill size={12} color="var(--orbit-brand)" title="Council — department-wide admin" />}
         </h6>
-        <Badge bg="dark" className="font-monospace" style={{ fontSize: "10px" }}>{team.memberCount}</Badge>
+        <span className="team-hub-member-count">{team.memberCount}</span>
       </div>
 
-      <div className="mb-2" style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+      <div className="team-hub-admins-line">
         {team.admins.length === 0 ? (
-          <span className="text-danger">No admin — moves here apply instantly</span>
+          <span className="team-hub-no-admin">No admin — moves here apply instantly</span>
         ) : (
           <span>Admin{team.admins.length > 1 ? "s" : ""}: {team.admins.map((a) => a.username).join(", ")}</span>
         )}
       </div>
 
-      <div style={{ minHeight: "60px", maxHeight: "360px", overflowY: "auto" }}>
+      <div className="team-hub-member-list">
         {team.members.length === 0 ? (
-          <p className="text-muted text-center" style={{ fontSize: "12px", padding: "20px 0" }}>No members yet.</p>
+          <p className="team-hub-empty-members">No members yet.</p>
         ) : (
           team.members.map((m) => (
             <MemberCard key={m._id} member={m} isTopPerformer={m._id === topPerformerId} sourceTeamId={team._id} />
@@ -107,6 +106,7 @@ function TeamColumn({ team, currentUserId }) {
 
 export default function AdminTeamDashboard({ setActiveTab }) {
   const { user: currentUser } = useContext(AuthContext);
+  const isSuperAdmin = currentUser?.role === "superadmin";
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -114,7 +114,29 @@ export default function AdminTeamDashboard({ setActiveTab }) {
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
 
-  const departmentId = currentUser?.department?._id || currentUser?.department;
+  // 🎯 A Superadmin has no `department` of their own — the Team Hub used to
+  // silently render empty for them (fetchHub's `if (!departmentId) return`
+  // never fired at all) since departmentId came only from currentUser. Give
+  // Superadmins the same department-picker pattern AdminIdeasReview.jsx
+  // already uses, defaulting to the first department.
+  const [departments, setDepartments] = useState([]);
+  const [selectedDeptId, setSelectedDeptId] = useState("");
+
+  useEffect(() => {
+    if (isSuperAdmin && api.getDepartments) {
+      api.getDepartments()
+        .then((res) => {
+          const list = res?.data || res || [];
+          setDepartments(list);
+          if (list.length > 0) setSelectedDeptId(list[0]._id);
+        })
+        .catch((err) => console.error("Failed to fetch department directory:", err.message));
+    }
+  }, [isSuperAdmin]);
+
+  const departmentId = isSuperAdmin
+    ? selectedDeptId
+    : (currentUser?.department?._id || currentUser?.department);
 
   const fetchHub = useCallback(async () => {
     if (!departmentId) return;
@@ -181,20 +203,27 @@ export default function AdminTeamDashboard({ setActiveTab }) {
 
   return (
     <div className="animate-fade-in text-start w-100">
-      <div className="d-flex align-items-center justify-content-between mb-3">
+      <div className="team-hub-header">
         <div>
-          <h4 className="fw-bold m-0" style={{ color: "var(--text-primary)", fontSize: "19px" }}>Team Hub</h4>
-          <p className="text-muted m-0 mt-1" style={{ fontSize: "12px" }}>
-            Drag a member card to move them to another team.
-          </p>
+          <h4 className="team-hub-title fw-bold">Team Hub</h4>
+          <p className="team-hub-subtitle">Drag a member card to move them to another team.</p>
         </div>
-        <button
-          className="btn btn-sm fw-semibold d-flex align-items-center gap-2"
-          style={{ backgroundColor: "var(--bg-hud-banner)", color: "var(--text-inverse)", borderRadius: "8px" }}
-          onClick={() => setShowCreateTeam((v) => !v)}
-        >
-          <PlusCircleFill size={13} /> {showCreateTeam ? "Close" : "New Team"}
-        </button>
+        <div className="d-flex align-items-center gap-2">
+          {isSuperAdmin && departments.length > 0 && (
+            <select
+              className="team-hub-dept-picker"
+              value={selectedDeptId}
+              onChange={(e) => setSelectedDeptId(e.target.value)}
+            >
+              {departments.map((d) => (
+                <option key={d._id} value={d._id}>{d.name || d.title}</option>
+              ))}
+            </select>
+          )}
+          <button className="team-hub-new-btn" onClick={() => setShowCreateTeam(true)}>
+            <PlusCircleFill size={13} /> New Team
+          </button>
+        </div>
       </div>
 
       {statusMsg && (
@@ -204,25 +233,29 @@ export default function AdminTeamDashboard({ setActiveTab }) {
       )}
       {error && <Alert variant="danger" style={{ fontSize: "13px" }}>{error}</Alert>}
 
-      {showCreateTeam && (
-        <div className="mb-4">
+      <Modal show={showCreateTeam} onHide={() => setShowCreateTeam(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title style={{ fontSize: 16 }}>Create New Team</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
           <CreateTeam
+            embedded
             onTeamCreated={() => { fetchHub(); setShowCreateTeam(false); }}
             setActiveTab={() => setShowCreateTeam(false)}
           />
-        </div>
-      )}
+        </Modal.Body>
+      </Modal>
 
       {pendingRequests.length > 0 && (
-        <div className="mb-4 p-3 rounded-4" style={{ backgroundColor: "var(--bg-tactile-cards)", border: "2px solid var(--border-tactile)" }}>
-          <h6 className="fw-bold mb-2" style={{ fontSize: "13px" }}>
+        <div className="team-hub-pending-panel">
+          <h6 className="fw-bold mb-0" style={{ fontSize: "13px", color: "var(--orbit-text-heading)" }}>
             <HourglassSplit className="me-2" size={13} />Pending requests for your team ({pendingRequests.length})
           </h6>
           {pendingRequests.map((r) => (
-            <div key={r._id} className="d-flex align-items-center justify-content-between py-2" style={{ fontSize: "12px", borderTop: "1px solid var(--border-tactile)" }}>
+            <div key={r._id} className="team-hub-pending-row">
               <span>
                 <strong>{r.user?.username}</strong> from {r.fromTeam?.name} → {r.toTeam?.name}
-                <span className="text-muted ms-2">(requested by {r.requestedBy?.username})</span>
+                <span className="ms-2" style={{ color: "var(--orbit-text-muted)" }}>(requested by {r.requestedBy?.username})</span>
               </span>
               <div className="d-flex gap-2">
                 <button className="btn btn-sm btn-success" onClick={() => respondToRequest(r._id, true)}>
@@ -236,14 +269,14 @@ export default function AdminTeamDashboard({ setActiveTab }) {
       )}
 
       {loading ? (
-        <div className="text-center py-5"><Spinner animation="border" style={{ color: "var(--bg-hud-banner)" }} /></div>
+        <div className="text-center py-5"><Spinner animation="border" style={{ color: "var(--orbit-brand)" }} /></div>
       ) : teams.length === 0 ? (
-        <p className="text-muted">No teams found for your department yet — create one to get started.</p>
+        <p style={{ color: "var(--orbit-text-muted)" }}>No teams found for your department yet — create one to get started.</p>
       ) : (
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-          <div className="d-flex gap-3" style={{ overflowX: "auto", paddingBottom: "12px" }}>
+          <div className="team-hub-grid">
             {teams.map((team) => (
-              <TeamColumn key={team._id} team={team} currentUserId={currentUser?._id} />
+              <TeamColumn key={team._id} team={team} />
             ))}
           </div>
         </DndContext>

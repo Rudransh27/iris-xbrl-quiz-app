@@ -2,12 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Accordion, ListGroup, Card, Badge, Dropdown, Spinner, Button } from 'react-bootstrap';
 import { FolderPlus, PlusCircle, LayoutTextWindow, PlayCircle, QuestionCircle, CodeSquare, ThreeDotsVertical, PencilSquare, Trash, ArrowUp, ArrowDown, FileEarmarkPdf, FileEarmarkPpt, Globe2, Building, Microsoft, LightningChargeFill, WindowPlus, Fire, Star, StarFill } from 'react-bootstrap-icons';
-import api from './services/api'; 
-import ConfirmationModal from '../components/ConfirmationModal'; 
+import api from './services/api';
+import ConfirmationModal from '../components/ConfirmationModal';
+import StarRating from '../components/StarRating';
+import ModuleReviewsModal from './components/ModuleReviewsModal';
 import './CurriculumBuilder.css';
 
 export default function CurriculumBuilder({ initialModulesList = [], onRefresh, onNavigate }) {
   const [modules, setModules] = useState(initialModulesList);
+  const [reviewsModalModule, setReviewsModalModule] = useState(null);
   
   const [activeModuleId, setActiveModuleId] = useState(() => localStorage.getItem('iris_active_module_id') || ''); 
   const [currentModuleData, setCurrentModuleData] = useState(null); 
@@ -287,6 +290,18 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
                         <span className="text-dark small fw-bold text-truncate">{mod.title}</span>
                         <div className="d-flex gap-1 align-items-center">
                           {renderVisibilityBadge(mod.visibility)}
+                          {mod.totalReviews > 0 && (
+                            <span
+                              role="button"
+                              className="d-inline-flex align-items-center gap-1 text-muted"
+                              style={{ fontSize: '10px', cursor: 'pointer' }}
+                              title="View reviews for this module"
+                              onClick={(e) => { e.stopPropagation(); setReviewsModalModule(mod); }}
+                            >
+                              <StarRating value={mod.avgRating || 0} size={10} />
+                              {(mod.avgRating || 0).toFixed(1)} ({mod.totalReviews})
+                            </span>
+                          )}
                           {/* 🚀 HYBRID RENDER UPDATED: Evaluates whether this item skips sub-topic rails accurately */}
                           {(activeModuleId === mod._id && currentModuleData ? currentModuleData.hasTopics === false : mod.hasTopics === false) && (
                             <Badge bg="info" className="d-flex align-items-center gap-0.5 font-monospace" style={{ fontSize: '9px', color: '#fff' }}>
@@ -389,7 +404,7 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
         </Col>
 
         {/* WORKSPACE & ARRAYS CARDS PANEL TRACKS */}
-        <Col md={8} lg={9} className="cb-main-workspace p-4 d-flex flex-column gap-4" style={{ backgroundColor: '#fafbfe' }}>
+        <Col md={8} lg={9} className="cb-main-workspace p-4 d-flex flex-column gap-4" style={{ backgroundColor: 'var(--orbit-surface-subtle)' }}>
           {shouldRenderWorkspace ? (
             <div className="animate-fade-in flex-grow-1">
               
@@ -420,7 +435,7 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
                         <Card.Body className="p-3 d-flex align-items-center justify-content-between">
                           
                           <div className="d-flex align-items-center gap-3 text-truncate w-65">
-                            <div className="d-flex flex-column gap-0.5 align-items-center border-end pe-2.5" style={{ borderColor: '#e2e8f0' }}>
+                            <div className="d-flex flex-column gap-0.5 align-items-center border-end pe-2.5" style={{ borderColor: 'var(--orbit-border)' }}>
                               <Button variant="none" className="p-0 text-muted hover-edit-action" disabled={cIdx === 0} onClick={() => handleShiftCardOrder(cIdx, 'up')}>
                                 <ArrowUp size={12} />
                               </Button>
@@ -471,6 +486,13 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
         </Col>
 
       </Row>
+
+      <ModuleReviewsModal
+        show={!!reviewsModalModule}
+        moduleId={reviewsModalModule?._id}
+        moduleTitle={reviewsModalModule?.title}
+        onHide={() => setReviewsModalModule(null)}
+      />
     </div>
   );
 }

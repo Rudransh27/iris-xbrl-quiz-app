@@ -136,7 +136,7 @@ export default function AdminBroadcastForm({ setActiveTab }) {
   };
 
   return (
-    <Card className="border-0 shadow-sm animate-fade-in" style={{ borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+    <Card className="border-0 shadow-sm animate-fade-in" style={{ borderRadius: '12px', border: '1px solid var(--orbit-border)' }}>
       <Card.Body className="p-4">
         <div className="d-flex align-items-center justify-content-between mb-1">
           <h4 className="fw-bold text-dark-title m-0">Publish Broadcast</h4>
@@ -345,7 +345,7 @@ export default function AdminBroadcastForm({ setActiveTab }) {
             />
           </Form.Group>
 
-          <div className="d-flex justify-content-end gap-2 border-top pt-3" style={{ borderColor: '#f1f5f9' }}>
+          <div className="d-flex justify-content-end gap-2 border-top pt-3" style={{ borderColor: 'var(--orbit-border)' }}>
             <Button variant="light" onClick={() => setActiveTab('overview')} disabled={loading} style={{ borderRadius: '6px', fontSize: '13.5px', fontWeight: '500' }}>
               Cancel
             </Button>

@@ -2,14 +2,15 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useLocation } from "react-router-dom"; 
 import { Row, Col, Spinner, Alert, Card } from "react-bootstrap";
-import { 
-  Grid, FolderPlus, FileEarmarkPlus, PlusCircle, 
-  BarChartLine, Book, Collection, People, CpuFill, Lightbulb 
+import {
+  Grid, FolderPlus, FileEarmarkPlus, PlusCircle, ArrowLeft,
+  BarChartLine, Book, Collection, People, CpuFill, Lightbulb
 } from "react-bootstrap-icons";
 import api from "./services/api";
 import AuthContext from "../context/AuthContext";
 import CurriculumBuilder from "./CurriculumBuilder"; // 💎 Your Masterstroke Restored!
 import AdminOverviewGrid from "./components/AdminOverviewGrid"; // 📊 Moved to its own view channel
+import AdminConsoleLauncher from "./components/AdminConsoleLauncher";
 import AdminModuleForm from "./components/AdminModuleForm";
 import AdminHtmlModuleForm from "./components/AdminHtmlModuleForm";
 import AdminTopicForm from "./components/AdminTopicForm";
@@ -24,11 +25,29 @@ import AdminProgressDashboard from "./components/AdminProgressDashboard";
 
 import "./AdminDashboard.css";
 
+// Friendly titles for the back-bar shown on every non-launcher tab.
+const TAB_TITLES = {
+  overview: "Curriculum Map",
+  "metrics-grid": "Metrics Activity Deck",
+  "add-module": "Add Module",
+  "add-html-module": "Add HTML Sandbox",
+  "add-topic": "Add Topic Node",
+  "add-card": "Add Card Block",
+  "create-team": "Team Hub",
+  "daily-reads": "Post Daily Read",
+  broadcast: "Broadcast News",
+  "ideas-review": "Ideas Inbox",
+  "platform-analytics": "Platform Analytics",
+  "user-analytics": "User Analytics",
+  "progress-dashboard": "Progress Dashboard",
+};
+
 export default function Dashboard1() {
   const location = useLocation();
   
-  // 💎 RESTORED DEFAULT STATE: "overview" is back to being your CurriculumBuilder masterstroke
-  const [activeTab, setActiveTab] = useState("overview");
+  // 🚀 Default landing is the launcher home — "overview" (Curriculum Map) is
+  // now just one of its tiles, reached the same way every other tile is.
+  const [activeTab, setActiveTab] = useState("launcher");
   const [modulesList, setModulesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -58,7 +77,7 @@ export default function Dashboard1() {
     if (URLTab) {
       setActiveTab(URLTab);
     } else {
-      setActiveTab("overview"); // Default back to your core builder layout
+      setActiveTab("launcher"); // Default back to the launcher home
     }
   }, [location.search]);
 
@@ -178,36 +197,29 @@ export default function Dashboard1() {
         <div className="text-center p-5"><Spinner animation="border" style={{ color: "#0f256e" }} /></div>
       ) : (
         <>
-          {/* ================= EXTENDED TAB BUTTON NAVIGATION PILLS BAR ================= */}
-          <div className="d-flex gap-2 mb-4 border-bottom pb-2 flex-wrap font-monospace" style={{ fontSize: '12.5px' }}>
-            {/* 💎 Core Masterstroke Tab */}
-            <button onClick={() => handleFormNavigation("overview")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "overview" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>Curriculum Map</button>
-            
-            {/* 📊 Added New Wireframe Overview Grid Tab */}
-            <button onClick={() => handleFormNavigation("metrics-grid")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "metrics-grid" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>Metrics Activity Deck</button>
-            
-            <button onClick={() => handleFormNavigation("add-module")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "add-module" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>+ Module</button>
-            <button onClick={() => handleFormNavigation("add-html-module")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "add-html-module" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>+ HTML Sandbox</button>
-            <button onClick={() => handleFormNavigation("add-topic")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "add-topic" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>+ Topic Node</button>
-            <button onClick={() => handleFormNavigation("add-card")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "add-card" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>+ Card Block</button>
-            <button onClick={() => handleFormNavigation("create-team")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "create-team" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>Team Hub</button>
-            <button onClick={() => handleFormNavigation("daily-reads")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "daily-reads" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>+ Post Read</button>
-            <button onClick={() => handleFormNavigation("broadcast")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "broadcast" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>+ Broadcast</button>
-            <button onClick={() => handleFormNavigation("ideas-review")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "ideas-review" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>Ideas Inbox</button>
-            <button onClick={() => handleFormNavigation("platform-analytics")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "platform-analytics" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>Platform Analytics</button>
-            <button onClick={() => handleFormNavigation("user-analytics")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "user-analytics" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>User Analytics</button>
-            <button onClick={() => handleFormNavigation("progress-dashboard")} className={`btn btn-sm py-1.5 px-3 border-0 ${activeTab === "progress-dashboard" ? "bg-dark text-white fw-bold rounded-3" : "text-muted bg-transparent"}`}>Progress Dashboard</button>
-          </div>
+          {/* ================= ADMIN CONSOLE LAUNCHER vs. BACK BAR ================= */}
+          {activeTab === "launcher" ? null : (
+            <div className="admin-back-bar">
+              <button className="admin-back-bar-btn" onClick={() => handleFormNavigation("launcher")}>
+                <ArrowLeft size={13} /> Admin Console
+              </button>
+              <span className="admin-back-bar-title">{TAB_TITLES[activeTab] || ""}</span>
+            </div>
+          )}
 
-          {/* ================= OPTIMIZED BENTO STATS COUNTER BAR (Visible on Map) ================= */}
-          {activeTab === "overview" && (
+          {/* ================= OPTIMIZED BENTO STATS COUNTER BAR (Launcher home strip) ================= */}
+          {activeTab === "launcher" && (
             <Row className="g-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 mb-4 animate-fade-in">
-              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ backgroundColor: "#f0f9ff", color: "#0369a1" }}><People size={20} /></div><div><div className="hud-metric-label">Total Members</div><h3 className="hud-metric-value">{analytics.totalUsers}</h3></div></Card.Body></Card></Col>
-              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ backgroundColor: "#f5f3ff", color: "#4f46e5" }}><Collection size={20} /></div><div><div className="hud-metric-label">Active Modules</div><h3 className="hud-metric-value">{analytics.totalModules}</h3></div></Card.Body></Card></Col>
-              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ backgroundColor: "#f0fdf4", color: "#16a34a" }}><Book size={20} /></div><div><div className="hud-metric-label">Syllabus Topics</div><h3 className="hud-metric-value">{analytics.totalTopics}</h3></div></Card.Body></Card></Col>
-              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ backgroundColor: "#fffbeb", color: "#d97706" }}><BarChartLine size={20} /></div><div><div className="hud-metric-label">Knowledge Blocks</div><h3 className="hud-metric-value">{analytics.totalCards}</h3></div></Card.Body></Card></Col>
-              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ backgroundColor: "#fef2f2", color: "#dc2626" }}><CpuFill size={20} /></div><div><div className="hud-metric-label">Interactive Tasks</div><h3 className="hud-metric-value">{analytics.interactiveAssets}</h3></div></Card.Body></Card></Col>
+              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "#0369a1" }}><People size={20} /></div><div><div className="hud-metric-label">Total Members</div><h3 className="hud-metric-value">{analytics.totalUsers}</h3></div></Card.Body></Card></Col>
+              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "#4f46e5" }}><Collection size={20} /></div><div><div className="hud-metric-label">Active Modules</div><h3 className="hud-metric-value">{analytics.totalModules}</h3></div></Card.Body></Card></Col>
+              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "#16a34a" }}><Book size={20} /></div><div><div className="hud-metric-label">Syllabus Topics</div><h3 className="hud-metric-value">{analytics.totalTopics}</h3></div></Card.Body></Card></Col>
+              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "#d97706" }}><BarChartLine size={20} /></div><div><div className="hud-metric-label">Knowledge Blocks</div><h3 className="hud-metric-value">{analytics.totalCards}</h3></div></Card.Body></Card></Col>
+              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "#dc2626" }}><CpuFill size={20} /></div><div><div className="hud-metric-label">Interactive Tasks</div><h3 className="hud-metric-value">{analytics.interactiveAssets}</h3></div></Card.Body></Card></Col>
             </Row>
+          )}
+
+          {activeTab === "launcher" && (
+            <AdminConsoleLauncher isSuperAdmin={user?.role === "superadmin"} onNavigate={handleFormNavigation} />
           )}
 
           {/* ================= DYNAMIC WORKSPACE CONSOLE MULTIPLEXER ================= */}
@@ -246,7 +258,7 @@ export default function Dashboard1() {
             {activeTab === "ideas-review" && (
               <AdminIdeasReview />
             )}
-            {activeTab === "platform-analytics" && (
+            {activeTab === "platform-analytics" && user?.role === "superadmin" && (
               <AdminPlatformAnalytics />
             )}
             {activeTab === "user-analytics" && (

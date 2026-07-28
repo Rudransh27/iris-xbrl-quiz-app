@@ -589,7 +589,7 @@ export default function AdminUserAnalytics() {
             style={{
               width: "100%", padding: "12px 18px",
               background: (exportingDept || loadingDept) ? "var(--orbit-brand-muted)" : "var(--orbit-brand)",
-              color: (exportingDept || loadingDept) ? "var(--orbit-brand)" : "#fff",
+              color: (exportingDept || loadingDept) ? "var(--orbit-brand)" : "var(--orbit-text-inverse)",
               border: "none",
               borderBottom: (exportingDept || loadingDept) ? "none" : "2.5px solid var(--orbit-brand-dark)",
               borderRadius: "12px", fontSize: "13px", fontWeight: "700",
@@ -676,7 +676,7 @@ export default function AdminUserAnalytics() {
             style={{
               padding: "9px 16px",
               background: (!selectedHtmlModule || exportingHtmlCsv) ? "var(--orbit-brand-muted)" : "var(--orbit-brand)",
-              color: (!selectedHtmlModule || exportingHtmlCsv) ? "var(--orbit-brand)" : "#fff",
+              color: (!selectedHtmlModule || exportingHtmlCsv) ? "var(--orbit-brand)" : "var(--orbit-text-inverse)",
               border: "none", borderRadius: "10px", fontSize: "12.5px", fontWeight: "700",
               cursor: (!selectedHtmlModule || exportingHtmlCsv) ? "not-allowed" : "pointer",
             }}
@@ -745,7 +745,7 @@ export default function AdminUserAnalytics() {
                       style={{
                         padding: "6px 14px",
                         background: gradingUserId === sub.user._id ? "var(--orbit-brand-muted)" : "var(--orbit-brand)",
-                        color: gradingUserId === sub.user._id ? "var(--orbit-brand)" : "#fff",
+                        color: gradingUserId === sub.user._id ? "var(--orbit-brand)" : "var(--orbit-text-inverse)",
                         border: "none", borderRadius: "8px", fontSize: "11.5px", fontWeight: "700",
                         cursor: gradingUserId === sub.user._id ? "not-allowed" : "pointer",
                       }}
@@ -793,7 +793,7 @@ export default function AdminUserAnalytics() {
                       onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "rgba(124,110,247,0.06)"; }}
                       onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = isSel ? "var(--orbit-brand-muted)" : "transparent"; }}
                     >
-                      <div style={{ width: "30px", height: "30px", borderRadius: "50%", flexShrink: 0, background: isSel ? "var(--orbit-brand)" : "var(--orbit-border)", color: isSel ? "#fff" : "var(--orbit-text-muted)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "800" }}>
+                      <div style={{ width: "30px", height: "30px", borderRadius: "50%", flexShrink: 0, background: isSel ? "var(--orbit-brand)" : "var(--orbit-border)", color: isSel ? "var(--orbit-text-inverse)" : "var(--orbit-text-muted)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "800" }}>
                         {(u.username || "U").substring(0, 1).toUpperCase()}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -827,7 +827,7 @@ export default function AdminUserAnalytics() {
 
             {/* User header */}
             <div style={{ background: "var(--orbit-surface)", border: "1.5px solid var(--orbit-border)", borderRadius: "18px", padding: "18px 22px", display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
-              <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "var(--orbit-brand)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "800", flexShrink: 0 }}>
+              <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "var(--orbit-brand)", color: "var(--orbit-text-inverse)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "800", flexShrink: 0 }}>
                 {(selectedUser.username || "U").substring(0, 1).toUpperCase()}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>

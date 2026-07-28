@@ -1,9 +1,10 @@
 // src/admin/components/AdminIdeasReview.jsx
 import React, { useState, useEffect, useContext } from 'react';
-import { Row, Col, Card, Badge, Form, Button, Alert, Spinner } from 'react-bootstrap';
+import { Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { CheckCircleFill, SaveFill, BookmarkDashFill, FolderFill } from 'react-bootstrap-icons';
 import api from '../services/api';
 import AuthContext from '../../context/AuthContext';
+import './AdminIdeasReview.css';
 
 export default function AdminIdeasReview() {
   const { user } = useContext(AuthContext);
@@ -90,22 +91,23 @@ export default function AdminIdeasReview() {
     setSuccessToast('');
 
     try {
-      if (api.updateIdeaStatusByCurator) {
-        const res = await api.updateIdeaStatusByCurator(ideaId, {
-          status: finalStatus,
-          curatorFeedback: finalFeedback.trim()
-        });
-        
-        // Dynamic success message from backend reward engine parameters
-        setSuccessToast(res?.message || `🎯 Idea status successfully moved to "${finalStatus.toUpperCase()}"!`);
-      } else {
-        setIdeas(prev => prev.map(item => 
-          item._id === ideaId 
-            ? { ...item, status: finalStatus, curatorFeedback: finalFeedback } 
-            : item
-        ));
-        setSuccessToast(`🎯 Idea status successfully moved to "${finalStatus.toUpperCase()}"!`);
-      }
+      const res = await api.updateIdeaStatusByCurator(ideaId, {
+        status: finalStatus,
+        curatorFeedback: finalFeedback.trim()
+      });
+
+      // 🎯 THE ACTUAL FIX: this used to only show a toast and never touch
+      // `ideas` — every visible bit of UI (status badge, filter-tab counts,
+      // the Park/Accept buttons' disabled state) reads from `ideas`, so a
+      // successful save looked like it did nothing. Merge the server's
+      // returned document (or an optimistic local merge if it's missing)
+      // back into the list so the UI actually reflects the change.
+      setIdeas(prev => prev.map(item =>
+        item._id === ideaId
+          ? (res?.data || { ...item, status: finalStatus, curatorFeedback: finalFeedback })
+          : item
+      ));
+      setSuccessToast(res?.message || `Idea status successfully moved to "${finalStatus.toUpperCase()}"!`);
 
       if (explicitStatus) {
         setStatuses(prev => ({ ...prev, [ideaId]: finalStatus }));
@@ -155,22 +157,23 @@ export default function AdminIdeasReview() {
   };
 
   return (
-    <div className="admin-ideas-review-panel animate-fade-in" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      
+    <div className="admin-ideas-review-panel animate-fade-in">
+
       {/* HEADER ACTION HUB */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-          <h4 className="fw-bold text-dark m-0">Admin · Ideas review · {isSuperAdmin ? 'Global' : 'Carbon'}</h4>
-          <p className="text-muted small m-0">Reply to every idea. No silence. Move statuses, award points, write back.</p>
+          <h4 className="fw-bold m-0 ideas-heading-text">Admin · Ideas review · {isSuperAdmin ? 'Global' : 'Carbon'}</h4>
+          <p className="small m-0 ideas-muted-text">Reply to every idea. No silence. Move statuses, award points, write back.</p>
         </div>
 
         {/* Superadmin Dynamic Tenant Dropdown Box */}
         {isSuperAdmin && departments.length > 0 && (
-          <div className="d-flex align-items-center gap-2 bg-white p-2 border rounded-3 shadow-sm">
-            <Form.Label className="m-0 small fw-bold text-muted font-monospace"><FolderFill className="me-1"/>VIEW STREAM:</Form.Label>
-            <Form.Select 
+          <div className="d-flex align-items-center gap-2 p-2 ideas-dept-picker">
+            <Form.Label className="m-0 small fw-bold ideas-muted-text font-monospace"><FolderFill className="me-1"/>VIEW STREAM:</Form.Label>
+            <Form.Select
               size="sm" value={selectedDeptFilter} onChange={(e) => setSelectedDeptFilter(e.target.value)}
-              style={{ width: '180px', borderRadius: '6px', fontSize: '12.5px' }}
+              className="ideas-flat-select"
+              style={{ width: '180px', fontSize: '12.5px' }}
             >
               {departments.map(d => (
                 <option key={d._id} value={d._id}>{d.name || d.title}</option>
@@ -180,136 +183,135 @@ export default function AdminIdeasReview() {
         )}
       </div>
 
-      {successToast && <Alert variant="success" className="py-2 small fw-bold mb-3 shadow-sm d-flex align-items-center gap-2"><CheckCircleFill/> {successToast}</Alert>}
-      {error && <Alert variant="danger" className="py-2 small fw-bold mb-3">{error}</Alert>}
+      {successToast && <Alert variant="success" className="py-2 small fw-bold mb-3 d-flex align-items-center gap-2 ideas-flat-alert"><CheckCircleFill/> {successToast}</Alert>}
+      {error && <Alert variant="danger" className="py-2 small fw-bold mb-3 ideas-flat-alert">{error}</Alert>}
 
       {/* METRIC COUNTER TAB CHIPS */}
-      <div className="d-flex gap-2 mb-4 border-bottom pb-2 flex-wrap font-monospace" style={{ fontSize: '12.5px' }}>
+      <div className="d-flex gap-2 mb-4 flex-wrap font-monospace ideas-filter-row" style={{ fontSize: '12.5px' }}>
         {['all', 'submitted', 'in review', 'building', 'shipped', 'parked'].map((statusKey) => {
           const isActive = activeFilter === statusKey;
           return (
             <button
               key={statusKey}
               onClick={() => setActiveFilter(statusKey)}
-              className={`btn btn-sm d-flex align-items-center gap-2 border-0 px-3 py-1.5 transition-all text-capitalize ${isActive ? 'fw-bold bg-dark text-white rounded-3' : 'text-muted bg-transparent'}`}
+              className={`ideas-filter-chip ${isActive ? 'ideas-filter-chip--active' : ''} d-flex align-items-center gap-2 text-capitalize`}
             >
               <span>{statusKey === 'all' ? 'All' : statusKey}</span>
-              <Badge bg={isActive ? 'primary' : 'light'} className={isActive ? 'text-white' : 'text-muted border'}>
-                {getCountsByStatus(statusKey)}
-              </Badge>
+              <span className="ideas-filter-count">{getCountsByStatus(statusKey)}</span>
             </button>
           );
         })}
       </div>
 
-      {/* ✅ FIXED: Cleaned bare comment wrapper syntax error out of JSX thread */}
       {loading ? (
-        <div className="text-center py-5"><Spinner animation="border" style={{ color: '#0f256e' }} /></div>
+        <div className="text-center py-5"><Spinner animation="border" className="ideas-spinner" /></div>
       ) : filteredIdeasFeedList.length === 0 ? (
-        <div className="text-center p-5 bg-white border rounded-3 border-slate text-muted small italic">
+        <div className="text-center p-5 ideas-empty-state small italic">
           No ideas matching "{activeFilter.toUpperCase()}" are currently checked into this department track.
         </div>
       ) : (
-        <div className="ideas-curator-review-stack d-flex flex-column gap-4">
+        <div className="ideas-curator-review-stack d-flex flex-column gap-3">
           {filteredIdeasFeedList.map((idea) => (
-            <Card key={idea._id} className="border-slate rounded-3 bg-white p-2 shadow-sm transition-all position-relative">
-              <Card.Body>
-                
-                {/* Meta Author Strip Section */}
-                <div className="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2 flex-wrap gap-2">
-                  <div className="d-flex align-items-center gap-2">
-                    <Badge bg={getTagColorClass(idea.tag)} className="text-uppercase font-monospace px-2 py-1" style={{ fontSize: '10px', letterSpacing: '0.3px' }}>
-                      {idea.tag}{idea.status === 'parked' || idea.status === 'in review' ? idea.status.replace(' ', '') : idea.status}
-                    </Badge>
-                    <span className="fw-bold text-dark small text-sans-serif">{idea.userName}</span>
-                    <span className="text-muted font-monospace" style={{ fontSize: '11px' }}>
-                      · {new Date(idea.createdAt).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
-                    </span>
-                  </div>
-                  <span className="badge bg-light border text-muted font-monospace" style={{ fontSize: '9px' }}>ID: {idea._id}</span>
+            <div key={idea._id} className="ideas-card">
+
+              {/* Meta Author Strip Section */}
+              <div className="d-flex align-items-center justify-content-between mb-3 pb-2 flex-wrap gap-2 ideas-card-meta-strip">
+                <div className="d-flex align-items-center gap-2">
+                  <span className={`badge bg-${getTagColorClass(idea.tag)} text-uppercase font-monospace ideas-flat-badge`} style={{ fontSize: '10px', letterSpacing: '0.3px' }}>
+                    {idea.tag}
+                  </span>
+                  <span className="badge ideas-status-badge text-uppercase font-monospace" style={{ fontSize: '10px', letterSpacing: '0.3px' }}>
+                    {idea.status}
+                  </span>
+                  <span className="fw-bold small ideas-heading-text">{idea.userName}</span>
+                  <span className="ideas-muted-text font-monospace" style={{ fontSize: '11px' }}>
+                    · {new Date(idea.createdAt).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
+                  </span>
                 </div>
+                <span className="badge ideas-id-badge font-monospace" style={{ fontSize: '9px' }}>ID: {idea._id}</span>
+              </div>
 
-                {/* Main Concept Presentation Text Block */}
-                <div className="mb-4">
-                  <h6 className="fw-bold text-dark text-sans-serif mb-2" style={{ lineHeight: '1.45', fontSize: '14.5px' }}>
-                    {idea.title}
-                  </h6>
-                  {idea.details && <p className="text-secondary small m-0 text-sans-serif" style={{ lineHeight: '1.6' }}>{idea.details}</p>}
-                </div>
+              {/* Main Concept Presentation Text Block */}
+              <div className="mb-3">
+                <h6 className="fw-bold ideas-heading-text mb-2" style={{ lineHeight: '1.45', fontSize: '14.5px' }}>
+                  {idea.title}
+                </h6>
+                {idea.details && <p className="small m-0 ideas-body-text" style={{ lineHeight: '1.6' }}>{idea.details}</p>}
+              </div>
 
-                {/* CURATOR SUBMISSION MANAGEMENT CONTROL MATRIX BLOCK */}
-                <div className="p-3 bg-light rounded-3 border border-slate" style={{ backgroundColor: '#f8fafc' }}>
-                  <Row className="g-3 align-items-end">
-                    
-                    <Col md={3}>
-                      <Form.Group>
-                        <Form.Label className="small fw-bold text-muted font-monospace uppercase mb-1" style={{ fontSize: '10.5px' }}>Status</Form.Label>
-                        <Form.Select
-                          size="sm"
-                          value={statuses[idea._id] || 'submitted'}
-                          onChange={(e) => setStatuses(prev => ({ ...prev, [idea._id]: e.target.value }))}
-                          disabled={syncingId === idea._id}
-                          className="font-monospace fw-semibold"
-                          style={{ borderRadius: '6px', fontSize: '12.5px' }}
-                        >
-                          {['submitted', 'in review', 'building', 'shipped', 'parked'].map(st => (
-                            <option key={st} value={st}>{st}</option>
-                          ))}
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
+              {/* CURATOR SUBMISSION MANAGEMENT CONTROL MATRIX BLOCK */}
+              <div className="p-3 ideas-curator-box">
+                <Row className="g-3 align-items-end">
 
-                    <Col md={5}>
-                      <Form.Group>
-                        <Form.Label className="small fw-bold text-muted font-monospace uppercase mb-1" style={{ fontSize: '10.5px' }}>Curator reply</Form.Label>
-                        <Form.Control
-                          type="text"
-                          placeholder="Leave guidance or notes here..."
-                          value={replies[idea._id] || ''}
-                          onChange={(e) => setReplies(prev => ({ ...prev, [idea._id]: e.target.value }))}
-                          disabled={syncingId === idea._id}
-                          style={{ borderRadius: '6px', fontSize: '13px' }}
-                        />
-                      </Form.Group>
-                    </Col>
-
-                    <Col md={4} className="d-flex gap-1.5 justify-content-end flex-wrap">
-                      <Button
-                        size="sm" variant="primary"
-                        onClick={() => handleUpdateCurationRow(idea._id)}
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label className="small fw-bold ideas-muted-text font-monospace uppercase mb-1" style={{ fontSize: '10.5px' }}>Status</Form.Label>
+                      <Form.Select
+                        size="sm"
+                        value={statuses[idea._id] || 'submitted'}
+                        onChange={(e) => setStatuses(prev => ({ ...prev, [idea._id]: e.target.value }))}
                         disabled={syncingId === idea._id}
-                        className="fw-bold px-3 d-flex align-items-center gap-1 font-sans-serif"
-                        style={{ backgroundColor: '#0f256e', borderColor: '#0f256e', borderRadius: '6px', fontSize: '12.5px' }}
+                        className="font-monospace fw-semibold ideas-flat-select"
+                        style={{ fontSize: '12.5px' }}
                       >
-                        {syncingId === idea._id ? <Spinner animation="border" size="sm"/> : <><SaveFill size={12}/> Save</>}
-                      </Button>
-                      
-                      <Button
-                        size="sm" variant="success"
-                        onClick={() => triggerShortcutAccept(idea._id)}
-                        disabled={syncingId === idea._id || idea.status === 'building'}
-                        className="fw-bold px-2.5 d-flex align-items-center gap-1 font-sans-serif text-white"
-                        style={{ borderRadius: '6px', fontSize: '12.5px' }}
-                      >
-                        Accept (+25 pts)
-                      </Button>
+                        {['submitted', 'in review', 'building', 'shipped', 'parked'].map(st => (
+                          <option key={st} value={st}>{st}</option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
 
-                      <Button
-                        size="sm" variant="light"
-                        onClick={() => triggerShortcutPark(idea._id)}
-                        disabled={syncingId === idea._id || idea.status === 'parked'}
-                        className="fw-bold px-2.5 d-flex align-items-center gap-1 border border-slate font-sans-serif text-secondary"
-                        style={{ borderRadius: '6px', fontSize: '12.5px' }}
-                      >
-                        <BookmarkDashFill size={12}/> Park
-                      </Button>
-                    </Col>
+                  <Col md={5}>
+                    <Form.Group>
+                      <Form.Label className="small fw-bold ideas-muted-text font-monospace uppercase mb-1" style={{ fontSize: '10.5px' }}>Curator reply</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Leave guidance or notes here..."
+                        value={replies[idea._id] || ''}
+                        onChange={(e) => setReplies(prev => ({ ...prev, [idea._id]: e.target.value }))}
+                        disabled={syncingId === idea._id}
+                        className="ideas-flat-input"
+                        style={{ fontSize: '13px' }}
+                      />
+                    </Form.Group>
+                  </Col>
 
-                  </Row>
-                </div>
+                  <Col md={4} className="d-flex gap-2 justify-content-end flex-wrap">
+                    <Button
+                      size="sm"
+                      onClick={() => handleUpdateCurationRow(idea._id)}
+                      disabled={syncingId === idea._id}
+                      className="fw-bold px-3 d-flex align-items-center gap-1 ideas-btn ideas-btn-primary"
+                      style={{ fontSize: '12.5px' }}
+                    >
+                      {syncingId === idea._id ? <Spinner animation="border" size="sm"/> : <><SaveFill size={12}/> Save</>}
+                    </Button>
 
-              </Card.Body>
-            </Card>
+                    <Button
+                      size="sm"
+                      onClick={() => triggerShortcutAccept(idea._id)}
+                      disabled={syncingId === idea._id || idea.status === 'building'}
+                      className="fw-bold px-2.5 d-flex align-items-center gap-1 ideas-btn ideas-btn-accept"
+                      style={{ fontSize: '12.5px' }}
+                    >
+                      Accept (+25 pts)
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      onClick={() => triggerShortcutPark(idea._id)}
+                      disabled={syncingId === idea._id || idea.status === 'parked'}
+                      className="fw-bold px-2.5 d-flex align-items-center gap-1 ideas-btn ideas-btn-park"
+                      style={{ fontSize: '12.5px' }}
+                    >
+                      <BookmarkDashFill size={12}/> Park
+                    </Button>
+                  </Col>
+
+                </Row>
+              </div>
+
+            </div>
           ))}
         </div>
       )}
