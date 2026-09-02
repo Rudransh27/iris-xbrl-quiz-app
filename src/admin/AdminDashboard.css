@@ -21,10 +21,12 @@
   flex-direction: column;
   height: 100vh;
   padding: 0 !important;
+  overflow: hidden;
 }
 
 /* Sidebar Branding Header Block */
 .admin-sidebar-header {
+  flex: 0 0 auto;
   padding: 24px 20px 18px 20px;
   border-bottom: 1px solid var(--orbit-border);
   text-align: left;
@@ -57,6 +59,29 @@
 /* Navigation Links Vertical Stack Area */
 .admin-nav-links-stack {
   padding: 16px 12px !important;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  flex-wrap: nowrap !important;
+  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--orbit-brand-muted, #b8b4e8) transparent;
+  /* On a short viewport this list runs past the fold with no other cue that
+     it scrolls — a visible (not hover-only) scrollbar thumb is the signal. */
+}
+
+.admin-nav-links-stack::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-nav-links-stack::-webkit-scrollbar-thumb {
+  background-color: var(--orbit-brand-muted, #b8b4e8);
+  border-radius: 3px;
+}
+
+.admin-nav-links-stack::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 /* Interactive Navigation Menu Row Item */

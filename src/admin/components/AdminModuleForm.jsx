@@ -48,10 +48,15 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
   const [selectedDepartments, setSelectedDepartments] = useState([]); // Array of checked department ID strings
   const [selectedTeams, setSelectedTeamIds] = useState([]); // Array of checked sub-team ID strings
 
+  // 🏷️ TAG / CATEGORY — every module always belongs to exactly one; falls
+  // back to the permanent "Uncategorized" bucket server-side if left blank.
+  const [categoryId, setCategoryId] = useState('');
+  const [categoriesList, setCategoriesList] = useState([]);
+
   // 📡 METADATA DICTIONARIES
   const [departmentsList, setDepartmentsList] = useState([]);
   const [loadingStructure, setLoadingStructure] = useState(true);
-  
+
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false); 
   const [error, setError] = useState('');
@@ -71,6 +76,16 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
       }
     };
     fetchCompanyData();
+
+    const fetchCategories = async () => {
+      try {
+        const res = await api.getCategories();
+        setCategoriesList(res?.data || []);
+      } catch (err) {
+        console.error("Failed to load tags:", err.message);
+      }
+    };
+    fetchCategories();
   }, []);
 
   // Hydrate form layers cleanly when running edit-mutations
@@ -89,6 +104,7 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
       setIsHotModule(!!editData.isHotModule);
       setIsPopular(!!editData.isPopular);
       setEstimatedTime(editData.estimatedTime ? String(editData.estimatedTime) : '');
+      setCategoryId(editData.categoryId ? (editData.categoryId._id || editData.categoryId).toString() : '');
 
       const deptIds = Array.isArray(editData.departments)
         ? editData.departments.map(d => d._id || d)
@@ -156,12 +172,14 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
     const modulePayload = {
       title,
       description,
-      engineStrategy, 
+      engineStrategy,
       visibility,
       departments: visibility === 'Global' ? [] : selectedDepartments,
       targetTeams: visibility === 'Team-Specific' ? selectedTeams : [],
       imageUrl: imageUrl || "https://example.com/images/default-xbrl-module.png",
-      estimatedTime: Number(estimatedTime) || 0
+      estimatedTime: Number(estimatedTime) || 0,
+      // 🏷️ Left blank -> backend falls back to the permanent "Uncategorized" bucket.
+      categoryId: categoryId || null,
     };
 
     try {
@@ -192,6 +210,7 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
       setSelectedDepartments([]); setSelectedTeamIds([]); setVisibility('Global');
       setEngineStrategy('STANDARD');
       setIsHotModule(false); setIsPopular(false); setEstimatedTime('');
+      setCategoryId('');
 
       if (onModuleAdded) onModuleAdded();
       
@@ -357,6 +376,23 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
                 className="admin-flat-input"
               />
               <small className="text-muted d-block mt-1">Feeds the auto-computed points reward shown on module/topic cards.</small>
+            </Form.Group>
+          </Col>
+
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label className="fw-semibold text-dark small">Tag / Category</Form.Label>
+              <Form.Select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className="admin-flat-input text-muted"
+              >
+                <option value="">Uncategorized (default)</option>
+                {categoriesList.filter(c => !c.isDefault).map((c) => (
+                  <option key={c._id} value={c._id}>{c.name}</option>
+                ))}
+              </Form.Select>
+              <small className="text-muted d-block mt-1">Groups this module on the Learn page. Manage tags from the "Tags" panel.</small>
             </Form.Group>
           </Col>
         </Row>

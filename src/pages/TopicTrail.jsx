@@ -3,12 +3,14 @@ import React, { useState, useEffect, useLayoutEffect, useContext, useMemo } from
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import TopicCard from '../components/TopicCard';
 import api from '../admin/services/api';
+import Swal from 'sweetalert2';
 import { ChevronRight, ArrowLeft, Book, Trophy, ClockHistory } from 'react-bootstrap-icons';
 import './TopicTrail.css';
 import '../components/OrbitDashboard/OrbitDashboard.css';
 import { useStars } from '../components/OrbitDashboard/HeroWelcome';
 import AuthContext from '../context/AuthContext';
 import { setCurrentModule } from '../components/OrbitDashboard/currentModuleStorage';
+import { buildTagSuffix, buildLearnBackPath } from '../utils/tagReturnPath';
 
 // "90 min" below an hour, "1.5 hrs" once it crosses 60 — avoids an odd-looking
 // "0.5 hours" for anything short, without needing two separate formats.
@@ -23,6 +25,22 @@ export default function TopicTrail() {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useContext(AuthContext);
+
+    // Which tag (and region, if any) this module was opened from — carried
+    // as ?tag=&region= so every back/breadcrumb action here returns to that
+    // exact journey path instead of always falling back to the flat
+    // all-modules list, or (missing the region) to the region-picker one
+    // level up from where the learner actually was.
+    const tagId = new URLSearchParams(location.search).get("tag");
+    const regionParam = new URLSearchParams(location.search).get("region");
+    const tagSuffix = buildTagSuffix(tagId, regionParam);
+    const learnBackPath = buildLearnBackPath(tagId, regionParam);
+    const [tagName, setTagName] = useState(null);
+
+    useEffect(() => {
+        if (!tagId) { setTagName(null); return; }
+        api.getCategory(tagId).then((res) => setTagName(res?.data?.name || null)).catch(() => setTagName(null));
+    }, [tagId]);
 
     const [moduleInfo, setModuleInfo] = useState(null);
     const [topics, setTopics] = useState([]);
@@ -47,7 +65,7 @@ export default function TopicTrail() {
                 // 🔀 ARCHITECTURAL INTERCEPTOR: Preserved flat validation handling
                 if (moduleData && moduleData.hasTopics === false) {
                     console.log("⚡ Express flat pipeline detected. Bypassing syllabus grid map.");
-                    return navigate(`/quiz/${moduleId}/undefined`);
+                    return navigate(`/quiz/${moduleId}/undefined${tagSuffix}`);
                 }
 
                 const progressData = await api.getUserProgress();
@@ -60,13 +78,29 @@ export default function TopicTrail() {
             } catch (error) {
                 console.error('❌ Failed to fetch module or progress data:', error);
                 setLoading(false);
-                navigate('/orbit/modules');
+                // 🔒 A direct/bookmarked link to a since-relocked or still-locked
+                // module hits this same catch (the backend rejects GET /:id
+                // outright) — surface that specific reason instead of a silent
+                // bounce back to the tag/modules list.
+                if (error?.message?.toLowerCase().includes('locked')) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'warning',
+                        title: 'Module locked',
+                        text: error.message,
+                        showConfirmButton: false,
+                        timer: 3200,
+                    });
+                }
+                navigate(learnBackPath);
             }
         };
 
         if (moduleId) {
             fetchLearningData();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [moduleId, navigate, user, location.key]);
 
     const isTopicUnlocked = () => {
@@ -141,9 +175,9 @@ export default function TopicTrail() {
                 <button
                     type="button"
                     className="topic-back-btn"
-                    onClick={() => navigate("/orbit/modules")}
+                    onClick={() => navigate(learnBackPath)}
                 >
-                    <ArrowLeft size={14} /> Back to Learn
+                    <ArrowLeft size={14} /> {tagId ? `Back to ${tagName || "Tag"}` : "Back to Learn"}
                 </button>
 
                 {/* ================= HERO HEADER =================
@@ -164,9 +198,9 @@ export default function TopicTrail() {
 
                     <div className="topic-header">
                         <nav className="topic-header__breadcrumb" aria-label="Breadcrumb">
-                            <button type="button" onClick={() => navigate('/orbit/modules')}>Learn</button>
+                            <button type="button" onClick={() => navigate('/orbit/tags')}>Learn</button>
                             <ChevronRight size={10} />
-                            <button type="button" onClick={() => navigate('/orbit/modules')}>Modules</button>
+                            <button type="button" onClick={() => navigate(learnBackPath)}>{tagId ? (tagName || '…') : 'Modules'}</button>
                             <ChevronRight size={10} />
                             <span className="topic-header__breadcrumb-current">{moduleInfo?.title || '…'}</span>
                         </nav>
@@ -243,7 +277,7 @@ export default function TopicTrail() {
                                             onClick={() => {
                                                 if (isUnlocked) {
                                                     setCurrentModule(user?._id, { moduleId, topicId: topic._id });
-                                                    navigate(`/quiz/${moduleId}/${topic._id}`);
+                                                    navigate(`/quiz/${moduleId}/${topic._id}${tagSuffix}`);
                                                 } else {
                                                     alert('This topic is locked!');
                                                 }

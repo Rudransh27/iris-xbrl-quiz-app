@@ -1,6 +1,6 @@
 // src/pages/Quiz.jsx
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuizEngine } from "../hooks/useQuizEngine";
 import api from "../admin/services/api";
 import QuizPlayerHeader from "../components/QuizPlayerHeader";
@@ -22,21 +22,31 @@ import {
   RocketTakeoffFill
 } from "react-bootstrap-icons";
 import Swal from 'sweetalert2';
+import { buildTagSuffix, buildLearnBackPath } from "../utils/tagReturnPath";
 import "./Quiz.css";
 
 const Quiz = () => {
   const { moduleId, topicId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // 🔀 ARCHITECTURE DETECTION DETECTOR
   const isExpressFlatModule = !topicId || topicId.trim() === "" || topicId === "undefined";
 
+  // Which tag (and region, if any) this session started from — carried as
+  // ?tag=&region= all the way from the Learn page. Exiting/finishing must
+  // return to that exact journey path, not always the flat all-modules list
+  // (or, missing the region, the region-picker one level up from it).
+  const tagId = new URLSearchParams(location.search).get("tag");
+  const regionParam = new URLSearchParams(location.search).get("region");
+
   // Must land inside the persistent Orbit shell (Learn page), not the legacy
   // chrome-less /modules route.
   const getExitRedirectPath = () => {
+    const tagSuffix = buildTagSuffix(tagId, regionParam);
     return isExpressFlatModule
-      ? `/orbit/modules`
-      : `/orbit/modules/${moduleId}/topics`;
+      ? buildLearnBackPath(tagId, regionParam)
+      : `/orbit/modules/${moduleId}/topics${tagSuffix}`;
   };
 
   const {
@@ -51,7 +61,7 @@ const Quiz = () => {
     resetModule,
     isCardReached,
     isCardCorrect,
-  } = useQuizEngine(moduleId, topicId, navigate);
+  } = useQuizEngine(moduleId, topicId, navigate, tagId, regionParam);
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 

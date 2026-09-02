@@ -1,6 +1,16 @@
 // src/admin/services/api.js
 import { API_BASE_URL, IMAGE_BASE_URL } from './config';
 
+// The backend now pairs every JWT with an HttpOnly session-binding cookie
+// (see quiz-backend/src/middleware/auth.js) — without `credentials: 'include'`
+// the browser never sends that cookie on these cross-origin requests, so
+// every authenticated call would 401 even with a perfectly valid token.
+// Routed through this one wrapper (instead of calling `fetch` directly)
+// so every one of this file's call sites gets it without repeating it.
+function apiFetch(url, options = {}) {
+  return fetch(url, { ...options, credentials: 'include' });
+}
+
 // Streak/engagement-history bucketing on the server must key off the
 // USER's local calendar day, not the server's UTC day (see
 // quiz-backend/src/utils/localDate.js) — otherwise, for anyone not at
@@ -61,7 +71,7 @@ async function recordCardCompletion(cardId, topicId, moduleId, isCorrect, teleme
       Object.assign(requestBody, telemetryPayload);
     }
 
-    const response = await fetch(`${API_BASE_URL}/progress/card-completed`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/card-completed`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(requestBody),
@@ -75,7 +85,7 @@ async function recordCardCompletion(cardId, topicId, moduleId, isCorrect, teleme
 
 async function getUserProgress() {
   try {
-    const response = await fetch(`${API_BASE_URL}/progress`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
@@ -92,7 +102,7 @@ async function getModuleScopeState(moduleId, topicId) {
   try {
     const params = new URLSearchParams({ moduleId });
     if (topicId) params.set('topicId', topicId);
-    const response = await fetch(`${API_BASE_URL}/progress/module-scope-state?${params.toString()}`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/module-scope-state?${params.toString()}`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
@@ -106,7 +116,7 @@ async function getModuleScopeState(moduleId, topicId) {
 // progress, claws back its XP, and returns a clean slate.
 async function resetModuleProgress(moduleId, topicId) {
   try {
-    const response = await fetch(`${API_BASE_URL}/progress/module-reset`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/module-reset`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify({ moduleId, topicId }),
@@ -119,12 +129,12 @@ async function resetModuleProgress(moduleId, topicId) {
 }
 
 // ---------------- Authentication ----------------
-async function login(email, password) {
+async function login(email, password, captchaToken) {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await apiFetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: getPublicHeader(),
-      body: JSON.stringify({ email, password, localDate: localDateKey() }),
+      body: JSON.stringify({ email, password, localDate: localDateKey(), captchaToken }),
     });
     return await handleFetchResponse(response);
   } catch (error) {
@@ -133,12 +143,12 @@ async function login(email, password) {
   }
 }
 
-async function register(username, email, password, department, teamId) {
+async function register(username, email, password, department, teamId, regions, captchaToken) {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    const response = await apiFetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: getPublicHeader(),
-      body: JSON.stringify({ username, email, password, department, teamId }),
+      body: JSON.stringify({ username, email, password, department, teamId, regions, captchaToken }),
     });
     return await handleFetchResponse(response);
   } catch (error) {
@@ -149,7 +159,7 @@ async function register(username, email, password, department, teamId) {
 
 async function verifyEmail(email, otp) {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
+    const response = await apiFetch(`${API_BASE_URL}/auth/verify-email`, {
       method: 'POST',
       headers: getPublicHeader(),
       body: JSON.stringify({ email, otp }),
@@ -163,7 +173,7 @@ async function verifyEmail(email, otp) {
 
 async function validateToken() {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/validate`, {
+    const response = await apiFetch(`${API_BASE_URL}/auth/validate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify({ localDate: localDateKey() }),
@@ -177,7 +187,7 @@ async function validateToken() {
 
 async function updateProfile(profileData) {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/update-profile`, {
+    const response = await apiFetch(`${API_BASE_URL}/auth/update-profile`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(profileData),
@@ -189,12 +199,12 @@ async function updateProfile(profileData) {
   }
 }
 
-async function completeProfile(department, teamId) {
+async function completeProfile(department, teamId, regions) {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
+    const response = await apiFetch(`${API_BASE_URL}/auth/complete-profile`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-      body: JSON.stringify({ department, teamId }),
+      body: JSON.stringify({ department, teamId, regions }),
     });
     return await handleFetchResponse(response);
   } catch (error) {
@@ -203,12 +213,12 @@ async function completeProfile(department, teamId) {
   }
 }
 
-async function forgotPassword(email) {
+async function forgotPassword(email, captchaToken) {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+    const response = await apiFetch(`${API_BASE_URL}/auth/forgot-password`, {
       method: 'POST',
       headers: getPublicHeader(),
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, captchaToken }),
     });
     return await handleFetchResponse(response);
   } catch (error) {
@@ -219,7 +229,7 @@ async function forgotPassword(email) {
 
 async function resetPassword(token, newPassword) {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/reset-password/${token}`, {
+    const response = await apiFetch(`${API_BASE_URL}/auth/reset-password/${token}`, {
       method: 'PUT',
       headers: getPublicHeader(),
       body: JSON.stringify({ password: newPassword }),
@@ -234,7 +244,7 @@ async function resetPassword(token, newPassword) {
 // ---------------- Validation + Upload ----------------
 async function validateCode(validatorName, userCode) {
   try {
-    const response = await fetch(`${API_BASE_URL}/validate-code`, {
+    const response = await apiFetch(`${API_BASE_URL}/validate-code`, {
       method: 'POST',
       headers: getPublicHeader(),
       body: JSON.stringify({ validatorName, userCode }),
@@ -254,7 +264,7 @@ async function uploadImage(imageFile) {
     const authHeaders = getAuthHeader();
     delete authHeaders['Content-Type']; 
 
-    const response = await fetch(`${IMAGE_BASE_URL}/upload-image`, {
+    const response = await apiFetch(`${IMAGE_BASE_URL}/upload-image`, {
       method: 'POST',
       headers: authHeaders,
       body: formData,
@@ -299,7 +309,7 @@ async function uploadVideoCard(contextParam, videoFile, cardDetails, cardId = nu
       ? `${API_BASE_URL}/topics/cards/upload-video/${cardId}`
       : `${API_BASE_URL}/topics/${targetContextId}/cards/upload-video`; 
 
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
       method: cardId ? 'PUT' : 'POST',
       headers: authHeaders,
       body: formData
@@ -338,7 +348,7 @@ async function uploadDocumentCard(contextParam, documentFile, cardDetails, type 
       ? `${API_BASE_URL}/topics/cards/upload-document/${cardId}`
       : `${API_BASE_URL}/topics/${targetContextId}/cards/upload-document`;
 
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
       method: cardId ? 'PUT' : 'POST',
       headers: authHeaders,
       body: formData
@@ -362,7 +372,7 @@ async function uploadPdfCard(contextParam, pdfFile, cardDetails, cardId = null) 
 // ---------------- Daily Reads Architecture ----------------
 async function getTodaysRead() {
   try {
-    const response = await fetch(`${API_BASE_URL}/daily-reads/todays-read`, {
+    const response = await apiFetch(`${API_BASE_URL}/daily-reads/todays-read`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
@@ -374,7 +384,7 @@ async function getTodaysRead() {
 
 async function createDailyRead(readData) {
   try {
-    const response = await fetch(`${API_BASE_URL}/daily-reads/admin/daily-reads`, {
+    const response = await apiFetch(`${API_BASE_URL}/daily-reads/admin/daily-reads`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(readData),
@@ -388,7 +398,7 @@ async function createDailyRead(readData) {
 
 async function getAllDailyReads() {
   try {
-    const response = await fetch(`${API_BASE_URL}/daily-reads/all-reads`, {
+    const response = await apiFetch(`${API_BASE_URL}/daily-reads/all-reads`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
@@ -400,7 +410,7 @@ async function getAllDailyReads() {
 
 async function updateDailyRead(id, readData) {
   try {
-    const response = await fetch(`${API_BASE_URL}/daily-reads/admin/daily-reads/${id}`, {
+    const response = await apiFetch(`${API_BASE_URL}/daily-reads/admin/daily-reads/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(readData),
@@ -414,7 +424,7 @@ async function updateDailyRead(id, readData) {
 
 async function deleteDailyRead(id) {
   try {
-    const response = await fetch(`${API_BASE_URL}/daily-reads/admin/daily-reads/${id}`, {
+    const response = await apiFetch(`${API_BASE_URL}/daily-reads/admin/daily-reads/${id}`, {
       method: 'DELETE',
       headers: getAuthHeader(),
     });
@@ -428,7 +438,7 @@ async function deleteDailyRead(id) {
 // ---------------- News/Broadcast Architecture ----------------
 async function getDashboardNews() {
   try {
-    const response = await fetch(`${API_BASE_URL}/news/dashboard`, {
+    const response = await apiFetch(`${API_BASE_URL}/news/dashboard`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
@@ -446,7 +456,7 @@ async function uploadBroadcastVideo(videoFile) {
     const authHeaders = getAuthHeader();
     delete authHeaders['Content-Type'];
 
-    const response = await fetch(`${IMAGE_BASE_URL}/upload-video`, {
+    const response = await apiFetch(`${IMAGE_BASE_URL}/upload-video`, {
       method: 'POST',
       headers: authHeaders,
       body: formData,
@@ -467,7 +477,7 @@ async function uploadBroadcastVideo(videoFile) {
 
 async function getNewsFeed() {
   try {
-    const response = await fetch(`${API_BASE_URL}/news/feed`, {
+    const response = await apiFetch(`${API_BASE_URL}/news/feed`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
@@ -479,7 +489,7 @@ async function getNewsFeed() {
 
 async function getAllNewsForAdmin() {
   try {
-    const response = await fetch(`${API_BASE_URL}/news/manage`, {
+    const response = await apiFetch(`${API_BASE_URL}/news/manage`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
@@ -491,7 +501,7 @@ async function getAllNewsForAdmin() {
 
 async function createNewsPost(newsData) {
   try {
-    const response = await fetch(`${API_BASE_URL}/news/create`, {
+    const response = await apiFetch(`${API_BASE_URL}/news/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(newsData),
@@ -538,14 +548,18 @@ const api = {
   createNewsPost, 
  
   // Add this method inside your api = { ... } object
-getWorkspaceCurriculum: async () => {
-  const response = await fetch(`${API_BASE_URL}/modules/workspace-curriculum`, { headers: getAuthHeader() });
+getWorkspaceCurriculum: async (categoryId, regionId) => {
+  const params = new URLSearchParams();
+  if (categoryId) params.set('categoryId', categoryId);
+  if (regionId) params.set('regionId', regionId);
+  const qs = params.toString() ? `?${params.toString()}` : '';
+  const response = await apiFetch(`${API_BASE_URL}/modules/workspace-curriculum${qs}`, { headers: getAuthHeader() });
   return await handleFetchResponse(response);
 },
 
   getDepartmentLeaderboard: async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/department-leaderboard`, {
+    const response = await apiFetch(`${API_BASE_URL}/users/department-leaderboard`, {
       method: 'GET',
       headers: getAuthHeader(), // Pass secure authorization token headers securely
     });
@@ -558,7 +572,7 @@ getWorkspaceCurriculum: async () => {
 
   getMyGamification: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/me/gamification`, {
+      const response = await apiFetch(`${API_BASE_URL}/users/me/gamification`, {
         method: 'GET',
         headers: getAuthHeader(),
       });
@@ -571,7 +585,7 @@ getWorkspaceCurriculum: async () => {
 
   changePassword: async (currentPassword, newPassword) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+      const response = await apiFetch(`${API_BASE_URL}/auth/change-password`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
         body: JSON.stringify({ currentPassword, newPassword }),
@@ -587,7 +601,7 @@ getWorkspaceCurriculum: async () => {
   // =========================================================================
   submitIdeaNode: async (payloadData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/ideas`, {
+      const response = await apiFetch(`${API_BASE_URL}/ideas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
         body: JSON.stringify(payloadData)
@@ -602,7 +616,7 @@ getWorkspaceCurriculum: async () => {
   getUserIdeas: async () => {
     try {
       // ✅ FIXED: String literal fully resolved with uniform backtick boundaries
-      const response = await fetch(`${API_BASE_URL}/ideas/my-history`, {
+      const response = await apiFetch(`${API_BASE_URL}/ideas/my-history`, {
         method: 'GET',
         headers: getAuthHeader()
       });
@@ -618,7 +632,7 @@ getWorkspaceCurriculum: async () => {
   // caller's own submissions. See getUserIdeas above for that.
   getCouncilBoard: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/ideas/council-board`, {
+      const response = await apiFetch(`${API_BASE_URL}/ideas/council-board`, {
         method: 'GET',
         headers: getAuthHeader()
       });
@@ -631,7 +645,7 @@ getWorkspaceCurriculum: async () => {
 
   updateIdeaStatusByCurator: async (ideaId, curationUpdates) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/ideas/${ideaId}/curate`, {
+      const response = await apiFetch(`${API_BASE_URL}/ideas/${ideaId}/curate`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
         body: JSON.stringify(curationUpdates)
@@ -645,7 +659,7 @@ getWorkspaceCurriculum: async () => {
 
   getDepartments: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/departments/public`, { 
+      const response = await apiFetch(`${API_BASE_URL}/departments/public`, { 
         method: 'GET',
         headers: getPublicHeader() 
       });
@@ -658,7 +672,7 @@ getWorkspaceCurriculum: async () => {
 
   createDepartment: async (deptData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/departments`, {
+      const response = await apiFetch(`${API_BASE_URL}/departments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
         body: JSON.stringify(deptData)
@@ -670,9 +684,166 @@ getWorkspaceCurriculum: async () => {
     }
   },
 
+  // ---------------- Categories ("Tags") ----------------
+  getCategories: async () => {
+    const response = await apiFetch(`${API_BASE_URL}/categories`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  getCategory: async (id) => {
+    const response = await apiFetch(`${API_BASE_URL}/categories/${id}`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  createCategory: async (categoryData) => {
+    const response = await apiFetch(`${API_BASE_URL}/categories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify(categoryData),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  updateCategory: async (id, categoryData) => {
+    const response = await apiFetch(`${API_BASE_URL}/categories/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify(categoryData),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  deleteCategory: async (id) => {
+    const response = await apiFetch(`${API_BASE_URL}/categories/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  // 🔒 Sets the sequential-unlock order of every module in a category in one
+  // shot — moduleIds is the FULL, newly-ordered array of every module
+  // currently in that category (powers the admin drag-and-drop reorder UI).
+  // Pass regionId to instead reorder just ONE region bucket's subset —
+  // moduleIds must then be exactly that bucket's current modules; every
+  // other module in the category keeps its existing relative position.
+  reorderCategoryModules: async (categoryId, moduleIds, regionId) => {
+    const response = await apiFetch(`${API_BASE_URL}/categories/${categoryId}/modules/order`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify(regionId ? { moduleIds, regionId } : { moduleIds }),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  // ---------------- Regions ----------------
+  getRegions: async () => {
+    const response = await apiFetch(`${API_BASE_URL}/regions`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  getRegion: async (id) => {
+    const response = await apiFetch(`${API_BASE_URL}/regions/${id}`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  createRegion: async (regionData) => {
+    const response = await apiFetch(`${API_BASE_URL}/regions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify(regionData),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  updateRegion: async (id, regionData) => {
+    const response = await apiFetch(`${API_BASE_URL}/regions/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify(regionData),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  deleteRegion: async (id) => {
+    const response = await apiFetch(`${API_BASE_URL}/regions/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  getRegionTags: async (regionId) => {
+    const response = await apiFetch(`${API_BASE_URL}/regions/${regionId}/tags`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  getRegionAvailableTags: async (regionId) => {
+    const response = await apiFetch(`${API_BASE_URL}/regions/${regionId}/available-tags`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  addTagToRegion: async (regionId, tagId) => {
+    const response = await apiFetch(`${API_BASE_URL}/regions/${regionId}/tags/${tagId}`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  removeTagFromRegion: async (regionId, tagId) => {
+    const response = await apiFetch(`${API_BASE_URL}/regions/${regionId}/tags/${tagId}`, {
+      method: 'DELETE',
+      headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  getRegionModules: async (regionId, categoryId) => {
+    const qs = categoryId ? `?categoryId=${categoryId}` : '';
+    const response = await apiFetch(`${API_BASE_URL}/regions/${regionId}/modules${qs}`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  getRegionAvailableModules: async (regionId, categoryId) => {
+    const qs = categoryId ? `?categoryId=${categoryId}` : '';
+    const response = await apiFetch(`${API_BASE_URL}/regions/${regionId}/available-modules${qs}`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  // Per-region module counts for one tag ("Onboarding-US: 7 modules", ...) —
+  // powers the admin's Tag x Region bucket grid.
+  getRegionModuleBreakdown: async (categoryId) => {
+    const response = await apiFetch(`${API_BASE_URL}/regions/by-tag/${categoryId}`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  // The inverse: per-tag module counts for one region — powers the "By
+  // Region" view's read-only content overview.
+  getRegionTagBreakdown: async (regionId) => {
+    const response = await apiFetch(`${API_BASE_URL}/regions/${regionId}/tag-breakdown`, { headers: getAuthHeader() });
+    return await handleFetchResponse(response);
+  },
+
+  addModuleToRegion: async (regionId, moduleId) => {
+    const response = await apiFetch(`${API_BASE_URL}/regions/${regionId}/modules/${moduleId}`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  },
+
+  removeModuleFromRegion: async (regionId, moduleId) => {
+    const response = await apiFetch(`${API_BASE_URL}/regions/${regionId}/modules/${moduleId}`, {
+      method: 'DELETE',
+      headers: getAuthHeader(),
+    });
+    return await handleFetchResponse(response);
+  },
+
   getTeams: async (departmentId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/teams/${departmentId}`, {
+      const response = await apiFetch(`${API_BASE_URL}/teams/${departmentId}`, {
         method: 'GET',
         headers: getAuthHeader()
       });
@@ -685,7 +856,7 @@ getWorkspaceCurriculum: async () => {
 
   createTeam: async (teamData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/teams`, {
+      const response = await apiFetch(`${API_BASE_URL}/teams`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
         body: JSON.stringify(teamData)
@@ -699,12 +870,12 @@ getWorkspaceCurriculum: async () => {
 
   // ---------------- Team Hub ----------------
   getTeamHub: async (departmentId) => {
-    const response = await fetch(`${API_BASE_URL}/teams/hub/${departmentId}`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/teams/hub/${departmentId}`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   requestTeamTransfer: async (userId, toTeamId) => {
-    const response = await fetch(`${API_BASE_URL}/teams/transfer-request`, {
+    const response = await apiFetch(`${API_BASE_URL}/teams/transfer-request`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify({ userId, toTeamId }),
@@ -713,12 +884,12 @@ getWorkspaceCurriculum: async () => {
   },
 
   getTransferRequests: async () => {
-    const response = await fetch(`${API_BASE_URL}/teams/transfer-requests`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/teams/transfer-requests`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   respondTransferRequest: async (requestId, approve) => {
-    const response = await fetch(`${API_BASE_URL}/teams/transfer-requests/${requestId}/respond`, {
+    const response = await apiFetch(`${API_BASE_URL}/teams/transfer-requests/${requestId}/respond`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify({ approve }),
@@ -727,17 +898,17 @@ getWorkspaceCurriculum: async () => {
   },
 
   getModules: async () => {
-    const response = await fetch(`${API_BASE_URL}/modules`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/modules`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   getModule: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/modules/${id}`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/modules/${id}`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   rateModule: async (id, { rating, reviewText }) => {
-    const response = await fetch(`${API_BASE_URL}/modules/${id}/rate`, {
+    const response = await apiFetch(`${API_BASE_URL}/modules/${id}/rate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify({ rating, reviewText }),
@@ -746,17 +917,17 @@ getWorkspaceCurriculum: async () => {
   },
 
   getModuleReviews: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/modules/${id}/reviews`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/modules/${id}/reviews`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   getMyModuleReview: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/modules/${id}/my-review`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/modules/${id}/my-review`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   createModule: async (moduleData) => {
-    const response = await fetch(`${API_BASE_URL}/modules`, {
+    const response = await apiFetch(`${API_BASE_URL}/modules`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(moduleData),
@@ -765,7 +936,7 @@ getWorkspaceCurriculum: async () => {
   },
 
   updateModule: async (id, moduleData) => {
-    const response = await fetch(`${API_BASE_URL}/modules/${id}`, {
+    const response = await apiFetch(`${API_BASE_URL}/modules/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(moduleData),
@@ -774,7 +945,7 @@ getWorkspaceCurriculum: async () => {
   },
 
   deleteModule: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/modules/${id}`, {
+    const response = await apiFetch(`${API_BASE_URL}/modules/${id}`, {
       method: 'DELETE',
       headers: getAuthHeader(),
     });
@@ -782,7 +953,7 @@ getWorkspaceCurriculum: async () => {
   },
 
   exportModuleSubmissionsCsv: async (moduleId) => {
-    const response = await fetch(`${API_BASE_URL}/modules/${moduleId}/submissions`, {
+    const response = await apiFetch(`${API_BASE_URL}/modules/${moduleId}/submissions`, {
       headers: getAuthHeader(),
     });
     if (!response.ok) {
@@ -801,7 +972,7 @@ getWorkspaceCurriculum: async () => {
   },
 
   gradeSubmission: async (cardId, userId, payload) => {
-    const response = await fetch(`${API_BASE_URL}/progress/admin/card/${cardId}/user/${userId}/grade`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/card/${cardId}/user/${userId}/grade`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(payload),
@@ -810,7 +981,7 @@ getWorkspaceCurriculum: async () => {
   },
 
   setHotModule: async (moduleId, isHotModule) => {
-    const response = await fetch(`${API_BASE_URL}/modules/${moduleId}/hot-module`, {
+    const response = await apiFetch(`${API_BASE_URL}/modules/${moduleId}/hot-module`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify({ isHotModule }),
@@ -819,7 +990,7 @@ getWorkspaceCurriculum: async () => {
   },
 
   setPopularModule: async (moduleId, isPopular) => {
-    const response = await fetch(`${API_BASE_URL}/modules/${moduleId}/popular`, {
+    const response = await apiFetch(`${API_BASE_URL}/modules/${moduleId}/popular`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify({ isPopular }),
@@ -828,12 +999,12 @@ getWorkspaceCurriculum: async () => {
   },
 
   getTopic: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/topics/${id}`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/topics/${id}`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   createTopic: async (topicData) => {
-    const response = await fetch(`${API_BASE_URL}/topics`, {
+    const response = await apiFetch(`${API_BASE_URL}/topics`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(topicData),
@@ -842,7 +1013,7 @@ getWorkspaceCurriculum: async () => {
   },
 
   updateTopic: async (topicId, topicData) => {
-    const response = await fetch(`${API_BASE_URL}/topics/${topicId}`, {
+    const response = await apiFetch(`${API_BASE_URL}/topics/${topicId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(topicData),
@@ -851,7 +1022,7 @@ getWorkspaceCurriculum: async () => {
   },
 
   deleteTopic: async (topicId) => {
-    const response = await fetch(`${API_BASE_URL}/topics/${topicId}`, {
+    const response = await apiFetch(`${API_BASE_URL}/topics/${topicId}`, {
       method: 'DELETE',
       headers: getAuthHeader(),
     });
@@ -866,7 +1037,7 @@ getWorkspaceCurriculum: async () => {
       targetContextId = contextParam || "";
     }
 
-    const response = await fetch(`${API_BASE_URL}/topics/${targetContextId}/cards`, {
+    const response = await apiFetch(`${API_BASE_URL}/topics/${targetContextId}/cards`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(cardData),
@@ -875,7 +1046,7 @@ getWorkspaceCurriculum: async () => {
   },
 
   updateCard: async (cardId, cardData) => {
-    const response = await fetch(`${API_BASE_URL}/topics/cards/${cardId}`, {
+    const response = await apiFetch(`${API_BASE_URL}/topics/cards/${cardId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(cardData),
@@ -884,12 +1055,12 @@ getWorkspaceCurriculum: async () => {
   },
 
   getCard: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/topics/cards/${id}`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/topics/cards/${id}`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   deleteCard: async (cardId) => {
-    const response = await fetch(`${API_BASE_URL}/topics/cards/${cardId}`, {
+    const response = await apiFetch(`${API_BASE_URL}/topics/cards/${cardId}`, {
       method: 'DELETE',
       headers: getAuthHeader(),
     });
@@ -898,7 +1069,7 @@ getWorkspaceCurriculum: async () => {
 
   getUsersCount: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/count-verified`, {
+      const response = await apiFetch(`${API_BASE_URL}/users/count-verified`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
       });
@@ -911,75 +1082,87 @@ getWorkspaceCurriculum: async () => {
 
   // ---------------- Analytics (Admin) ----------------
   getAdminUsersList: async () => {
-    const response = await fetch(`${API_BASE_URL}/progress/admin/users`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/users`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
   },
 
+  // Sets which regions a user is scoped to — Department Admins may only
+  // target users in their own department, Superadmin may target anyone
+  // (see userRoutes.js's PUT /:id/regions).
+  assignUserRegions: async (userId, regionIds) => {
+    const response = await apiFetch(`${API_BASE_URL}/users/${userId}/regions`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify({ regions: regionIds }),
+    });
+    return await handleFetchResponse(response);
+  },
+
   getAdminUserAnalytics: async (userId) => {
-    const response = await fetch(`${API_BASE_URL}/progress/admin/user/${userId}`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/user/${userId}`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
   },
 
   getAdminSandboxResults: async (cardId) => {
-    const response = await fetch(`${API_BASE_URL}/progress/admin/sandbox/${cardId}`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/sandbox/${cardId}`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
   },
 
   getAdminPlatformStats: async () => {
-    const response = await fetch(`${API_BASE_URL}/progress/admin/platform-stats`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/platform-stats`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   getAdminModuleEngagement: async () => {
-    const response = await fetch(`${API_BASE_URL}/progress/admin/module-engagement`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/module-engagement`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   getAdminTeamStats: async (teamId) => {
     const qs = teamId ? `?teamId=${teamId}` : '';
-    const response = await fetch(`${API_BASE_URL}/progress/admin/team-stats${qs}`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/team-stats${qs}`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   getModuleCompletionReal: async (teamId) => {
     const qs = teamId ? `?teamId=${teamId}` : '';
-    const response = await fetch(`${API_BASE_URL}/progress/admin/module-completion${qs}`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/module-completion${qs}`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   getDailyReadParticipation: async (teamId) => {
     const params = new URLSearchParams({ localDate: localDateKey() });
     if (teamId) params.set('teamId', teamId);
-    const response = await fetch(`${API_BASE_URL}/progress/admin/daily-read-participation?${params.toString()}`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/daily-read-participation?${params.toString()}`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   getQuizScoreDistribution: async (teamId) => {
     const qs = teamId ? `?teamId=${teamId}` : '';
-    const response = await fetch(`${API_BASE_URL}/progress/admin/quiz-score-distribution${qs}`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/quiz-score-distribution${qs}`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   getAdminDepartmentStats: async () => {
-    const response = await fetch(`${API_BASE_URL}/progress/admin/department-stats`, { headers: getAuthHeader() });
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/department-stats`, { headers: getAuthHeader() });
     return await handleFetchResponse(response);
   },
 
   getUserSandboxAnswers: async (userId) => {
-    const response = await fetch(`${API_BASE_URL}/progress/admin/user/${userId}/sandbox-answers`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/user/${userId}/sandbox-answers`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
   },
 
   importGrades: async (gradesArray) => {
-    const response = await fetch(`${API_BASE_URL}/progress/admin/import-grades`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/import-grades`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify({ grades: gradesArray }),
@@ -988,14 +1171,14 @@ getWorkspaceCurriculum: async () => {
   },
 
   getDeptSandboxAnswers: async () => {
-    const response = await fetch(`${API_BASE_URL}/progress/admin/dept-sandbox-answers`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/dept-sandbox-answers`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
   },
 
   getAdminModuleProgressTable: async () => {
-    const response = await fetch(`${API_BASE_URL}/progress/admin/module-progress-table`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/module-progress-table`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
@@ -1004,7 +1187,7 @@ getWorkspaceCurriculum: async () => {
   importModuleGradesCsv: async (moduleId, file) => {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await fetch(`${API_BASE_URL}/progress/admin/module/${moduleId}/import-grades-csv`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/admin/module/${moduleId}/import-grades-csv`, {
       method: 'POST',
       headers: getAuthHeader(),
       body: formData,
@@ -1013,21 +1196,21 @@ getWorkspaceCurriculum: async () => {
   },
 
   getMySandboxResults: async () => {
-    const response = await fetch(`${API_BASE_URL}/progress/my-sandbox-results`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/my-sandbox-results`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
   },
 
   getNotifications: async () => {
-    const response = await fetch(`${API_BASE_URL}/notifications`, {
+    const response = await apiFetch(`${API_BASE_URL}/notifications`, {
       headers: getAuthHeader(),
     });
     return await handleFetchResponse(response);
   },
 
   markNotificationRead: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
+    const response = await apiFetch(`${API_BASE_URL}/notifications/${id}/read`, {
       method: 'PUT',
       headers: getAuthHeader(),
     });
@@ -1035,7 +1218,7 @@ getWorkspaceCurriculum: async () => {
   },
 
   markAllNotificationsRead: async () => {
-    const response = await fetch(`${API_BASE_URL}/notifications/read-all`, {
+    const response = await apiFetch(`${API_BASE_URL}/notifications/read-all`, {
       method: 'PUT',
       headers: getAuthHeader(),
     });
@@ -1044,7 +1227,7 @@ getWorkspaceCurriculum: async () => {
 
   // ── Streak API ────────────────────────────────────────────────────────────
   verifyDailyStreak: async (actionType) => {
-    const response = await fetch(`${API_BASE_URL}/progress/streak/verify`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/streak/verify`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body:    JSON.stringify({ actionType, localDate: localDateKey() }),
@@ -1053,10 +1236,26 @@ getWorkspaceCurriculum: async () => {
   },
 
   getMyStreak: async () => {
-    const response = await fetch(`${API_BASE_URL}/progress/streak?localDate=${localDateKey()}`, {
+    const response = await apiFetch(`${API_BASE_URL}/progress/streak?localDate=${localDateKey()}`, {
       headers: getAuthHeader(),
     });
     return handleFetchResponse(response);
+  },
+
+  // Ends the session server-side (clears the session-binding cookie + Redis
+  // record) instead of only discarding the token client-side. Best-effort —
+  // AuthContext's logout() already clears local state regardless of whether
+  // this call succeeds, so a network hiccup here shouldn't block logging out.
+  logoutUser: async () => {
+    try {
+      const response = await apiFetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        headers: getAuthHeader(),
+      });
+      return await handleFetchResponse(response);
+    } catch (error) {
+      console.error('Logout API Error:', error);
+    }
   },
 };
 

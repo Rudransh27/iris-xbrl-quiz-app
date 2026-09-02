@@ -1,0 +1,385 @@
+/* src/admin/components/AdminRegionManager.css
+   Modern look for the Regions admin panel — reuses the app's existing
+   --orbit-*/--radius-* theme tokens (same ones TagCard.css / AdminDashboard
+   .css already use) so this reads as part of the same studio, in both
+   light and dark mode, rather than a bolted-on plain-Bootstrap screen. */
+
+.arm-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.arm-header__icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--orbit-brand) 14%, var(--orbit-surface));
+  color: var(--orbit-brand);
+}
+
+.arm-header__title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--orbit-text-heading);
+}
+
+.arm-header__desc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--orbit-text-muted);
+  line-height: 1.55;
+  max-width: 660px;
+}
+
+/* ---------- Segmented pill toggle ---------- */
+.arm-toggle {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+  gap: 2px;
+  margin: 18px 0;
+}
+
+.arm-toggle__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--orbit-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.arm-toggle__btn:hover:not(.arm-toggle__btn--active) {
+  color: var(--orbit-text-body);
+}
+
+.arm-toggle__btn--active {
+  background: var(--orbit-brand);
+  color: #fff;
+  box-shadow: var(--orbit-shadow-sm);
+}
+
+/* ---------- Cards (region list + tag x region buckets) — same card
+   layout as before, just smaller: tighter padding, smaller type, no
+   description line, smaller icon buttons. ---------- */
+.arm-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.arm-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--orbit-border);
+  border-radius: var(--radius-md);
+  background: var(--orbit-surface);
+  padding: 9px 12px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.arm-card::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  right: -30%;
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  background: var(--arm-accent, var(--orbit-brand));
+  filter: blur(32px);
+  opacity: 0.1;
+  z-index: -1;
+  transition: opacity 0.25s ease;
+}
+
+.arm-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--orbit-shadow-sm);
+}
+
+.arm-card:hover::after { opacity: 0.2; }
+
+.arm-card--active {
+  border-color: var(--arm-accent, var(--orbit-brand));
+  box-shadow: var(--orbit-shadow-sm);
+}
+
+.arm-card--active::after { opacity: 0.18; }
+
+.arm-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.arm-card__id {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.arm-card__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--arm-accent, var(--orbit-brand));
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.arm-card__title {
+  font-weight: 700;
+  color: var(--orbit-text-heading);
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.arm-card__footer {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.arm-card__actions {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.arm-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--orbit-border);
+  background: var(--orbit-surface);
+  color: var(--orbit-text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.arm-icon-btn:hover {
+  background: var(--orbit-surface-subtle);
+  color: var(--orbit-text-heading);
+}
+
+.arm-icon-btn--danger:hover {
+  background: color-mix(in srgb, #dc2626 12%, var(--orbit-surface));
+  color: #dc2626;
+  border-color: color-mix(in srgb, #dc2626 40%, var(--orbit-border));
+}
+
+.arm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: var(--orbit-surface-subtle);
+  color: var(--orbit-text-muted);
+  border: 1px solid var(--orbit-border);
+  white-space: nowrap;
+}
+
+.arm-badge--accent {
+  background: color-mix(in srgb, var(--orbit-brand) 12%, var(--orbit-surface));
+  color: var(--orbit-brand);
+  border-color: color-mix(in srgb, var(--orbit-brand) 30%, var(--orbit-border));
+}
+
+/* ---------- Panel (detail/mapping) cards ---------- */
+.arm-panel {
+  border: 1px solid var(--orbit-border);
+  border-radius: var(--radius-lg);
+  background: var(--orbit-surface);
+  overflow: hidden;
+  height: 100%;
+}
+
+.arm-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--orbit-border);
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--orbit-text-heading);
+  background: var(--orbit-surface-subtle);
+}
+
+.arm-panel__body {
+  padding: 14px 16px;
+}
+
+.arm-panel__footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--orbit-border);
+  background: var(--orbit-surface-subtle);
+}
+
+.arm-panel__hint {
+  font-size: 11.5px;
+  color: var(--orbit-text-muted);
+  margin: 8px 0 0;
+}
+
+.arm-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--orbit-surface-subtle);
+  font-size: 13px;
+  color: var(--orbit-text-body);
+}
+
+.arm-list-row + .arm-list-row {
+  margin-top: 6px;
+}
+
+.arm-list-row--muted {
+  color: var(--orbit-text-muted);
+}
+
+.arm-list-row__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--orbit-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.arm-list-row__remove:hover {
+  background: color-mix(in srgb, #dc2626 14%, transparent);
+  color: #dc2626;
+}
+
+.arm-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--orbit-text-muted);
+  font-size: 13px;
+}
+
+.arm-form-card {
+  border: 1px solid var(--orbit-border);
+  border-radius: var(--radius-lg);
+  background: var(--orbit-surface-subtle);
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+/* ---------- By User — one row per learner, region toggle chips ---------- */
+.arm-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--orbit-border);
+}
+
+.arm-user-row:last-child {
+  border-bottom: none;
+}
+
+.arm-user-row__id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.arm-user-row__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--orbit-text-heading);
+  white-space: nowrap;
+}
+
+.arm-user-row__email {
+  font-size: 11.5px;
+  color: var(--orbit-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.arm-user-row__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.arm-region-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--orbit-border);
+  background: var(--orbit-surface);
+  color: var(--orbit-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.arm-region-toggle:hover:not(:disabled) {
+  border-color: var(--arm-accent, var(--orbit-brand));
+}
+
+.arm-region-toggle--active {
+  background: color-mix(in srgb, var(--arm-accent, var(--orbit-brand)) 18%, var(--orbit-surface));
+  border-color: var(--arm-accent, var(--orbit-brand));
+  color: var(--orbit-text-heading);
+}
+
+.arm-region-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

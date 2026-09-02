@@ -2,7 +2,8 @@
 import React from 'react';
 import {
   Grid, BarChartLine, People, Lightbulb, GraphUp, Shield,
-  Collection, CpuFill, FolderPlus, FileEarmarkPlus, Book, Broadcast,
+  Collection, CpuFill, FolderPlus, FileEarmarkPlus, Book, Broadcast, TagFill,
+  GlobeAmericas,
 } from 'react-bootstrap-icons';
 
 // One accent color per tile, used only to tint the small icon chip (the
@@ -12,6 +13,8 @@ import {
 // second hardcoded value per tile).
 const VIEWS = [
   { key: 'overview', label: 'Curriculum Map', desc: 'Browse and manage every module, topic, and card.', Icon: Grid, accent: '#0f256e' },
+  { key: 'tags', label: 'Tags', desc: 'Create, edit, and scope the tags used to group modules on the Learn page.', Icon: TagFill, accent: '#d63384' },
+  { key: 'regions', label: 'Regions', desc: 'Create regions and map which tags/modules each one offers.', Icon: GlobeAmericas, accent: '#2563eb' },
   { key: 'metrics-grid', label: 'Metrics Activity Deck', desc: 'A wireframe overview of platform activity at a glance.', Icon: BarChartLine, accent: '#3a86ff' },
   { key: 'create-team', label: 'Team Hub', desc: 'Teams, admins, rosters, and member reassignment requests.', Icon: People, accent: '#06d6a0' },
   { key: 'ideas-review', label: 'Ideas Inbox', desc: 'Review and curate ideas submitted by learners.', Icon: Lightbulb, accent: '#ffbe0b' },

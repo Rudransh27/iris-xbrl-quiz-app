@@ -74,6 +74,8 @@ export default function UserProfile() {
   const [gamification,    setGamification]    = useState(null);
   const [leaderboard,     setLeaderboard]     = useState(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [regionsList,     setRegionsList]     = useState([]);
+  const [savingRegions,   setSavingRegions]   = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -96,8 +98,12 @@ export default function UserProfile() {
     const fetchDepts = async () => {
       try { const d = await api.getDepartments(); setDepts(d || []); } catch {}
     };
+    const fetchRegions = async () => {
+      try { const res = await api.getRegions(); setRegionsList(res?.data || []); } catch {}
+    };
     if (!authLoading && user) {
       fetchDepts();
+      fetchRegions();
       syncTelemetry();
       setSandboxLoading(true);
       api.getMySandboxResults()
@@ -142,6 +148,20 @@ export default function UserProfile() {
       await refreshUser();
     } catch (err) { console.error(err.message); }
     finally { setIsUpdating(false); }
+  };
+
+  const userRegionIds = (user?.regions || []).map(r => (r && r._id ? r._id : r)?.toString());
+
+  const handleToggleRegion = async (regionId) => {
+    const next = userRegionIds.includes(regionId)
+      ? userRegionIds.filter(id => id !== regionId)
+      : [...userRegionIds, regionId];
+    setSavingRegions(true);
+    try {
+      await api.updateProfile({ username: user.username, regions: next });
+      await refreshUser();
+    } catch (err) { console.error(err.message); }
+    finally { setSavingRegions(false); }
   };
 
   const handleSelectPreset = async (id) => {
@@ -210,6 +230,8 @@ export default function UserProfile() {
   const deptDoc          = depts.find(d => d._id === user.department || d.code === user.department);
   const deptLabel        = deptDoc?.name || "General Operations";
   const teamLabel        = deptDoc?.teams?.find(t => t._id === user.team)?.name || "General Assignment";
+  const userRegionDocs   = regionsList.filter(r => userRegionIds.includes(r._id));
+  const regionLabel      = userRegionDocs.length > 0 ? userRegionDocs.map(r => r.name).join(", ") : "All regions";
 
   const activeAvatar     = AVATAR_LIST.find(a => a.id === (user.avatarId || "dev")) || AVATAR_LIST[0];
   const hasCustom        = Boolean(user.avatarUrl && user.avatarId === "custom");
@@ -327,6 +349,38 @@ export default function UserProfile() {
             <button className="up-upload-btn" onClick={() => fileInputRef.current?.click()}>
               <PiUploadSimpleFill size={14} /> Upload Custom Photo
             </button>
+
+            {regionsList.length > 0 && (
+              <>
+                <p className="up-editor__title" style={{ marginTop: "18px" }}>
+                  Your Region(s) {savingRegions && <span style={{ opacity: 0.6 }}>· saving…</span>}
+                </p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  {regionsList.map((r) => {
+                    const isSelected = userRegionIds.includes(r._id);
+                    return (
+                      <button
+                        key={r._id}
+                        type="button"
+                        disabled={savingRegions}
+                        onClick={() => handleToggleRegion(r._id)}
+                        className={`up-preset-card ${isSelected ? "up-preset-card--active" : ""}`}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: "6px",
+                          padding: "8px 14px", width: "auto", flexDirection: "row",
+                        }}
+                      >
+                        <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: r.color || "#6366f1", display: "inline-block" }} />
+                        <span className="up-preset-card__label">{r.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="up-bio up-bio--empty" style={{ marginTop: "8px" }}>
+                  No region selected means you see content from every region.
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -461,6 +515,7 @@ export default function UserProfile() {
             { icon: PiEnvelopeSimpleFill, label: "Email",           value: maskEmail(user?.email) },
             { icon: PiBuildingsFill,      label: "Department",      value: deptLabel },
             { icon: PiUsersThreeFill,     label: "Team",            value: teamLabel },
+            { icon: PiCirclesThreeFill,   label: "Region",          value: regionLabel },
             { icon: PiCirclesThreeFill,   label: "Specialty Track", value: activeAvatar.name },
           ].map((item, i) => {
             const Icon = item.icon;

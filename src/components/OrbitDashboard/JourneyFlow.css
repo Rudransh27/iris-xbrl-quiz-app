@@ -1,0 +1,521 @@
+/* src/components/OrbitDashboard/JourneyFlow.css
+   Tag -> Region -> Journey drill-down. Reuses the app's existing --orbit-*
+   theme tokens (light/dark already handled by index.css) rather than the
+   flat light-only palette from the original mockup, so this reads as part
+   of the same app instead of a bolted-on screen. */
+
+/* ---------- Region grid (Screen 2) — same small "icon on top, name
+   below" tile treatment as the Tag grid's .tagcard (TagCard.css), not a
+   big card and not a horizontal pill. Flexbox + a fixed tile width + center
+   (not CSS grid's auto-fill, which spins up empty 1fr tracks that squeeze
+   real tiles onto the left with a dead gap on the right for small counts). ---------- */
+.jf-region-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 26px 16px;
+}
+
+.jf-region-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  flex: 0 0 116px;
+  width: 116px;
+  padding: 16px 8px;
+  border: 1px solid var(--orbit-border);
+  border-radius: var(--radius-lg);
+  background: var(--orbit-surface);
+  text-align: center;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+
+.jf-region-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--jf-region-color, var(--orbit-brand));
+  opacity: 0.05;
+  z-index: -1;
+  transition: opacity 0.22s ease;
+}
+
+.jf-region-card:hover,
+.jf-region-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: transparent;
+  box-shadow: 0 10px 20px -12px var(--jf-region-color, var(--orbit-brand)), var(--orbit-shadow-sm);
+}
+
+.jf-region-card:hover::after { opacity: 0.14; }
+
+.jf-region-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--jf-region-color, var(--orbit-brand));
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.jf-region-card:hover .jf-region-card__icon {
+  transform: scale(1.1) rotate(-6deg);
+}
+
+.jf-region-card__title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  color: var(--orbit-text-heading);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.25;
+  width: 100%;
+}
+
+/* ---------- Journey breadcrumb / header (Screen 3) ---------- */
+.jf-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--orbit-text-muted);
+  flex-wrap: wrap;
+}
+
+.jf-breadcrumb button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--orbit-text-muted);
+  cursor: pointer;
+}
+
+.jf-breadcrumb button:hover { color: var(--orbit-brand); }
+
+.jf-breadcrumb__current {
+  color: var(--orbit-brand);
+  font-weight: 700;
+}
+
+.jf-breadcrumb__sep { color: var(--orbit-border); }
+
+.jf-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 14px 0 8px;
+}
+
+.jf-stat-pill {
+  background: var(--orbit-surface-subtle);
+  border: 1px solid var(--orbit-border);
+  border-radius: var(--radius-full);
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--orbit-text-body);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.jf-stat-pill .jf-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.jf-mission-start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 6px 0 4px;
+}
+
+.jf-mission-start__emoji { font-size: 28px; }
+
+.jf-mission-start__label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--orbit-brand);
+}
+
+/* ---------- Journey path (Screen 3) ---------- */
+/* Same background as the page around it (no card/panel color of its own) so
+   the path reads as part of the page, not a boxed-in widget.
+   IMPORTANT: this wrapper must stay overflow:visible — the path can run much
+   taller than the viewport, and clipping it here (as a previous pass did)
+   hides everything past the fold with no way to scroll to it. The decor
+   layer below is the thing that needs clipping (so drifting planets/the
+   comet don't spawn a horizontal scrollbar), not this one. */
+.jf-path-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 24px;
+}
+
+.jf-path-decor {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.jf-star {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--orbit-text-muted);
+  animation: jf-twinkle ease-in-out infinite;
+}
+
+.jf-planet {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.5;
+  filter: blur(0.2px);
+}
+
+.jf-planet--ringed {
+  top: 4%;
+  left: 6%;
+  width: 46px;
+  height: 46px;
+  background: radial-gradient(circle at 32% 28%, #ffd9a0, #f2924a 60%, #c76a2c 100%);
+  animation: jf-float 9s ease-in-out infinite;
+}
+.jf-planet--ringed::after {
+  content: "";
+  position: absolute;
+  inset: -14px -6px;
+  border: 3px solid color-mix(in srgb, #f2924a 55%, transparent);
+  border-radius: 50%;
+  transform: rotate(-18deg) scaleY(0.34);
+}
+
+.jf-planet--rust {
+  top: 34%;
+  right: 8%;
+  width: 26px;
+  height: 26px;
+  background: radial-gradient(circle at 35% 30%, #ff9d9d, #d9536b 65%, #a13a52 100%);
+  animation: jf-float 7s ease-in-out infinite 1.2s;
+}
+
+.jf-planet--moon {
+  bottom: 10%;
+  left: 10%;
+  width: 34px;
+  height: 34px;
+  background: radial-gradient(circle at 30% 28%, #e6e2f5, #b9b3d8 65%, #8f88b8 100%);
+  animation: jf-float 8s ease-in-out infinite 0.5s;
+}
+
+.jf-comet {
+  position: absolute;
+  top: 12%;
+  left: -10%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 8px 2px rgba(255,255,255,0.8);
+  opacity: 0;
+  animation: jf-comet-fly 9s linear infinite 2s;
+}
+.jf-comet::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: 70px;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7));
+  transform: translateY(-50%);
+}
+
+@media (max-width: 640px) {
+  .jf-planet { display: none; }
+}
+
+.jf-path-canvas {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.jf-path-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.jf-path-cord {
+  fill: none;
+  stroke: var(--orbit-border-strong);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 1 14;
+}
+
+.jf-path-cord--done {
+  stroke: var(--orbit-brand);
+  stroke-dasharray: none;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--orbit-brand) 55%, transparent));
+}
+
+/* ---- Node wrapper ---- */
+.jf-node-wrap {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  z-index: 1;
+}
+
+.jf-node-wrap:has(.jf-node__bubble--current) { z-index: 2; }
+
+.jf-node-flag {
+  position: absolute;
+  top: -26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background: var(--orbit-brand);
+  color: #ffffff;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  box-shadow: var(--orbit-shadow-md);
+  animation: jf-flag-bob 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ---- Node bubble (the "planet") ---- */
+.jf-node__bubble {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--orbit-surface-subtle);
+  box-shadow:
+    0 5px 0 0 var(--orbit-border-strong),
+    var(--orbit-shadow-sm);
+  cursor: pointer;
+  transition: box-shadow 0.18s ease;
+}
+
+.jf-node__bubble:active { box-shadow: 0 2px 0 0 var(--orbit-border-strong); }
+
+.jf-node__ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(var(--orbit-brand) calc(var(--pct, 0) * 1%), color-mix(in srgb, var(--orbit-border) 70%, transparent) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  opacity: 0;
+}
+
+.jf-node__face {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--orbit-text-muted);
+}
+
+.jf-node__number {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* Locked */
+.jf-node__bubble--locked {
+  cursor: not-allowed;
+  background: var(--orbit-surface-subtle);
+  box-shadow: 0 5px 0 0 var(--orbit-border), var(--orbit-shadow-sm);
+  opacity: 0.75;
+}
+.jf-node__bubble--locked .jf-node__face { color: var(--orbit-text-muted); }
+
+/* Open / reachable, not the immediate mission */
+.jf-node__bubble--open {
+  background: color-mix(in srgb, var(--orbit-brand) 14%, var(--orbit-surface));
+  box-shadow: 0 5px 0 0 var(--orbit-brand-dark), var(--orbit-shadow-sm);
+}
+.jf-node__bubble--open .jf-node__face { color: var(--orbit-brand-dark); }
+.jf-node__bubble--open .jf-node__ring { opacity: 1; }
+
+/* Current mission — the one node begging to be tapped */
+.jf-node__bubble--current {
+  background: linear-gradient(160deg, var(--orbit-brand) 0%, var(--orbit-brand-dark) 100%);
+  box-shadow: 0 6px 0 0 var(--orbit-brand-dark), 0 0 0 6px color-mix(in srgb, var(--orbit-brand) 22%, transparent), var(--orbit-shadow-lg);
+  animation: jf-bounce 1.9s ease-in-out infinite;
+}
+.jf-node__bubble--current .jf-node__face { color: #ffffff; }
+.jf-node__bubble--current .jf-node__ring { opacity: 1; }
+
+/* Completed */
+.jf-node__bubble--done {
+  background: linear-gradient(160deg, #4ee6a8 0%, #29b980 100%);
+  box-shadow: 0 5px 0 0 #1f9668, var(--orbit-shadow-sm);
+}
+.jf-node__bubble--done .jf-node__face { color: #ffffff; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .jf-node__bubble--done::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.55) 48%, transparent 66%);
+    background-size: 220% 220%;
+    animation: jf-shine 2.6s ease-in-out 0.4s 1;
+  }
+}
+
+/* Completion burst */
+.jf-node__spark {
+  position: absolute;
+  font-size: 13px;
+  color: #ffd76a;
+  opacity: 0;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .jf-node__spark--1 { top: 4px; left: 4px; animation: jf-spark 1.1s ease-out forwards; }
+  .jf-node__spark--2 { top: 4px; right: 4px; animation: jf-spark 1.1s ease-out 0.08s forwards; }
+  .jf-node__spark--3 { bottom: 4px; left: 4px; animation: jf-spark 1.1s ease-out 0.16s forwards; }
+  .jf-node__spark--4 { bottom: 4px; right: 4px; animation: jf-spark 1.1s ease-out 0.05s forwards; }
+}
+
+/* Locked-tap feedback */
+.jf-node-wrap--shake .jf-node__bubble--locked {
+  animation: jf-shake 0.4s ease;
+  box-shadow: 0 5px 0 0 #d9536b, 0 0 0 6px rgba(217,83,107,0.25), var(--orbit-shadow-sm);
+}
+
+/* ---- Label ---- */
+.jf-node-label {
+  /* A fixed width (not max-width) is required here — .jf-node-wrap sizes
+     itself via width:max-content, which otherwise lets this box's preferred
+     size follow its unwrapped text instead of respecting a cap. No
+     line-clamp/truncation — full module names must always be readable, so
+     this wraps to as many lines as it needs instead of cutting text off. */
+  width: 118px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--orbit-surface) 78%, transparent);
+  box-shadow: 0 1px 3px color-mix(in srgb, #000 10%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--orbit-text-heading);
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.jf-node-label--locked {
+  color: var(--orbit-text-muted);
+  font-weight: 600;
+}
+
+/* ---- Keyframes ---- */
+@keyframes jf-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes jf-flag-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes jf-shine {
+  0% { background-position: -120% -120%; opacity: 0; }
+  15% { opacity: 1; }
+  60% { background-position: 120% 120%; opacity: 0.9; }
+  100% { background-position: 120% 120%; opacity: 0; }
+}
+
+@keyframes jf-spark {
+  0% { transform: translate(0, 0) scale(0.4); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translate(var(--spark-x, 18px), -26px) scale(1.1); opacity: 0; }
+}
+.jf-node__spark--1 { --spark-x: -20px; }
+.jf-node__spark--2 { --spark-x: 20px; }
+.jf-node__spark--3 { --spark-x: -16px; }
+.jf-node__spark--4 { --spark-x: 16px; }
+
+@keyframes jf-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+
+@keyframes jf-twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.8); }
+  50% { opacity: 0.9; transform: scale(1.15); }
+}
+
+@keyframes jf-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(4deg); }
+}
+
+@keyframes jf-comet-fly {
+  0% { transform: translate(0, 0); opacity: 0; }
+  4% { opacity: 1; }
+  16% { transform: translate(46vw, 22vh); opacity: 0; }
+  100% { transform: translate(46vw, 22vh); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-node__bubble--current { animation: none; }
+  .jf-node-flag { animation: none; }
+  .jf-star, .jf-planet, .jf-comet { animation: none; opacity: 0.35; }
+  .jf-comet { display: none; }
+}
+
+.jf-region-empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--orbit-text-muted);
+}

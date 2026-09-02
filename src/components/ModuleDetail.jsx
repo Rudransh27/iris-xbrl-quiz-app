@@ -1,6 +1,6 @@
 // src/pages/ModuleDetail.jsx
 import React, { useState, useEffect, useLayoutEffect, useContext } from 'react';
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import ModuleCardEach from './ModuleCardEach';
 import ModuleReviews from './ModuleReviews';
 import api from '../admin/services/api';
@@ -11,11 +11,24 @@ import AuthContext from '../context/AuthContext';
 export default function ModuleDetail() {
   const { moduleId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useContext(AuthContext);
+
+  // Which tag this module was opened from (if any) — carried as ?tag= so
+  // "Back to Trails" and every deeper navigation (topics, documentation)
+  // returns to that filtered tag view instead of the flat all-modules list.
+  const tagId = new URLSearchParams(location.search).get("tag");
+  const tagSuffix = tagId ? `?tag=${tagId}` : "";
+  const [tagName, setTagName] = useState(null);
 
   const [module, setModule] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expandedTopicIndex, setExpandedTopicIndex] = useState(null);
+
+  useEffect(() => {
+    if (!tagId) { setTagName(null); return; }
+    api.getCategory(tagId).then((res) => setTagName(res?.data?.name || null)).catch(() => setTagName(null));
+  }, [tagId]);
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
@@ -47,7 +60,7 @@ export default function ModuleDetail() {
       event.stopPropagation();
     }
     // Route to the appropriate viewer based on card type mapping rules
-    navigate(`/orbit/modules/${moduleId}/topics/${topicId}/cards/${cardId}/documentation`);
+    navigate(`/orbit/modules/${moduleId}/topics/${topicId}/cards/${cardId}/documentation${tagSuffix}`);
   };
 
   const handleStartTrail = (event) => {
@@ -58,7 +71,7 @@ export default function ModuleDetail() {
     const isSessionActive = user && (user._id || user.id);
 
     if (isSessionActive) {
-      navigate(`/orbit/modules/${moduleId}/topics`);
+      navigate(`/orbit/modules/${moduleId}/topics${tagSuffix}`);
     } else {
       navigate('/login');
     }
@@ -131,8 +144,11 @@ export default function ModuleDetail() {
       
       <div className="module-detail-wrapper">
         
-        <button className="detail-back-btn" onClick={() => navigate('/orbit/modules')}>
-          <ArrowLeft size={14} /> <span>Back to Trails</span>
+        <button
+          className="detail-back-btn"
+          onClick={() => navigate(tagId ? `/orbit/tags/${tagId}` : '/orbit/modules')}
+        >
+          <ArrowLeft size={14} /> <span>{tagId ? `Back to ${tagName || "Tag"}` : "Back to Trails"}</span>
         </button>
         
         <div className="module-detail-layout-split">

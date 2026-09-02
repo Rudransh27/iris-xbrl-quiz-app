@@ -27,6 +27,8 @@ import {
   Lightbulb,
   GraphUp,
   Activity,
+  TagFill,
+  GlobeAmericas,
 } from "react-bootstrap-icons";
 import api from "./services/api";
 import AuthContext from "../context/AuthContext";
@@ -40,6 +42,8 @@ import CreateTeam from "./components/CreateTeam";
 import AdminIdeasReview from "./components/AdminIdeasReview";
 import AdminUserAnalytics from "./components/AdminUserAnalytics";
 import AdminPlatformAnalytics from "./components/AdminPlatformAnalytics";
+import AdminCategoryManager from "./components/AdminCategoryManager";
+import AdminRegionManager from "./components/AdminRegionManager";
 
 import "./AdminDashboard.css";
 
@@ -279,6 +283,18 @@ export default function Dashboard() {
               >
                 <Activity size={15} /> <span>Platform Analytics</span>
               </button>
+              <button
+                onClick={() => handleFormNavigation("tags")}
+                className={`admin-nav-link-btn ${activeTab === "tags" ? "active" : ""}`}
+              >
+                <TagFill size={15} /> <span>Tags</span>
+              </button>
+              <button
+                onClick={() => handleFormNavigation("regions")}
+                className={`admin-nav-link-btn ${activeTab === "regions" ? "active" : ""}`}
+              >
+                <GlobeAmericas size={15} /> <span>Regions</span>
+              </button>
             </Nav>
           </Col>
 
@@ -468,6 +484,16 @@ export default function Dashboard() {
 
                 {activeTab === "user-analytics" && <AdminUserAnalytics />}
                 {activeTab === "platform-analytics" && <AdminPlatformAnalytics />}
+                {activeTab === "tags" && (
+                  <div className="p-4 form-render-container-bounds">
+                    <AdminCategoryManager />
+                  </div>
+                )}
+                {activeTab === "regions" && (
+                  <div className="p-4 form-render-container-bounds">
+                    <AdminRegionManager />
+                  </div>
+                )}
               </div>
             )}
           </Col>

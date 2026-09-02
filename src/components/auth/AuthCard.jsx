@@ -10,12 +10,15 @@
 // All API calls preserved exactly. React Bootstrap removed — pure inline styles
 // + AuthLayout's injected CSS utility classes.
 // ─────────────────────────────────────────────────────────────────────────────
-import React, { useState, useContext, useEffect, useLayoutEffect } from "react";
+import React, { useState, useContext, useEffect, useLayoutEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import AuthContext from "../../context/AuthContext";
 import api from "../../admin/services/api";
 import AuthLayout from "./AuthLayout";
+import AuthCaptcha from "./AuthCaptcha";
 import { API_BASE_URL } from "../../admin/services/config";
+
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 // ── Spinner (no React Bootstrap dependency) ───────────────────────────────
 function Spinner() {
@@ -51,6 +54,12 @@ export default function AuthCard() {
   const [selectedDeptCode, setSelectedDeptCode] = useState("");
   const [selectedTeamId,   setSelectedTeamId]   = useState("");
 
+  // ── Region(s) — optional, multi-select. Leaving this empty just means
+  // "unrestricted" (sees content in every region) until picked later from
+  // the profile page. ──────────────────────────────────────────────────────
+  const [regionsData,       setRegionsData]       = useState([]);
+  const [selectedRegionIds, setSelectedRegionIds]  = useState([]);
+
   // ── UI state ───────────────────────────────────────────────────────────
   const [step,           setStep]           = useState("login"); // "login"|"register"|"describe"
   const [error,          setError]          = useState("");
@@ -59,6 +68,12 @@ export default function AuthCard() {
   const [showPassword,   setShowPassword]   = useState(false);
   const [securityNotice, setSecurityNotice] = useState({ message: "", variant: "" });
   const [pendingEmail,   setPendingEmail]   = useState(""); // used in describe → verify-email
+
+  // ── CAPTCHA (VAPT 7.4) — one widget mounted at a time (login XOR register),
+  // so a single token/ref pair is safe to share between both steps ─────────
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const captchaRef = useRef(null);
+  const resetCaptcha = () => { captchaRef.current?.reset(); setCaptchaToken(null); };
 
   const { login, register, user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -73,6 +88,7 @@ export default function AuthCard() {
 
   // Set step from route path
   useEffect(() => {
+    setCaptchaToken(null);
     if (location.pathname === "/login") {
       setStep("login");
       const sp = new URLSearchParams(location.search);
@@ -105,6 +121,22 @@ export default function AuthCard() {
     }
   }, [step]);
 
+  // Load regions when entering register step — optional, so a failed fetch
+  // just means the picker is empty, never blocks registration.
+  useEffect(() => {
+    if (step === "register" && regionsData.length === 0) {
+      api.getRegions()
+        .then(res => setRegionsData(res?.data || []))
+        .catch(() => {});
+    }
+  }, [step]);
+
+  const toggleRegion = (regionId) => {
+    setSelectedRegionIds(prev =>
+      prev.includes(regionId) ? prev.filter(id => id !== regionId) : [...prev, regionId]
+    );
+  };
+
   const availableTeams = departmentsData.find(d => d.code === selectedDeptCode)?.teams || [];
 
   const isLoginValid    = email.trim() && password.length >= 6;
@@ -114,10 +146,11 @@ export default function AuthCard() {
   // ── Handlers ──────────────────────────────────────────────────────────
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (!captchaToken) { setError("Please complete the CAPTCHA."); return; }
     setError(""); setSuccess(""); setSecurityNotice({ message: "", variant: "" });
     setLoading(true);
     try {
-      const res = await login(email.trim().toLowerCase(), password);
+      const res = await login(email.trim().toLowerCase(), password, captchaToken);
       if (res.success) {
         // A logged-in user always lands straight in the Orbit dashboard —
         // "/" (the marketing homepage) is only ever for logged-out visitors.
@@ -126,9 +159,11 @@ export default function AuthCard() {
         navigate(redirect, { replace: true });
       } else {
         setError(res.message || "Invalid credentials. Please try again.");
+        resetCaptcha();
       }
     } catch (err) {
       setError(err.message || "Login failed. Please try again.");
+      resetCaptcha();
     } finally {
       setLoading(false);
     }
@@ -137,20 +172,23 @@ export default function AuthCard() {
   const handleRegister = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) { setError("Passwords do not match."); return; }
+    if (!captchaToken) { setError("Please complete the CAPTCHA."); return; }
     setError(""); setSuccess(""); setLoading(true);
     try {
       const res = await register(
         username.trim(), email.trim().toLowerCase(),
-        password, selectedDeptCode, selectedTeamId
+        password, selectedDeptCode, selectedTeamId, selectedRegionIds, captchaToken
       );
       if (res && res.success) {
         setPendingEmail(email.trim().toLowerCase());
         setStep("describe"); // → micro-description step
       } else {
         setError(res?.message || "Registration failed. Try again.");
+        resetCaptcha();
       }
     } catch (err) {
       setError(err.message || "Registration failed. Please check domain restrictions.");
+      resetCaptcha();
     } finally {
       setLoading(false);
     }
@@ -165,12 +203,12 @@ export default function AuthCard() {
   };
 
   const switchToRegister = () => {
-    setStep("register"); setError(""); setSuccess("");
-    setSelectedDeptCode(""); setSelectedTeamId("");
+    setStep("register"); setError(""); setSuccess(""); setCaptchaToken(null);
+    setSelectedDeptCode(""); setSelectedTeamId(""); setSelectedRegionIds([]);
     navigate("/register");
   };
   const switchToLogin = () => {
-    setStep("login"); setError(""); setSuccess("");
+    setStep("login"); setError(""); setSuccess(""); setCaptchaToken(null);
     navigate("/login");
   };
 
@@ -239,7 +277,15 @@ export default function AuthCard() {
               </button>
             </div>
 
-            <button type="submit" className="auth-btn-primary" disabled={loading || !isLoginValid}>
+            <AuthCaptcha
+              ref={captchaRef}
+              sitekey={RECAPTCHA_SITE_KEY}
+              onChange={setCaptchaToken}
+              onExpired={() => setCaptchaToken(null)}
+              verified={!!captchaToken}
+            />
+
+            <button type="submit" className="auth-btn-primary" disabled={loading || !isLoginValid || !captchaToken}>
               {loading ? <Spinner /> : "Log In"}
             </button>
           </form>
@@ -328,6 +374,44 @@ export default function AuthCard() {
               ))}
             </select>
 
+            {/* Region(s) — optional multi-select toggle chips */}
+            {regionsData.length > 0 && (
+              <div style={{ marginTop: "2px", marginBottom: "4px" }}>
+                <span style={{ fontSize: "12px", color: "var(--orbit-text-muted)", display: "block", marginBottom: "6px" }}>
+                  Your region <span style={{ opacity: 0.7 }}>(optional — pick one or more)</span>
+                </span>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  {regionsData.map(r => {
+                    const isSelected = selectedRegionIds.includes(r._id);
+                    return (
+                      <button
+                        key={r._id}
+                        type="button"
+                        onClick={() => toggleRegion(r._id)}
+                        disabled={loading}
+                        style={{
+                          background: isSelected ? "var(--orbit-brand-muted)" : "var(--orbit-surface-subtle)",
+                          border: `1px solid ${isSelected ? "var(--orbit-brand)" : "var(--orbit-border)"}`,
+                          borderRadius: "var(--radius-full)",
+                          padding: "4px 12px", fontSize: "12px",
+                          color: "var(--orbit-text-body)", cursor: "pointer",
+                          fontFamily: "inherit", fontWeight: isSelected ? "700" : "500",
+                          display: "inline-flex", alignItems: "center", gap: "4px",
+                          transition: "background 0.15s, border-color 0.15s",
+                        }}
+                      >
+                        <span
+                          className="rounded-circle d-inline-block"
+                          style={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: r.color || "#6366f1" }}
+                        />
+                        {r.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <input
               className="auth-input"
               type="email" placeholder="Work email"
@@ -369,9 +453,17 @@ export default function AuthCard() {
               </p>
             )}
 
+            <AuthCaptcha
+              ref={captchaRef}
+              sitekey={RECAPTCHA_SITE_KEY}
+              onChange={setCaptchaToken}
+              onExpired={() => setCaptchaToken(null)}
+              verified={!!captchaToken}
+            />
+
             <button
               type="submit" className="auth-btn-primary"
-              disabled={loading || !isRegisterValid}
+              disabled={loading || !isRegisterValid || !captchaToken}
               style={{ marginTop: "4px" }}
             >
               {loading ? <Spinner /> : "Sign Up"}

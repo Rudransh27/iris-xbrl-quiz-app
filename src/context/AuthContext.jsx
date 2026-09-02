@@ -22,7 +22,8 @@ const normalizeUserData = (userPayload) => {
     avatarUrl: userPayload.avatarUrl || "",
     avatarId: userPayload.avatarId || "dev",
     department: userPayload.department || null,
-    team: userPayload.team || null
+    team: userPayload.team || null,
+    regions: userPayload.regions || []
   };
 };
 
@@ -104,9 +105,9 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, captchaToken) => {
     try {
-      const res = await api.login(email, password);
+      const res = await api.login(email, password, captchaToken);
       localStorage.setItem("token", res.token);
 
       const userData = normalizeUserData(res.user);
@@ -122,9 +123,9 @@ export const AuthProvider = ({ children }) => {
   // =========================================================================
   // 📝 REGISTRATION PIPELINE ASSIGNMENT LINK
   // =========================================================================
-  const register = async (username, email, password, department, teamId) => {
+  const register = async (username, email, password, department, teamId, regions, captchaToken) => {
     try {
-      const res = await api.register(username, email, password, department, teamId);
+      const res = await api.register(username, email, password, department, teamId, regions, captchaToken);
       return { success: true, message: res.message };
     } catch (err) {
       return { success: false, message: err.response?.data?.message || err.message || "Registration failed" };
@@ -159,6 +160,11 @@ export const AuthProvider = ({ children }) => {
   // 🧹 DEEP CLEAN LIFECYCLE LOGOUT ACTIONS
   // =========================================================================
   const logout = () => {
+    // Best-effort — clears the session-binding cookie + Redis record
+    // server-side (see api.js's logoutUser). Fire-and-forget: local state
+    // below is cleared regardless of whether this network call succeeds.
+    api.logoutUser();
+
     // 🌟 FIXED: Flushes all active curriculum and layout state flags cleanly
     localStorage.removeItem("token");
     localStorage.removeItem("user");

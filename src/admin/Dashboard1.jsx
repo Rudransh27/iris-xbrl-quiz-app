@@ -22,6 +22,8 @@ import AdminIdeasReview from "./components/AdminIdeasReview";
 import AdminPlatformAnalytics from "./components/AdminPlatformAnalytics";
 import AdminUserAnalytics from "./AdminUserAnalytics";
 import AdminProgressDashboard from "./components/AdminProgressDashboard";
+import AdminCategoryManager from "./components/AdminCategoryManager";
+import AdminRegionManager from "./components/AdminRegionManager";
 
 import "./AdminDashboard.css";
 
@@ -40,6 +42,8 @@ const TAB_TITLES = {
   "platform-analytics": "Platform Analytics",
   "user-analytics": "User Analytics",
   "progress-dashboard": "Progress Dashboard",
+  tags: "Tags",
+  regions: "Regions",
 };
 
 export default function Dashboard1() {
@@ -266,6 +270,12 @@ export default function Dashboard1() {
             )}
             {activeTab === "progress-dashboard" && (
               <AdminProgressDashboard />
+            )}
+            {activeTab === "tags" && (
+              <AdminCategoryManager />
+            )}
+            {activeTab === "regions" && (
+              <AdminRegionManager />
             )}
           </div>
         </>

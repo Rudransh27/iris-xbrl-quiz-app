@@ -187,6 +187,28 @@ if (typeof document !== "undefined" && !document.getElementById("orbit-auth-styl
       font-size: 11.5px; font-weight: 500;
       color: var(--pastel-quiz-text); margin-top: 4px;
     }
+
+    /* ── CAPTCHA frame ─────────────────────────────────────────────────────── */
+    .auth-captcha-wrap { display: flex; flex-direction: column; gap: 8px; margin: 2px 0; }
+    .auth-captcha-label {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 10.5px; font-weight: 800; letter-spacing: 0.7px; text-transform: uppercase;
+      color: var(--orbit-text-muted); transition: color 0.2s;
+    }
+    .auth-captcha-wrap.is-verified .auth-captcha-label { color: var(--orbit-brand); }
+    .auth-captcha-frame {
+      display: flex; justify-content: center; align-items: center;
+      padding: 12px; background: var(--orbit-surface-subtle);
+      border: 1.5px solid var(--orbit-border); border-radius: 14px;
+      transition: border-color 0.22s, box-shadow 0.22s, background 0.22s;
+      overflow: hidden;
+    }
+    .auth-captcha-frame:hover { border-color: var(--orbit-border-strong); }
+    .auth-captcha-wrap.is-verified .auth-captcha-frame {
+      border-color: var(--orbit-brand);
+      box-shadow: 0 0 0 3px rgba(124,110,247,0.14);
+      background: var(--orbit-surface);
+    }
   `;
   document.head.appendChild(s);
 }

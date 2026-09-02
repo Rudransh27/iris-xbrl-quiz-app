@@ -1,6 +1,6 @@
 // src/components/DocumentationPage.jsx
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../admin/services/api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -41,6 +41,7 @@ const components = {
 const DocumentationPage = () => {
     const { moduleId, topicId, cardId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [moduleData, setModuleData] = useState(null);
     const [currentTopic, setCurrentTopic] = useState(null);
@@ -113,7 +114,7 @@ const DocumentationPage = () => {
     }, [moduleId, topicId, cardId]);
 
     const handleBackClick = () => {
-        navigate(`/orbit/modules/${moduleId}`);
+        navigate(`/orbit/modules/${moduleId}${location.search}`);
     };
 
     const toggleSidebar = () => {

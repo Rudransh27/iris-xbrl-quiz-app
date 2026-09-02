@@ -30,6 +30,9 @@ import OrbitWorkspaceContainer from "./pages/OrbitWorkspaceContainer";
 import DailyReadReader from "./pages/DailyReadReader";
 import OrbitShell from "./components/OrbitShell";
 import OrbitOnboarding from "./pages/OrbitOnboarding";
+import CategorySelect from "./pages/CategorySelect";
+import RegionSelect from "./pages/RegionSelect";
+import ModuleJourney from "./pages/ModuleJourney";
 import StreakCelebrationOverlay from "./components/StreakCelebrationOverlay";
 import "./App.css";
 import "react-toastify/dist/ReactToastify.css";
@@ -37,6 +40,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Dashboard from "./admin/Dashboard";
 import useSessionGuard from "./admin/hooks/useSessionGuard";
 import { io } from "socket.io-client";
+import { SERVER_URL } from "./admin/services/config";
 
 // Protected Route for All Logged-In Users (Trainees & Admins Aligned)
 const ProtectedRoute = ({ children }) => {
@@ -116,7 +120,7 @@ const AppContent = () => {
     const token = localStorage.getItem("token");
     if (!token || !user || !user.id) return;
 
-    const socket = io("http://localhost:5000");
+    const socket = io(SERVER_URL);
 
     socket.on("connect", () => {
       socket.emit("register_session", user.id);
@@ -198,11 +202,24 @@ const AppContent = () => {
               effects don't re-run on section navigation. */}
           <Route path=":section" element={<OrbitWorkspaceContainer />} />
 
-          {/* Deep-link module routes — render INSIDE the persistent sidebar shell */}
+          {/* Deep-link module routes — render INSIDE the persistent sidebar shell.
+              "modules" MUST stay the flat, unfiltered module list — dozens of
+              existing call sites (quiz-completion redirects, back buttons,
+              the homepage/footer "Learn" links, the popular-modules row)
+              already navigate straight to "/orbit/modules" expecting exactly
+              that. The tag picker lives at its own "tags" path instead, so
+              none of those existing flows break. */}
           <Route path="modules" element={<ModuleTrail />} />
           <Route path="modules/:moduleId" element={<ModuleDetail />} />
           <Route path="modules/:moduleId/topics" element={<TopicTrail />} />
           <Route path="modules/:moduleId/topics/:topicId/cards/:cardId/documentation" element={<DocumentationPage />} />
+
+          {/* Tag picker — the new Learn landing. Kept entirely separate from
+              "modules" above so nothing that already depends on that path's
+              meaning (flat list) is affected. */}
+          <Route path="tags" element={<CategorySelect />} />
+          <Route path="tags/:categoryId" element={<RegionSelect />} />
+          <Route path="tags/:categoryId/region/:regionId" element={<ModuleJourney />} />
 
           {/* Other learner sections as real routes */}
           <Route path="ideas" element={<IdeasAndRD />} />

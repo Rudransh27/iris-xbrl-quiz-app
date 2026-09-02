@@ -1,7 +1,7 @@
 // src/components/OrbitDashboard/ModuleLabCard.jsx
 import React from "react";
 import {
-  BookHalf, ClockHistory, ArrowRight,
+  BookHalf, ClockHistory, ArrowRight, LockFill,
   LeafFill, CpuFill, Diagram3, SignpostSplit, ShieldCheck,
 } from "react-bootstrap-icons";
 import { PiShootingStarFill } from "react-icons/pi";
@@ -11,6 +11,7 @@ const STATUS_CLASS = {
   "In Progress": "orbit-ml-card__status--inprogress",
   Completed: "orbit-ml-card__status--completed",
   "Coming Soon": "orbit-ml-card__status--soon",
+  Locked: "orbit-ml-card__status--locked",
 };
 
 // Displayed status text — "Not Started"/"Coming Soon" both read as "New"
@@ -36,11 +37,13 @@ const MODULE_THUMB_PALETTE = [
 // card: { id, title, imageUrl, description/takeaway, durationLabel, status,
 //         pct, points, hasTopics }
 export default function ModuleLabCard({ card, index = 0, onClick }) {
-  const clickable = typeof onClick === "function";
+  const isLocked = !!card.locked;
+  const clickable = typeof onClick === "function" && !isLocked;
   const pct = Math.max(0, Math.min(100, card.pct || 0));
   const isCompleted = card.status === "Completed";
   const isInProgress = !isCompleted && pct > 0;
-  const statusLabel = STATUS_LABEL[card.status] || card.status;
+  const displayStatus = isLocked ? "Locked" : card.status;
+  const statusLabel = isLocked ? "Locked" : (STATUS_LABEL[card.status] || card.status);
 
   // Real, non-fabricated classification — derived from the module's actual
   // topic structure, not an invented "tags" field (Module schema has none).
@@ -55,15 +58,22 @@ export default function ModuleLabCard({ card, index = 0, onClick }) {
 
   return (
     <div
-      className={`orbit-ml-card ${clickable ? "orbit-ml-card--clickable" : ""}`}
+      className={`orbit-ml-card ${clickable ? "orbit-ml-card--clickable" : ""} ${isLocked ? "orbit-ml-card--locked" : ""}`}
       onClick={clickable ? onClick : undefined}
+      aria-disabled={isLocked}
     >
       <div
         className="orbit-ml-card__thumb"
         style={card.imageUrl ? { backgroundImage: `url(${card.imageUrl})` } : { backgroundImage: thumbGradient }}
       >
         {!card.imageUrl && <ThemeIcon size={28} />}
-        <span className={`orbit-ml-card__status ${STATUS_CLASS[card.status] || STATUS_CLASS["Not Started"]}`}>
+        {isLocked && (
+          <div className="orbit-ml-card__lock-overlay" aria-hidden="true">
+            <LockFill size={22} />
+          </div>
+        )}
+        <span className={`orbit-ml-card__status ${STATUS_CLASS[displayStatus] || STATUS_CLASS["Not Started"]}`}>
+          {isLocked && <LockFill size={10} className="me-1" />}
           {statusLabel}
         </span>
       </div>
@@ -77,7 +87,9 @@ export default function ModuleLabCard({ card, index = 0, onClick }) {
         <h4 className="orbit-ml-card__title">{card.title}</h4>
         <p className="orbit-ml-card__description">{card.takeaway}</p>
 
-        {isInProgress && (
+        {isLocked ? (
+          <p className="orbit-ml-card__lock-hint">Complete the previous module to unlock</p>
+        ) : isInProgress && (
           <div className="orbit-ml-card__progress">
             <div className="orbit-ml-card__progress-track">
               <div className="orbit-ml-card__progress-fill" style={{ width: `${pct}%` }} />
@@ -101,9 +113,10 @@ export default function ModuleLabCard({ card, index = 0, onClick }) {
             type="button"
             className="orbit-ml-card__go-btn"
             onClick={clickable ? (e) => { e.stopPropagation(); onClick(); } : undefined}
-            aria-label={`Open ${card.title}`}
+            disabled={isLocked}
+            aria-label={isLocked ? `${card.title} is locked` : `Open ${card.title}`}
           >
-            <ArrowRight size={16} />
+            {isLocked ? <LockFill size={14} /> : <ArrowRight size={16} />}
           </button>
         </div>
       </div>

@@ -2,10 +2,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Password Reset — Email Entry (v2 — Premium design, no React Bootstrap)
 // ─────────────────────────────────────────────────────────────────────────────
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../admin/services/api";
 import AuthLayout from "../components/auth/AuthLayout";
+import AuthCaptcha from "../components/auth/AuthCaptcha";
+
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 function Spinner() {
   return (
@@ -25,16 +28,21 @@ export default function ForgotPassword() {
   const [message, setMessage] = useState("");
   const [error,   setError]   = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const captchaRef = useRef(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!captchaToken) { setError("Please complete the CAPTCHA."); return; }
     setLoading(true); setMessage(""); setError("");
     try {
-      const res = await api.forgotPassword(email.trim().toLowerCase());
+      const res = await api.forgotPassword(email.trim().toLowerCase(), captchaToken);
       setMessage(res.message || "Reset link sent! Check your inbox.");
     } catch (err) {
       setError(err.message || "Failed to send reset link. Please try again.");
+      captchaRef.current?.reset();
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -77,9 +85,17 @@ export default function ForgotPassword() {
             disabled={loading || !!message} required
           />
 
+          <AuthCaptcha
+            ref={captchaRef}
+            sitekey={RECAPTCHA_SITE_KEY}
+            onChange={setCaptchaToken}
+            onExpired={() => setCaptchaToken(null)}
+            verified={!!captchaToken}
+          />
+
           <button
             type="submit" className="auth-btn-primary"
-            disabled={loading || !email.trim() || !!message}
+            disabled={loading || !email.trim() || !!message || !captchaToken}
           >
             {loading ? <Spinner /> : "Send Reset Link"}
           </button>

@@ -9,13 +9,14 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
 import api from "../admin/services/api";
+import { SERVER_URL } from "../admin/services/config";
 import SuperAdminDashboard from "../admin/SuperAdminDashboard";
 import Dashboard1 from "../admin/Dashboard1";
 import {
   House, Book, BarChart, Lightbulb, Trophy, PersonCircle,
   Shield, Building, Broadcast, RocketTakeoffFill,
   SunFill, MoonFill, Activity, BoxArrowRight,
-  List, XLg,
+  List, XLg, TagFill,
 } from "react-bootstrap-icons";
 import { PiShootingStarFill } from "react-icons/pi";
 import "./Layout.css";
@@ -97,7 +98,7 @@ export default function OrbitShell() {
 
   useEffect(() => {
     if (!user?.id) return;
-    const socket = socketIO("http://localhost:5000", {
+    const socket = socketIO(SERVER_URL, {
       transports: ["websocket"], reconnectionAttempts: 5,
     });
     socketRef.current = socket;
@@ -125,7 +126,7 @@ export default function OrbitShell() {
   const p = location.pathname;
 
   const activeNav =
-    p.startsWith("/orbit/modules") ? "modules"
+    p.startsWith("/orbit/modules") || p.startsWith("/orbit/tags") ? "modules"
     : p === "/orbit/ideas"         ? "ideas"
     : p === "/orbit/profile"       ? "profile"
     : p === "/orbit"               ? "home"
@@ -156,7 +157,10 @@ export default function OrbitShell() {
   const displayedViewMode = isDashboardHome ? currentViewMode : "learner";
 
   const goTo = (dest) => {
-    if (dest === "modules")  return navigate("/orbit/modules");
+    // "Learn" opens the tag picker now — the flat "/orbit/modules" list
+    // stays exactly what it always was (dozens of other flows depend on
+    // that), reachable from the tag picker's own "Browse all modules" link.
+    if (dest === "modules")  return navigate("/orbit/tags");
     if (dest === "ideas")    return navigate("/orbit/ideas");
     if (dest === "profile")  return navigate("/orbit/profile");
     navigate(dest === "home" ? "/orbit" : `/orbit/${dest}`);
@@ -346,6 +350,7 @@ export default function OrbitShell() {
               {sideNavItem(Building,  "Team",      adminTab === "create-team",       () => goAdmin("create-team"))}
               {sideSection("Content")}
               {sideNavItem(Book,      "Modules",   adminTab === "add-module",        () => goAdmin("add-module"))}
+              {sideNavItem(TagFill,   "Tags",      adminTab === "tags",               () => goAdmin("tags"))}
               {sideSection("Analytics")}
               {sideNavItem(Activity,  "Analytics", adminTab === "platform-analytics", () => goAdmin("platform-analytics"))}
               {sideNavItem(BarChart,  "Users",     adminTab === "user-analytics",     () => goAdmin("user-analytics"))}
@@ -366,6 +371,11 @@ export default function OrbitShell() {
               })}
               {sideSection("Content")}
               {sideNavItem(Book,     "Modules",   false, () => navigate("/orbit/modules"))}
+              {sideNavItem(TagFill,  "Tags",      false, () => {
+                setCurrentViewMode("admin");
+                if (viewModeKey) localStorage.setItem(viewModeKey, "admin");
+                navigate("/orbit/dashboard?tab=tags");
+              })}
               {sideNavItem(Activity, "Analytics", false, () => navigate("/orbit/dashboard?tab=platform-analytics"))}
             </>
           )}

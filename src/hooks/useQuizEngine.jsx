@@ -3,6 +3,7 @@ import { useState, useEffect, useContext, useCallback, useRef } from "react";
 import api from "../admin/services/api";
 import AuthContext from "../context/AuthContext";
 import * as validators from "../utils/validators";
+import { buildTagSuffix, buildLearnBackPath } from "../utils/tagReturnPath";
 import Swal from "sweetalert2";
 
 // Card types with no "correctness" concept — a UserCardProgress doc existing
@@ -40,7 +41,7 @@ const markCardReached = (progressByCardId, cardId, patch) => ({
   [cardId]: { ...(progressByCardId[cardId] || {}), attempted: true, ...patch },
 });
 
-export const useQuizEngine = (moduleId, topicId, navigate) => {
+export const useQuizEngine = (moduleId, topicId, navigate, tagId, regionId) => {
   const { addUserXP, refreshUser, celebrateStreakAction } = useContext(AuthContext);
 
   // Normalize checking whether the layout parameters route identifies a Flat/Express Module path
@@ -49,9 +50,14 @@ export const useQuizEngine = (moduleId, topicId, navigate) => {
 
   // Dynamic Landing Redirection Resolver Hook Mapping Path Bounds
   // Must land inside the persistent Orbit shell (Learn page), not the legacy
-  // chrome-less /modules route.
+  // chrome-less /modules route — and if this session started from a tag's
+  // filtered journey (?tag=&region=), exiting must return to that exact
+  // path, not just the tag's region-picker one level up.
   const getExitRedirectPath = () => {
-    return isExpressFlatTrack ? "/orbit/modules" : `/orbit/modules/${moduleId}/topics`;
+    const tagSuffix = buildTagSuffix(tagId, regionId);
+    return isExpressFlatTrack
+      ? buildLearnBackPath(tagId, regionId)
+      : `/orbit/modules/${moduleId}/topics${tagSuffix}`;
   };
 
   const [state, setState] = useState({

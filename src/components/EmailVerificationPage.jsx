@@ -5,9 +5,9 @@ import { Spinner, Card, Alert } from 'react-bootstrap';
 import { ShieldCheck, ExclamationTriangle, CheckCircleFill } from 'react-bootstrap-icons';
 import irisLogo from '../assets/irislogo.svg';
 import '../pages/Auth.css'; // Synced perfectly to global authentication theme
+import { API_BASE_URL as SERVER_API_BASE_URL } from '../admin/services/config';
 
-// ⚠️ API configuration bounds preserved
-const API_BASE_URL = 'http://localhost:5000/api/auth'; 
+const API_BASE_URL = `${SERVER_API_BASE_URL}/auth`;
 
 const EmailVerificationPage = () => {
     const { token } = useParams();
