@@ -13,6 +13,7 @@ import {
   Infinity as InfinityIcon,
   Grid3x3GapFill,
   ArrowDownUp,
+  ArrowRightCircle,
   PeopleFill,
 } from "react-bootstrap-icons";
 import api from "../services/api";
@@ -715,7 +716,12 @@ function TagRegionBrowser() {
 
           <Col md={7}>
             {selectedBucketRegion ? (
-              <TagRegionModulePanel tag={selectedTag} region={selectedBucketRegion} allRegionId={allRegionId} />
+              <TagRegionModulePanel
+                tag={selectedTag}
+                region={selectedBucketRegion}
+                allRegionId={allRegionId}
+                siblingRegions={buckets.filter((b) => !b.isDefault)}
+              />
             ) : (
               <div className="arm-panel"><div className="arm-empty">Select a bucket to manage its modules.</div></div>
             )}
@@ -733,7 +739,7 @@ function TagRegionBrowser() {
 // read-only "also visible here" list of this tag's modules that are
 // visible via the permanent All bucket instead — informational only, not
 // removable from here (matches the All region's own remove-is-blocked rule).
-function TagRegionModulePanel({ tag, region, allRegionId }) {
+function TagRegionModulePanel({ tag, region, allRegionId, siblingRegions = [] }) {
   const isAllBucket = !!region.isDefault;
   const [assigned, setAssigned] = useState([]);
   const [available, setAvailable] = useState([]);
@@ -743,6 +749,11 @@ function TagRegionModulePanel({ tag, region, allRegionId }) {
   const [pickId, setPickId] = useState("");
   const [busy, setBusy] = useState(false);
   const [showReorder, setShowReorder] = useState(false);
+  // Per-row "move out of All into a specific region" picks — All bucket
+  // membership is just an empty regions array, so there's nothing to $pull;
+  // the only meaningful way to remove a module from here is to give it a
+  // real region to live in instead (which naturally drops it out of All).
+  const [moveTargets, setMoveTargets] = useState({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -793,6 +804,26 @@ function TagRegionModulePanel({ tag, region, allRegionId }) {
     }
   };
 
+  // "Delete" a module out of the All bucket = assign it to the specific
+  // region the admin picked. Reuses the exact same endpoint the "available"
+  // picker below already calls — a non-empty regions array is what actually
+  // takes a module out of All, since All has no id of its own to $pull.
+  const moveOutOfAll = async (moduleId) => {
+    const targetRegionId = moveTargets[moduleId];
+    if (!targetRegionId) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api.addModuleToRegion(targetRegionId, moduleId);
+      setMoveTargets((prev) => { const next = { ...prev }; delete next[moduleId]; return next; });
+      await load();
+    } catch (err) {
+      setError(err.message || "Failed to move module out of \"All\".");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const bucketLabel = `${tag?.name || ""}-${isAllBucket ? "All" : (region.code || region.name)}`;
 
   return (
@@ -818,7 +849,32 @@ function TagRegionModulePanel({ tag, region, allRegionId }) {
               {assigned.map((mod, i) => (
                 <div key={mod._id} className="arm-list-row">
                   <span><span className="arm-badge me-2">{i + 1}</span>{mod.title}</span>
-                  {!isAllBucket && (
+                  {isAllBucket ? (
+                    siblingRegions.length > 0 && (
+                      <InputGroup size="sm" style={{ width: "auto", flexShrink: 0 }}>
+                        <Form.Select
+                          size="sm"
+                          value={moveTargets[mod._id] || ""}
+                          disabled={busy}
+                          onChange={(e) => setMoveTargets((prev) => ({ ...prev, [mod._id]: e.target.value }))}
+                          style={{ fontSize: 12, minWidth: 140 }}
+                        >
+                          <option value="">Move to region…</option>
+                          {siblingRegions.map((r) => (
+                            <option key={r._id} value={r._id}>{r.code || r.name}</option>
+                          ))}
+                        </Form.Select>
+                        <Button
+                          variant="outline-secondary"
+                          disabled={busy || !moveTargets[mod._id]}
+                          onClick={() => moveOutOfAll(mod._id)}
+                          title="Remove from All by moving it into the picked region"
+                        >
+                          <ArrowRightCircle size={13} />
+                        </Button>
+                      </InputGroup>
+                    )
+                  ) : (
                     <button type="button" className="arm-list-row__remove" disabled={busy} onClick={() => removeModule(mod._id)} title="Remove from this region">
                       <X size={15} />
                     </button>
@@ -850,6 +906,13 @@ function TagRegionModulePanel({ tag, region, allRegionId }) {
             <p className="arm-panel__hint">
               Only modules already tagged "{tag?.name}" can be added here — a module's tag is set in its own edit form.
             </p>
+            {isAllBucket && (
+              <p className="arm-panel__hint">
+                {siblingRegions.length > 0
+                  ? 'A module in "All" has no single region to remove it from — pick a region above to move it there instead, which takes it out of "All".'
+                  : 'Create at least one real region first to be able to move a module out of "All".'}
+              </p>
+            )}
           </div>
         </>
       )}
