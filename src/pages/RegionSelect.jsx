@@ -109,17 +109,19 @@ export default function RegionSelect() {
 
   return (
     <div style={{ maxWidth: 1240, margin: "0 auto", padding: "20px 28px 32px", display: "flex", flexDirection: "column", gap: 18 }}>
-      <div className="tag-context-bar">
-        <button type="button" className="tag-context-bar__back" onClick={() => navigate("/orbit/tags")} aria-label="Back to all tags">
-          <ArrowLeft size={15} />
-        </button>
-        <h2 className="tag-context-bar__current">{category?.name || "…"}</h2>
-      </div>
-      <p style={{ margin: 0, fontSize: 14, color: "var(--orbit-text-muted)" }}>
-        This tag offers different modules depending on region. Pick yours to see the right path.
-      </p>
+      <button type="button" className="rs-back-btn" onClick={() => navigate("/orbit/tags")}>
+        <ArrowLeft size={15} /> Back to Categories
+      </button>
 
-      {error && <p className="text-danger">{error}</p>}
+      <div className="rs-heading">
+        <span className="rs-heading__eyebrow">{category?.name || "…"}</span>
+        <h1 className="rs-heading__title">Choose Your Region</h1>
+        <p className="rs-heading__desc">
+          This category offers different modules depending on region. Pick yours to see the right path.
+        </p>
+      </div>
+
+      {error && <p className="text-danger" style={{ textAlign: "center" }}>{error}</p>}
 
       <div className="jf-region-grid">
         {(tiles || []).map((tile) => (

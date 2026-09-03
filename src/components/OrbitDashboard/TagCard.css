@@ -124,3 +124,65 @@
   letter-spacing: -0.2px;
   color: var(--orbit-text-heading);
 }
+
+/* ---------- Region picker header (Screen 2, RegionSelect.jsx) ----------
+   A real pill button (icon + label, not just a bare circle) so "go back" is
+   unmistakable, then a centered heading block below it — category name as
+   a small eyebrow, "Choose Your Region" as the actual page heading, and the
+   explainer paragraph under that. */
+.rs-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 9px 16px 9px 13px;
+  border: 1px solid var(--orbit-border);
+  border-radius: var(--radius-full);
+  background: var(--orbit-surface);
+  color: var(--orbit-text-body);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.rs-back-btn:hover,
+.rs-back-btn:focus-visible {
+  background: var(--orbit-brand);
+  border-color: var(--orbit-brand);
+  color: #fff;
+  transform: translateX(-2px);
+}
+
+.rs-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-width: 520px;
+  margin: 4px auto 0;
+  text-align: center;
+}
+
+.rs-heading__eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--orbit-brand);
+}
+
+.rs-heading__title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--orbit-text-heading);
+}
+
+.rs-heading__desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--orbit-text-muted);
+}

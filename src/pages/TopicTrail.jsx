@@ -177,7 +177,7 @@ export default function TopicTrail() {
                     className="topic-back-btn"
                     onClick={() => navigate(learnBackPath)}
                 >
-                    <ArrowLeft size={14} /> {tagId ? `Back to ${tagName || "Tag"}` : "Back to Learn"}
+                    <ArrowLeft size={14} /> {tagId ? `Back to ${tagName || "Category"}` : "Back to Learn"}
                 </button>
 
                 {/* ================= HERO HEADER =================

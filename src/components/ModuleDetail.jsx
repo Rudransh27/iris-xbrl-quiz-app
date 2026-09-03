@@ -148,7 +148,7 @@ export default function ModuleDetail() {
           className="detail-back-btn"
           onClick={() => navigate(tagId ? `/orbit/tags/${tagId}` : '/orbit/modules')}
         >
-          <ArrowLeft size={14} /> <span>{tagId ? `Back to ${tagName || "Tag"}` : "Back to Trails"}</span>
+          <ArrowLeft size={14} /> <span>{tagId ? `Back to ${tagName || "Category"}` : "Back to Trails"}</span>
         </button>
         
         <div className="module-detail-layout-split">

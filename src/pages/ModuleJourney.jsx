@@ -223,7 +223,7 @@ export default function ModuleJourney() {
   return (
     <div style={{ maxWidth: 1240, margin: "0 auto", padding: "20px 28px 32px", display: "flex", flexDirection: "column", gap: 8 }}>
       <div className="jf-breadcrumb">
-        <button type="button" onClick={() => navigate("/orbit/tags")}>Tags</button>
+        <button type="button" onClick={() => navigate("/orbit/tags")}>Categories</button>
         <span className="jf-breadcrumb__sep">›</span>
         <button type="button" onClick={() => navigate(`/orbit/tags/${categoryId}`)}>{category?.name || "…"}</button>
         <span className="jf-breadcrumb__sep">›</span>

@@ -1,10 +1,11 @@
 // src/pages/CategorySelect.jsx
 import React, { useState, useEffect, useMemo, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { TagFill, CollectionFill, Search, Globe2 } from "react-bootstrap-icons";
+import { TagFill, CollectionFill, Search, Globe2, JournalBookmarkFill } from "react-bootstrap-icons";
 import api from "../admin/services/api";
 import TagCard from "../components/OrbitDashboard/TagCard";
 import LabsComingSoon from "../components/OrbitDashboard/LabsComingSoon";
+import ComingSoonPanel from "../components/OrbitDashboard/ComingSoonPanel";
 import OrbitFooter from "../components/OrbitDashboard/OrbitFooter";
 import "../components/OrbitDashboard/OrbitDashboard.css";
 import "../components/OrbitDashboard/LearnHero.css";
@@ -23,10 +24,12 @@ export default function CategorySelect() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-  // Labs is an app-wide announcement, not tied to any one tag — it lives
-  // here, one level up from the per-tag module lists, instead of being
-  // repeated inside every single tag (where it used to sit).
-  const [view, setView] = useState("tags");
+  // Labs is an app-wide announcement, not tied to any one category — it
+  // lives here, one level up from the per-category module lists, instead of
+  // being repeated inside every single category (where it used to sit).
+  // Playbooks doesn't exist yet (no backend entity, no route) — it's a
+  // "coming soon" placeholder tab so the concept is visible while it's built.
+  const [view, setView] = useState("categories");
   const navigate = useNavigate();
 
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
@@ -51,7 +54,7 @@ export default function CategorySelect() {
         });
         setModuleCounts(counts);
       } catch (err) {
-        setError(err.message || "Failed to load tags.");
+        setError(err.message || "Failed to load categories.");
       } finally {
         setLoading(false);
       }
@@ -93,14 +96,14 @@ export default function CategorySelect() {
         <span className="learn-strip__eyebrow">Learn</span>
         <h1 className="learn-strip__title">Fuel Your Orbit</h1>
         <p className="learn-strip__subtitle">
-          Every module lives under one tag. Pick a tag to see what's inside, or browse everything at once.
+          Every module lives under one category. Pick a category to see what's inside, or browse everything at once.
         </p>
 
         <div className="learn-strip__stats">
           <div className="learn-strip__stat learn-strip__stat--teal">
             <TagFill size={13} />
             <span className="learn-strip__stat-num">{categories.length}</span>
-            <span className="learn-strip__stat-label">Tags</span>
+            <span className="learn-strip__stat-label">Categories</span>
           </div>
           <div className="learn-strip__stat learn-strip__stat--lavender">
             <CollectionFill size={13} />
@@ -111,12 +114,12 @@ export default function CategorySelect() {
       </div>
 
       <div className="orbit-ml-toolbar">
-        {view === "tags" && (
+        {view === "categories" && (
           <div className="orbit-learn-search orbit-learn-search--big">
             <Search size={16} />
             <input
               type="text"
-              placeholder="Search tags…"
+              placeholder="Search categories…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -129,16 +132,22 @@ export default function CategorySelect() {
         )}
         <div className="orbit-toggle orbit-toggle--pill">
           <button
-            className={`orbit-toggle__btn ${view === "tags" ? "orbit-toggle__btn--active" : ""}`}
-            onClick={() => setView("tags")}
+            className={`orbit-toggle__btn ${view === "categories" ? "orbit-toggle__btn--active" : ""}`}
+            onClick={() => setView("categories")}
           >
-            Tags
+            Categories
           </button>
           <button
             className={`orbit-toggle__btn ${view === "labs" ? "orbit-toggle__btn--active" : ""}`}
             onClick={() => setView("labs")}
           >
             Labs
+          </button>
+          <button
+            className={`orbit-toggle__btn ${view === "playbooks" ? "orbit-toggle__btn--active" : ""}`}
+            onClick={() => setView("playbooks")}
+          >
+            Playbooks
           </button>
         </div>
       </div>
@@ -147,11 +156,17 @@ export default function CategorySelect() {
 
       {view === "labs" ? (
         <LabsComingSoon />
+      ) : view === "playbooks" ? (
+        <ComingSoonPanel
+          icon={<JournalBookmarkFill size={26} />}
+          title="Playbooks — Coming Soon"
+          description="Step-by-step playbooks for real scenarios are on the way. Check back soon."
+        />
       ) : (
         <>
           {!loading && (
             <p className="orbit-ml-results-count">
-              {filteredCategories.length} tag{filteredCategories.length !== 1 ? "s" : ""}
+              {filteredCategories.length} categor{filteredCategories.length !== 1 ? "ies" : "y"}
             </p>
           )}
 
@@ -159,7 +174,7 @@ export default function CategorySelect() {
             <div className="orbit-ml-empty">
               <Globe2 size={26} />
               <p style={{ margin: 0 }}>
-                {search ? `No tags match "${search}".` : "No tags have been configured yet."}
+                {search ? `No categories match "${search}".` : "No categories have been configured yet."}
               </p>
             </div>
           ) : (

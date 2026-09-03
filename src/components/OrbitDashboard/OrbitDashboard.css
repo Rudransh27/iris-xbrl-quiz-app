@@ -1130,6 +1130,45 @@
   color: var(--orbit-lavender-text);
 }
 
+/* Generic centered "not built yet" placeholder — see ComingSoonPanel.jsx. */
+.orbit-coming-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+  max-width: 420px;
+  margin: 40px auto;
+  padding: 48px 24px;
+}
+
+.orbit-coming-soon__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--orbit-brand-muted);
+  color: var(--orbit-brand);
+}
+
+.orbit-coming-soon__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: var(--orbit-text-heading);
+}
+
+.orbit-coming-soon__desc {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--orbit-text-muted);
+}
+
 /* Labs — "coming soon" announcement list (not a filterable card grid; the
    labs program hasn't launched yet, see UPCOMING_LABS in
    ModulesLabsSection.jsx). */
