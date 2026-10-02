@@ -11,7 +11,6 @@ import {
   ExclamationTriangle,
   Files,
 } from "react-bootstrap-icons";
-import api from "../admin/services/api";
 import "./CodeCard.css";
 
 import "ace-builds/src-noconflict/mode-xml";
@@ -61,32 +60,12 @@ const CodeCard = ({
     return () => observer.disconnect();
   }, []);
 
-  const [hasRecorded, setHasRecorded] = useState(false);
+  // 🔒 SERVER-SIDE GRADING: this card used to POST its own completion via
+  // `api.post(...)` — a method the api module doesn't have, so it threw on
+  // every answer and was silently swallowed. Recording is (and always was)
+  // done by useQuizEngine, which now submits the answer for server grading;
+  // the card itself only renders.
 
-  useEffect(() => {
-    // Reset guard when card changes
-    setHasRecorded(false);
-  }, [cardId]);
-
-  useEffect(() => {
-    if (isCorrect === null || hasRecorded) return;
-
-    const recordAttempt = async () => {
-      try {
-        await api.post("/progress/card-completed", {
-          cardId,
-          topicId,
-          moduleId,
-          isCorrect,
-        });
-        setHasRecorded(true);
-      } catch (error) {
-        console.error("Failed to record code card completion:", error);
-      }
-    };
-
-    recordAttempt();
-  }, [isCorrect, cardId, topicId, moduleId]); // hasRecorded NOT in deps
   const handleCopy = (text, which) => {
     if (!navigator.clipboard) return;
     navigator.clipboard.writeText(text).then(() => {

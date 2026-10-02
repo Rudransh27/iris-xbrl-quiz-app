@@ -2,7 +2,6 @@
 import { useState, useEffect, useContext, useCallback, useRef } from "react";
 import api from "../admin/services/api";
 import AuthContext from "../context/AuthContext";
-import * as validators from "../utils/validators";
 import { buildTagSuffix, buildLearnBackPath } from "../utils/tagReturnPath";
 import Swal from "sweetalert2";
 
@@ -267,20 +266,18 @@ export const useQuizEngine = (moduleId, topicId, navigate, tagId, regionId) => {
           let backendResponse;
           const timeSpentDelta = Math.round((Date.now() - cardStartTimeRef.current) / 1000);
 
-          if (currentCard.card_type === "html_sandbox" && telemetryPayload) {
-            console.log(
-              "📡 Shipping custom simulation score weights to backend progress channels...",
-              telemetryPayload,
-            );
-            // We pass the structured payload dictionary containing feedback text rows into the submission layer
-            backendResponse = await api.recordCardCompletion(
-              currentCard._id,
-              isExpressFlatTrack ? "" : topicId,
-              moduleId,
-              true, // Marked true since submission requires complete execution path
-              telemetryPayload, // Pass extra text feedback object matrices safely down the wire
-              timeSpentDelta,
-            );
+          if (currentCard.card_type === "html_sandbox") {
+            // 🔒 SERVER-SIDE GRADING: the module's submission is graded and
+            // saved by Quiz.jsx the moment the module posts it. Only if that
+            // save never succeeded is it re-sent here (the server ignores
+            // any score the module computed; re-sending is XP-safe).
+            if (telemetryPayload && !telemetryPayload.saved) {
+              backendResponse = await api.submitSandbox(
+                currentCard._id,
+                telemetryPayload.textResponses?.questions || [],
+                timeSpentDelta,
+              );
+            }
           } else {
             // Standard passive knowledge card completion route
             backendResponse = await api.recordCardCompletion(
@@ -334,45 +331,30 @@ export const useQuizEngine = (moduleId, topicId, navigate, tagId, regionId) => {
     // =========================================================================
     // CASE B: Standard Check Verification Code Rails (Quizzes / Coding Sandbox Cards)
     // =========================================================================
-    let isCurrentCorrect = false;
-    let errorLog = null;
-
-    if (currentCard.card_type === "quiz") {
-      isCurrentCorrect =
-        state.selectedOption === currentCard.content.correctIndex;
-    } else if (currentCard.card_type === "code") {
-      try {
-        const validatorFn = validators[currentCard.content.validator];
-        if (validatorFn) {
-          const res = validatorFn(state.userCodeAnswer);
-          isCurrentCorrect = res.isCorrect;
-          errorLog = res.error;
-        }
-      } catch (err) {
-        errorLog = "Validation script failure.";
-      }
-    }
-
-    // 🎯 REVIEW MODE: persist the actual submitted answer alongside
-    // correctness so a later revisit/reopen can show a genuine read-only
-    // replay instead of a blank card.
+    // 🔒 SERVER-SIDE GRADING: the answer goes to the server, which decides
+    // correctness (and, for quiz cards, sends back the correct option and
+    // explanation only now, after grading). Nothing about correctness is
+    // computed — or trusted — on the client.
     let answerPayload = null;
     if (currentCard.card_type === "quiz") {
+      if (state.selectedOption === null || state.selectedOption === undefined) return;
       answerPayload = { selectedOption: state.selectedOption };
     } else if (currentCard.card_type === "code") {
-      answerPayload = { userCodeAnswer: state.userCodeAnswer };
+      answerPayload = { userCodeAnswer: state.userCodeAnswer || "" };
+    } else {
+      return;
     }
 
     try {
       const timeSpentDelta = Math.round((Date.now() - cardStartTimeRef.current) / 1000);
-      const backendResponse = await api.recordCardCompletion(
-        currentCard._id,
-        isExpressFlatTrack ? null : topicId,
-        moduleId,
-        isCurrentCorrect,
-        answerPayload,
-        timeSpentDelta,
-      );
+      const backendResponse = await api.gradeCardAttempt(currentCard._id, answerPayload, timeSpentDelta);
+
+      const isCurrentCorrect = backendResponse?.isCorrect === true;
+      const errorLog = backendResponse?.validationError || null;
+      const revealed = {
+        correctIndex: backendResponse?.correctIndex,
+        explanation: backendResponse?.explanation ?? null,
+      };
 
       const verifiedXpChange =
         backendResponse?.xpChange ?? backendResponse?.data?.xpChange ?? 0;
@@ -421,11 +403,19 @@ export const useQuizEngine = (moduleId, topicId, navigate, tagId, regionId) => {
             isCorrect: isCurrentCorrect,
             selectedOption: currentCard.card_type === "quiz" ? state.selectedOption : (prev.progressByCardId[currentCard._id]?.selectedOption ?? null),
             userCodeAnswer: currentCard.card_type === "code" ? state.userCodeAnswer : (prev.progressByCardId[currentCard._id]?.userCodeAnswer ?? ""),
+            ...(revealed.correctIndex !== undefined ? { correctIndex: revealed.correctIndex } : {}),
+            explanation: revealed.explanation,
           }),
         };
       });
     } catch (err) {
       console.error("Progression synchronization failure:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Answer not saved",
+        text: err?.message || "We couldn't reach the server to check your answer. Please try again.",
+        confirmButtonColor: "#6f5fc0",
+      });
     }
   };
 

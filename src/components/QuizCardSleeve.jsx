@@ -27,9 +27,15 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
       );
     }
 
+    // 🔒 SERVER-SIDE GRADING: learners never receive the answer key with the
+    // card. The correct option / explanation arrive in the server's grading
+    // response (or Review Mode, for an already-answered card) and are kept
+    // on progressByCardId; card content only carries them for admins.
+    const revealed = state.progressByCardId?.[currentCard._id] || {};
+
     if (currentCard.card_type === "quiz") {
-      const rawCorrectIndex = currentCard.content?.correctIndex;
-      const cleanCorrectIndex = rawCorrectIndex !== undefined ? Number(rawCorrectIndex) : 0;
+      const rawCorrectIndex = revealed.correctIndex ?? currentCard.content?.correctIndex;
+      const cleanCorrectIndex = rawCorrectIndex !== undefined && rawCorrectIndex !== null ? Number(rawCorrectIndex) : null;
       const cleanSelectedOption = state.selectedOption !== null ? Number(state.selectedOption) : null;
 
       return (
@@ -44,7 +50,7 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
           }}
           answered={state.answered}
           isCorrect={state.isCorrect}
-          explanation={currentCard.content?.explanation}
+          explanation={state.answered ? (revealed.explanation ?? currentCard.content?.explanation) : null}
           quizImage={currentCard.imageUrl}
         />
       );
@@ -57,7 +63,7 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
           taxonomyCode={currentCard.content?.taxonomy}
           instanceCode={currentCard.content?.code}
           question={currentCard.content?.question}
-          explanation={state.answered && state.isCorrect ? currentCard.content?.explanation : null}
+          explanation={state.answered && state.isCorrect ? (revealed.explanation ?? currentCard.content?.explanation) : null}
           hint={currentCard.content?.hint}
           userAnswer={state.userCodeAnswer}
           onAnswer={state.answered ? () => {} : (code) => updateFields('userCodeAnswer', code)}

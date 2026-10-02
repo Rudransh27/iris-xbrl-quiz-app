@@ -112,6 +112,43 @@ async function getModuleScopeState(moduleId, topicId) {
   }
 }
 
+// ---------------- Server-side grading ----------------
+// The browser sends ANSWERS only; the server grades, awards XP and returns
+// the verdict (plus, for quiz cards, the correct option + explanation —
+// revealed only after grading).
+async function postGrading(path, body) {
+  const response = await apiFetch(`${API_BASE_URL}/grading${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    body: JSON.stringify(body),
+  });
+  return handleFetchResponse(response);
+}
+
+// quiz: answer = { selectedOption }   code: answer = { userCodeAnswer }
+async function gradeCardAttempt(cardId, answer, timeSpentDelta = 0) {
+  const idempotencyKey = (globalThis.crypto && globalThis.crypto.randomUUID)
+    ? globalThis.crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return postGrading(`/cards/${cardId}/attempt`, { answer, idempotencyKey, timeSpentDelta });
+}
+
+// One answer captured by the in-page bridge of an HTML module.
+async function recordSandboxAnswer(cardId, qid, chosen) {
+  return postGrading(`/cards/${cardId}/sandbox-answer`, { qid, chosen });
+}
+
+// The HTML module's final submission. Only {id, userAnswer, ...} per
+// question matter — any score/isCorrect the module computed is ignored.
+async function submitSandbox(cardId, questions, timeSpentDelta = 0) {
+  return postGrading(`/cards/${cardId}/sandbox-submit`, { questions, timeSpentDelta });
+}
+
+// Admin: what will grading detect in this HTML? → { ok, summary } | { ok:false, error }
+async function previewSandboxKey(htmlSource) {
+  return postGrading('/admin/preview-key', { htmlSource });
+}
+
 // 🎯 REATTEMPT: learner self-service reset — archives this module's/topic's
 // progress, claws back its XP, and returns a clean slate.
 async function resetModuleProgress(moduleId, topicId) {
@@ -522,6 +559,10 @@ const api = {
   getUserProgress,
   getModuleScopeState,
   resetModuleProgress,
+  gradeCardAttempt,
+  recordSandboxAnswer,
+  submitSandbox,
+  previewSandboxKey,
   login,
   register,
   verifyEmail,

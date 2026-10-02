@@ -41,6 +41,10 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState('');
+  // 🔒 SERVER-SIDE GRADING: what the server detects in the HTML as its
+  // answer key — previewed live while editing; an ungradable module can't be saved.
+  const [gradingPreview, setGradingPreview] = useState(null); // { ok, summary } | { ok:false, error } | null
+  const [checkingGrading, setCheckingGrading] = useState(false);
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
@@ -124,10 +128,31 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
     }
   };
 
+  useEffect(() => {
+    if (!htmlSource.trim()) { setGradingPreview(null); return undefined; }
+    let cancelled = false;
+    setCheckingGrading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const result = await api.previewSandboxKey(htmlSource);
+        if (!cancelled) setGradingPreview(result);
+      } catch (err) {
+        if (!cancelled) setGradingPreview({ ok: false, error: err.message || 'Could not check grading.' });
+      } finally {
+        if (!cancelled) setCheckingGrading(false);
+      }
+    }, 600);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [htmlSource]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title) { setError('Module name is mandatory.'); return; }
     if (!htmlSource.trim()) { setError('The raw HTML payload cannot be empty.'); return; }
+    if (gradingPreview && gradingPreview.ok === false) {
+      setError(`This module can't be graded yet: ${gradingPreview.error}`);
+      return;
+    }
     if (uploadingImage) { setError('Please wait for the image upload to finish.'); return; }
 
     if (visibility !== 'Global' && selectedDepartments.length === 0) {
@@ -158,13 +183,11 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
     };
 
     try {
-      if (editData) {
-        await api.updateModule(editData._id, modulePayload);
-        setSuccess('HTML Sandbox Module updated successfully!');
-      } else {
-        await api.createModule(modulePayload);
-        setSuccess('HTML Sandbox Module created successfully!');
-      }
+      const saved = editData
+        ? await api.updateModule(editData._id, modulePayload)
+        : await api.createModule(modulePayload);
+      const detected = saved?.gradingSummary?.label ? ` Grading: ${saved.gradingSummary.label}.` : '';
+      setSuccess(`HTML Sandbox Module ${editData ? 'updated' : 'created'} successfully!${detected}`);
 
       setTitle(''); setDescription(''); setImageUrl('');
       setSelectedDepartments([]); setSelectedTeamIds([]); setVisibility('Global');
@@ -415,10 +438,17 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
             />
           </div>
           <small className="text-muted">Paste the complete standalone HTML document — including &lt;style&gt; and &lt;script&gt; blocks — exactly as it should run inside the sandboxed iframe.</small>
+          {htmlSource.trim() && (
+            <div className={`mt-2 small fw-semibold ${gradingPreview?.ok ? 'text-success' : gradingPreview ? 'text-danger' : 'text-muted'}`}>
+              {checkingGrading && !gradingPreview && <><Spinner animation="border" size="sm" className="me-2" />Checking how this module will be graded…</>}
+              {gradingPreview?.ok && <>✓ Server grading detected: {gradingPreview.summary.label}</>}
+              {gradingPreview && gradingPreview.ok === false && <>✗ Not gradable: {gradingPreview.error}</>}
+            </div>
+          )}
         </Form.Group>
 
         <div className="d-flex gap-2">
-          <Button type="submit" className="admin-btn-primary px-4 d-flex align-items-center justify-content-center" disabled={loading || uploadingImage} style={{ backgroundColor: '#0f256e', borderColor: '#0f256e' }}>
+          <Button type="submit" className="admin-btn-primary px-4 d-flex align-items-center justify-content-center" disabled={loading || uploadingImage || (gradingPreview && gradingPreview.ok === false)} style={{ backgroundColor: '#0f256e', borderColor: '#0f256e' }}>
             {loading ? <Spinner animation="border" size="sm" /> : editData ? 'Apply Changes' : 'Create HTML Sandbox Module'}
           </Button>
           <Button type="button" variant="light" className="border px-4 fw-semibold btn-sm text-secondary" onClick={() => setActiveTab('overview')} disabled={loading || uploadingImage} style={{ borderRadius: '6px' }}>
