@@ -1,0 +1,92 @@
+/* src/components/OrbitDashboard/PathFlow.css
+   Learn → Tag → Path pages (PathSelect, PathCheck) and the Pre/Post stops on
+   the journey. Uses the shared --orbit-* tokens so light/dark themes work. */
+
+.pf-wrap { max-width: 1240px; margin: 0 auto; padding: 20px 28px 32px; display: flex; flex-direction: column; gap: 18px; }
+.pf-narrow { max-width: 760px; }
+
+.pf-back {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: none; color: var(--orbit-text-muted); font-weight: 600; font-size: 13px; cursor: pointer; padding: 4px 0;
+}
+.pf-back:hover { color: var(--orbit-brand); }
+
+.pf-heading__eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--orbit-brand); }
+.pf-heading__title { font-size: 26px; font-weight: 800; color: var(--orbit-text-heading); margin: 4px 0 6px; }
+.pf-heading__desc { font-size: 14px; color: var(--orbit-text-muted); margin: 0; max-width: 640px; }
+
+/* ---- Path cards ---- */
+.pf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.pf-card {
+  text-align: left; background: var(--orbit-surface); border: 1px solid var(--orbit-border); border-radius: 16px;
+  padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 10px; cursor: pointer;
+  box-shadow: var(--orbit-shadow-sm); transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.pf-card:hover { transform: translateY(-2px); box-shadow: var(--orbit-shadow-md); border-color: var(--orbit-brand); }
+.pf-card:focus-visible { outline: 2px solid var(--orbit-brand); outline-offset: 2px; }
+.pf-card__name { font-size: 16px; font-weight: 800; color: var(--orbit-text-heading); margin: 0; }
+.pf-card__desc { font-size: 13px; color: var(--orbit-text-muted); margin: 0; line-height: 1.45; }
+.pf-card__meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.pf-chip {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+  background: var(--orbit-surface-subtle); color: var(--orbit-text-body); border: 1px solid var(--orbit-border);
+}
+.pf-chip--brand { color: var(--orbit-brand); border-color: var(--orbit-brand-muted); }
+.pf-chip--done { color: #0f7a4c; border-color: rgba(15, 122, 76, .35); background: rgba(61, 220, 151, .12); }
+.pf-progress { height: 8px; border-radius: 999px; background: var(--orbit-surface-subtle); overflow: hidden; }
+.pf-progress__bar { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--orbit-teal), var(--orbit-brand)); transition: width .4s ease; }
+.pf-card__foot { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--orbit-text-muted); }
+.pf-card__cta { font-weight: 800; color: var(--orbit-brand); }
+
+.pf-empty {
+  text-align: center; padding: 40px 16px; color: var(--orbit-text-muted); background: var(--orbit-surface);
+  border: 1px dashed var(--orbit-border); border-radius: 16px;
+}
+
+/* ---- Pre / Post check page ---- */
+.pc-panel { background: var(--orbit-surface); border: 1px solid var(--orbit-border); border-radius: 18px; padding: 22px; box-shadow: var(--orbit-shadow-sm); }
+.pc-intro { display: flex; flex-direction: column; gap: 6px; }
+.pc-intro p { margin: 0; color: var(--orbit-text-muted); font-size: 14px; line-height: 1.5; }
+.pc-progress { font-size: 12px; font-weight: 700; color: var(--orbit-text-muted); }
+.pc-q { display: flex; flex-direction: column; gap: 10px; padding: 16px 0; border-top: 1px solid var(--orbit-border); }
+.pc-q:first-of-type { border-top: none; }
+.pc-q__text { font-weight: 700; color: var(--orbit-text-heading); font-size: 15px; margin: 0; line-height: 1.45; }
+.pc-q__num { color: var(--orbit-brand); margin-right: 6px; }
+.pc-opt {
+  display: flex; align-items: flex-start; gap: 10px; width: 100%; text-align: left; padding: 11px 14px; border-radius: 12px;
+  border: 1.5px solid var(--orbit-border); background: var(--orbit-surface); color: var(--orbit-text-body); font-size: 14px; cursor: pointer;
+}
+.pc-opt:hover { border-color: var(--orbit-brand); }
+.pc-opt--selected { border-color: var(--orbit-brand); background: var(--orbit-surface-subtle); font-weight: 600; }
+.pc-opt--correct { border-color: #1a9a5e; background: rgba(61, 220, 151, .12); }
+.pc-opt--wrong { border-color: #d64545; background: rgba(214, 69, 69, .08); }
+.pc-opt:disabled { cursor: default; }
+.pc-opt__key {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; background: var(--orbit-surface-subtle); color: var(--orbit-text-muted);
+}
+.pc-explain { font-size: 13px; color: var(--orbit-text-muted); margin: 0; }
+.pc-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; padding-top: 12px; }
+.pc-btn {
+  border: none; border-radius: 12px; padding: 11px 20px; font-weight: 800; font-size: 14px; cursor: pointer;
+  background: var(--orbit-brand); color: #fff;
+}
+.pc-btn:disabled { opacity: .55; cursor: not-allowed; }
+.pc-btn--ghost { background: transparent; color: var(--orbit-text-body); border: 1px solid var(--orbit-border); }
+.pc-error { color: #c0392b; font-size: 13px; margin: 0; }
+
+.pc-result { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.pc-result__score { font-size: 52px; font-weight: 900; color: var(--orbit-text-heading); line-height: 1; }
+.pc-result__line { font-size: 16px; color: var(--orbit-text-body); margin: 0; }
+.pc-result__line strong { color: var(--orbit-brand); }
+.pc-result__xp { font-size: 13px; font-weight: 800; color: var(--orbit-xp-text, var(--orbit-brand)); }
+
+/* ---- Pre/Post stops on the journey ---- */
+.jf-node__bubble--check .jf-node__face { font-size: 11px; font-weight: 900; letter-spacing: .04em; }
+.jf-node-label--check { font-weight: 800; }
+
+@media (max-width: 640px) {
+  .pf-wrap { padding: 16px; }
+  .pf-heading__title { font-size: 22px; }
+  .pc-panel { padding: 16px; }
+}

@@ -51,13 +51,14 @@ const Quiz = () => {
   // (or, missing the region, the region-picker one level up from it).
   const tagId = new URLSearchParams(location.search).get("tag");
   const regionParam = new URLSearchParams(location.search).get("region");
+  const pathParam = new URLSearchParams(location.search).get("path");
 
   // Must land inside the persistent Orbit shell (Learn page), not the legacy
   // chrome-less /modules route.
   const getExitRedirectPath = () => {
-    const tagSuffix = buildTagSuffix(tagId, regionParam);
+    const tagSuffix = buildTagSuffix(tagId, regionParam, pathParam);
     return isExpressFlatModule
-      ? buildLearnBackPath(tagId, regionParam)
+      ? buildLearnBackPath(tagId, regionParam, pathParam)
       : `/orbit/modules/${moduleId}/topics${tagSuffix}`;
   };
 
@@ -73,7 +74,7 @@ const Quiz = () => {
     resetModule,
     isCardReached,
     isCardCorrect,
-  } = useQuizEngine(moduleId, topicId, navigate, tagId, regionParam);
+  } = useQuizEngine(moduleId, topicId, navigate, tagId, regionParam, pathParam);
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 

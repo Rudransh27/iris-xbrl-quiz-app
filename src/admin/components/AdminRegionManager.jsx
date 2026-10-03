@@ -11,7 +11,6 @@ import {
   Collection,
   X,
   Infinity as InfinityIcon,
-  Grid3x3GapFill,
   ArrowDownUp,
   ArrowRightCircle,
   PeopleFill,
@@ -40,7 +39,10 @@ export default function AdminRegionManager() {
   // read-only-content-wise view — see RegionMappingPanel below). "user" is
   // per-LEARNER region scoping — which region(s) restrict what THAT person
   // sees, same field they can also self-manage from their own profile.
-  const [viewMode, setViewMode] = useState("tag");
+  // 🧭 PATHS: "By Tag" (placing modules into Tag x Region buckets + their
+  // order) is replaced by Path audiences (Tags tab → Paths). Its view is
+  // hidden, not deleted — region admin and per-user regions stay here.
+  const [viewMode, setViewMode] = useState("region");
 
   return (
     <div>
@@ -59,13 +61,6 @@ export default function AdminRegionManager() {
       <div className="arm-toggle">
         <button
           type="button"
-          className={`arm-toggle__btn ${viewMode === "tag" ? "arm-toggle__btn--active" : ""}`}
-          onClick={() => setViewMode("tag")}
-        >
-          <Grid3x3GapFill size={13} /> By Tag
-        </button>
-        <button
-          type="button"
           className={`arm-toggle__btn ${viewMode === "region" ? "arm-toggle__btn--active" : ""}`}
           onClick={() => setViewMode("region")}
         >
@@ -80,6 +75,9 @@ export default function AdminRegionManager() {
         </button>
       </div>
 
+      <p className="small text-muted mt-2 mb-3">
+        Which modules a region's learners get is now set per path: Tags tab → <strong>Paths</strong> → Audience.
+      </p>
       {viewMode === "tag" && <TagRegionBrowser />}
       {viewMode === "region" && <RegionAdminView isSuperAdmin={isSuperAdmin} />}
       {viewMode === "user" && <UserRegionBrowser isSuperAdmin={isSuperAdmin} />}

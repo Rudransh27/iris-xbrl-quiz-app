@@ -589,6 +589,173 @@ const api = {
   createNewsPost, 
  
   // Add this method inside your api = { ... } object
+// ---------------- Learn: Tag → Path → modules ----------------
+  getLearnTags: async () => {
+    const response = await apiFetch(`${API_BASE_URL}/learn/tags`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getLearnTagPaths: async (categoryId) => {
+    const response = await apiFetch(`${API_BASE_URL}/learn/tags/${categoryId}/paths`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getLearnPath: async (pathId) => {
+    const response = await apiFetch(`${API_BASE_URL}/learn/paths/${pathId}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getLegacyPath: async (categoryId, regionId) => {
+    const qs = new URLSearchParams({ categoryId, ...(regionId ? { regionId } : {}) }).toString();
+    const response = await apiFetch(`${API_BASE_URL}/learn/legacy-path?${qs}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+
+  // ---------------- Pre/Post checks (learner) ----------------
+  getPathCheck: async (pathId, kind) => {
+    const response = await apiFetch(`${API_BASE_URL}/assessments/paths/${pathId}/${kind}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  submitPathCheck: async (pathId, kind, answers) => {
+    const response = await apiFetch(`${API_BASE_URL}/assessments/paths/${pathId}/${kind}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify({ answers }),
+    });
+    return handleFetchResponse(response);
+  },
+  getPathCheckResult: async (pathId) => {
+    const response = await apiFetch(`${API_BASE_URL}/assessments/paths/${pathId}/result`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+
+  // ---------------- Path builder (admin) ----------------
+  getAdminPaths: async (categoryId) => {
+    const qs = categoryId ? `?categoryId=${categoryId}` : '';
+    const response = await apiFetch(`${API_BASE_URL}/paths${qs}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  createPath: async (payload) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify(payload),
+    });
+    return handleFetchResponse(response);
+  },
+  updatePath: async (pathId, payload) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify(payload),
+    });
+    return handleFetchResponse(response);
+  },
+  publishPath: async (pathId, published) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}/publish`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ published }),
+    });
+    return handleFetchResponse(response);
+  },
+  duplicatePath: async (pathId) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}/duplicate`, { method: 'POST', headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  deletePath: async (pathId) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}`, { method: 'DELETE', headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  reorderPaths: async (categoryId, pathIds) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/reorder`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ categoryId, pathIds }),
+    });
+    return handleFetchResponse(response);
+  },
+  // Pre/Post test of a path (built from the module question bank)
+  getPathForm: async (pathId) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}/form`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  generatePathForm: async (pathId, perModule) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}/form/generate`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ perModule }),
+    });
+    return handleFetchResponse(response);
+  },
+  swapPathFormQuestion: async (pathId, kind, questionId) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}/form/swap`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ kind, questionId }),
+    });
+    return handleFetchResponse(response);
+  },
+  lockPathForm: async (pathId) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}/form/lock`, { method: 'POST', headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+
+  // ---------------- Question bank (admin) ----------------
+  getBankModules: async (search = '') => {
+    const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+    const response = await apiFetch(`${API_BASE_URL}/bank/modules${qs}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getBankQuestions: async (moduleId, status) => {
+    const qs = status ? `?status=${status}` : '';
+    const response = await apiFetch(`${API_BASE_URL}/bank/modules/${moduleId}/questions${qs}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  createBankQuestion: async (moduleId, payload) => {
+    const response = await apiFetch(`${API_BASE_URL}/bank/modules/${moduleId}/questions`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify(payload),
+    });
+    return handleFetchResponse(response);
+  },
+  updateBankQuestion: async (questionId, payload) => {
+    const response = await apiFetch(`${API_BASE_URL}/bank/questions/${questionId}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify(payload),
+    });
+    return handleFetchResponse(response);
+  },
+  approveBankQuestion: async (questionId) => {
+    const response = await apiFetch(`${API_BASE_URL}/bank/questions/${questionId}/approve`, { method: 'POST', headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  deleteBankQuestion: async (questionId) => {
+    const response = await apiFetch(`${API_BASE_URL}/bank/questions/${questionId}`, { method: 'DELETE', headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  importBankQuestions: async (rows, dryRun) => {
+    const response = await apiFetch(`${API_BASE_URL}/bank/import`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ rows, dryRun }),
+    });
+    return handleFetchResponse(response);
+  },
+  aiDraftBankQuestions: async (moduleId, count) => {
+    const response = await apiFetch(`${API_BASE_URL}/bank/modules/${moduleId}/ai-draft`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ count }),
+    });
+    return handleFetchResponse(response);
+  },
+  getPrePostReport: async (params = {}) => {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
+    const response = await apiFetch(`${API_BASE_URL}/assessments/admin/report${qs ? `?${qs}` : ''}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getPrePostPathReport: async (pathId, params = {}) => {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
+    const response = await apiFetch(`${API_BASE_URL}/assessments/admin/report/paths/${pathId}${qs ? `?${qs}` : ''}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  downloadPrePostCsv: async (pathId, params = {}) => {
+    const qs = new URLSearchParams({ ...Object.fromEntries(Object.entries(params).filter(([, v]) => v)), format: 'csv' }).toString();
+    const url = pathId
+      ? `${API_BASE_URL}/assessments/admin/report/paths/${pathId}?${qs}`
+      : `${API_BASE_URL}/assessments/admin/report?${qs}`;
+    const response = await apiFetch(url, { headers: getAuthHeader() });
+    if (!response.ok) throw new Error('CSV export failed.');
+    const blob = await response.blob();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = pathId ? 'pre-post-path.csv' : 'pre-post-report.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  },
+
 getWorkspaceCurriculum: async (categoryId, regionId) => {
   const params = new URLSearchParams();
   if (categoryId) params.set('categoryId', categoryId);

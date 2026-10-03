@@ -21,6 +21,9 @@ import AdminTeamDashboard from "./components/AdminTeamDashboard";
 import AdminIdeasReview from "./components/AdminIdeasReview";
 import AdminPlatformAnalytics from "./components/AdminPlatformAnalytics";
 import AdminUserAnalytics from "./AdminUserAnalytics";
+import AdminPrePostReport from "./components/AdminPrePostReport";
+import AdminLearningPaths from "./components/AdminLearningPaths";
+import AdminQuestionBank from "./components/AdminQuestionBank";
 import AdminProgressDashboard from "./components/AdminProgressDashboard";
 import AdminCategoryManager from "./components/AdminCategoryManager";
 import AdminRegionManager from "./components/AdminRegionManager";
@@ -43,6 +46,9 @@ const TAB_TITLES = {
   "user-analytics": "User Analytics",
   "progress-dashboard": "Progress Dashboard",
   tags: "Tags",
+  "learning-paths": "Learning Paths",
+  "question-bank": "Question Bank",
+  "prepost-report": "Pre/Post Report",
   regions: "Regions",
 };
 
@@ -52,6 +58,15 @@ export default function Dashboard1() {
   // 🚀 Default landing is the launcher home — "overview" (Curriculum Map) is
   // now just one of its tiles, reached the same way every other tile is.
   const [activeTab, setActiveTab] = useState("launcher");
+  // Learning Paths ⇄ Question Bank hand-off: the path wizard's "Open bank"
+  // jumps to a module's bank, and "Back to the path" returns to its step 4.
+  const [pathsWizard, setPathsWizard] = useState(null);
+  const [pathsTagFilter, setPathsTagFilter] = useState("");
+  const [bankModuleId, setBankModuleId] = useState("");
+  const [bankReturnPathId, setBankReturnPathId] = useState(null);
+  useEffect(() => {
+    if (activeTab !== "learning-paths" && activeTab !== "question-bank") setPathsWizard(null);
+  }, [activeTab]);
   const [modulesList, setModulesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -272,7 +287,32 @@ export default function Dashboard1() {
               <AdminProgressDashboard />
             )}
             {activeTab === "tags" && (
-              <AdminCategoryManager />
+              <AdminCategoryManager
+                onOpenPaths={(tag) => { setPathsTagFilter(tag._id); setPathsWizard(null); setActiveTab("learning-paths"); }}
+              />
+            )}
+            {activeTab === "learning-paths" && (
+              <AdminLearningPaths
+                key={pathsTagFilter || "all"}
+                initialCategoryId={pathsTagFilter}
+                wizardState={pathsWizard}
+                setWizardState={setPathsWizard}
+                onOpenBank={(moduleId, pathId) => { setBankModuleId(moduleId); setBankReturnPathId(pathId); setActiveTab("question-bank"); }}
+              />
+            )}
+            {activeTab === "question-bank" && (
+              <AdminQuestionBank
+                key={bankModuleId || "bank"}
+                initialModuleId={bankModuleId}
+                onBack={bankReturnPathId ? () => {
+                  setPathsWizard({ pathId: bankReturnPathId, step: 4 });
+                  setBankReturnPathId(null);
+                  setActiveTab("learning-paths");
+                } : undefined}
+              />
+            )}
+            {activeTab === "prepost-report" && (
+              <AdminPrePostReport />
             )}
             {activeTab === "regions" && (
               <AdminRegionManager />

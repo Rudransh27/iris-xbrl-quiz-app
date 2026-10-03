@@ -37,6 +37,20 @@ export default function CategorySelect() {
   useEffect(() => {
     (async () => {
       try {
+        // 🧭 PATHS: Tags come from /learn/tags — only Tags that hold at least
+        // one Path meant for this learner, with module counts across those
+        // Paths. Falls back to the old category list until Paths exist.
+        const learn = await api.getLearnTags().catch(() => null);
+        if (learn?.pathsEnabled) {
+          const tags = learn.data || [];
+          setCategories(tags);
+          const counts = {};
+          tags.forEach((t) => { counts[t._id] = t.moduleCount; });
+          setModuleCounts(counts);
+          setTotalModules(tags.reduce((sum, t) => sum + (t.moduleCount || 0), 0));
+          return;
+        }
+
         const [catRes, moduleRes] = await Promise.all([
           api.getCategories(),
           api.getWorkspaceCurriculum().catch(() => null),
@@ -96,7 +110,7 @@ export default function CategorySelect() {
         <span className="learn-strip__eyebrow">Learn</span>
         <h1 className="learn-strip__title">Fuel Your Orbit</h1>
         <p className="learn-strip__subtitle">
-          Every module lives under one category. Pick a category to see what's inside, or browse everything at once.
+          Pick a category to see the learning paths inside it.
         </p>
 
         <div className="learn-strip__stats">

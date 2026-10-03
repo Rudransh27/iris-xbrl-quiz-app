@@ -3,7 +3,7 @@ import React from 'react';
 import {
   Grid, BarChartLine, People, Lightbulb, GraphUp, Shield,
   Collection, CpuFill, FolderPlus, FileEarmarkPlus, Book, Broadcast, TagFill,
-  GlobeAmericas,
+  GlobeAmericas, ClipboardCheck, SignpostSplit, QuestionCircle,
 } from 'react-bootstrap-icons';
 
 // One accent color per tile, used only to tint the small icon chip (the
@@ -13,13 +13,16 @@ import {
 // second hardcoded value per tile).
 const VIEWS = [
   { key: 'overview', label: 'Curriculum Map', desc: 'Browse and manage every module, topic, and card.', Icon: Grid, accent: '#0f256e' },
-  { key: 'tags', label: 'Tags', desc: 'Create, edit, and scope the tags used to group modules on the Learn page.', Icon: TagFill, accent: '#d63384' },
-  { key: 'regions', label: 'Regions', desc: 'Create regions and map which tags/modules each one offers.', Icon: GlobeAmericas, accent: '#2563eb' },
+  { key: 'learning-paths', label: 'Learning Paths', desc: 'Build paths step by step: modules, who sees them, Pre/Post check, publish.', Icon: SignpostSplit, accent: '#6f42c1' },
+  { key: 'question-bank', label: 'Question Bank', desc: 'Pre/Post questions per module — write them or import from Excel.', Icon: QuestionCircle, accent: '#0d9488' },
+  { key: 'tags', label: 'Tags', desc: 'The categories that group paths on the Learn page.', Icon: TagFill, accent: '#d63384' },
+  { key: 'regions', label: 'Regions', desc: 'Create regions and set which region(s) each learner belongs to.', Icon: GlobeAmericas, accent: '#2563eb' },
   { key: 'metrics-grid', label: 'Metrics Activity Deck', desc: 'A wireframe overview of platform activity at a glance.', Icon: BarChartLine, accent: '#3a86ff' },
   { key: 'create-team', label: 'Team Hub', desc: 'Teams, admins, rosters, and member reassignment requests.', Icon: People, accent: '#06d6a0' },
   { key: 'ideas-review', label: 'Ideas Inbox', desc: 'Review and curate ideas submitted by learners.', Icon: Lightbulb, accent: '#ffbe0b' },
   { key: 'user-analytics', label: 'User Analytics', desc: 'Grading, CSV import/export, and per-user progress.', Icon: GraphUp, accent: '#8338ec' },
   { key: 'progress-dashboard', label: 'Progress Dashboard', desc: 'Track completion across modules and topics.', Icon: BarChartLine, accent: '#fb5607' },
+  { key: 'prepost-report', label: 'Pre/Post Report', desc: 'How much learners improved on each path, from Pre-check to Post-check.', Icon: ClipboardCheck, accent: '#0f7a4c' },
 ];
 
 const PLATFORM_ANALYTICS_TILE = {

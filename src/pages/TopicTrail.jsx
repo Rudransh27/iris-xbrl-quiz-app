@@ -33,8 +33,9 @@ export default function TopicTrail() {
     // level up from where the learner actually was.
     const tagId = new URLSearchParams(location.search).get("tag");
     const regionParam = new URLSearchParams(location.search).get("region");
-    const tagSuffix = buildTagSuffix(tagId, regionParam);
-    const learnBackPath = buildLearnBackPath(tagId, regionParam);
+    const pathParam = new URLSearchParams(location.search).get("path");
+    const tagSuffix = buildTagSuffix(tagId, regionParam, pathParam);
+    const learnBackPath = buildLearnBackPath(tagId, regionParam, pathParam);
     const [tagName, setTagName] = useState(null);
 
     useEffect(() => {

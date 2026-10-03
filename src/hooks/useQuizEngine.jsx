@@ -40,7 +40,7 @@ const markCardReached = (progressByCardId, cardId, patch) => ({
   [cardId]: { ...(progressByCardId[cardId] || {}), attempted: true, ...patch },
 });
 
-export const useQuizEngine = (moduleId, topicId, navigate, tagId, regionId) => {
+export const useQuizEngine = (moduleId, topicId, navigate, tagId, regionId, pathId) => {
   const { addUserXP, refreshUser, celebrateStreakAction } = useContext(AuthContext);
 
   // Normalize checking whether the layout parameters route identifies a Flat/Express Module path
@@ -53,9 +53,9 @@ export const useQuizEngine = (moduleId, topicId, navigate, tagId, regionId) => {
   // filtered journey (?tag=&region=), exiting must return to that exact
   // path, not just the tag's region-picker one level up.
   const getExitRedirectPath = () => {
-    const tagSuffix = buildTagSuffix(tagId, regionId);
+    const tagSuffix = buildTagSuffix(tagId, regionId, pathId);
     return isExpressFlatTrack
-      ? buildLearnBackPath(tagId, regionId)
+      ? buildLearnBackPath(tagId, regionId, pathId)
       : `/orbit/modules/${moduleId}/topics${tagSuffix}`;
   };
 

@@ -31,7 +31,9 @@ import DailyReadReader from "./pages/DailyReadReader";
 import OrbitShell from "./components/OrbitShell";
 import OrbitOnboarding from "./pages/OrbitOnboarding";
 import CategorySelect from "./pages/CategorySelect";
-import RegionSelect from "./pages/RegionSelect";
+import PathSelect from "./pages/PathSelect";
+import PathCheck from "./pages/PathCheck";
+import LegacyJourneyRedirect from "./pages/LegacyJourneyRedirect";
 import ModuleJourney from "./pages/ModuleJourney";
 import StreakCelebrationOverlay from "./components/StreakCelebrationOverlay";
 import "./App.css";
@@ -217,9 +219,13 @@ const AppContent = () => {
           {/* Tag picker — the new Learn landing. Kept entirely separate from
               "modules" above so nothing that already depends on that path's
               meaning (flat list) is affected. */}
+          {/* Learn → Tag → Path → modules. PathSelect / LegacyJourneyRedirect fall
+              back to the old Tag → Region views until any Path is published. */}
           <Route path="tags" element={<CategorySelect />} />
-          <Route path="tags/:categoryId" element={<RegionSelect />} />
-          <Route path="tags/:categoryId/region/:regionId" element={<ModuleJourney />} />
+          <Route path="tags/:categoryId" element={<PathSelect />} />
+          <Route path="tags/:categoryId/region/:regionId" element={<LegacyJourneyRedirect />} />
+          <Route path="paths/:pathId" element={<ModuleJourney />} />
+          <Route path="paths/:pathId/check/:kind" element={<PathCheck />} />
 
           {/* Other learner sections as real routes */}
           <Route path="ideas" element={<IdeasAndRD />} />

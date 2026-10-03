@@ -126,7 +126,7 @@ export default function OrbitShell() {
   const p = location.pathname;
 
   const activeNav =
-    p.startsWith("/orbit/modules") || p.startsWith("/orbit/tags") ? "modules"
+    p.startsWith("/orbit/modules") || p.startsWith("/orbit/tags") || p.startsWith("/orbit/paths") ? "modules"
     : p === "/orbit/ideas"         ? "ideas"
     : p === "/orbit/profile"       ? "profile"
     : p === "/orbit"               ? "home"
