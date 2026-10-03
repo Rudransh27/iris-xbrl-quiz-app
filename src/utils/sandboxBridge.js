@@ -33,7 +33,9 @@ const BRIDGE_SOURCE = `
     if (!bank || typeof bank !== 'object') return;
     Object.keys(bank).forEach(function (qid) {
       var v = bank[qid];
-      if (v === undefined || v === null || v === '') return;
+      // An empty string IS an answer: modules record "Check" on an empty
+      // fill-in-the-blank as a wrong attempt and reveal the correct text.
+      if (v === undefined || v === null) return;
       v = String(v);
       if (sent[qid] === v) return;
       sent[qid] = v;

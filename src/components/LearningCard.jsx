@@ -1,12 +1,11 @@
 // src/components/LearningCard.jsx
-import React, { useEffect, useState } from "react";
+import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
 
 import jerryImg from "../assets/jerry-cheese.png";
-import api from "../admin/services/api";
 import "./LearningCard.css";
 
 const components = {
@@ -58,32 +57,10 @@ const LearningCard = ({
   topicId,
   moduleId,
 }) => {
-  const [hasRecorded, setHasRecorded] = useState(false);
-
-  useEffect(() => {
-    setHasRecorded(false);
-  }, [cardId]);
-
-  useEffect(() => {
-    if (!cardId || !topicId || !moduleId || hasRecorded) return;
-
-    const recordCompletion = async () => {
-      try {
-        await api.post("/progress/card-completed", {
-          cardId,
-          topicId,
-          moduleId,
-          isCorrect: null,
-          xpEarned: 1,
-        });
-        setHasRecorded(true);
-      } catch (error) {
-        console.error("Failed to record progress:", error);
-      }
-    };
-
-    recordCompletion();
-  }, [cardId, topicId, moduleId]);
+  // Completion is recorded by useQuizEngine when the learner continues past
+  // this card. This component used to also POST it itself via `api.post`,
+  // which the api module doesn't have — it threw on every card view and the
+  // error was swallowed.
 
   return (
     <div className="knowledge-card">

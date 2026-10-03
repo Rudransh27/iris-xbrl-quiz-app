@@ -26,6 +26,17 @@ import { buildTagSuffix, buildLearnBackPath } from "../utils/tagReturnPath";
 import { withOrbitBridge } from "../utils/sandboxBridge";
 import "./Quiz.css";
 
+// 🔒 HTML module iframe sandbox. allow-scripts + allow-same-origin lets a
+// module's script run with Orbit's own origin (it can read the session
+// token from localStorage and call the API as the learner). Dropping
+// allow-same-origin isolates it, but nested SharePoint video embeds then run
+// with an opaque origin and may lose their Microsoft sign-in — so the strict
+// mode is opt-in until that is verified in a signed-in browser:
+//   VITE_STRICT_HTML_SANDBOX=true   (xbrl-quiz-app/.env.local)
+const HTML_MODULE_SANDBOX = import.meta.env.VITE_STRICT_HTML_SANDBOX === "true"
+  ? "allow-scripts allow-popups allow-forms"
+  : "allow-scripts allow-popups allow-forms allow-same-origin";
+
 const Quiz = () => {
   const { moduleId, topicId } = useParams();
   const navigate = useNavigate();
@@ -565,7 +576,7 @@ const Quiz = () => {
             width="100%"
             height="100%"
             style={{ border: "none" }}
-            sandbox="allow-scripts allow-popups allow-forms allow-same-origin"
+            sandbox={HTML_MODULE_SANDBOX}
           />
         </div>
       </div>
