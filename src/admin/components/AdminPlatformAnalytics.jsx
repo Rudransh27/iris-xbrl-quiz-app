@@ -8,19 +8,22 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import api from '../services/api';
+import { useThemeTokens } from '../../components/ui';
 
+// Card-type -> theme token key (resolved at render via useThemeTokens).
 const CARD_TYPE_COLORS = {
-  quiz: '#3a86ff',
-  knowledge: '#8338ec',
-  code: '#06d6a0',
-  video: '#ff006e',
-  pdf: '#fb5607',
-  ppt: '#ffbe0b',
-  html_sandbox: '#0f256e',
-  unknown: '#94a3b8',
+  quiz: 'cat-sky',
+  knowledge: 'cat-violet',
+  code: 'cat-teal',
+  video: 'cat-rose',
+  pdf: 'cat-amber',
+  ppt: 'cat-green',
+  html_sandbox: 'ui-accent',
+  unknown: 'ui-text-3',
 };
+const BUCKET_KEYS = ['cat-violet', 'cat-sky', 'cat-teal', 'cat-amber', 'cat-rose', 'cat-green'];
 
-const STAT_CARD = ({ label, value, sub, color = '#0f256e' }) => (
+const STAT_CARD = ({ label, value, sub, color = 'var(--ui-accent)' }) => (
   <div style={{
     background: 'var(--orbit-surface)', border: '1px solid var(--orbit-border)', borderBottom: '3px solid ' + color,
     padding: '18px 22px', flex: 1, minWidth: 150
@@ -31,7 +34,7 @@ const STAT_CARD = ({ label, value, sub, color = '#0f256e' }) => (
   </div>
 );
 
-const SECTION = ({ title, description, accent = '#0f256e', children }) => (
+const SECTION = ({ title, description, accent = 'var(--ui-accent)', children }) => (
   <div style={{ background: 'var(--orbit-surface)', border: '1px solid var(--orbit-border)', borderTop: `3px solid ${accent}`, padding: '22px 24px', marginBottom: 20 }}>
     <div style={{ marginBottom: 18, borderBottom: '1px solid var(--orbit-border)', paddingBottom: 10 }}>
       <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--orbit-text-heading)' }}>{title}</div>
@@ -44,10 +47,10 @@ const SECTION = ({ title, description, accent = '#0f256e', children }) => (
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: '#0f172a', borderRadius: 8, padding: '8px 14px', fontSize: 12, color: '#fff' }}>
+    <div style={{ background: 'var(--ui-surface)', border: '1px solid var(--ui-border)', boxShadow: 'var(--ui-shadow-md)', borderRadius: 8, padding: '8px 14px', fontSize: 12, color: 'var(--ui-text)' }}>
       <div style={{ fontWeight: 700, marginBottom: 4 }}>{label}</div>
       {payload.map((p, i) => (
-        <div key={i} style={{ color: p.color || '#fff' }}>{p.name}: <strong>{p.value}</strong></div>
+        <div key={i} style={{ color: p.color || 'var(--ui-text)' }}>{p.name}: <strong>{p.value}</strong></div>
       ))}
     </div>
   );
@@ -59,6 +62,7 @@ export default function AdminPlatformAnalytics() {
   const [depts, setDepts]       = useState(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
+  const tk = useThemeTokens();
 
   useEffect(() => {
     Promise.all([
@@ -86,7 +90,7 @@ export default function AdminPlatformAnalytics() {
 
   if (error) {
     return (
-      <div style={{ margin: 24, padding: 16, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, color: '#dc2626', fontSize: 13 }}>
+      <div style={{ margin: 24, padding: 16, background: 'var(--ui-danger-soft)', border: '1px solid color-mix(in srgb, var(--ui-danger) 30%, var(--ui-surface))', borderRadius: 10, color: 'var(--ui-danger-text)', fontSize: 13 }}>
         <strong>Error:</strong> {error}
         <br /><span style={{ color: 'var(--orbit-text-muted)' }}>Make sure the backend is restarted with the new routes.</span>
       </div>
@@ -113,7 +117,7 @@ export default function AdminPlatformAnalytics() {
   const cardTypeData = (platform?.cardTypeBreakdown || []).map(d => ({
     name: d.type.replace('_', ' '),
     value: d.count,
-    fill: CARD_TYPE_COLORS[d.type] || '#94a3b8'
+    fill: tk[CARD_TYPE_COLORS[d.type] || 'ui-text-3']
   }));
 
   const xpData = platform?.xpDistribution || [];
@@ -126,11 +130,11 @@ export default function AdminPlatformAnalytics() {
 
       {/* ── Top stat cards ── */}
       <div style={{ display: 'flex', gap: 14, marginBottom: 20, flexWrap: 'wrap' }}>
-        <STAT_CARD label="Total Lightyears Earned" value={(platform?.xpStats?.total || 0).toLocaleString()} sub="Across all users" color="#0f256e" />
-        <STAT_CARD label="Avg Lightyears / User"   value={platform?.xpStats?.avg || 0}                     sub="Mean Lightyears score"   color="#3a86ff" />
-        <STAT_CARD label="Top Lightyears Score"    value={platform?.xpStats?.max || 0}                     sub="Highest earner"  color="#06d6a0" />
-        <STAT_CARD label="Modules"         value={modules?.length || 0}                            sub="In platform"     color="#8338ec" />
-        <STAT_CARD label="Departments"     value={depts?.length || 0}                              sub="Active units"    color="#fb5607" />
+        <STAT_CARD label="Total Lightyears Earned" value={(platform?.xpStats?.total || 0).toLocaleString()} sub="Across all users" color="var(--ui-accent)" />
+        <STAT_CARD label="Avg Lightyears / User"   value={platform?.xpStats?.avg || 0}                     sub="Mean Lightyears score"   color="var(--cat-sky)" />
+        <STAT_CARD label="Top Lightyears Score"    value={platform?.xpStats?.max || 0}                     sub="Highest earner"  color="var(--cat-teal)" />
+        <STAT_CARD label="Modules"         value={modules?.length || 0}                            sub="In platform"     color="var(--cat-violet)" />
+        <STAT_CARD label="Departments"     value={depts?.length || 0}                              sub="Active units"    color="var(--cat-amber)" />
       </div>
 
       {/* ── Activity line charts ── */}
@@ -138,15 +142,15 @@ export default function AdminPlatformAnalytics() {
         <SECTION
           title="Card Completions — Last 14 Days"
           description="How many content cards were completed platform-wide each day, over the last two weeks."
-          accent="#06d6a0"
+          accent="var(--cat-teal)"
         >
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={activityData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--orbit-border)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--orbit-text-muted)' }} />
-              <YAxis tick={{ fontSize: 10, fill: 'var(--orbit-text-muted)' }} allowDecimals={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tk['ui-border']} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: tk['ui-text-3'] }} />
+              <YAxis tick={{ fontSize: 11, fill: tk['ui-text-3'] }} allowDecimals={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Line type="monotone" dataKey="count" name="Completions" stroke="#06d6a0" strokeWidth={2.5} dot={{ r: 3, fill: '#06d6a0' }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="count" name="Completions" stroke={tk['cat-teal']} strokeWidth={2.5} dot={{ r: 3, fill: tk['cat-teal'] }} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
         </SECTION>
@@ -154,15 +158,15 @@ export default function AdminPlatformAnalytics() {
         <SECTION
           title="User Registrations — Last 14 Days"
           description="New verified sign-ups per day, over the last two weeks."
-          accent="#ff006e"
+          accent="var(--cat-rose)"
         >
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={growthData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--orbit-border)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--orbit-text-muted)' }} />
-              <YAxis tick={{ fontSize: 10, fill: 'var(--orbit-text-muted)' }} allowDecimals={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tk['ui-border']} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: tk['ui-text-3'] }} />
+              <YAxis tick={{ fontSize: 11, fill: tk['ui-text-3'] }} allowDecimals={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Line type="monotone" dataKey="count" name="Registrations" stroke="#ff006e" strokeWidth={2.5} dot={{ r: 3, fill: '#ff006e' }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="count" name="Registrations" stroke={tk['cat-rose']} strokeWidth={2.5} dot={{ r: 3, fill: tk['cat-rose'] }} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
         </SECTION>
@@ -173,17 +177,17 @@ export default function AdminPlatformAnalytics() {
         <SECTION
           title="Lightyears Distribution — User Buckets"
           description="How many users fall into each XP bracket — shows whether engagement is broad or concentrated at the top."
-          accent="#8338ec"
+          accent="var(--cat-violet)"
         >
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={xpData} barSize={32}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--orbit-border)" />
-              <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'var(--orbit-text-muted)' }} />
-              <YAxis tick={{ fontSize: 10, fill: 'var(--orbit-text-muted)' }} allowDecimals={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tk['ui-border']} />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: tk['ui-text-3'] }} />
+              <YAxis tick={{ fontSize: 11, fill: tk['ui-text-3'] }} allowDecimals={false} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="count" name="Users" radius={[6, 6, 0, 0]}>
                 {xpData.map((_, i) => (
-                  <Cell key={i} fill={['#8338ec', '#3a86ff', '#06d6a0', '#ffbe0b', '#fb5607', '#ff006e'][i % 6]} />
+                  <Cell key={i} fill={tk[BUCKET_KEYS[i % 6]]} />
                 ))}
               </Bar>
             </BarChart>
@@ -193,7 +197,7 @@ export default function AdminPlatformAnalytics() {
         <SECTION
           title="Card Type Completions"
           description="Which content formats (quiz, video, code, etc.) get completed most."
-          accent="#ffbe0b"
+          accent="var(--cat-amber)"
         >
           {cardTypeData.length === 0 ? (
             <div style={{ color: 'var(--orbit-text-muted)', textAlign: 'center', paddingTop: 60, fontSize: 13 }}>No completion data yet.</div>
@@ -205,7 +209,7 @@ export default function AdminPlatformAnalytics() {
                     <Cell key={i} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v, n) => [v, n]} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+                <Tooltip formatter={(v, n) => [v, n]} contentStyle={{ fontSize: 12, borderRadius: 8, background: 'var(--ui-surface)', border: '1px solid var(--ui-border)', color: 'var(--ui-text)' }} itemStyle={{ color: 'var(--ui-text)' }} />
                 <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
               </PieChart>
             </ResponsiveContainer>
@@ -217,19 +221,19 @@ export default function AdminPlatformAnalytics() {
       <SECTION
         title="Module Engagement — Users Started"
         description="Users started vs. cards completed per module — spot modules with high drop-off."
-        accent="#fb5607"
+        accent="var(--cat-amber)"
       >
         {topModules.length === 0 ? (
           <div style={{ color: 'var(--orbit-text-muted)', textAlign: 'center', padding: 32, fontSize: 13 }}>No module data yet.</div>
         ) : (
           <ResponsiveContainer width="100%" height={Math.max(180, topModules.length * 36)}>
             <BarChart data={topModules} layout="vertical" barSize={18} margin={{ left: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--orbit-border)" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--orbit-text-muted)' }} allowDecimals={false} />
-              <YAxis type="category" dataKey="title" width={160} tick={{ fontSize: 11, fill: 'var(--orbit-text-heading)' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tk['ui-border']} horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 11, fill: tk['ui-text-3'] }} allowDecimals={false} />
+              <YAxis type="category" dataKey="title" width={160} tick={{ fontSize: 11, fill: tk['ui-text'] }} />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="usersStarted" name="Users Started" fill="#fb5607" radius={[0, 6, 6, 0]} />
-              <Bar dataKey="totalCompletions" name="Card Completions" fill="#06d6a0" radius={[0, 6, 6, 0]} />
+              <Bar dataKey="usersStarted" name="Users Started" fill={tk['cat-amber']} radius={[0, 6, 6, 0]} />
+              <Bar dataKey="totalCompletions" name="Card Completions" fill={tk['cat-teal']} radius={[0, 6, 6, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -239,13 +243,13 @@ export default function AdminPlatformAnalytics() {
       <SECTION
         title="Department Leaderboard"
         description="Every department's total/avg XP and completion counts side-by-side, with each department's top earner."
-        accent="#0f256e"
+        accent="var(--ui-accent)"
       >
         {topDepts.length === 0 ? (
           <div style={{ color: 'var(--orbit-text-muted)', textAlign: 'center', padding: 32, fontSize: 13 }}>No department data yet.</div>
         ) : (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 0.7fr 1fr 1fr 1.2fr 1fr 1fr', gap: 8, padding: '6px 10px', background: 'var(--orbit-surface-subtle)', borderRadius: 8, marginBottom: 6, fontSize: 10.5, fontWeight: 700, color: 'var(--orbit-text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 0.7fr 1fr 1fr 1.2fr 1fr 1fr', gap: 8, padding: '6px 10px', background: 'var(--orbit-surface-subtle)', borderRadius: 8, marginBottom: 6, fontSize: 11, fontWeight: 700, color: 'var(--orbit-text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
               <div>Department</div>
               <div style={{ textAlign: 'center' }}>Users</div>
               <div style={{ textAlign: 'right' }}>Total Lightyears</div>
@@ -257,19 +261,19 @@ export default function AdminPlatformAnalytics() {
             {topDepts.map((d, i) => (
               <div key={d.deptId} style={{ display: 'grid', gridTemplateColumns: '1.6fr 0.7fr 1fr 1fr 1.2fr 1fr 1fr', gap: 8, padding: '10px 10px', borderBottom: '1px solid var(--orbit-border)', fontSize: 12.5, alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontWeight: 700, color: '#0f172a' }}>{d.name}</div>
-                  <div style={{ fontSize: 10, color: 'var(--orbit-text-muted)', fontFamily: 'monospace' }}>{(d.code || '').toUpperCase()}</div>
+                  <div style={{ fontWeight: 700, color: 'var(--ui-text)' }}>{d.name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--orbit-text-muted)', fontFamily: 'monospace' }}>{(d.code || '').toUpperCase()}</div>
                 </div>
                 <div style={{ textAlign: 'center', fontWeight: 600, color: 'var(--orbit-text-body)' }}>{d.userCount}</div>
-                <div style={{ textAlign: 'right', fontWeight: 800, color: '#0f256e' }}>{d.totalXp.toLocaleString()}</div>
-                <div style={{ textAlign: 'right', color: '#64748b' }}>{d.avgXp}</div>
-                <div style={{ textAlign: 'right', color: '#64748b' }}>{d.cardsCompleted.toLocaleString()}</div>
-                <div style={{ textAlign: 'right', color: '#64748b' }}>{d.topicsCompleted}</div>
+                <div style={{ textAlign: 'right', fontWeight: 800, color: 'var(--ui-accent-text)' }}>{d.totalXp.toLocaleString()}</div>
+                <div style={{ textAlign: 'right', color: 'var(--ui-text-2)' }}>{d.avgXp}</div>
+                <div style={{ textAlign: 'right', color: 'var(--ui-text-2)' }}>{d.cardsCompleted.toLocaleString()}</div>
+                <div style={{ textAlign: 'right', color: 'var(--ui-text-2)' }}>{d.topicsCompleted}</div>
                 <div>
                   {d.topEarner ? (
                     <div>
-                      <div style={{ fontWeight: 600, color: '#0f172a', fontSize: 11.5 }}>{d.topEarner.username}</div>
-                      <div style={{ fontSize: 10, color: '#06d6a0', fontWeight: 700 }}>{d.topEarner.xp} Lightyears</div>
+                      <div style={{ fontWeight: 600, color: 'var(--ui-text)', fontSize: 11.5 }}>{d.topEarner.username}</div>
+                      <div style={{ fontSize: 11, color: 'var(--cat-teal-text)', fontWeight: 700 }}>{d.topEarner.xp} Lightyears</div>
                     </div>
                   ) : <span style={{ color: 'var(--orbit-text-muted)', fontSize: 11 }}>—</span>}
                 </div>

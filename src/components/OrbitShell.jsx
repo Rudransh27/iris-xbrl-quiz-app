@@ -9,7 +9,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
 import api from "../admin/services/api";
-import { SERVER_URL } from "../admin/services/config";
+import { SOCKET_ORIGIN, SOCKET_PATH } from "../admin/services/config";
 import SuperAdminDashboard from "../admin/SuperAdminDashboard";
 import Dashboard1 from "../admin/Dashboard1";
 import {
@@ -98,8 +98,10 @@ export default function OrbitShell() {
 
   useEffect(() => {
     if (!user?.id) return;
-    const socket = socketIO(SERVER_URL, {
-      transports: ["websocket"], reconnectionAttempts: 5,
+    // Authenticated socket: the server checks this token + the session cookie.
+    const socket = socketIO(SOCKET_ORIGIN, {
+      path: SOCKET_PATH, transports: ["websocket"], reconnectionAttempts: 5,
+      withCredentials: true, auth: { token: localStorage.getItem("token") },
     });
     socketRef.current = socket;
     socket.on("connect", () => { socket.emit("register_session", String(user.id)); });
@@ -126,7 +128,7 @@ export default function OrbitShell() {
   const p = location.pathname;
 
   const activeNav =
-    p.startsWith("/orbit/modules") || p.startsWith("/orbit/tags") ? "modules"
+    p.startsWith("/orbit/modules") || p.startsWith("/orbit/tags") || p.startsWith("/orbit/paths") ? "modules"
     : p === "/orbit/ideas"         ? "ideas"
     : p === "/orbit/profile"       ? "profile"
     : p === "/orbit"               ? "home"
@@ -176,57 +178,22 @@ export default function OrbitShell() {
   };
 
   // ─── Sidebar nav item renderer (plain function, NOT a React component) ───
-  // Icon-box-on-top, label-below, centered — a common, generic nav-rail
-  // convention (icon tinted/boxed when active, plain otherwise). Full label
-  // always renders now (no more collapsed/expanded duality); `title` still
-  // carries it too, useful since some labels are truncated at this width.
+  // Icon-on-top, label-below on the desktop rail (icon sits in a rounded
+  // indicator that tints --ui-hover on hover and --ui-accent-soft when
+  // active); the mobile drawer re-flows the same markup into icon-left rows.
+  // All visuals live in OrbitShell.css — `title` still carries the label,
+  // useful since a long label can be truncated at rail width.
   const sideNavItem = (Icon, label, isActive, onClickFn, isDanger = false) => (
     <div
       key={label}
-      className="orbit-nav-item"
+      className={`orbit-nav-item${isActive ? " is-active" : ""}${isDanger ? " orbit-nav-item--danger" : ""}`}
       onClick={() => { onClickFn(); setIsMobileDrawerOpen(false); }}
       title={label}
-      style={{
-        display:        "flex",
-        flexDirection:  "column",
-        alignItems:     "center",
-        gap:            "4px",
-        padding:        "8px 4px",
-        margin:         "2px 8px",
-        borderRadius:   "12px",
-        cursor:         "pointer",
-        userSelect:     "none",
-      }}
     >
-      <div
-        className="orbit-nav-item__icon"
-        style={{
-          width:          "44px",
-          height:         "44px",
-          borderRadius:   "12px",
-          display:        "flex",
-          alignItems:     "center",
-          justifyContent: "center",
-          // Active: a lavender→sky gradient tile (same fixed pastel in both
-          // themes — matches the Learner Dashboard's redesigned accent
-          // language) rather than the old solid-black fill.
-          background:     isActive ? "linear-gradient(135deg, var(--orbit-lavender), var(--orbit-sky))" : "transparent",
-          color:          isActive ? "#20222f" : isDanger ? "var(--orbit-rose-text)" : "var(--orbit-text-muted)",
-          transition:     "background 0.14s ease, color 0.14s ease",
-        }}
-        onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "var(--orbit-brand-light)"; }}
-        onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
-      >
-        <Icon size={19} />
+      <div className="orbit-nav-item__icon">
+        <Icon size={20} />
       </div>
-      <span style={{
-        fontSize:   "10.5px",
-        fontWeight: isActive ? "700" : "600",
-        textAlign:  "center",
-        lineHeight: 1.2,
-        maxWidth:   "76px",
-        color:      isActive ? "var(--orbit-text-heading)" : isDanger ? "var(--orbit-rose-text)" : "var(--orbit-text-muted)",
-      }}>
+      <span className="orbit-nav-item__label">
         {label}
       </span>
     </div>
@@ -236,12 +203,10 @@ export default function OrbitShell() {
   // Just a small gap between logical groups now — the icon-rail is too
   // narrow for readable uppercase group labels (and the reference layout
   // doesn't show any); grouping is still implicit in the JSX list order.
-  const sideSection = (label) => <div key={`sec-${label}`} style={{ height: "10px" }} />;
+  const sideSection = (label) => <div key={`sec-${label}`} className="orbit-nav-gap" />;
 
   return (
-    <div className="orbit-app-root" style={{
-      display: "flex", height: "100vh", overflow: "hidden", background: "var(--orbit-canvas)",
-    }}>
+    <div className="orbit-app-root">
 
       {/* Mobile-only dimmed backdrop behind the drawer — closes it on tap. */}
       {isMobileDrawerOpen && (
@@ -251,75 +216,29 @@ export default function OrbitShell() {
       {/* ══════════════════════════════════════════════════════════════════════
           PERSISTENT ICON-RAIL SIDEBAR
       ══════════════════════════════════════════════════════════════════════ */}
-      <aside className={`orbit-sidebar ${isMobileDrawerOpen ? "orbit-sidebar--open" : ""}`} style={{
-        width:            "92px",
-        borderRight:      "1px solid var(--orbit-border)",
-        display:          "flex",
-        flexDirection:    "column",
-        overflow:         "hidden",
-        flexShrink:       0,
-        boxShadow:        "var(--orbit-shadow-sm)",
-        zIndex:           10,
-      }}>
+      <aside className={`orbit-sidebar ${isMobileDrawerOpen ? "orbit-sidebar--open" : ""}`}>
 
-        {/* ── Logo — the ONE place the Iris Orbit mark appears. This cell's
-               height (56px) matches the topbar's height exactly, and its
-               bottom border reuses the topbar's own border color
-               (--orbit-glass-border) so the two form one continuous,
-               unbroken line at the intersection instead of two
-               slightly-different-colored borders meeting at a seam. A
-               distinct dark fill (matching the reference "keka"-style
-               corner tile) makes this cell read as a self-contained brand
-               mark rather than blending into either the sidebar or topbar. */}
-        <div style={{
-          padding:        "10px 7px",
-          borderBottom:   "1px solid var(--orbit-glass-border)",
-          // The logo artwork is a medium-saturation purple mark on a
-          // transparent background — it reads cleanly on plain white, so
-          // light mode uses the real page surface instead of a dark tile
-          // (which used to apply regardless of theme). Dark mode keeps the
-          // galaxy gradient — plain white there would be a jarring bright
-          // hole in the rest of the dark UI.
-          background:     theme === "dark" ? "linear-gradient(135deg, #2a2140, #232a56)" : "var(--orbit-surface)",
-          display:        "flex",
-          alignItems:     "center",
-          justifyContent: "center",
-          minHeight:      "56px",
-          boxSizing:      "border-box",
-          gap:            "6px",
-        }}>
+        {/* ── Logo — the ONE place the Iris Orbit mark appears. This cell is
+               exactly --ui-topbar-h tall and shares the topbar's bottom
+               border, so the two read as one continuous line. Plain
+               --ui-surface in both themes (tokens switch it). */}
+        <div className="orbit-sidebar__brand">
           <img
             src={irisOrbitLogo}
             alt="Iris Orbit"
-            style={{ maxWidth: "72px", maxHeight: "38px", objectFit: "contain", flexShrink: 0 }}
+            className="orbit-sidebar__logo"
           />
           <button
-            className="orbit-mobile-drawer-close"
+            className="orbit-mobile-drawer-close ui-btn ui-btn--ghost ui-btn--icon"
             onClick={() => setIsMobileDrawerOpen(false)}
             aria-label="Close menu"
-            style={{
-              background:     "var(--orbit-brand-muted)",
-              border:         "1px solid var(--orbit-border-strong)",
-              borderRadius:   "7px",
-              color:          "var(--orbit-brand)",
-              cursor:         "pointer",
-              alignItems:     "center",
-              justifyContent: "center",
-              flexShrink:     0,
-            }}
           >
-            <XLg size={14} />
+            <XLg size={16} />
           </button>
         </div>
 
-        {/* ── Sign Out — deliberately  placed here, not buried at the bottom.
-               Same icon-box/label shape as nav items below, but keeps its
-               own amber-glow accent (a distinct "exit" color, unrelated to
-               the brand-violet nav accent) so it reads as "always available"
-               rather than alarming. */}
-        
         {/* ── Navigation stack ──────────────────────────────────────── */}
-        <div className="orbit-sidebar-nav" style={{ flex: 1, padding: "6px 0", overflowY: "auto" }}>
+        <div className="orbit-sidebar-nav">
 
           {/* LEARNER NAV — shown for the actual learner role, AND for an
               admin/superadmin browsing any non-dashboard-home /orbit/* page
@@ -382,7 +301,7 @@ export default function OrbitShell() {
         </div>
 
         {/* ── Footer — Sign Out lives up top now, not buried here ────── */}
-        <div style={{ borderTop: "1px solid var(--orbit-border)", padding: "6px 0" }}>
+        <div className="orbit-sidebar__foot">
           {sideNavItem(PersonCircle, "Profile", activeNav === "profile", () => goTo("profile"))}
           {sideNavItem(House,        "Exit",    false,                   () => navigate("/"))}
         </div>
@@ -391,91 +310,30 @@ export default function OrbitShell() {
       {/* ══════════════════════════════════════════════════════════════════════
           MAIN CONTENT COLUMN
       ══════════════════════════════════════════════════════════════════════ */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "var(--orbit-canvas)" }}>
+      <div className="orbit-shell__column">
 
-        {/* Topbar — true glassmorphism:
-              - sticky (belt-and-suspenders alongside the root's own
-                height:100vh/overflow:hidden fix, which is what actually
-                makes <main> the sole scroll container now)
-              - ~50% transparent background + backdrop blur/saturate, so
-                content scrolling underneath stays faintly, softly visible
-              - a thin semi-transparent border on the top/left/right only
-                (a "specular highlight" edge) — the bottom border is
-                explicitly none so the glass blends into the content below
-                instead of being boxed in
-              - a soft, diffused, low-opacity drop shadow to lift it off
-                the page, no harsh edge
-            The extra sheen layer (a soft light-catching gradient beyond
-            the crisp top border above) is a ::after in OrbitShell.css,
-            since a pseudo-element can't be expressed as an inline style. */}
-        <header className="orbit-topbar" style={{
-          height:           "56px",
-          position:         "sticky",
-          top:              0,
-          zIndex:           5,
-          // A distinctly lighter/more saturated indigo than the near-black
-          // page canvas (--orbit-canvas is #0b0a14, --orbit-surface is
-          // #131124) — blending 50% of THOSE colors into themselves reads
-          // as flat black no matter how correct the opacity math is, since
-          // there's no hue/brightness gap for the transparency to reveal.
-          // This tint is deliberately brighter/more violet so the panel
-          // visibly separates from the canvas even at rest.
-          background:       theme === "dark" ? "rgba(64, 54, 112, 0.6)" : "rgba(255, 255, 255, 0.6)",
-          backdropFilter:   "blur(28px) saturate(180%)",
-          WebkitBackdropFilter: "blur(28px) saturate(180%)",
-          backgroundImage:  "var(--orbit-glass-highlight)",
-          borderTop:        "1px solid rgba(255, 255, 255, 0.35)",
-          borderLeft:       "1px solid rgba(255, 255, 255, 0.22)",
-          borderRight:      "1px solid rgba(255, 255, 255, 0.22)",
-          borderBottom:     "none",
-          display:          "flex",
-          alignItems:       "center",
-          justifyContent:   "space-between",
-          padding:          "0 clamp(12px, 4vw, 24px)",
-          flexShrink:       0,
-          // Stronger than before — at the very top of the page (before
-          // anything has scrolled under the sticky header), blur has
-          // nothing behind it to blur, so the panel needs to read as
-          // "glass" from its own border/shadow/tint alone, not just blur.
-          boxShadow:        theme === "dark"
-            ? "0 12px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06)"
-            : "0 12px 40px rgba(31, 38, 50, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
-          gap:              "10px",
-        }}>
+        {/* Topbar — a calm, solid --ui-surface bar with a single bottom
+            border (no glass/blur/gradient). <main> below is the sole scroll
+            container, so the bar never scrolls away. */}
+        <header className="orbit-topbar">
 
-          {/* Left: hamburger (mobile-only) + logo/wordmark lockup */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+          {/* Left: hamburger (mobile-only) + department / view context */}
+          <div className="orbit-topbar__left">
             <button
-              className="orbit-hamburger-trigger"
+              className="orbit-hamburger-trigger ui-btn ui-btn--ghost ui-btn--icon"
               onClick={() => setIsMobileDrawerOpen(true)}
               aria-label="Open menu"
-              style={{
-                background:     "var(--orbit-brand-muted)",
-                border:         "1px solid var(--orbit-border-strong)",
-                borderRadius:   "8px",
-                color:          "var(--orbit-brand)",
-                cursor:         "pointer",
-                alignItems:     "center",
-                justifyContent: "center",
-                flexShrink:     0,
-              }}
             >
-              <List size={18} />
+              <List size={20} />
             </button>
 
             {/* The Iris Orbit mark itself now lives ONLY in the sidebar's
                 logo cell above — this used to duplicate it right next to
                 that cell. In its place: the user's own department, since
                 that's more useful context here than a repeated brand mark. */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0, overflow: "hidden" }}>
+            <div className="orbit-topbar__context">
               {departmentName && (
-                <span style={{
-                  fontSize:      "15px",
-                  fontWeight:    "800",
-                  color:         "var(--orbit-text-heading)",
-                  letterSpacing: "0.1px",
-                  whiteSpace:    "nowrap",
-                }}>
+                <span className="orbit-topbar__dept">
                   {departmentName}
                 </span>
               )}
@@ -486,17 +344,7 @@ export default function OrbitShell() {
                   role's stored preference — not because that's what's
                   actually on screen. It must match isDashboardHome exactly
                   like the content pane and sidebar nav do. */}
-              <span style={{
-                fontSize:      "10px",
-                fontWeight:    "800",
-                color:         "var(--orbit-brand)",
-                background:    "var(--orbit-brand-muted)",
-                letterSpacing: "0.4px",
-                textTransform: "uppercase",
-                padding:       "3px 8px",
-                borderRadius:  "999px",
-                whiteSpace:    "nowrap",
-              }}>
+              <span className="orbit-topbar__mode ui-badge ui-badge--accent">
                 {isDashboardHome && currentViewMode === "admin"      ? "Admin Console"
                  : isDashboardHome && currentViewMode === "superadmin" ? "Superadmin Hub"
                  : "Learner View"}
@@ -505,28 +353,16 @@ export default function OrbitShell() {
           </div>
 
           {/* Right: controls */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="orbit-topbar__right">
 
             {/* Theme toggle */}
             <button
+              className="orbit-topbar__theme ui-btn ui-btn--ghost ui-btn--icon"
               onClick={toggleTheme}
-              style={{
-                background:    "var(--orbit-brand-muted)",
-                border:        "1px solid var(--orbit-border-strong)",
-                color:         "var(--orbit-brand)",
-                width:         "32px",
-                height:        "32px",
-                borderRadius:  "8px",
-                cursor:        "pointer",
-                display:       "flex",
-                alignItems:    "center",
-                justifyContent:"center",
-                transition:    "all 0.14s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--orbit-brand)"; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "var(--orbit-brand-muted)"; e.currentTarget.style.color = "var(--orbit-brand)"; }}
+              aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+              title={theme === "light" ? "Dark mode" : "Light mode"}
             >
-              {theme === "light" ? <MoonFill size={13} /> : <SunFill size={13} />}
+              {theme === "light" ? <MoonFill size={16} /> : <SunFill size={16} />}
             </button>
 
             {/* View-mode switcher — one segmented control for both roles.
@@ -534,7 +370,7 @@ export default function OrbitShell() {
                 go to the dashboard/hub screen — bare /orbit is never the
                 dashboard, regardless of which mode is picked here. */}
             {(user?.role === "admin" || user?.role === "superadmin") && (
-              <div className="orbit-mode-switch" role="tablist" aria-label="View mode">
+              <div className="orbit-mode-switch ui-tabs" role="tablist" aria-label="View mode">
                 {(user.role === "superadmin"
                   ? [
                       { key: "superadmin", label: "Superadmin", Icon: Shield },
@@ -551,7 +387,7 @@ export default function OrbitShell() {
                     type="button"
                     role="tab"
                     aria-selected={displayedViewMode === key}
-                    className={`orbit-mode-pill ${displayedViewMode === key ? "orbit-mode-pill--active" : ""}`}
+                    className={`ui-tab orbit-mode-pill ${displayedViewMode === key ? "orbit-mode-pill--active is-active" : ""}`}
                     onClick={() => {
                       if (displayedViewMode === key) return;
                       setCurrentViewMode(key);
@@ -559,67 +395,28 @@ export default function OrbitShell() {
                       navigate(key === "learner" ? "/orbit" : "/orbit/dashboard");
                     }}
                   >
-                    <Icon size={12} />
+                    <Icon size={14} />
                     <span className="orbit-mode-pill-label">{label}</span>
                   </button>
                 ))}
               </div>
             )}
 
-            {/* XP / Lightyears pill — lavender, per the dashboard redesign's chip palette */}
-            <span style={{
-              display:     "inline-flex",
-              alignItems:  "center",
-              gap:         "4px",
-              background:  "rgba(201, 184, 255, 0.14)",
-              border:      "1.5px solid var(--orbit-lavender)",
-              color:       "var(--orbit-lavender-text)",
-              borderRadius:"var(--radius-full)",
-              padding:     "4px 12px",
-              fontSize:    "12px",
-              fontWeight:  "800",
-            }}>
-              <PiShootingStarFill size={11} /> {liveXP} Lightyears
+            {/* XP / Lightyears — accent badge (the one branded metric) */}
+            <span className="orbit-topbar__stat orbit-topbar__stat--xp ui-badge ui-badge--accent ui-num">
+              <PiShootingStarFill size={14} /> {liveXP} <span className="orbit-topbar__stat-unit">Lightyears</span>
             </span>
 
-            {/* Streak pill — pink, rocket-launch icon (not fire) */}
-            <span style={{
-              display:     "inline-flex",
-              alignItems:  "center",
-              gap:         "4px",
-              background:  "rgba(255, 158, 207, 0.14)",
-              border:      "1.5px solid var(--orbit-pink)",
-              color:       "var(--orbit-pink-text)",
-              borderRadius:"var(--radius-full)",
-              padding:     "4px 12px",
-              fontSize:    "12px",
-              fontWeight:  "800",
-            }}>
-              <RocketTakeoffFill size={11} /> {streak}
+            {/* Streak — quiet outline badge, rocket-launch icon (not fire) */}
+            <span className="orbit-topbar__stat orbit-topbar__stat--streak ui-badge ui-badge--outline ui-num">
+              <RocketTakeoffFill size={13} /> {streak}
             </span>
 
             {/* Profile avatar — navigates inside shell (no hard redirect) */}
             <div
+              className="orbit-topbar__avatar ui-avatar"
               onClick={() => navigate("/orbit/profile")}
               title="Go to your profile"
-              style={{
-                width:          "34px",
-                height:         "34px",
-                borderRadius:   "50%",
-                background:     "linear-gradient(135deg, var(--orbit-brand) 0%, var(--orbit-brand-dark) 100%)",
-                color:          "#fff",
-                display:        "flex",
-                alignItems:     "center",
-                justifyContent: "center",
-                fontSize:       "12px",
-                fontWeight:     "800",
-                border:         "2px solid var(--orbit-border-strong)",
-                cursor:         "pointer",
-                boxShadow:      "0 0 0 3px var(--orbit-brand-muted)",
-                transition:     "box-shadow 0.14s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 0 0 4px rgba(201,184,255,0.4)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 0 0 3px var(--orbit-brand-muted)"; }}
             >
               {user?.username?.substring(0, 2).toUpperCase() || "OR"}
             </div>
@@ -635,7 +432,7 @@ export default function OrbitShell() {
             roles. The dashboard/hub override must only apply on the actual
             dashboard screen (bare /orbit, or /orbit/dashboard) — every other
             path always renders its real route via <Outlet />. */}
-        <main ref={mainScrollRef} className="content-fluid-scroller" style={{ flex: 1, overflowY: "auto", padding: "clamp(12px, 4vw, 24px)" }}>
+        <main ref={mainScrollRef} className="content-fluid-scroller orbit-shell__main">
           {isDashboardHome && currentViewMode === "superadmin" ? (
             <SuperAdminDashboard />
           ) : isDashboardHome && currentViewMode === "admin" ? (
@@ -648,66 +445,31 @@ export default function OrbitShell() {
 
       {/* ══ XP Award Toast Stack ═════════════════════════════════════════════ */}
       {toastQueue.length > 0 && (
-        <div style={{
-          position:      "fixed",
-          bottom:        "28px",
-          right:         "28px",
-          display:       "flex",
-          flexDirection: "column-reverse",
-          gap:           "12px",
-          zIndex:        9999,
-          pointerEvents: "none",
-        }}>
+        <div className="orbit-xp-toasts">
           {toastQueue.map(toast => (
             <div
               key={toast.id}
+              className="orbit-xp-toast"
               onClick={() => setToastQueue(prev => prev.filter(t => t.id !== toast.id))}
-              style={{
-                pointerEvents: "auto",
-                maxWidth:      "360px",
-                minWidth:      "280px",
-                background:    "linear-gradient(135deg, #1a1040 0%, #2d1f5e 100%)",
-                border:        "1.5px solid rgba(167,139,250,0.6)",
-                borderRadius:  "18px",
-                padding:       "16px 20px",
-                boxShadow:     "0 8px 40px rgba(124,110,247,0.45), 0 2px 8px rgba(0,0,0,0.4)",
-                animation:     "xp-toast-in 0.5s cubic-bezier(0.22,1,0.36,1) both",
-                display:       "flex",
-                flexDirection: "column",
-                gap:           "6px",
-                cursor:        "pointer",
-              }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <PiShootingStarFill size={22} style={{ flexShrink: 0, color: "var(--orbit-lavender)" }} />
-                <span style={{
-                  fontSize:              "13px",
-                  fontWeight:            "800",
-                  background:            "linear-gradient(90deg, #e7c6ff, #a78bfa)",
-                  WebkitBackgroundClip:  "text",
-                  WebkitTextFillColor:   "transparent",
-                  lineHeight:            1.3,
-                }}>
+              <span className="orbit-xp-toast__icon ui-icon-tile">
+                <PiShootingStarFill size={20} />
+              </span>
+              <div className="orbit-xp-toast__body">
+                <span className="orbit-xp-toast__title">
                   +{toast.xpAwarded} Lightyears Awarded!
                 </span>
+                <p className="orbit-xp-toast__message">
+                  {toast.message}
+                </p>
+                <p className="orbit-xp-toast__hint">
+                  Tap to dismiss
+                </p>
               </div>
-              <p style={{ margin: 0, fontSize: "12px", color: "rgba(231,198,255,0.85)", fontWeight: "500", lineHeight: 1.5 }}>
-                {toast.message}
-              </p>
-              <p style={{ margin: 0, fontSize: "10px", color: "rgba(167,139,250,0.55)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.7px" }}>
-                Tap to dismiss
-              </p>
             </div>
           ))}
         </div>
       )}
-
-      <style>{`
-        @keyframes xp-toast-in {
-          from { opacity: 0; transform: translateX(60px) scale(0.92); }
-          to   { opacity: 1; transform: translateX(0)   scale(1);    }
-        }
-      `}</style>
     </div>
   );
 }

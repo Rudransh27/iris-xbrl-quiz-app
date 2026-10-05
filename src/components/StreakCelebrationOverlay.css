@@ -1,4 +1,6 @@
-/* src/components/StreakCelebrationOverlay.css */
+/* src/components/StreakCelebrationOverlay.css
+   Floating, non-blocking celebration card. Surface/text/accent tokens only
+   (see src/styles/README.md), so it follows light and dark automatically. */
 
 .streak-celebration-confetti {
   position: fixed;
@@ -17,16 +19,13 @@
   width: 300px;
   max-width: 88vw;
   box-sizing: border-box;
-  padding: 22px 20px 18px;
-  border-radius: 20px;
+  padding: var(--ui-space-6) var(--ui-space-5) var(--ui-space-5);
+  border-radius: var(--ui-radius-xl);
   text-align: center;
-  font-family: "Nunito", system-ui, sans-serif;
-  background: var(--orbit-glass-bg, #ffffff);
-  background-image: var(--orbit-glass-highlight, none);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--orbit-glass-border, #e5e0f7);
-  box-shadow: 0 24px 48px -16px rgba(124, 110, 247, 0.45);
+  font-family: var(--ui-font-sans);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow-lg);
   animation: streak-celebration-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -37,86 +36,85 @@
 
 .streak-celebration-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 22px;
-  height: 22px;
+  top: var(--ui-space-3);
+  right: var(--ui-space-3);
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: none;
   border-radius: 50%;
-  color: var(--orbit-text-muted, #8b829e);
+  color: var(--ui-text-3);
   cursor: pointer;
+  transition: background-color var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
 }
-
-.streak-celebration-close:hover {
-  background: var(--orbit-brand-muted, #ede9fe);
-  color: var(--orbit-brand, #7c6ef7);
-}
+.streak-celebration-close:hover { background: var(--ui-hover); color: var(--ui-text); }
+.streak-celebration-close:focus-visible { outline: none; box-shadow: var(--ui-ring); }
 
 .streak-celebration-icon-wrap {
   width: 48px;
   height: 48px;
-  margin: 0 auto 10px;
-  border-radius: 50%;
+  margin: 0 auto var(--ui-space-3);
+  border-radius: var(--ui-radius);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--orbit-brand-muted, #ede9fe);
-  color: var(--orbit-brand, #7c6ef7);
+  background: var(--ui-accent-soft);
+  color: var(--ui-accent-text);
 }
 
 .streak-celebration-label {
-  font-size: 13px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: var(--orbit-text-heading, #1f1533);
-  margin-bottom: 8px;
+  margin-bottom: var(--ui-space-2);
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-fs-md);
+  font-weight: var(--ui-fw-bold);
+  letter-spacing: var(--ui-tracking-tight);
+  color: var(--ui-text);
 }
 
 .streak-celebration-points {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 15px;
-  font-weight: 900;
-  color: #ffffff;
-  background: var(--orbit-brand, #7c6ef7);
-  padding: 4px 14px;
-  border-radius: 999px;
-  margin-bottom: 14px;
+  margin-bottom: var(--ui-space-4);
+  padding: 5px 14px;
+  border-radius: var(--ui-radius-pill);
+  background: var(--ui-accent);
+  color: var(--ui-on-accent);
+  font-size: var(--ui-fs-sm);
+  font-weight: var(--ui-fw-bold);
 }
 
 .streak-celebration-streak-row {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: var(--ui-space-2);
+  margin-bottom: var(--ui-space-3);
 }
 
 .streak-celebration-streak-caption {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--orbit-text-muted, #8b829e);
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-semibold);
+  color: var(--ui-text-3);
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: var(--ui-tracking-wide);
 }
 
 .streak-celebration-streak-num {
   display: inline-block;
-  font-size: 26px;
-  font-weight: 900;
-  color: var(--orbit-brand, #7c6ef7);
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-fs-2xl);
+  font-weight: var(--ui-fw-heavy);
+  color: var(--ui-accent-text);
+  font-variant-numeric: tabular-nums;
 }
 
 .streak-celebration-message {
   margin: 0;
-  font-size: 12.5px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--orbit-text-body, #4a4460);
+  font-size: var(--ui-fs-sm);
+  line-height: var(--ui-lh-snug);
+  color: var(--ui-text-2);
 }

@@ -1,31 +1,20 @@
 /* src/pages/Quiz.css
-   Redesigned onto the shared --orbit-* design tokens (src/index.css) —
-   this whole flow was hardcoded to a fixed white/light palette in every
-   theme (var(--white, ...) always resolves to opaque white since --white
-   is a deliberately fixed, non-theme-swapping token used elsewhere; there
-   was no [data-theme="dark"] override anywhere in this file). Also unifies
-   the "selected / correct / incorrect" language with the rest of the app:
-   lavender = selected/active, teal = correct/done, rose = incorrect —
-   replacing the old amber-glow/light-sea-green/crimson trio. */
+   Learning player — a focused, distraction-free layout built on the shared
+   --ui-* tokens (src/styles/tokens.css, see src/styles/README.md): slim
+   header (QuizPlayerHeader), a calm syllabus rail, a centred reading column
+   (--ui-container-narrow) and a bottom action dock. Every colour is a token,
+   so light/dark both work without overrides. */
 
-:root {
-  --duo-green: var(--orbit-teal);
-  --duo-snow: var(--orbit-surface);
-  --duo-gray-plate: var(--orbit-canvas);
-  --duo-border: var(--orbit-border);
-  --duo-text-dark: var(--orbit-text-heading);
-  --duo-text-slate: var(--orbit-text-muted);
-}
-
-/* Base structural layout configuration rules */
+/* Base structural layout */
 .quiz-simulation-player {
   width: 100%;
   height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--orbit-canvas);
-  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--ui-bg);
+  color: var(--ui-text-2);
+  font-family: var(--ui-font-sans);
   position: relative;
 }
 
@@ -35,13 +24,13 @@
 .quiz-review-mode-banner {
   flex-shrink: 0;
   text-align: center;
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-  padding: 8px 20px;
-  color: var(--orbit-lavender-text);
-  background: rgba(201, 184, 255, 0.14);
-  border-bottom: 1px solid var(--orbit-border);
+  font-size: var(--ui-fs-sm);
+  font-weight: var(--ui-fw-semibold);
+  line-height: var(--ui-lh-snug);
+  padding: var(--ui-space-2) var(--ui-space-5);
+  color: var(--ui-accent-text);
+  background: var(--ui-accent-soft);
+  border-bottom: 1px solid var(--ui-accent-soft-2);
 }
 
 .main-flexible-workspace-deck {
@@ -55,15 +44,15 @@
   min-height: 0;
 }
 
-/* ================= 🎛️ THE TAXONOMY SYLLABUS RAIL SYSTEM ================= */
+/* ================= SYLLABUS RAIL ================= */
 .quiz-dynamic-sidebar-rails {
   height: 100%;
-  background-color: var(--orbit-surface);
-  border-right: 1px solid var(--orbit-border);
+  background-color: var(--ui-surface);
+  border-right: 1px solid var(--ui-border);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.25s var(--ui-ease);
   overflow: hidden;
   z-index: 10;
 }
@@ -72,25 +61,21 @@
 .quiz-dynamic-sidebar-rails.drawer-collapsed { width: 0; border-right-width: 0; }
 
 .sidebar-rails-header {
-  padding: 16px 18px 12px;
-  border-bottom: 1px solid var(--orbit-border);
-  background-color: var(--orbit-surface);
+  /* min-width keeps the label from re-wrapping while the rail animates */
+  min-width: 280px;
+  padding: var(--ui-space-5) var(--ui-space-5) var(--ui-space-3);
   text-align: left;
-}
-
-.sidebar-rails-header-label {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--orbit-text-heading);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
 }
 
 .sidebar-scrollable-menu-nodes {
   flex: 1;
+  min-width: 280px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  padding: 0 var(--ui-space-3) var(--ui-space-4);
+  box-sizing: border-box;
   /* 🎯 REMOVED SCROLLBAR: Standard cross-browser string hide overrides */
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -99,17 +84,15 @@
   display: none;
 }
 
-/* Interactive Sidebar Rows Layout sheets — a left accent bar marks the
-   active row (via box-shadow inset, no layout-shifting border) instead of
-   a full pale-blue background wash. */
+/* Syllabus rows — list-row look; the active row gets the accent tint. */
 .sidebar-nav-item-row {
-  padding: 13px 16px 13px 13px;
+  min-height: 44px;
+  padding: var(--ui-space-2) var(--ui-space-3);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--orbit-border);
-  border-left: 3px solid transparent;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  border-radius: var(--ui-radius-sm);
+  transition: background-color var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
   box-sizing: border-box;
 }
 
@@ -118,56 +101,56 @@
   align-items: center;
   flex-shrink: 0;
   font-size: 15px;
-  color: var(--orbit-text-muted);
+  color: var(--ui-text-3);
 }
 
 .sidebar-node-title {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--orbit-text-heading);
+  font-size: var(--ui-fs-sm);
+  font-weight: var(--ui-fw-medium);
+  color: var(--ui-text-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .sidebar-nav-item-row.active-row-node {
-  background-color: rgba(201, 184, 255, 0.16);
-  border-left-color: var(--orbit-lavender);
+  background-color: var(--ui-accent-soft);
 }
 .sidebar-nav-item-row.active-row-node .sidebar-node-title {
-  color: var(--orbit-lavender-text);
-  font-weight: 800;
+  color: var(--ui-accent-text);
+  font-weight: var(--ui-fw-semibold);
 }
 .sidebar-nav-item-row.active-row-node .row-icon-indicator {
-  color: var(--orbit-lavender-text);
+  color: var(--ui-accent-text);
 }
 
 .clickable-row { cursor: pointer; }
-.clickable-row:hover:not(.active-row-node) { background-color: var(--orbit-surface-subtle); }
+.clickable-row:hover:not(.active-row-node) { background-color: var(--ui-hover); }
+.clickable-row:hover:not(.active-row-node) .sidebar-node-title { color: var(--ui-text); }
 
 .hard-locked-row {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.sidebar-status-done { color: var(--orbit-teal-text); }
-.sidebar-status-locked { color: var(--orbit-text-muted); }
+.sidebar-status-done { color: var(--ui-success); }
+.sidebar-status-locked { color: var(--ui-text-3); }
 
 .pending-dot-pulse {
   width: 7px;
   height: 7px;
-  background-color: var(--orbit-lavender);
+  background-color: var(--ui-accent);
   border-radius: 50%;
-  animation: duoNodePulse 1s infinite alternate;
+  opacity: 0.75;
 }
 
-/* ================= 🖥️ CENTER STAGE SLEEVE PLAYBACK VIEWS ================= */
+/* ================= CENTRE STAGE (reading column) ================= */
 .quiz-sleeve-viewport-wrapper {
   flex-grow: 1;
   height: 100%;
   overflow-y: auto;
-  background-color: var(--orbit-canvas);
-  padding: 32px 16px;
+  background-color: var(--ui-bg);
+  padding: var(--ui-space-10) var(--ui-page-pad) var(--ui-space-12);
   box-sizing: border-box;
   /* 🎯 REMOVED SCROLLBAR: Standard cross-browser string hide overrides */
   scrollbar-width: none;
@@ -179,49 +162,54 @@
 
 .central-stage-box-bounds {
   width: 100%;
-  max-width: 680px;
-  height: 100%;
+  max-width: var(--ui-container-narrow);
+  /* min-height (not height) so a long card grows the column and the stage's
+     bottom padding stays visible below it… */
+  min-height: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
 }
+/* …except PDF/PPT viewers, which need a definite height to fill. */
+.central-stage-box-bounds:has(.pdf-card-wrapper, .ppt-card-wrapper) {
+  height: 100%;
+}
 
-/* Drawer Toggle Button overlays controllers */
+/* Drawer toggle — a .ui-btn (secondary, icon, sm) floated over the stage. */
 .iris-drawer-toggle-trigger {
   position: absolute;
-  top: 16px;
+  top: var(--ui-space-4);
   z-index: 100;
-  background-color: var(--orbit-surface);
-  border: 1px solid var(--orbit-border);
-  color: var(--orbit-text-muted);
-  padding: 8px 10px;
-  border-radius: 10px;
-  box-shadow: var(--orbit-shadow-sm);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+  box-shadow: var(--ui-shadow-sm);
+  transition: left 0.25s var(--ui-ease), background-color var(--ui-duration) var(--ui-ease), border-color var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
 }
 
 .iris-drawer-toggle-trigger.trigger-aside { left: 296px; }
 .iris-drawer-toggle-trigger.trigger-flush { left: 16px; }
 
 .iris-drawer-toggle-trigger:hover {
-  border-color: var(--orbit-lavender);
-  color: var(--orbit-lavender-text);
+  border-color: var(--ui-accent-soft-2);
+  color: var(--ui-accent-text);
 }
 
 .iris-drawer-toggle-trigger:active {
   transform: scale(0.95);
 }
 
-/* ================= ⚡ THE LOWER COCKPIT CONTROL ROW DOCK ================= */
+/* Below ~1150px the centred column reaches the floating toggle — give the
+   stage a taller top gutter so the toggle never sits on the card. */
+@media (max-width: 1151px) {
+  .quiz-sleeve-viewport-wrapper { padding-top: 64px; }
+}
+
+/* ================= BOTTOM ACTION DOCK ================= */
 .quiz-action-control-dock {
   width: 100%;
-  height: 84px;
-  background-color: var(--orbit-surface);
-  border-top: 1px solid var(--orbit-border);
+  flex-shrink: 0;
+  min-height: 72px;
+  padding: var(--ui-space-3) 0;
+  background-color: var(--ui-surface);
+  border-top: 1px solid var(--ui-border);
   display: flex;
   align-items: center;
   box-sizing: border-box;
@@ -230,60 +218,47 @@
 
 .dock-content-alignment {
   width: 100%;
-  max-width: 1140px;
-  margin: 0 auto;
-  padding: 0 24px;
+  margin: 0;
+  padding: 0 var(--ui-space-6);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--ui-space-3);
 }
 
-.dock-nav-btn {
-  border: none;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  padding: 12px 24px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.15s ease;
-  box-sizing: border-box;
+.dock-right-wing {
+  display: flex;
+  min-width: 0;
+  margin-left: auto;
 }
 
-.prev-action-trigger {
-  background-color: var(--orbit-surface);
-  border: 1px solid var(--orbit-border);
-  color: var(--orbit-text-muted);
-  cursor: pointer;
-}
-.prev-action-trigger:hover { background-color: var(--orbit-surface-subtle); border-color: var(--orbit-border-strong); }
-.prev-action-trigger:active { transform: scale(0.97); }
+/* Previous = .ui-btn--secondary, primary action = .ui-btn--primary (both
+   --lg). These only add sizing on top of the primitives. */
+.dock-nav-btn { box-sizing: border-box; }
+.dock-nav-btn:not(:disabled):active { transform: scale(0.98); }
 
-.submit-action-trigger {
-  color: #20222f;
-  border: none;
-}
-.submit-action-trigger:not(:disabled):hover {
-  filter: brightness(0.94);
-}
-.submit-action-trigger:not(:disabled):active {
-  transform: scale(0.97);
-}
+.submit-action-trigger { min-width: 148px; }
+.submit-action-trigger--wide { min-width: 280px; }
 
-.action-node-pulsing {
-  animation: duoButtonGlowPulse 1.4s infinite alternate;
-}
+/* Ready-to-continue state: kept as a hook, intentionally no animation
+   (distraction-free player). */
+.action-node-pulsing { animation: none; }
 
 /* ================= 🖥️ FULLSCREEN SANDBOX SYSTEM TERMINALS ================= */
 .html-sandbox-fullscreen-overlay {
   position: fixed;
   top: 0; left: 0; width: 100vw; height: 100vh;
-  z-index: 99999;
+  /* 9999 = the stacking level this overlay has always used (it was an
+     inline style); the eject modal below sits at 10000. */
+  z-index: 9999;
   display: flex;
   flex-direction: column;
-  background-color: var(--orbit-canvas);
+  background-color: var(--ui-bg);
+  font-family: var(--ui-font-sans);
+}
+
+.html-sandbox-fullscreen-overlay iframe {
+  border: none;
 }
 
 /* Permanent top-right "Abort Mission" rocket control — no hover tracking
@@ -301,27 +276,31 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid var(--orbit-border);
-  background-color: var(--orbit-glass-bg);
-  backdrop-filter: blur(6px);
-  color: var(--orbit-text-muted);
+  border: 1px solid var(--ui-border-2);
+  background-color: var(--ui-surface);
+  color: var(--ui-text-2);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(16, 24, 40, 0.15);
-  transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--ui-shadow-md);
+  transition: color var(--ui-duration) var(--ui-ease), border-color var(--ui-duration) var(--ui-ease), box-shadow var(--ui-duration) var(--ui-ease);
   touch-action: manipulation;
 }
 
-/* Idle → ready-to-launch: a subtle shake + lavender halo, like the engines
+.sandbox-exit-icon-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ui-ring), var(--ui-shadow-md);
+}
+
+/* Idle → ready-to-launch: a subtle shake + accent ring, like the engines
    are warming up. Desktop-only micro-interaction (hover has no equivalent
    on touch, so mobile just gets the plain idle state — no janky stuck-hover). */
 @media (hover: hover) {
   .sandbox-exit-icon-btn:hover {
-    color: var(--orbit-lavender-text);
-    border-color: var(--orbit-lavender);
-    box-shadow: 0 0 0 6px rgba(201, 184, 255, 0.18), 0 2px 10px rgba(16, 24, 40, 0.15);
+    color: var(--ui-accent-text);
+    border-color: var(--ui-accent);
+    box-shadow: var(--ui-ring), var(--ui-shadow-md);
     animation: rocketWarmup 0.5s ease-in-out infinite;
   }
 }
@@ -352,82 +331,65 @@
   100% { transform: translateY(-140vh) scale(0.5) rotate(6deg); opacity: 0; }
 }
 
-/* ================= 💥 COSMIC "ABORT MISSION" CONFIRMATION MODAL ================= */
+/* ================= "ABORT MISSION" CONFIRMATION MODAL (ui-modal look) ================= */
 .eject-modal-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(10, 12, 20, 0.55);
-  backdrop-filter: blur(3px);
+  background-color: var(--ui-overlay);
   z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: var(--ui-space-5);
   box-sizing: border-box;
   animation: ejectBackdropFadeIn 0.15s ease;
 }
 
 .eject-modal-card {
   width: 100%;
-  max-width: 380px;
-  background-color: var(--orbit-surface);
-  border-radius: 18px;
-  padding: 28px 24px 24px;
+  max-width: 400px;
+  background-color: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-xl);
+  padding: var(--ui-space-8) var(--ui-space-6) var(--ui-space-6);
   box-sizing: border-box;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--ui-shadow-lg);
   text-align: center;
-  animation: ejectModalPopIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-family: var(--ui-font-sans);
+  animation: ejectModalPopIn 0.2s var(--ui-ease);
 }
 
 .eject-modal-title {
-  font-size: 19px;
-  font-weight: 900;
-  color: var(--orbit-text-heading);
-  margin: 0 0 12px 0;
-  letter-spacing: -0.3px;
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-fs-xl);
+  font-weight: var(--ui-fw-heavy);
+  color: var(--ui-text);
+  margin: 0 0 var(--ui-space-3) 0;
+  letter-spacing: var(--ui-tracking-tight);
+  line-height: var(--ui-lh-tight);
 }
 
 .eject-modal-body {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--orbit-text-body);
-  line-height: 1.55;
-  margin: 0 0 24px 0;
+  font-size: var(--ui-fs-base);
+  color: var(--ui-text-2);
+  line-height: var(--ui-lh-body);
+  margin: 0 0 var(--ui-space-6) 0;
 }
 
 .eject-modal-actions {
   display: flex;
-  gap: 10px;
+  gap: var(--ui-space-2);
 }
 
+/* Buttons are .ui-btn --secondary / --primary --lg; this only sizes them. */
 .eject-modal-btn {
   flex: 1;
-  min-height: 44px;
-  border-radius: 12px;
-  font-size: 13.5px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  box-sizing: border-box;
-  padding: 0 10px;
+  min-width: 0;
+  padding: 0 var(--ui-space-3);
   touch-action: manipulation;
 }
 
-.eject-modal-btn--stay {
-  background-color: var(--orbit-surface);
-  border: 1.5px solid var(--orbit-border);
-  color: var(--orbit-text-heading);
-}
-.eject-modal-btn--stay:hover { background-color: var(--orbit-surface-subtle); border-color: var(--orbit-border-strong); }
-
-.eject-modal-btn--go {
-  background: linear-gradient(135deg, var(--orbit-lavender), var(--orbit-sky));
-  border: 1.5px solid transparent;
-  color: #20222f;
-}
-.eject-modal-btn--go:hover { filter: brightness(0.94); }
-
-.eject-modal-btn:active { transform: scale(0.96); }
+.eject-modal-btn:active { transform: scale(0.97); }
 
 @keyframes ejectBackdropFadeIn {
   from { opacity: 0; }
@@ -435,16 +397,17 @@
 }
 
 @keyframes ejectModalPopIn {
-  from { opacity: 0; transform: scale(0.92) translateY(8px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
 }
 
 @media (max-width: 480px) {
   .eject-modal-actions { flex-direction: column-reverse; }
-  .eject-modal-card { padding: 24px 20px 20px; }
+  .eject-modal-btn { flex: 0 0 auto; width: 100%; }
+  .eject-modal-card { padding: var(--ui-space-6) var(--ui-space-5) var(--ui-space-5); }
 }
 
-/* ================= 🌀 UTILITY COMPILING STATE SPINNERS ================= */
+/* ================= LOADING / EMPTY STATES (also used by ModuleDetail) ================= */
 .cyber-loading-container {
   width: 100vw;
   height: 100vh;
@@ -452,33 +415,115 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  background-color: var(--orbit-canvas);
+  gap: var(--ui-space-4);
+  background-color: var(--ui-bg);
+  font-family: var(--ui-font-sans);
 }
 
 .cyber-loading-container span {
-  font-size: 12px;
-  font-weight: 900;
-  color: var(--orbit-text-muted);
-  letter-spacing: 0.8px;
+  font-size: var(--ui-fs-2xs);
+  font-weight: var(--ui-fw-semibold);
+  color: var(--ui-text-3);
+  letter-spacing: var(--ui-tracking-wide);
+  text-transform: uppercase;
 }
 
 .cyber-spinner {
-  width: 36px;
-  height: 36px;
-  border: 4px solid var(--orbit-border);
-  border-top-color: var(--orbit-lavender);
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--ui-accent-soft-2);
+  border-top-color: var(--ui-accent);
   border-radius: 50%;
   animation: duoPlayerSpin 0.7s linear infinite;
 }
 
 .no-modules-placeholder {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--orbit-rose-text);
-  padding: 40px;
+  max-width: var(--ui-container-narrow);
+  margin: var(--ui-space-12) auto;
+  padding: var(--ui-space-4) var(--ui-space-5);
+  border-radius: var(--ui-radius);
+  background-color: var(--ui-danger-soft);
+  color: var(--ui-danger-text);
+  font-family: var(--ui-font-sans);
+  font-size: var(--ui-fs-sm);
+  font-weight: var(--ui-fw-semibold);
+  text-align: center;
 }
 
 @keyframes duoPlayerSpin { 100% { transform: rotate(360deg); } }
-@keyframes duoNodePulse { 0% { opacity: 0.3; } 100% { opacity: 1; } }
-@keyframes duoButtonGlowPulse { 0% { filter: brightness(1); } 100% { filter: brightness(1.08); } }
+
+/* ================= SMALL SCREENS =================
+   ≤760px: the syllabus rail becomes a horizontally scrolling row of chips
+   above the card (instead of squeezing the reading column to ~100px), the
+   toggle docks to the end of that row, and the dock tightens up. */
+@media (max-width: 760px) {
+  .main-flexible-workspace-deck { flex-direction: column; }
+
+  .quiz-dynamic-sidebar-rails {
+    height: auto;
+    flex-direction: row;
+    transition: none;
+  }
+  .quiz-dynamic-sidebar-rails.drawer-expanded {
+    width: 100%;
+    border-right: 0;
+    border-bottom: 1px solid var(--ui-border);
+  }
+  .quiz-dynamic-sidebar-rails.drawer-collapsed { display: none; }
+
+  .sidebar-rails-header { display: none; }
+
+  .sidebar-scrollable-menu-nodes {
+    min-width: 0;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: var(--ui-space-2);
+    padding: var(--ui-space-2) 56px var(--ui-space-2) var(--ui-space-4);
+  }
+
+  .sidebar-nav-item-row {
+    flex: 0 0 auto;
+    max-width: 220px;
+    min-height: 36px;
+    padding: 6px 12px;
+    gap: var(--ui-space-1);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius-pill);
+  }
+  .sidebar-nav-item-row.active-row-node { border-color: var(--ui-accent-soft-2); }
+
+  .iris-drawer-toggle-trigger.trigger-aside {
+    left: auto;
+    right: var(--ui-space-3);
+    top: 10px;
+    /* soft surface-coloured fade so chips scroll "under" the toggle */
+    box-shadow: -14px 0 10px 2px var(--ui-surface), var(--ui-shadow-sm);
+  }
+  .iris-drawer-toggle-trigger.trigger-flush { left: var(--ui-space-4); top: var(--ui-space-3); }
+
+  .quiz-sleeve-viewport-wrapper {
+    height: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: var(--ui-space-5) var(--ui-space-4) var(--ui-space-8);
+  }
+  .quiz-dynamic-sidebar-rails.drawer-collapsed ~ .quiz-sleeve-viewport-wrapper { padding-top: 60px; }
+
+  .quiz-action-control-dock { min-height: 64px; }
+  .dock-content-alignment { padding: 0 var(--ui-space-4); }
+}
+
+@media (max-width: 480px) {
+  .submit-action-trigger,
+  .submit-action-trigger--wide { min-width: 0; }
+  .submit-action-trigger {
+    white-space: normal;
+    height: auto;
+    min-height: 46px;
+    padding-top: var(--ui-space-2);
+    padding-bottom: var(--ui-space-2);
+    line-height: var(--ui-lh-snug);
+    text-align: center;
+  }
+}

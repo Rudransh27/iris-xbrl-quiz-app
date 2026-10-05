@@ -5,7 +5,11 @@ import { useWindowSize } from "react-use";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookHalf, TrophyFill, LightbulbFill, StarFill, XLg } from "react-bootstrap-icons";
 import AuthContext from "../context/AuthContext";
+import { useThemeTokens } from "./ui";
 import "./StreakCelebrationOverlay.css";
+
+// Confetti takes JS colour strings, so resolve them from the category tokens.
+const CONFETTI_TOKENS = ["--cat-violet", "--cat-amber", "--cat-green", "--cat-rose"];
 
 const ACTION_META = {
   daily_read:      { icon: BookHalf,      label: "Today's Read Complete" },
@@ -31,6 +35,7 @@ export default function StreakCelebrationOverlay() {
   const { celebration, dismissCelebration } = useContext(AuthContext);
   const { width, height } = useWindowSize();
   const [showNewStreak, setShowNewStreak] = useState(false);
+  const confettiTokens = useThemeTokens(CONFETTI_TOKENS);
 
   const message = useMemo(() => {
     if (!celebration) return "";
@@ -62,7 +67,7 @@ export default function StreakCelebrationOverlay() {
         recycle={false}
         numberOfPieces={160}
         gravity={0.15}
-        colors={["#7c6ef7", "#ffbe0b", "#58cc02", "#ff006e"]}
+        colors={CONFETTI_TOKENS.map((t) => confettiTokens[t.replace(/^--/, "")]).filter(Boolean)}
         className="streak-celebration-confetti"
       />
       <div className="streak-celebration-card" role="status">

@@ -8,23 +8,23 @@ import React, { useContext, useEffect, useState, useRef, useCallback } from "rea
 import AuthContext from "../context/AuthContext";
 import api from "../admin/services/api";
 import { useNavigate } from "react-router-dom";
-import ChangePasswordModal from "../components/ChangePasswordModal";
+import AccountSecurityModal from "../components/AccountSecurityModal";
 import {
   PiArrowLeft, PiCameraFill, PiPencilSimpleFill, PiUploadSimpleFill,
   PiSealCheckFill, PiShieldCheckFill, PiCalendarBlankFill, PiCirclesThreeFill,
   PiLockKeyFill, PiSignOutFill, PiLightningFill, PiRocketLaunchFill, PiStackFill,
   PiMedalFill, PiTrophyFill, PiTestTubeFill, PiSparkleFill, PiEnvelopeSimpleFill,
   PiBuildingsFill, PiUsersThreeFill, PiFlaskFill, PiCaretDown, PiChatCircleTextFill,
-  PiListChecksFill, PiTextAaFill, PiShootingStarFill,
+  PiListChecksFill, PiTextAaFill, PiShootingStarFill, PiSignInFill,
 } from "react-icons/pi";
 import "./UserProfile.css";
 
 // ── Avatar presets ────────────────────────────────────────────────────────────
 const AVATAR_LIST = [
-  { id: "dev",       name: "Full-Stack Engineer", emoji: "💻", color: "#7c6ef7" },
-  { id: "xbrl",     name: "XBRL Architect",       emoji: "📊", color: "#10b981" },
-  { id: "regtech",  name: "RegTech Lead",          emoji: "🏢", color: "#f59e0b" },
-  { id: "validator",name: "Validation Expert",     emoji: "⚡", color: "#8b5cf6" },
+  { id: "dev",       name: "Full-Stack Engineer", emoji: "💻" },
+  { id: "xbrl",     name: "XBRL Architect",       emoji: "📊" },
+  { id: "regtech",  name: "RegTech Lead",          emoji: "🏢" },
+  { id: "validator",name: "Validation Expert",     emoji: "⚡" },
 ];
 
 const BADGE_ICONS = {
@@ -36,15 +36,15 @@ const BADGE_ICONS = {
   top_10:        PiTrophyFill,
 };
 
-// Rotating pastel-rainbow accent per badge — same rotation convention as the
-// dashboard calendar's --orbit-rose/pink/mint/teal/sky/lavender cells.
+// Per-badge icon-tile tone (ui-icon-tile--<tone>) — only to tell badges apart;
+// an empty string is the default accent tile.
 const BADGE_ACCENTS = {
   first_launch:  "rose",
-  streak_5:      "pink",
-  sharp_shooter: "mint",
+  streak_5:      "amber",
+  sharp_shooter: "green",
   idea_spark:    "teal",
   module_master: "sky",
-  top_10:        "lavender",
+  top_10:        "",
 };
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -73,7 +73,7 @@ export default function UserProfile() {
   const [expandedCard,    setExpandedCard]    = useState(null);
   const [gamification,    setGamification]    = useState(null);
   const [leaderboard,     setLeaderboard]     = useState(null);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showSecurityModal, setShowSecurityModal] = useState(false);
   const [regionsList,     setRegionsList]     = useState([]);
   const [savingRegions,   setSavingRegions]   = useState(false);
   const fileInputRef = useRef(null);
@@ -183,20 +183,9 @@ export default function UserProfile() {
   // ── Loading ───────────────────────────────────────────────────────────────
   if (authLoading || loadingStats) {
     return (
-      <div style={{
-        minHeight: "60vh", display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center", gap: "14px",
-        fontFamily: "'Inter', system-ui, sans-serif",
-      }}>
-        <div style={{
-          width: "44px", height: "44px", borderRadius: "50%",
-          border: "3px solid var(--orbit-border)",
-          borderTopColor: "var(--orbit-brand)",
-          animation: "orbit-spin 0.85s linear infinite",
-        }} />
-        <p style={{ fontSize: "13px", color: "var(--orbit-text-muted)", fontWeight: "600", margin: 0 }}>
-          Syncing profile…
-        </p>
+      <div className="ui-loading">
+        <span className="ui-spinner ui-spinner--lg" role="status" aria-label="Loading" />
+        <span>Syncing profile…</span>
       </div>
     );
   }
@@ -241,44 +230,40 @@ export default function UserProfile() {
     ? new Date(user.createdAt).toLocaleDateString("en-GB", { month: "long", year: "numeric" })
     : "Recently";
 
-  const canChangePassword = user.authProvider !== "microsoft";
+  // From the sign-in system (/auth/validate), never typed in by anyone.
+  const SIGN_IN_LABEL = { SSO: "Microsoft SSO", LOCAL: "Email & password" };
+  const lastSignIn = user.lastLoginAt
+    ? `${new Date(user.lastLoginAt).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}${user.lastLoginMethod ? ` · ${SIGN_IN_LABEL[user.lastLoginMethod] || user.lastLoginMethod}` : ""}`
+    : null;
+  // Only accounts that have an IRIS Orbit password can change it — accounts
+  // that sign in with Microsoft have none (and aren't given one).
+  const canChangePassword = Array.isArray(user.signInMethods)
+    ? user.signInMethods.includes("local")
+    : user.authProvider !== "microsoft";
   const badges       = gamification?.badges || [];
   const badgesEarned = badges.filter(b => b.unlocked).length;
   const orbitTier    = gamification?.orbitTier || null;
   const last7Days    = gamification?.last7Days || [];
   const myRank       = leaderboard?.myRank ?? null;
 
-  return (
-    <div className="up-page">
-      <div className="up-header-card">
-        {/* ═══════════════════ COVER BANNER ═══════════════════════════════ */}
-        <div className="up-banner">
-          {[
-            { size: 220, top: "-50px", right: "-50px", op: 0.22 },
-            { size: 110, top: "16px",  right: "24px",  op: 0.32 },
-            { size: 150, bottom: "-50px", left: "-40px", op: 0.18 },
-          ].map((r, i) => (
-            <div key={i} aria-hidden="true" className="up-banner__ring" style={{
-              top: r.top, right: r.right, bottom: r.bottom, left: r.left,
-              width: r.size, height: r.size, animationDelay: `${i * 1.5}s`,
-            }} />
-          ))}
-          <button className="up-back-btn" onClick={() => navigate(-1)}>
-            <PiArrowLeft size={13} /> Back
-          </button>
-          <span className="up-role-badge">
-            {user.role === "superadmin" ? "Super Admin" : user.role === "admin" ? "Admin" : "Member"}
-          </span>
-        </div>
+  const roleLabel = user.role === "superadmin" ? "Super Admin" : user.role === "admin" ? "Admin" : "Member";
 
+  return (
+    <div className="ui-page up-page">
+      <div className="up-topbar">
+        <button type="button" className="ui-btn ui-btn--ghost ui-btn--sm" onClick={() => navigate(-1)}>
+          <PiArrowLeft size={14} /> Back
+        </button>
+      </div>
+
+      <div className="ui-card up-header-card">
         {/* ── Avatar + identity row ───────────────────────────────────────── */}
         <div className="up-header-body">
           <div className="up-avatar-wrap" onClick={() => fileInputRef.current?.click()}>
-            <div className="up-avatar" style={{
-              background: avatarSrc
-                ? `url(${avatarSrc}) center/cover no-repeat`
-                : `linear-gradient(135deg, ${activeAvatar.color}, #7c3aed)`,
-            }}>
+            <div
+              className="ui-avatar ui-avatar--lg up-avatar"
+              style={avatarSrc ? { backgroundImage: `url(${avatarSrc})` } : undefined}
+            >
               {!avatarSrc && <span className="up-avatar__emoji">{isUpdating ? "⏳" : activeAvatar.emoji}</span>}
               <div className="up-avatar__cam-overlay">
                 <PiCameraFill size={15} />
@@ -286,19 +271,17 @@ export default function UserProfile() {
               </div>
             </div>
           </div>
-          <input type="file" ref={fileInputRef} style={{ display: "none" }} accept="image/png,image/jpeg,image/webp" onChange={handleFileChange} />
+          <input type="file" ref={fileInputRef} className="up-file-input" accept="image/png,image/jpeg,image/webp" onChange={handleFileChange} />
 
           <div className="up-identity">
             <div className="up-name-row">
-              <h1 className="up-name">{user.username || "Orbiter"}</h1>
-              {isAdmin && (
-                <span className="up-pill up-pill--role">
-                  <PiShieldCheckFill size={11} /> {user.role === "superadmin" ? "Superadmin" : "Admin"}
-                </span>
-              )}
+              <h1 className="ui-h1 up-name">{user.username || "Orbiter"}</h1>
+              <span className="ui-badge ui-badge--accent">
+                {isAdmin && <PiShieldCheckFill size={12} />} {roleLabel}
+              </span>
               {user.isVerified && (
-                <span className="up-pill up-pill--verified">
-                  <PiSealCheckFill size={11} /> Verified
+                <span className="ui-badge ui-badge--success">
+                  <PiSealCheckFill size={12} /> Verified
                 </span>
               )}
             </div>
@@ -310,22 +293,24 @@ export default function UserProfile() {
             )}
 
             <div className="up-meta-row">
-              <span><PiCirclesThreeFill size={12} /> {activeAvatar.name}</span>
-              <span><PiCalendarBlankFill size={12} /> Joined {joinDate}</span>
+              <span><PiBuildingsFill size={14} /> {deptLabel}</span>
+              <span><PiCirclesThreeFill size={14} /> {activeAvatar.name}</span>
+              <span><PiCalendarBlankFill size={14} /> Joined {joinDate}</span>
+              {lastSignIn && <span title="Your most recent sign-in"><PiSignInFill size={14} /> Last sign-in {lastSignIn}</span>}
             </div>
           </div>
 
           <div className="up-header-actions">
-            <button className="up-btn" onClick={() => setIsEditing(!isEditing)}>
-              <PiPencilSimpleFill size={13} /> {isEditing ? "Close" : "Edit Profile"}
+            <button className="ui-btn ui-btn--secondary" onClick={() => setIsEditing(!isEditing)}>
+              <PiPencilSimpleFill size={14} /> {isEditing ? "Close" : "Edit Profile"}
             </button>
             {canChangePassword && (
-              <button className="up-btn" onClick={() => setShowPasswordModal(true)}>
-                <PiLockKeyFill size={13} /> Change Password
+              <button className="ui-btn ui-btn--secondary" onClick={() => setShowSecurityModal(true)}>
+                <PiLockKeyFill size={14} /> Change Password
               </button>
             )}
-            <button className="up-btn up-btn--danger" onClick={handleLogout}>
-              <PiSignOutFill size={13} /> Log Out
+            <button className="ui-btn ui-btn--danger-soft" onClick={handleLogout}>
+              <PiSignOutFill size={14} /> Log Out
             </button>
           </div>
         </div>
@@ -346,16 +331,16 @@ export default function UserProfile() {
                 </div>
               ))}
             </div>
-            <button className="up-upload-btn" onClick={() => fileInputRef.current?.click()}>
+            <button className="ui-btn ui-btn--secondary ui-btn--block" onClick={() => fileInputRef.current?.click()}>
               <PiUploadSimpleFill size={14} /> Upload Custom Photo
             </button>
 
             {regionsList.length > 0 && (
               <>
-                <p className="up-editor__title" style={{ marginTop: "18px" }}>
-                  Your Region(s) {savingRegions && <span style={{ opacity: 0.6 }}>· saving…</span>}
+                <p className="up-editor__title up-editor__title--spaced">
+                  Your Region(s) {savingRegions && <span className="up-saving">· saving…</span>}
                 </p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                <div className="up-region-row">
                   {regionsList.map((r) => {
                     const isSelected = userRegionIds.includes(r._id);
                     return (
@@ -364,19 +349,15 @@ export default function UserProfile() {
                         type="button"
                         disabled={savingRegions}
                         onClick={() => handleToggleRegion(r._id)}
-                        className={`up-preset-card ${isSelected ? "up-preset-card--active" : ""}`}
-                        style={{
-                          display: "inline-flex", alignItems: "center", gap: "6px",
-                          padding: "8px 14px", width: "auto", flexDirection: "row",
-                        }}
+                        className={`up-preset-card up-preset-card--chip ${isSelected ? "up-preset-card--active" : ""}`}
                       >
-                        <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: r.color || "#6366f1", display: "inline-block" }} />
+                        <span className="up-region-dot" style={{ backgroundColor: r.color || "var(--ui-accent)" }} />
                         <span className="up-preset-card__label">{r.name}</span>
                       </button>
                     );
                   })}
                 </div>
-                <p className="up-bio up-bio--empty" style={{ marginTop: "8px" }}>
+                <p className="up-bio up-bio--empty up-editor__hint">
                   No region selected means you see content from every region.
                 </p>
               </>
@@ -386,41 +367,40 @@ export default function UserProfile() {
       </div>
 
       {/* ═══════════════════ YOUR STATS ═════════════════════════════════════ */}
-      <div className="up-card">
+      <section className="up-block">
         <div className="up-card__head">
-          <p className="up-card__title"><PiLightningFill size={14} /> Your Stats</p>
+          <p className="up-card__title"><PiLightningFill size={16} /> Your Stats</p>
           {myRank && (
-            <span className="up-rank-pill">
+            <span className="ui-badge ui-badge--accent">
               <PiTrophyFill size={12} /> #{myRank} in {deptLabel} dept this month
             </span>
           )}
         </div>
-        <div className="up-stats-grid">
+        <div className="ui-stat-strip">
           {[
-            { icon: PiShootingStarFill,  label: "Lightyears",        value: user.xp || 0,     accent: "lavender" },
-            { icon: PiRocketLaunchFill,  label: "Day Streak",       value: user?.streak || 0, accent: "pink" },
-            { icon: PiStackFill,         label: "Modules Mastered", value: stats?.completedModulesCount ?? 0, accent: "teal" },
-            { icon: PiMedalFill,         label: "Badges Earned",    value: badgesEarned,     accent: "sky" },
+            { icon: PiShootingStarFill,  label: "Lightyears",        value: user.xp || 0 },
+            { icon: PiRocketLaunchFill,  label: "Day Streak",       value: user?.streak || 0 },
+            { icon: PiStackFill,         label: "Modules Mastered", value: stats?.completedModulesCount ?? 0 },
+            { icon: PiMedalFill,         label: "Badges Earned",    value: badgesEarned },
           ].map((s, i) => {
             const Icon = s.icon;
             return (
-              <div key={i} className={`up-stat-tile up-stat-tile--${s.accent}`}>
-                <div className="up-stat-tile__icon"><Icon size={19} /></div>
-                <div className="up-stat-tile__value">{s.value}</div>
-                <div className="up-stat-tile__label">{s.label}</div>
+              <div key={i} className="ui-stat">
+                <span className="ui-stat__value">{s.value}</span>
+                <span className="ui-stat__label up-stat-label"><Icon size={14} /> {s.label}</span>
               </div>
             );
           })}
         </div>
-      </div>
+      </section>
 
       {/* ═══════════════════ YOUR ORBIT ═════════════════════════════════════ */}
       {orbitTier && (
-        <div className="up-card">
+        <section className="up-block">
           <div className="up-card__head">
-            <p className="up-card__title"><PiCirclesThreeFill size={14} /> Your Orbit · three orbits to clear</p>
+            <p className="up-card__title"><PiCirclesThreeFill size={16} /> Your Orbit · three orbits to clear</p>
           </div>
-          <div className="up-orbit-list">
+          <div className="ui-list up-orbit-list">
             {orbitTier.tiers.map((tier) => {
               const isCurrent = tier.status === "current";
               const isLocked  = tier.status === "locked";
@@ -428,20 +408,20 @@ export default function UserProfile() {
                 ? Math.min((orbitTier.xpIntoTier / orbitTier.xpForNextTier) * 100, 100)
                 : isCurrent ? 100 : 0;
               return (
-                <div key={tier.key} className={`up-orbit-tier ${isCurrent ? "up-orbit-tier--current" : ""} ${isLocked ? "up-orbit-tier--locked" : ""}`}>
-                  <div className="up-orbit-tier__badge">{tier.order}</div>
+                <div key={tier.key} className={`ui-list-item up-orbit-tier ${isCurrent ? "up-orbit-tier--current" : ""} ${isLocked ? "up-orbit-tier--locked" : ""}`}>
+                  <span className={`ui-index${isCurrent ? " ui-index--active" : ""}`}>{String(tier.order).padStart(2, "0")}</span>
                   <div className="up-orbit-tier__body">
                     <div className="up-orbit-tier__top">
                       <span className="up-orbit-tier__title">{tier.label}</span>
-                      <span className="up-orbit-tier__status">
+                      <span className={`ui-badge ui-badge--sm${isCurrent ? " ui-badge--accent" : isLocked ? "" : " ui-badge--success"}`}>
                         {isCurrent ? "Your Orbit" : isLocked ? "Locked" : "Cleared"}
                       </span>
                     </div>
                     <p className="up-orbit-tier__desc">{tier.desc || tierDescription(tier.key)}</p>
                     {isCurrent && (
                       <>
-                        <div className="up-orbit-tier__rail">
-                          <div className="up-orbit-tier__fill" style={{ width: `${pct}%` }} />
+                        <div className="ui-progress">
+                          <div className="ui-progress__bar" style={{ width: `${pct}%` }} />
                         </div>
                         <p className="up-orbit-tier__xp-label">
                           {orbitTier.xpForNextTier
@@ -460,100 +440,106 @@ export default function UserProfile() {
               );
             })}
           </div>
-        </div>
+        </section>
       )}
 
       {/* ═══════════════════ STREAK + ACHIEVEMENTS ══════════════════════════ */}
       <div className="up-two-col">
-        <div className="up-card">
+        <section className="up-block">
           <div className="up-card__head">
-            <p className="up-card__title"><PiRocketLaunchFill size={14} /> Streak</p>
+            <p className="up-card__title"><PiRocketLaunchFill size={16} /> Streak</p>
           </div>
-          <p className="up-streak-count">{user?.streak || 0}<span>day streak</span></p>
-          <div className="up-streak-strip">
-            {last7Days.length > 0 ? last7Days.map((d, i) => (
-              <div key={d.date} className={`up-streak-day ${d.active ? "up-streak-day--done" : ""}`}>
-                <span className="up-streak-day__label">{DAY_LABELS[i]}</span>
-                <span className="up-streak-day__dot">{d.active ? <PiSealCheckFill size={13} /> : ""}</span>
-              </div>
-            )) : DAY_LABELS.map((label) => (
-              <div key={label} className="up-streak-day">
-                <span className="up-streak-day__label">{label}</span>
-                <span className="up-streak-day__dot" />
-              </div>
-            ))}
+          <div className="ui-card up-block__body">
+            <p className="up-streak-count">{user?.streak || 0}<span>day streak</span></p>
+            <div className="up-streak-strip">
+              {last7Days.length > 0 ? last7Days.map((d, i) => (
+                <div key={d.date} className={`up-streak-day ${d.active ? "up-streak-day--done" : ""}`}>
+                  <span className="up-streak-day__label">{DAY_LABELS[i]}</span>
+                  <span className="up-streak-day__dot">{d.active ? <PiSealCheckFill size={14} /> : ""}</span>
+                </div>
+              )) : DAY_LABELS.map((label) => (
+                <div key={label} className="up-streak-day">
+                  <span className="up-streak-day__label">{label}</span>
+                  <span className="up-streak-day__dot" />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div className="up-card">
+        <section className="up-block">
           <div className="up-card__head">
-            <p className="up-card__title"><PiMedalFill size={14} /> Achievements</p>
-            <span className="up-rank-pill">{badgesEarned} of {badges.length || 6} unlocked</span>
+            <p className="up-card__title"><PiMedalFill size={16} /> Achievements</p>
+            <span className="ui-badge ui-badge--accent">{badgesEarned} of {badges.length || 6} unlocked</span>
           </div>
-          <div className="up-badge-grid">
-            {(badges.length ? badges : Object.keys(BADGE_ICONS).map(key => ({ key, label: key, unlocked: false }))).map((b) => {
-              const Icon = BADGE_ICONS[b.key] || PiMedalFill;
-              const accentClass = b.unlocked ? `up-badge-tile--${BADGE_ACCENTS[b.key] || "lavender"}` : "up-badge-tile--locked";
+          <div className="ui-card up-block__body">
+            <div className="up-badge-grid">
+              {(badges.length ? badges : Object.keys(BADGE_ICONS).map(key => ({ key, label: key, unlocked: false }))).map((b) => {
+                const Icon = BADGE_ICONS[b.key] || PiMedalFill;
+                const tone = b.unlocked ? (BADGE_ACCENTS[b.key] || "") : "neutral";
+                return (
+                  <div key={b.key} className={`up-badge-tile ${b.unlocked ? "" : "up-badge-tile--locked"}`}>
+                    <span className={`ui-icon-tile${tone ? ` ui-icon-tile--${tone}` : ""}`}><Icon size={20} /></span>
+                    <div className="up-badge-tile__label">{b.label}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* ═══════════════════ ACCOUNT DETAILS ═════════════════════════════════ */}
+      <section className="up-block">
+        <div className="up-card__head">
+          <p className="up-card__title"><PiEnvelopeSimpleFill size={16} /> Account Details</p>
+        </div>
+        <div className="ui-card">
+          <div className="up-info-grid">
+            {[
+              { icon: PiEnvelopeSimpleFill, label: "Email",           value: maskEmail(user?.email) },
+              { icon: PiBuildingsFill,      label: "Department",      value: deptLabel },
+              { icon: PiUsersThreeFill,     label: "Team",            value: teamLabel },
+              { icon: PiCirclesThreeFill,   label: "Region",          value: regionLabel },
+              { icon: PiCirclesThreeFill,   label: "Specialty Track", value: activeAvatar.name },
+            ].map((item, i) => {
+              const Icon = item.icon;
               return (
-                <div key={b.key} className={`up-badge-tile ${accentClass}`}>
-                  <div className="up-badge-tile__icon"><Icon size={18} /></div>
-                  <div className="up-badge-tile__label">{b.label}</div>
+                <div key={i} className="up-info-tile">
+                  <span className="ui-icon-tile ui-icon-tile--sm"><Icon size={16} /></span>
+                  <div className="up-info-tile__text">
+                    <p className="up-info-tile__label">{item.label}</p>
+                    <p className="up-info-tile__value">{item.value}</p>
+                  </div>
                 </div>
               );
             })}
           </div>
         </div>
-      </div>
-
-      {/* ═══════════════════ ACCOUNT DETAILS ═════════════════════════════════ */}
-      <div className="up-card">
-        <div className="up-card__head">
-          <p className="up-card__title"><PiEnvelopeSimpleFill size={14} /> Account Details</p>
-        </div>
-        <div className="up-info-grid">
-          {[
-            { icon: PiEnvelopeSimpleFill, label: "Email",           value: maskEmail(user?.email) },
-            { icon: PiBuildingsFill,      label: "Department",      value: deptLabel },
-            { icon: PiUsersThreeFill,     label: "Team",            value: teamLabel },
-            { icon: PiCirclesThreeFill,   label: "Region",          value: regionLabel },
-            { icon: PiCirclesThreeFill,   label: "Specialty Track", value: activeAvatar.name },
-          ].map((item, i) => {
-            const Icon = item.icon;
-            return (
-              <div key={i} className="up-info-tile">
-                <div className="up-info-tile__icon"><Icon size={15} /></div>
-                <div style={{ minWidth: 0 }}>
-                  <p className="up-info-tile__label">{item.label}</p>
-                  <p className="up-info-tile__value">{item.value}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      </section>
 
       {/* ═══════════════════ SANDBOX REVIEWS ═════════════════════════════════ */}
-      <div className="up-card">
+      <section className="up-block">
         <div className="up-card__head">
-          <p className="up-card__title"><PiFlaskFill size={14} /> Sandbox Reviews</p>
+          <p className="up-card__title"><PiFlaskFill size={16} /> Sandbox Reviews</p>
           {sandboxResults.length > 0 && (
-            <span className="up-rank-pill">{sandboxResults.length} submission{sandboxResults.length !== 1 ? "s" : ""}</span>
+            <span className="ui-badge ui-badge--accent">{sandboxResults.length} submission{sandboxResults.length !== 1 ? "s" : ""}</span>
           )}
         </div>
 
         {sandboxLoading ? (
-          <div style={{ textAlign: "center", padding: "40px", color: "var(--orbit-text-muted)", fontSize: "13px" }}>
+          <div className="ui-card up-sandbox-loading">
             Loading submissions…
           </div>
         ) : sandboxResults.length === 0 ? (
-          <div className="up-empty-state">
-            <span className="up-empty-state__icon"><PiFlaskFill size={30} /></span>
-            <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", maxWidth: "280px" }}>
+          <div className="ui-empty">
+            <span className="ui-icon-tile ui-icon-tile--neutral ui-icon-tile--lg"><PiFlaskFill size={24} /></span>
+            <p className="ui-small up-empty-text">
               No sandbox submissions yet. Complete a sandbox card to see your results here.
             </p>
           </div>
         ) : (
-          <div className="up-sandbox-list">
+          <div className="ui-list up-sandbox-list">
             {sandboxResults.map((card, i) => {
               const { autoScore, autoMax, descMax, mcqCount, descCount } = computeScores(card.questions);
               const adminScore    = card.adminScore    ?? null;
@@ -565,30 +551,30 @@ export default function UserProfile() {
 
               return (
                 <div key={i} className={`up-sandbox-card ${isGraded ? "up-sandbox-card--graded" : ""}`}>
-                  <div className="up-sandbox-card__header" onClick={() => setExpandedCard(isExpanded ? null : i)}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  <div className="up-sandbox-card__header ui-list-item ui-list-item--interactive" onClick={() => setExpandedCard(isExpanded ? null : i)}>
+                    <div className="up-sandbox-card__main">
+                      <div className="up-sandbox-card__titlerow">
                         <span className="up-sandbox-card__title">{card.cardTitle || "Untitled Card"}</span>
                         {isGraded ? (
-                          <span className="up-pill up-pill--verified"><PiSealCheckFill size={10} /> Graded</span>
+                          <span className="ui-badge ui-badge--sm ui-badge--success"><PiSealCheckFill size={11} /> Graded</span>
                         ) : descCount > 0 ? (
-                          <span className="up-pill up-pill--pending">Pending Review</span>
+                          <span className="ui-badge ui-badge--sm ui-badge--warning">Pending Review</span>
                         ) : null}
                       </div>
                       <div className="up-sandbox-card__module">{card.moduleTitle || ""}</div>
                     </div>
 
-                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+                    <div className="up-sandbox-card__chips">
                       {mcqCount > 0 && (
-                        <span className="up-score-chip up-score-chip--mcq"><PiListChecksFill size={11} /> {autoScore}/{autoMax}</span>
+                        <span className="ui-badge ui-badge--accent"><PiListChecksFill size={12} /> {autoScore}/{autoMax}</span>
                       )}
                       {descCount > 0 && (
-                        <span className={`up-score-chip ${isGraded ? "up-score-chip--desc-graded" : "up-score-chip--desc"}`}>
-                          <PiTextAaFill size={11} /> {isGraded ? `${adminScore}/${descMax}` : `?/${descMax}`}
+                        <span className={`ui-badge ${isGraded ? "ui-badge--success" : ""}`}>
+                          <PiTextAaFill size={12} /> {isGraded ? `${adminScore}/${descMax}` : `?/${descMax}`}
                         </span>
                       )}
-                      {totalMax > 0 && <span className="up-score-chip up-score-chip--total">{totalScore}/{totalMax}</span>}
-                      <PiCaretDown size={14} style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", color: "var(--orbit-text-muted)" }} />
+                      {totalMax > 0 && <span className="ui-badge ui-badge--outline">{totalScore}/{totalMax}</span>}
+                      <PiCaretDown size={14} className="up-caret" style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0)" }} />
                     </div>
                   </div>
 
@@ -596,7 +582,7 @@ export default function UserProfile() {
                     <div className="up-sandbox-card__detail">
                       {adminFeedback && (
                         <div className="up-feedback-banner">
-                          <p className="up-feedback-banner__label"><PiChatCircleTextFill size={11} style={{ display: "inline", marginRight: 4 }} />Admin Feedback</p>
+                          <p className="up-feedback-banner__label"><PiChatCircleTextFill size={12} />Admin Feedback</p>
                           <p className="up-feedback-banner__text">{adminFeedback}</p>
                         </div>
                       )}
@@ -607,12 +593,12 @@ export default function UserProfile() {
                           return (
                             <div key={qi} className="up-question">
                               <div className="up-question__head">
-                                <span className={`up-question__type ${isDesc ? "up-question__type--desc" : "up-question__type--mcq"}`}>
+                                <span className={`ui-badge ui-badge--sm ${isDesc ? "ui-badge--info" : "ui-badge--accent"}`}>
                                   {q.type === "true_false" ? "T/F" : q.type || "MCQ"}
                                 </span>
                                 <p className="up-question__text">{q.questionText || `Question ${qi + 1}`}</p>
                                 {!isDesc && (
-                                  <span className={`up-question__correctness ${q.isCorrect ? "up-question__correctness--right" : "up-question__correctness--wrong"}`}>
+                                  <span className={`ui-badge ui-badge--sm ${q.isCorrect ? "ui-badge--success" : "ui-badge--danger"}`}>
                                     {q.isCorrect ? "Correct" : "Incorrect"}
                                     {q.maxPoints ? ` · ${q.points || 0}/${q.maxPoints}` : ""}
                                   </span>
@@ -621,13 +607,13 @@ export default function UserProfile() {
                               {isDesc && q.userAnswer && (
                                 <div className="up-question__answer">
                                   <p className="up-question__answer-label">Your Response</p>
-                                  <pre className="up-question__answer-text" style={{ fontFamily: q.type === "code" ? "'Fira Code', 'Courier New', monospace" : "inherit" }}>
+                                  <pre className={`up-question__answer-text${q.type === "code" ? " up-question__answer-text--code" : ""}`}>
                                     {q.userAnswer}
                                   </pre>
                                 </div>
                               )}
                               {isDesc && q.maxPoints && (
-                                <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--orbit-text-muted)", fontWeight: "600" }}>
+                                <p className="up-question__worth">
                                   Worth {q.maxPoints} point{q.maxPoints !== 1 ? "s" : ""} · admin graded
                                 </p>
                               )}
@@ -635,7 +621,7 @@ export default function UserProfile() {
                           );
                         })
                       ) : (
-                        <p style={{ margin: "14px 0 0", fontSize: "12px", color: "var(--orbit-text-muted)", textAlign: "center" }}>
+                        <p className="up-sandbox-card__none">
                           No detailed question breakdown available.
                         </p>
                       )}
@@ -646,9 +632,9 @@ export default function UserProfile() {
             })}
           </div>
         )}
-      </div>
+      </section>
 
-      {showPasswordModal && <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />}
+      {showSecurityModal && <AccountSecurityModal onClose={() => setShowSecurityModal(false)} />}
     </div>
   );
 }

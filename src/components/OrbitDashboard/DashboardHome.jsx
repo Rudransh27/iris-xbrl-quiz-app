@@ -137,7 +137,9 @@ export default function DashboardHome({
     <div className="orbit-dash">
       <HeroWelcome />
 
-      <div className="orbit-dash__split">
+      {/* Every row shares one grid — main column + 340px side column — so all
+          blocks line up on the same vertical edges. */}
+      <div className="orbit-dash__row">
         <ChecklistCard items={checklistItems} />
         <OrbitCalendar
           history={history}
@@ -147,20 +149,16 @@ export default function DashboardHome({
         />
       </div>
 
-      <NewsCarousel newsFeed={newsFeed} />
-
-      <div className="orbit-dash__split--even">
+      <div className="orbit-dash__row">
         <CurrentModuleCard module={widgetModule} progress={moduleProgress} onResume={goToModule} />
         <SuggestIdeaCard onClick={goToIdea} />
       </div>
 
-      <div className="orbit-dash__bottom-grid">
-        <div className="orbit-dash__bottom-grid-modules">
-          <PopularModulesRow modules={modules} getModuleProgress={getModuleProgress} onOpenModule={handleNavigationGate} />
-        </div>
-        <div className="orbit-dash__bottom-grid-puzzle">
-          <SlidingPuzzleWidget />
-        </div>
+      <NewsCarousel newsFeed={newsFeed} />
+
+      <div className="orbit-dash__row">
+        <PopularModulesRow modules={modules} getModuleProgress={getModuleProgress} onOpenModule={handleNavigationGate} />
+        <SlidingPuzzleWidget />
       </div>
     </div>
   );

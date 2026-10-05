@@ -16,6 +16,8 @@ export default function Layout({ children }) {
   const isAuthRoute = location.pathname === "/login"
     || location.pathname === "/register"
     || location.pathname === "/onboarding"
+    || location.pathname === "/sso/callback"
+    || location.pathname === "/complete-profile"
     || location.pathname.startsWith("/verify-email")
     || location.pathname.startsWith("/forgot-password")
     || location.pathname.startsWith("/reset-password");

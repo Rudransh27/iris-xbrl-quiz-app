@@ -3,25 +3,26 @@
    it never competes with the dashboard's real content for attention. */
 
 .orbit-puzzle {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  border-radius: var(--radius-lg, 14px);
-  background: var(--orbit-surface);
-  border: 1.5px solid var(--orbit-border);
-  box-shadow: var(--orbit-shadow-sm);
-  transition: box-shadow 0.4s ease, border-color 0.4s ease;
+  gap: var(--ui-space-2);
+  width: 100%;
+  min-width: 0;
+  padding: var(--ui-space-4) var(--ui-space-5);
+  border-radius: var(--ui-radius-lg);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  transition: box-shadow var(--ui-duration) var(--ui-ease), border-color var(--ui-duration) var(--ui-ease);
 }
 
 .orbit-puzzle--solved {
-  border-color: var(--orbit-lavender);
-  box-shadow: 0 0 0 1px var(--orbit-lavender), 0 0 24px 4px rgba(201, 184, 255, 0.32);
+  border-color: var(--ui-accent);
+  box-shadow: 0 0 0 1px var(--ui-accent), var(--ui-shadow-md);
 }
 
 .orbit-puzzle__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
 }
@@ -29,48 +30,48 @@
 .orbit-puzzle__title {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
+  gap: 6px;
+  font-size: var(--ui-fs-2xs);
+  font-weight: var(--ui-fw-semibold);
+  letter-spacing: var(--ui-tracking-wide);
   text-transform: uppercase;
-  color: var(--orbit-text-muted);
+  color: var(--ui-text-3);
 }
 
 .orbit-puzzle__title svg {
-  color: var(--orbit-lavender-text);
+  color: var(--ui-accent-text);
 }
 
 .orbit-puzzle__solved-badge {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--orbit-lavender-text);
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-bold);
+  color: var(--ui-success-text);
 }
 
 .orbit-puzzle__reshuffle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--ui-radius-sm);
   border: none;
   background: transparent;
-  color: var(--orbit-text-muted);
+  color: var(--ui-text-3);
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
 }
 
 .orbit-puzzle__reshuffle:hover {
-  background: var(--orbit-canvas);
-  color: var(--orbit-lavender-text);
+  background: var(--ui-hover);
+  color: var(--ui-accent-text);
 }
 
 .orbit-puzzle__moves {
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--orbit-text-muted);
-  opacity: 0.8;
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-medium);
+  color: var(--ui-text-3);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Sized purely via CSS (not a JS px constant) so it scales smoothly on any
@@ -85,17 +86,16 @@
   width: clamp(138px, 46vw, 210px);
   height: clamp(138px, 46vw, 210px);
   gap: 6px;
-  border-radius: 10px;
+  border-radius: var(--ui-radius);
   overflow: hidden;
-  background: var(--orbit-canvas);
+  background: var(--ui-surface-2);
   flex-shrink: 0;
   /* Tap-to-slide only (no drag gesture) — disabling other touch gestures on
      the grid itself prevents an accidental page-scroll/zoom hijack mid-tap. */
   touch-action: manipulation;
 }
 
-/* Numbered pastel-rainbow tiles — fixed opaque fills + fixed dark ink,
-   legible in both themes regardless of the page canvas behind the grid.
+/* Numbered tiles — single accent tint (tokens, so both themes work).
    No `transition` on `transform` here: framer-motion's `layout` animation
    (see SlidingPuzzleWidget.jsx) drives this element's transform directly
    via its own spring physics on every slide — a competing CSS transition
@@ -105,38 +105,54 @@
    the property framer-motion owns. */
 .orbit-puzzle__tile {
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--ui-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--ui-font-display);
   font-size: clamp(16px, 6vw, 22px);
-  font-weight: 800;
-  color: var(--ink-strong);
+  font-weight: var(--ui-fw-heavy);
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-accent-text);
+  background: var(--ui-accent-soft);
+  border: 1px solid var(--ui-accent-soft-2);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition: filter 0.1s ease;
 }
 
-.orbit-puzzle__tile--rose     { background: var(--orbit-rose); }
-.orbit-puzzle__tile--pink     { background: var(--orbit-pink); }
-.orbit-puzzle__tile--mint     { background: var(--orbit-mint); }
-.orbit-puzzle__tile--teal     { background: var(--orbit-teal); }
-.orbit-puzzle__tile--sky      { background: var(--orbit-sky); }
-.orbit-puzzle__tile--lavender { background: var(--orbit-lavender); }
-.orbit-puzzle__tile--lilac    { background: var(--orbit-lilac); }
+/* Per-tile accent modifiers (--rose … --lilac) intentionally share the
+   single tile style above — no rainbow fills. */
+
+.orbit-puzzle__tile:hover {
+  filter: brightness(0.97);
+}
 
 .orbit-puzzle__tile:active {
-  filter: brightness(0.9);
+  filter: brightness(0.92);
+}
+
+.orbit-puzzle--solved .orbit-puzzle__tile {
+  background: var(--ui-success-soft);
+  border-color: transparent;
+  color: var(--ui-success-text);
 }
 
 .orbit-puzzle__blank {
-  background: var(--orbit-canvas);
-  border-radius: 8px;
+  background: transparent;
+  border-radius: var(--ui-radius-sm);
 }
 
 .orbit-puzzle__caption {
   text-align: center;
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--orbit-text-muted);
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-medium);
+  color: var(--ui-text-3);
 }
+
+/* Dashboard block header — same eyebrow + title as the other cards. */
+.orbit-puzzle__heading { margin-bottom: 0; }
+/* Board sits centred in the side column; the card stretches to match the
+   Featured Modules block beside it. */
+.orbit-puzzle__grid { align-self: center; }
+.orbit-puzzle__moves, .orbit-puzzle__caption { text-align: center; }

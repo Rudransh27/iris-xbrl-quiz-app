@@ -1,150 +1,108 @@
 /* src/components/QuizPlayerHeader.css
-   Always-in-flow player header, redesigned onto the shared --orbit-* theme
-   tokens (was hardcoded to a fixed white/light palette, no dark-mode
-   override — see Quiz.css's header comment). Lavender is now the primary
-   accent (was amber), teal marks progress/completion (was light-sea-green),
-   rose marks the "lives" pill (was a plain red). */
+   Slim, always-in-flow player header on the shared --ui-* tokens: ghost
+   icon buttons (exit / reset), a .ui-progress rail with a step counter, and
+   XP / lives / review shown as .ui-badge pills (accent / danger / success).
+   The primitives carry the colours; this file is layout only. */
 
 .quiz-top-player-header-shell {
   width: 100%;
   flex-shrink: 0;
-  background-color: var(--orbit-surface);
-  border-bottom: 1px solid var(--orbit-border);
+  background-color: var(--ui-surface);
+  border-bottom: 1px solid var(--ui-border);
   box-sizing: border-box;
   display: flex;
   align-items: center;
   position: relative;
   z-index: 100;
+  font-family: var(--ui-font-sans);
 }
 
 .quiz-header-alignment-container {
   width: 100%;
-  max-width: 1140px;
-  margin: 0 auto;
-  padding: 14px 24px;
+  min-height: 60px;
+  margin: 0;
+  padding: var(--ui-space-3) var(--ui-space-6) var(--ui-space-3) var(--ui-space-4);
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--ui-space-4);
+  box-sizing: border-box;
 }
 
-/* ================= ❌ CLOSE NAVIGATION DISMISSAL ACTION ================= */
-.quiz-header-exit-trigger {
-  background-color: transparent;
-  border: none;
-  color: var(--orbit-text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 7px;
-  border-radius: 50%;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
-}
-
-.quiz-header-exit-trigger:hover {
-  color: var(--orbit-lavender-text);
-  background-color: rgba(201, 184, 255, 0.12);
-}
-
-/* ================= 🔄 REATTEMPT: RESET/REATTEMPT TRIGGER ================= */
+/* ================= EXIT / RESET (.ui-btn--ghost icon buttons) ================= */
+.quiz-header-exit-trigger,
 .quiz-header-reset-trigger {
-  background-color: transparent;
-  border: none;
-  color: var(--orbit-text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 7px;
-  border-radius: 50%;
-  transition: all 0.15s ease;
   flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.quiz-header-exit-trigger + .quiz-header-reset-trigger {
+  margin-left: calc(-1 * var(--ui-space-3));
 }
 
 .quiz-header-reset-trigger:hover {
-  color: var(--orbit-rose-text);
-  background-color: rgba(255, 179, 199, 0.14);
+  color: var(--ui-danger-text);
+  background-color: var(--ui-danger-soft);
 }
 
-/* ================= 📊 RAZOR-THIN PROGRESS RAIL ================= */
+/* ================= PROGRESS (.ui-progress) ================= */
 .quiz-header-progress-viewport {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--ui-space-3);
   min-width: 0;
 }
 
 .quiz-header-progress-base-rail {
   flex: 1;
-  height: 6px;
-  background-color: var(--orbit-border);
-  border-radius: 999px;
-  position: relative;
-  overflow: hidden;
-}
-
-.quiz-header-progress-fluid-beam {
-  height: 100%;
-  background: linear-gradient(90deg, var(--orbit-lavender), var(--orbit-teal));
-  border-radius: 999px;
-  position: relative;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 48px;
 }
 
 .quiz-header-step-counter {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--orbit-text-muted);
-  letter-spacing: 0.3px;
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-semibold);
+  color: var(--ui-text-3);
+  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 
-/* ================= 💫 SLIM STAT PILLS ================= */
+/* ================= XP / LIVES / REVIEW (.ui-badge --lg) ================= */
 .quiz-header-stat-capsule {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border: 1px solid var(--orbit-border);
-  border-radius: 999px;
-  background-color: var(--orbit-surface);
   flex-shrink: 0;
+  gap: 6px;
 }
 
 .stat-vector-icon {
-  font-size: 14px;
   flex-shrink: 0;
 }
 
-.text-gold-accent { color: var(--orbit-lavender-text); }
-.text-red-accent  { color: var(--orbit-rose-text); }
+/* Icons take the badge's own tone (accent / danger / success). */
+.text-gold-accent,
+.text-red-accent { color: inherit; }
 
 .quiz-stat-count-string {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--orbit-text-heading);
+  font-size: var(--ui-fs-sm);
+  font-weight: var(--ui-fw-bold);
+  color: inherit;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-lbl-dim {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--orbit-text-muted);
-  letter-spacing: 0.3px;
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-medium);
+  color: inherit;
+  letter-spacing: 0.02em;
 }
-
-/* Tinted pill variants */
-.xp-node-tint { background-color: rgba(201, 184, 255, 0.14); border-color: rgba(201, 184, 255, 0.3); }
-.life-node-tint { background-color: rgba(255, 179, 199, 0.14); border-color: rgba(255, 179, 199, 0.32); }
-/* 🎯 REVIEW MODE: replaces the LIVES pill once a module/topic is already
-   fully completed — teal to read as "settled/done", not an active warning. */
-.review-node-tint { background-color: rgba(143, 224, 216, 0.16); border-color: rgba(143, 224, 216, 0.35); }
-.review-node-tint .stat-vector-icon { color: var(--orbit-teal-text); }
-.review-node-tint .stat-lbl-dim { color: var(--orbit-teal-text); }
 
 @media (max-width: 640px) {
   .quiz-header-step-counter { display: none; }
-  .quiz-header-alignment-container { gap: 12px; padding: 12px 16px; }
-  .quiz-header-stat-capsule { padding: 6px 10px; }
+  .quiz-header-alignment-container { gap: var(--ui-space-3); padding: var(--ui-space-2) var(--ui-space-4); min-height: 56px; }
+  .quiz-header-stat-capsule { padding: 0 10px; }
+}
+
+@media (max-width: 420px) {
+  /* Icons + numbers carry the meaning on phones (each badge keeps its
+     aria-label); the word labels would squeeze the progress rail away. */
+  .xp-node-tint .stat-lbl-dim,
+  .life-node-tint .stat-lbl-dim { display: none; }
 }

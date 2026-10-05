@@ -84,9 +84,9 @@ export default function ModuleReviews({ moduleId }) {
   };
 
   return (
-    <div className="module-reviews-section">
+    <section className="ui-section module-reviews-section">
       <div className="module-reviews-header">
-        <h3 className="module-reviews-title">Ratings &amp; Reviews</h3>
+        <h3 className="ui-h3 module-reviews-title">Ratings &amp; Reviews</h3>
         <div className="module-reviews-aggregate">
           <StarRating value={avgRating} size={18} />
           <span className="module-reviews-avg-number">{avgRating.toFixed(1)}</span>
@@ -94,10 +94,8 @@ export default function ModuleReviews({ moduleId }) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="module-reviews-form">
-        <div className="mb-2">
-          <span className="module-reviews-form-label">{hasExistingReview ? 'Update your review' : 'Rate this module'}</span>
-        </div>
+      <form onSubmit={handleSubmit} className="ui-card ui-card--flat module-reviews-form">
+        <span className="ui-label module-reviews-form-label">{hasExistingReview ? 'Update your review' : 'Rate this module'}</span>
         <StarRating value={myRating} onChange={setMyRating} interactive size={24} />
         <Form.Control
           as="textarea"
@@ -105,18 +103,18 @@ export default function ModuleReviews({ moduleId }) {
           placeholder="What did you think of this module? (optional)"
           value={myReviewText}
           onChange={(e) => setMyReviewText(e.target.value)}
-          className="module-reviews-textarea mt-2"
+          className="ui-textarea module-reviews-textarea"
         />
-        {error && <Alert variant="danger" className="py-2 small mt-2 mb-0">{error}</Alert>}
-        {success && <Alert variant="success" className="py-2 small mt-2 mb-0">{success}</Alert>}
-        <Button type="submit" disabled={submitting} className="module-reviews-submit-btn mt-2">
+        {error && <Alert variant="danger" className="py-2 small mb-0">{error}</Alert>}
+        {success && <Alert variant="success" className="py-2 small mb-0">{success}</Alert>}
+        <Button type="submit" disabled={submitting} className="module-reviews-submit-btn">
           {submitting ? <Spinner animation="border" size="sm" /> : (hasExistingReview ? 'Update Review' : 'Submit Review')}
         </Button>
       </form>
 
       <div className="module-reviews-list">
         {loading ? (
-          <div className="text-center py-4"><Spinner animation="border" size="sm" /></div>
+          <div className="module-reviews-loading"><Spinner animation="border" size="sm" /></div>
         ) : reviews.length === 0 ? (
           <div className="module-reviews-empty">No reviews yet — be the first to share your thoughts.</div>
         ) : (
@@ -132,6 +130,6 @@ export default function ModuleReviews({ moduleId }) {
           ))
         )}
       </div>
-    </div>
+    </section>
   );
 }

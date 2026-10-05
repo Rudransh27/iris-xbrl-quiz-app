@@ -1,0 +1,5 @@
+/* src/components/StarRating.css — star rating (display + interactive). */
+.star-rating { display: inline-flex; align-items: center; gap: 2px; color: var(--cat-amber); }
+.star-rating__star { line-height: 0; cursor: default; }
+.star-rating--interactive .star-rating__star { cursor: pointer; transition: transform var(--ui-duration) var(--ui-ease); }
+.star-rating--interactive .star-rating__star:hover { transform: scale(1.12); }

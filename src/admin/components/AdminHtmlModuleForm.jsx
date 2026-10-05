@@ -33,6 +33,9 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
   const [htmlSource, setHtmlSource] = useState('');
   const [baseTimeThresholdSec, setBaseTimeThresholdSec] = useState('');
   const [estimatedDurationMin, setEstimatedDurationMin] = useState('');
+  // Superadmin-only: run this module with allow-same-origin (embedded
+  // SharePoint videos need it to sign in). Cleared if another admin edits the HTML.
+  const [sandboxTrusted, setSandboxTrusted] = useState(false);
   const [maxPoints, setMaxPoints] = useState('10');
 
   const [departmentsList, setDepartmentsList] = useState([]);
@@ -41,6 +44,10 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState('');
+  // 🔒 SERVER-SIDE GRADING: what the server detects in the HTML as its
+  // answer key — previewed live while editing; an ungradable module can't be saved.
+  const [gradingPreview, setGradingPreview] = useState(null); // { ok, summary } | { ok:false, error } | null
+  const [checkingGrading, setCheckingGrading] = useState(false);
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
@@ -85,6 +92,7 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
           setMaxPoints(String(sandboxCard.content?.maxPoints ?? 10));
           setBaseTimeThresholdSec(String(sandboxCard.content?.baseTimeThresholdSec ?? ''));
           setEstimatedDurationMin(String(sandboxCard.content?.estimatedDurationMin ?? ''));
+          setSandboxTrusted(sandboxCard.content?.sandboxTrusted === true);
         }
       } catch (err) {
         setError('Failed to hydrate existing HTML payload for edit mode.');
@@ -124,10 +132,31 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
     }
   };
 
+  useEffect(() => {
+    if (!htmlSource.trim()) { setGradingPreview(null); return undefined; }
+    let cancelled = false;
+    setCheckingGrading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const result = await api.previewSandboxKey(htmlSource);
+        if (!cancelled) setGradingPreview(result);
+      } catch (err) {
+        if (!cancelled) setGradingPreview({ ok: false, error: err.message || 'Could not check grading.' });
+      } finally {
+        if (!cancelled) setCheckingGrading(false);
+      }
+    }, 600);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [htmlSource]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title) { setError('Module name is mandatory.'); return; }
     if (!htmlSource.trim()) { setError('The raw HTML payload cannot be empty.'); return; }
+    if (gradingPreview && gradingPreview.ok === false) {
+      setError(`This module can't be graded yet: ${gradingPreview.error}`);
+      return;
+    }
     if (uploadingImage) { setError('Please wait for the image upload to finish.'); return; }
 
     if (visibility !== 'Global' && selectedDepartments.length === 0) {
@@ -155,16 +184,15 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
       baseTimeThresholdSec: Number(baseTimeThresholdSec) || 0,
       estimatedDurationMin: Number(estimatedDurationMin) || 0,
       maxPoints: Number(maxPoints) || 10,
+      ...(isSuperAdmin ? { sandboxTrusted } : {}),
     };
 
     try {
-      if (editData) {
-        await api.updateModule(editData._id, modulePayload);
-        setSuccess('HTML Sandbox Module updated successfully!');
-      } else {
-        await api.createModule(modulePayload);
-        setSuccess('HTML Sandbox Module created successfully!');
-      }
+      const saved = editData
+        ? await api.updateModule(editData._id, modulePayload)
+        : await api.createModule(modulePayload);
+      const detected = saved?.gradingSummary?.label ? ` Grading: ${saved.gradingSummary.label}.` : '';
+      setSuccess(`HTML Sandbox Module ${editData ? 'updated' : 'created'} successfully!${detected}`);
 
       setTitle(''); setDescription(''); setImageUrl('');
       setSelectedDepartments([]); setSelectedTeamIds([]); setVisibility('Global');
@@ -220,7 +248,7 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
   if (loadingStructure) {
     return (
       <div className="text-center p-5">
-        <Spinner animation="border" style={{ color: '#0f256e' }} />
+        <Spinner animation="border" style={{ color: 'var(--ui-accent-text)' }} />
         <p className="mt-2 text-muted small">Loading cluster structural parameters...</p>
       </div>
     );
@@ -415,10 +443,36 @@ export default function AdminHtmlModuleForm({ editData = null, onModuleAdded, se
             />
           </div>
           <small className="text-muted">Paste the complete standalone HTML document — including &lt;style&gt; and &lt;script&gt; blocks — exactly as it should run inside the sandboxed iframe.</small>
+          {htmlSource.trim() && !/<meta\s+[^>]*name\s*=\s*["']orbit-feedback["'][^>]*content\s*=\s*["']server["']/i.test(htmlSource) && (
+            <div className="ui-callout ui-callout--warning mt-2 small">
+              <strong>Learners can read this module's answers</strong> in their browser's developer tools, because the
+              module checks answers itself. To hide them, add <code>&lt;meta name="orbit-feedback" content="server"&gt;</code> to
+              the &lt;head&gt; and check each answer with <code>orbitCheck(questionId, answer).then(r =&gt; …)</code> —
+              Orbit then removes the answers from the copy learners receive and returns <code>r.isCorrect</code> and
+              <code> r.correct</code> after the answer is recorded.
+            </div>
+          )}
+          {isSuperAdmin && (
+            <Form.Check
+              type="switch"
+              id="html-sandbox-trusted"
+              className="mt-2 small"
+              checked={sandboxTrusted}
+              onChange={(e) => setSandboxTrusted(e.target.checked)}
+              label="Trusted module — allow embedded SharePoint videos to sign in (only for HTML you have reviewed; turns off automatically if another admin edits it)"
+            />
+          )}
+          {htmlSource.trim() && (
+            <div className={`mt-2 small fw-semibold ${gradingPreview?.ok ? 'text-success' : gradingPreview ? 'text-danger' : 'text-muted'}`}>
+              {checkingGrading && !gradingPreview && <><Spinner animation="border" size="sm" className="me-2" />Checking how this module will be graded…</>}
+              {gradingPreview?.ok && <>✓ Server grading detected: {gradingPreview.summary.label}</>}
+              {gradingPreview && gradingPreview.ok === false && <>✗ Not gradable: {gradingPreview.error}</>}
+            </div>
+          )}
         </Form.Group>
 
         <div className="d-flex gap-2">
-          <Button type="submit" className="admin-btn-primary px-4 d-flex align-items-center justify-content-center" disabled={loading || uploadingImage} style={{ backgroundColor: '#0f256e', borderColor: '#0f256e' }}>
+          <Button type="submit" className="admin-btn-primary px-4 d-flex align-items-center justify-content-center" disabled={loading || uploadingImage || (gradingPreview && gradingPreview.ok === false)} style={{ backgroundColor: 'var(--ui-accent)', borderColor: 'var(--ui-accent)' }}>
             {loading ? <Spinner animation="border" size="sm" /> : editData ? 'Apply Changes' : 'Create HTML Sandbox Module'}
           </Button>
           <Button type="button" variant="light" className="border px-4 fw-semibold btn-sm text-secondary" onClick={() => setActiveTab('overview')} disabled={loading || uploadingImage} style={{ borderRadius: '6px' }}>

@@ -1,10 +1,34 @@
 /* src/components/OrbitShell.css
-   OrbitShell.jsx is ~600 lines of inline styles with no prior mobile
-   breakpoint. Inline style properties can't be beaten by a plain CSS class
-   (specificity), so the mobile drawer overrides below use !important
-   deliberately and only for the handful of properties that must actually
-   change per-breakpoint (width/position/transform). Everything else in the
-   component keeps its existing inline styling untouched on every viewport. */
+   Persistent app chrome for every /orbit/* page: icon-rail sidebar, topbar,
+   mobile drawer (≤768px) and the XP award toasts. Built only on tokens
+   (src/styles/tokens.css) + primitives (src/styles/ui.css) — no inline
+   styles left in OrbitShell.jsx, so no !important overrides are needed. */
+
+/* ══ Frame ════════════════════════════════════════════════════════════════ */
+.orbit-app-root {
+  display: flex;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--ui-bg);
+  color: var(--ui-text);
+}
+
+.orbit-shell__column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--ui-bg);
+}
+
+.orbit-shell__main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(8px, 1.6vw, 12px);
+  background: var(--ui-bg);
+}
 
 /* ── Hide scrollbars on the app's two scroll containers (sidebar nav rail +
    main content area) while keeping them fully scrollable — a deliberate
@@ -22,207 +46,372 @@
   display: none;              /* Chrome/Safari/Chromium-Edge */
 }
 
-/* ── Topbar "glossy mirror" sheen ──────────────────────────────────────────
-   A thin light-catching highlight across the top of the glass header,
-   layered on top of the blur/tint already set inline (background,
-   backdropFilter, backgroundImage) — a pseudo-element since that highlight
-   can't be expressed as a single inline background without clobbering the
-   existing --orbit-glass-highlight tint. Same in both themes: it's an
-   additive white sheen at low opacity, which reads as "light on glass"
-   whether the glass itself is tinted light or dark. */
-.orbit-topbar {
-  /* position: sticky is set inline (OrbitShell.jsx) and already establishes
-     a containing block for the ::after below; isolation keeps that
-     negative z-index pseudo-element scoped to this header's own stacking
-     context instead of leaking behind sibling page content. */
-  isolation: isolate;
-}
+/* Legacy variable names (--text-primary, --bg-global-canvas, …) are aliased
+   to tokens globally in src/index.css now, so the shell no longer re-pins
+   them here. */
 
-.orbit-topbar::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.06) 45%, transparent 75%);
-}
-
-/* ── Neutralize a legacy, app-wide token file (src/App.css) ───────────────
-   App.css redeclares the SAME "--text-primary / --bg-global-canvas / ..."
-   legacy variable names as index.css's design-system tokens (both at
-   :root/[data-theme]), with completely different values (a stale
-   cerulean-blue/navy palette, including a literal #f1faee canvas). Because
-   App.css is imported after index.css (via App.jsx), and :root/[data-theme]
-   selectors are equal-specificity, App.css's values were winning — which is
-   exactly why dark-mode text sometimes rendered as near-black/illegible and
-   a stray #f1faee background could show through.
-   This re-pins every colliding name back to the correct, already
-   theme-aware orbit token for anything inside the Orbit app specifically —
-   doubled class selector (0,2,0) beats the bare :root/[data-theme] (0,1,0)
-   regardless of file import order. Scoped here rather than fixed in App.css
-   itself because App.css's tokens are also consumed by Admin dashboard
-   pages outside this redesign's scope — this avoids an unreviewed visual
-   change there. */
-.orbit-app-root.orbit-app-root {
-  --bg-global-canvas:     var(--orbit-canvas);
-  --bg-tactile-cards:     var(--orbit-surface);
-  --border-tactile:       var(--orbit-border);
-  --text-primary:         var(--orbit-text-heading);
-  --text-secondary:       var(--orbit-text-body);
-  --text-inverse:         var(--orbit-text-inverse);
-  --bg-hud-banner:        var(--orbit-brand);
-  --border-hud-tactile:   var(--orbit-brand-dark);
-  --curriculum-icon-bg:   var(--orbit-brand-muted);
-  --curriculum-icon-text: var(--orbit-brand);
-  --curriculum-hover:     var(--orbit-brand-light);
-  --stat-row-border:      var(--orbit-border);
-  --badge-progress-bg:    var(--pastel-reads);
-  --badge-progress-text:  var(--pastel-reads-text);
-  --badge-completed-bg:   var(--pastel-progress);
-  --badge-completed-text: var(--pastel-progress-text);
-  --bg-daily-read:        #2e1065;
-  --border-daily-tactile: #1e0a4a;
-}
-
-/* Faint ambient starfield behind the whole shell in dark mode — a tiling
-   dot pattern pinned to the viewport (background-attachment: fixed) rather
-   than a pseudo-element, so it doesn't scroll away with the dashboard
-   content and needs no extra DOM. Very subtle: this sits behind real UI
-   (nav labels, cards), so it must never fight with foreground legibility. */
-[data-theme="dark"] .content-fluid-scroller {
-  background-image:
-    radial-gradient(1px 1px at 15% 20%, rgba(255, 255, 255, 0.5), transparent),
-    radial-gradient(1px 1px at 75% 10%, rgba(255, 255, 255, 0.35), transparent),
-    radial-gradient(1.5px 1.5px at 45% 60%, rgba(255, 255, 255, 0.45), transparent),
-    radial-gradient(1px 1px at 90% 75%, rgba(255, 255, 255, 0.3), transparent),
-    radial-gradient(1px 1px at 25% 85%, rgba(255, 255, 255, 0.4), transparent);
-  background-size: 340px 340px;
-  background-attachment: fixed;
-}
-
+/* ══ Sidebar (desktop icon rail) ══════════════════════════════════════════ */
 .orbit-sidebar {
-  background-color: var(--orbit-canvas);
+  width: var(--ui-sidebar-w);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--ui-surface);
+  border-right: 1px solid var(--ui-border);
+  z-index: 10;
 }
 
-[data-theme="dark"] .orbit-sidebar {
-  background-image:
-    radial-gradient(1px 1px at 30% 15%, rgba(255, 255, 255, 0.4), transparent),
-    radial-gradient(1px 1px at 65% 45%, rgba(255, 255, 255, 0.3), transparent),
-    radial-gradient(1px 1px at 40% 80%, rgba(255, 255, 255, 0.35), transparent);
-  background-size: 100% 420px;
-  background-attachment: fixed;
+/* Brand cell — same height as the topbar and the same bottom border, so the
+   two form one continuous line at the corner. */
+.orbit-sidebar__brand {
+  height: var(--ui-topbar-h);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ui-space-2);
+  padding: 0 var(--ui-space-2);
+  border-bottom: 1px solid var(--ui-border);
+  background: var(--ui-surface);
 }
 
-.orbit-hamburger-trigger,
-.orbit-mobile-drawer-close {
+.orbit-sidebar__logo {
+  display: block;
+  max-width: 68px;
+  max-height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.orbit-sidebar-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ui-space-3) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.orbit-sidebar__foot {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--ui-space-2) 0 var(--ui-space-3);
+  border-top: 1px solid var(--ui-border);
+}
+
+/* Small gap between nav groups (Main / Engage / …) */
+.orbit-nav-gap { height: var(--ui-space-2); flex-shrink: 0; }
+.orbit-nav-gap:first-child { display: none; }
+
+/* Nav item: icon in a rounded indicator, label below. Hover tints the
+   indicator --ui-hover; active = --ui-accent-soft + --ui-accent-text. */
+.orbit-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0 6px;
+  padding: 6px 0;
+  border-radius: var(--ui-radius);
+  color: var(--ui-text-3);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--ui-duration) var(--ui-ease);
+}
+
+.orbit-nav-item__icon {
+  width: 42px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--ui-radius);
+  color: var(--ui-text-3);
+  transition: background-color var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
+}
+
+.orbit-nav-item__label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--ui-font-sans);
+  font-size: var(--ui-fs-2xs);
+  font-weight: var(--ui-fw-medium);
+  line-height: var(--ui-lh-snug);
+  text-align: center;
+  color: var(--ui-text-2);
+  transition: color var(--ui-duration) var(--ui-ease);
+}
+
+.orbit-nav-item:hover .orbit-nav-item__icon { background: var(--ui-hover); color: var(--ui-text); }
+.orbit-nav-item:hover .orbit-nav-item__label { color: var(--ui-text); }
+
+.orbit-nav-item.is-active .orbit-nav-item__icon { background: var(--ui-accent-soft); color: var(--ui-accent-text); }
+.orbit-nav-item.is-active .orbit-nav-item__label { color: var(--ui-accent-text); font-weight: var(--ui-fw-semibold); }
+
+.orbit-nav-item--danger .orbit-nav-item__icon,
+.orbit-nav-item--danger .orbit-nav-item__label { color: var(--ui-danger-text); }
+
+/* ══ Topbar ═══════════════════════════════════════════════════════════════ */
+.orbit-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  height: var(--ui-topbar-h);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-4);
+  padding: 0 var(--ui-space-6);
+  background: var(--ui-surface);
+  border-bottom: 1px solid var(--ui-border);
+}
+
+.orbit-topbar__left {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-2);
+}
+
+.orbit-topbar__context {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+  overflow: hidden;
+}
+
+.orbit-topbar__dept {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-fs-md);
+  font-weight: var(--ui-fw-bold);
+  letter-spacing: -0.01em;
+  color: var(--ui-text);
+}
+
+.orbit-topbar .orbit-topbar__mode { flex-shrink: 0; }
+
+.orbit-topbar__right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+}
+
+/* Lightyears / streak — ui-badge sized to sit with the 34px controls */
+.orbit-topbar .orbit-topbar__stat {
+  height: 28px;
+  padding: 0 10px;
+  gap: 6px;
+  font-size: var(--ui-fs-sm);
+  font-weight: var(--ui-fw-semibold);
+}
+.orbit-topbar .orbit-topbar__stat--xp { font-weight: var(--ui-fw-bold); }
+.orbit-topbar .orbit-topbar__stat--streak { color: var(--ui-text); }
+.orbit-topbar__stat--streak svg { color: var(--ui-accent-text); }
+
+.orbit-topbar .orbit-topbar__avatar {
+  cursor: pointer;
+  user-select: none;
+  transition: box-shadow var(--ui-duration) var(--ui-ease);
+}
+.orbit-topbar .orbit-topbar__avatar:hover { box-shadow: 0 0 0 3px var(--ui-accent-soft-2); }
+
+/* View-mode switcher (Superadmin / Admin / Learner) — .ui-tabs segmented
+   control; the active tab's icon picks up the accent. */
+.orbit-mode-switch { flex-shrink: 0; }
+.orbit-mode-switch .ui-tab { padding: 0 12px; }
+.orbit-mode-switch .ui-tab svg { color: var(--ui-text-3); transition: color var(--ui-duration) var(--ui-ease); }
+.orbit-mode-switch .ui-tab:hover svg { color: var(--ui-text); }
+.orbit-mode-switch .ui-tab.is-active svg { color: var(--ui-accent-text); }
+
+/* Mobile-only buttons: hidden on the desktop layout. Doubled selectors so
+   they beat .ui-btn's own display regardless of stylesheet order. */
+.orbit-topbar .orbit-hamburger-trigger,
+.orbit-sidebar .orbit-mobile-drawer-close {
   display: none;
 }
 
 .orbit-sidebar-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(10, 8, 15, 0.5);
   z-index: 999;
+  background: var(--ui-overlay);
+  animation: ui-fade 160ms var(--ui-ease);
 }
 
-/* ── View-mode switcher (Learner / Admin / Superadmin) ───────────────────────
-   A single segmented control replaces the old plain button + native <select>
-   pair — same three destinations, one consistent, modern-looking track. */
-.orbit-mode-switch {
+/* ══ XP award toasts ══════════════════════════════════════════════════════ */
+.orbit-xp-toasts {
+  position: fixed;
+  right: var(--ui-space-6);
+  bottom: var(--ui-space-6);
+  z-index: 9999;
   display: flex;
-  align-items: center;
-  gap: 2px;
-  background: var(--orbit-brand-muted);
-  border: 1px solid var(--orbit-border-strong);
-  border-radius: 999px;
-  padding: 3px;
+  flex-direction: column-reverse;
+  gap: var(--ui-space-3);
+  pointer-events: none;
 }
 
-.orbit-mode-pill {
+.orbit-xp-toast {
+  pointer-events: auto;
+  width: 360px;
+  max-width: calc(100vw - 32px);
   display: flex;
-  align-items: center;
-  gap: 5px;
-  background: transparent;
-  border: none;
-  border-radius: 999px;
-  padding: 5px 11px;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--orbit-text-muted);
+  align-items: flex-start;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-4);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border-2);
+  border-radius: var(--ui-radius-lg);
+  box-shadow: var(--ui-shadow-lg);
   cursor: pointer;
-  transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
-  white-space: nowrap;
+  animation: xp-toast-in 320ms var(--ui-ease) both;
 }
 
-.orbit-mode-pill:hover:not(.orbit-mode-pill--active) {
-  color: var(--orbit-brand);
-  background: rgba(255, 255, 255, 0.55);
+.orbit-xp-toast__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.orbit-mode-pill--active {
-  background: var(--orbit-brand);
-  color: #fff;
-  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.3);
+.orbit-xp-toast__title {
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-fs-base);
+  font-weight: var(--ui-fw-bold);
+  line-height: var(--ui-lh-snug);
+  letter-spacing: -0.01em;
+  color: var(--ui-text);
 }
 
+.orbit-xp-toast__message {
+  margin: 0;
+  font-size: var(--ui-fs-sm);
+  line-height: var(--ui-lh-body);
+  color: var(--ui-text-2);
+}
+
+.orbit-xp-toast__hint {
+  margin: var(--ui-space-1) 0 0;
+  font-size: var(--ui-fs-2xs);
+  font-weight: var(--ui-fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--ui-tracking-wide);
+  color: var(--ui-text-3);
+}
+
+@keyframes xp-toast-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ══ Tablet / mobile ══════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .orbit-topbar { padding: 0 var(--ui-space-4); }
+  .orbit-topbar__right { gap: var(--ui-space-2); }
+}
+
+/* Off-canvas drawer (≤768px): the rail becomes a slide-in panel opened by
+   the topbar hamburger; items re-flow into icon-left rows. */
 @media (max-width: 768px) {
-  .orbit-mode-pill-label {
-    display: none;
+  .orbit-topbar .orbit-hamburger-trigger,
+  .orbit-sidebar .orbit-mobile-drawer-close {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
   }
-  .orbit-mode-pill {
-    padding: 6px 9px;
-  }
-}
-
-@media (max-width: 768px) {
-  .orbit-hamburger-trigger,
-  .orbit-mobile-drawer-close {
-    display: flex;
-  }
+  .orbit-topbar .orbit-hamburger-trigger { margin-left: -6px; }
 
   .orbit-sidebar {
-    position: fixed !important;
+    position: fixed;
     inset: 0 auto 0 0;
     height: 100vh;
-    width: min(82vw, 300px) !important;
+    height: 100dvh;
+    width: min(82vw, 300px);
     transform: translateX(-100%);
-    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 280ms var(--ui-ease), box-shadow 280ms var(--ui-ease);
     z-index: 1000;
   }
-
   .orbit-sidebar--open {
     transform: translateX(0);
+    box-shadow: var(--ui-shadow-lg);
   }
 
-  /* The desktop icon-rail's centered icon-on-top/label-below item reads as
-     sparse inside the much wider mobile drawer (min(82vw,300px)) — switch
-     back to a normal icon-left/label-right row, which uses that width
-     properly and is a more familiar mobile nav-list shape. Touch target is
-     still covered by the 44px icon box plus this row's own padding. */
+  .orbit-sidebar__brand {
+    justify-content: space-between;
+    padding: 0 var(--ui-space-3) 0 var(--ui-space-5);
+  }
+  .orbit-sidebar__logo { max-width: 104px; max-height: 40px; }
+
+  .orbit-sidebar-nav { padding: var(--ui-space-3) 0; }
+  .orbit-sidebar__foot { padding: var(--ui-space-2) 0 var(--ui-space-4); }
+
   .orbit-nav-item {
-    flex-direction: row !important;
-    justify-content: flex-start !important;
-    align-items: center !important;
-    gap: 12px !important;
-    padding: 8px 14px !important;
-    margin: 2px 10px !important;
-  }
-
-  .orbit-nav-item__icon {
-    width: 40px !important;
-    height: 40px !important;
-    flex-shrink: 0;
-  }
-
-  .orbit-nav-item span {
-    text-align: left !important;
-    max-width: none !important;
-    font-size: 13.5px !important;
-  }
-
-  .orbit-hamburger-trigger,
-  .orbit-mobile-drawer-close {
-    min-width: 44px;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--ui-space-3);
     min-height: 44px;
+    margin: 0 var(--ui-space-3);
+    padding: 0 var(--ui-space-3);
   }
+  .orbit-nav-item__icon { width: 24px; height: 24px; }
+  .orbit-nav-item__label {
+    font-size: var(--ui-fs-base);
+    text-align: left;
+  }
+  /* In the drawer the whole row carries the hover/active state. */
+  .orbit-nav-item:hover { background: var(--ui-hover); }
+  .orbit-nav-item.is-active { background: var(--ui-accent-soft); }
+  .orbit-nav-item:hover .orbit-nav-item__icon,
+  .orbit-nav-item.is-active .orbit-nav-item__icon { background: transparent; }
+
+  .orbit-topbar { padding: 0 var(--ui-space-3); gap: var(--ui-space-2); }
+  .orbit-topbar__right { gap: 6px; }
+
+  .orbit-mode-pill-label { display: none; }
+  .orbit-mode-switch .ui-tab { padding: 0 9px; }
+
+  .orbit-topbar .orbit-topbar__theme { width: 36px; height: 36px; }
+  .orbit-topbar .orbit-topbar__avatar { width: 32px; height: 32px; font-size: var(--ui-fs-xs); }
+
+  .orbit-xp-toasts { left: var(--ui-space-4); right: var(--ui-space-4); bottom: var(--ui-space-4); align-items: flex-end; }
+}
+
+@media (min-width: 769px) {
+  /* The drawer can't be open on the desktop layout — never let a stale
+     backdrop (e.g. after rotating/resizing) block the page. */
+  .orbit-sidebar-backdrop { display: none; }
+}
+
+@media (max-width: 640px) {
+  .orbit-topbar .orbit-topbar__mode { display: none; }
+  .orbit-topbar .orbit-topbar__stat { padding: 0 10px; gap: 5px; }
+  .orbit-topbar__stat-unit { display: none; }
+}
+
+/* Very narrow + admin switcher present: drop the department label so the
+   controls never collide (falls back to ellipsis where :has is missing). */
+@media (max-width: 480px) {
+  .orbit-topbar:has(.orbit-mode-switch) .orbit-topbar__context { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-xp-toast,
+  .orbit-sidebar-backdrop { animation: none; }
+  .orbit-sidebar { transition: none; }
 }

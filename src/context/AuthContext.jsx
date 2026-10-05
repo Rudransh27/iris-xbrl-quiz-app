@@ -54,6 +54,8 @@ export const AuthProvider = ({ children }) => {
   // Load user on app start (Reload Hydration Layer)
   useEffect(() => {
     const initAuth = async () => {
+      // Older builds cached the full profile here; it was never read back.
+      localStorage.removeItem("user");
       const token = localStorage.getItem("token");
       if (token) {
         try {
@@ -61,7 +63,6 @@ export const AuthProvider = ({ children }) => {
           if (res.valid && res.user) {
             const userData = normalizeUserData(res.user);
             setUser(userData);
-            localStorage.setItem("user", JSON.stringify(userData));
             maybeShowLoginBonusToast(res);
           } else {
             logout();
@@ -94,7 +95,6 @@ export const AuthProvider = ({ children }) => {
       if (res.valid && res.user) {
         const userData = normalizeUserData(res.user);
         setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
         maybeShowLoginBonusToast(res);
         return userData;
       }
@@ -112,7 +112,6 @@ export const AuthProvider = ({ children }) => {
 
       const userData = normalizeUserData(res.user);
       setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
       maybeShowLoginBonusToast(res);
       return { success: true };
     } catch (err) {
@@ -147,7 +146,6 @@ export const AuthProvider = ({ children }) => {
         const userData = normalizeUserData(res.user);
 
         setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
         return { success: true };
       }
       return { success: false, message: 'Verification handshake payload error' };
@@ -180,7 +178,6 @@ export const AuthProvider = ({ children }) => {
     if (user) {
       const updatedUser = { ...user, xp: newXpTotal };
       setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
     }
   };
 
@@ -196,7 +193,6 @@ export const AuthProvider = ({ children }) => {
     setUser(prev => {
       if (!prev) return prev;
       const updated = { ...prev, xp: (prev.xp || 0) + amount };
-      localStorage.setItem('user', JSON.stringify(updated));
       return updated;
     });
   }, []);
@@ -205,7 +201,6 @@ export const AuthProvider = ({ children }) => {
     setUser(prev => {
       if (!prev || prev.streak === newStreak) return prev;
       const updated = { ...prev, streak: newStreak };
-      localStorage.setItem('user', JSON.stringify(updated));
       return updated;
     });
   }, []);

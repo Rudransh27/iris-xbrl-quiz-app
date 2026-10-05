@@ -1,374 +1,213 @@
 /* src/components/CodeCard.css
-   Redesigned onto the shared --orbit-* tokens for the card's own chrome
-   (was hardcoded to a fixed white/light palette). The VS-Code-style
-   reference snippet boxes and the Prism "Tomorrow" token palette are left
-   as their existing fixed-dark colors on purpose — a code block reads the
-   same in both app themes elsewhere in this app too (LearningCard.css).
-   Selected/hint = lavender (was amber), correct = teal (was light-sea-
-   green, same hue family), incorrect = rose (was a plain crimson literal)
-   — kept in sync with QuizCard.css's identical 3-state language. */
+   Code challenge card on the shared --ui-* tokens: a .ui-card (radius-xl)
+   holding reference snippets (token surfaces + the Prism palette from
+   QuizMarkdown.css via .quiz-code), the markdown prompt (.quiz-md), the Ace
+   editor hull, and .ui-callout feedback (hint = warning, error = danger,
+   explanation = success). The Ace editor itself keeps its github/monokai
+   theme, switched from data-theme in CodeCard.jsx. */
 
-.compiler-code-card-shell {
-  width: 100%;
-  background-color: var(--orbit-surface);
-  border: 1px solid var(--orbit-border);
-  border-top: 3px solid var(--orbit-lavender);
-  border-radius: 14px;
-  padding: 24px;
+.compiler-code-card-shell.ui-card {
   position: relative;
-  z-index: 5;
+  border-radius: var(--ui-radius-xl);
+  padding: clamp(20px, 4vw, 40px);
+  gap: var(--ui-space-5);
   box-sizing: border-box;
-  box-shadow: var(--orbit-shadow-sm);
 }
 
 .compiler-card-main-title {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--orbit-text-heading);
-  letter-spacing: -0.5px;
-  margin: 0 0 20px 0;
+  font-family: var(--ui-font-display);
+  font-size: clamp(var(--ui-fs-xl), 2.6vw, var(--ui-fs-2xl));
+  font-weight: var(--ui-fw-heavy);
+  color: var(--ui-text);
+  letter-spacing: var(--ui-tracking-tight);
+  line-height: var(--ui-lh-tight);
+  margin: 0;
 }
 
 /* =========================================================================
-   📚 CODE SNIPPETS BOX WRAPPERS — fixed dark VS-Code look (intentional,
-   same reasoning as the Prism token palette below: a code block reads the
-   same regardless of app theme).
+   REFERENCE SNIPPETS (taxonomy / instance template)
    ========================================================================= */
 .compiler-code-snippet-box {
   width: 100%;
-  background-color: #1e1e1e !important;
-  border-radius: 12px;
-  border: 1px solid var(--orbit-border);
+  background-color: var(--ui-surface-2);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
   overflow: hidden;
-  margin-bottom: 18px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .compiler-snippet-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #1a1a1a !important; /* Darker header tab row */
-  padding: 10px 16px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #858585;
-  border-bottom: 1px solid #2d2d2d;
+  gap: var(--ui-space-3);
+  padding: 6px 8px 6px 16px;
+  background-color: var(--ui-surface);
+  border-bottom: 1px solid var(--ui-border);
+  font-family: var(--ui-font-sans);
+  font-size: var(--ui-fs-2xs);
+  font-weight: var(--ui-fw-bold);
+  letter-spacing: var(--ui-tracking-wide);
+  text-transform: uppercase;
+  color: var(--ui-text-3);
 }
 
-.compiler-prism-scroller {
-  max-height: 200px;
-  overflow-y: auto;
+.compiler-snippet-header > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Force standard system code font typography rules mapping */
-.compiler-prism-scroller pre,
-.compiler-prism-scroller code {
-  font-family: 'Fira Code', 'Cascadia Code', Consolas, Monaco, monospace !important;
-  font-size: 0.88rem !important;
-  line-height: 1.55 !important;
-  color: #abb2bf !important;
-}
-
-.compiler-prism-scroller pre span,
-.compiler-prism-scroller code span {
-  color: inherit !important;
-}
-
-.compiler-prism-scroller > div {
-  margin: 0 !important;
-  background: transparent !important;
-  border-radius: 0 !important;
-  padding: 16px !important;
-}
-
-/* Prism token colors - Tomorrow theme */
-.compiler-prism-scroller .token.comment,
-.compiler-prism-scroller .token.prolog,
-.compiler-prism-scroller .token.doctype,
-.compiler-prism-scroller .token.cdata {
-  color: #5c6370 !important;
-}
-
-.compiler-prism-scroller .token.punctuation {
-  color: #abb2bf !important;
-}
-
-.compiler-prism-scroller .token.property,
-.compiler-prism-scroller .token.tag,
-.compiler-prism-scroller .token.boolean,
-.compiler-prism-scroller .token.number,
-.compiler-prism-scroller .token.constant,
-.compiler-prism-scroller .token.symbol,
-.compiler-prism-scroller .token.deleted {
-  color: #d19a66 !important;
-}
-
-.compiler-prism-scroller .token.selector,
-.compiler-prism-scroller .token.attr-name,
-.compiler-prism-scroller .token.string,
-.compiler-prism-scroller .token.char,
-.compiler-prism-scroller .token.builtin,
-.compiler-prism-scroller .token.inserted {
-  color: #98c379 !important;
-}
-
-.compiler-prism-scroller .token.operator,
-.compiler-prism-scroller .token.entity,
-.compiler-prism-scroller .token.url,
-.compiler-prism-scroller .language-css .token.string,
-.compiler-prism-scroller .style .token.string {
-  color: #56b6c2 !important;
-}
-
-.compiler-prism-scroller .token.atrule,
-.compiler-prism-scroller .token.attr-value,
-.compiler-prism-scroller .token.keyword {
-  color: #c678dd !important;
-}
-
-.compiler-prism-scroller .token.function,
-.compiler-prism-scroller .token.class-name {
-  color: #61afef !important;
-}
-
-.compiler-prism-scroller .token.regex,
-.compiler-prism-scroller .token.important,
-.compiler-prism-scroller .token.variable {
-  color: #e06c75 !important;
-}
-
-.compiler-prism-scroller .token.name,
-.compiler-prism-scroller .token.namespace {
-  color: #d19a66 !important;
-}
-
-/* XML-specific tag coloring */
-.compiler-prism-scroller .token.tag {
-  color: #d19a66 !important;
-}
-
-.compiler-prism-scroller .token.tag * {
-  color: #d19a66 !important;
-}
-
-.compiler-prism-scroller .token.tag.punctuation {
-  color: #d19a66 !important;
-}
-
-.compiler-prism-scroller .tag {
-  color: #d19a66 !important;
-}
-
-.compiler-prism-scroller .token.tag .token.punctuation {
-  color: #d19a66 !important;
-}
-
-.compiler-prism-scroller .token.tag .token.attr-name {
-  color: #98c379 !important;
-}
-
-.compiler-prism-scroller .token.tag .token.attr-value {
-  color: #61afef !important;
-}
-
-/* High visibility code element tag for single ticks `like_this` inside
-   questions markdown text — this sits on the card's own regular surface
-   (not the fixed-dark snippet boxes above), so it's theme-aware. */
-.compiler-markdown-body.markdown-body :not(pre) > code {
-  background-color: var(--orbit-surface-subtle) !important;
-  color: var(--orbit-text-heading) !important;
-  font-size: 0.84rem !important;
-  font-weight: 700 !important;
-  padding: 2px 6px !important;
-  border-radius: 6px !important;
-  border: 1px solid var(--orbit-border) !important;
-  font-family: 'Fira Code', monospace !important;
-}
+/* .ui-btn--ghost --sm */
 .compiler-copy-btn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #98c379 !important;
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  transition: all 0.15s ease;
-}
-.compiler-copy-btn:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #61afef !important;
+  flex-shrink: 0;
+  gap: 2px;
+  font-size: var(--ui-fs-xs);
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .compiler-prism-scroller {
-  max-height: 180px;
-  overflow-y: auto;
-  font-size: 0.85rem;
+  max-height: 220px;
+  overflow: auto;
 }
-/* Prism internal structural overrules spacing resets */
-.compiler-prism-scroller > div {
-  margin: 0 !important;
-  background: transparent !important;
-  border-radius: 0 !important;
-  padding: 14px !important;
+
+.compiler-prism-scroller pre {
+  margin: 0;
+  padding: 14px 16px;
+  background: none;
+  border: 0;
+  font-family: var(--ui-font-mono);
+  font-size: var(--ui-fs-sm);
+  line-height: 1.6;
+  color: var(--ui-text);
+  overflow: visible;
+}
+
+.compiler-prism-scroller code,
+.compiler-prism-scroller code[class*="language-"] {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  text-shadow: none;
+  white-space: pre;
 }
 
 /* =========================================================================
-   🎯 DESCRIPTIVE QUESTION VIEWPANELS
+   PROMPT (markdown — typography from QuizMarkdown.css)
    ========================================================================= */
 .compiler-question-prompt-viewport {
-  margin: 20px 0;
-  padding: 4px 2px;
-}
-
-.compiler-markdown-body.markdown-body p,
-.compiler-markdown-body.markdown-body li {
-  font-size: 0.94rem !important;
-  color: var(--orbit-text-body) !important;
-  line-height: 1.55 !important;
-}
-
-.compiler-markdown-body.markdown-body h1,
-.compiler-markdown-body.markdown-body h2,
-.compiler-markdown-body.markdown-body h3,
-.compiler-markdown-body.markdown-body h4 {
-  font-weight: 700 !important;
-  color: var(--orbit-text-heading) !important;
+  margin: 0;
 }
 
 /* =========================================================================
-   💡 RE-ENGINEERED COMPILER SOLUTION HINTS SYSTEMS
+   HINT (.ui-btn--soft toggle + .ui-callout--warning drawer)
    ========================================================================= */
 .compiler-hint-action-row {
-  margin-bottom: 12px;
   display: flex;
+}
+.compiler-hint-action-row:empty {
+  display: none;
 }
 
 .compiler-hint-toggle-trigger {
-  background: transparent;
-  border: none;
-  outline: none;
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--orbit-lavender-text);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 0;
+  letter-spacing: 0.02em;
 }
-.compiler-hint-toggle-trigger:hover { color: var(--orbit-lavender); }
 
-.compiler-hint-floating-drawer {
-  background-color: rgba(201, 184, 255, 0.08);
-  border: 1px dashed rgba(201, 184, 255, 0.35);
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 18px;
+.compiler-hint-floating-drawer.ui-callout {
+  display: block;
+  padding: var(--ui-space-4) var(--ui-space-5);
 }
-.compiler-hint-floating-drawer .compiler-markdown-body p {
-  color: var(--orbit-text-heading) !important;
-  font-size: 0.88rem !important;
+
+.compiler-hint-floating-drawer .quiz-md {
+  font-size: var(--ui-fs-base);
+  color: inherit;
 }
 
 /* =========================================================================
-   💻 EMBEDDED INTERACTIVE LIVE CONSOLE HOUSING (Ace Framework Sync)
+   ACE EDITOR HULL
    ========================================================================= */
 .compiler-editor-container-hull {
   width: 100%;
-  border: 1px solid var(--orbit-border-strong);
-  border-radius: 10px;
+  border: 1px solid var(--ui-border-2);
+  border-radius: var(--ui-radius);
   overflow: hidden;
-  margin-bottom: 16px;
-  transition: all 0.2s ease-in-out;
+  transition: border-color var(--ui-duration) var(--ui-ease), box-shadow var(--ui-duration) var(--ui-ease);
 }
 
 .editor-console-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background-color: var(--orbit-surface-subtle);
-  border-bottom: 1px solid var(--orbit-border);
-  padding: 8px 14px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--orbit-text-muted);
+  gap: var(--ui-space-2);
+  background-color: var(--ui-surface-2);
+  border-bottom: 1px solid var(--ui-border);
+  padding: var(--ui-space-2) 14px;
+  font-family: var(--ui-font-sans);
+  font-size: var(--ui-fs-2xs);
+  font-weight: var(--ui-fw-bold);
+  letter-spacing: var(--ui-tracking-wide);
+  text-transform: uppercase;
+  color: var(--ui-text-3);
 }
 
-/* Status indicator, not syntax highlighting. */
+/* Status indicator ("editor live"), not syntax highlighting. */
 .live-pulse-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background-color: var(--orbit-lavender);
-  box-shadow: 0 0 0 0 rgba(201, 184, 255, 0.4);
-  animation: compileDotPulse 1.6s infinite;
-}
-@keyframes compileDotPulse {
-  0% { box-shadow: 0 0 0 0 rgba(201, 184, 255, 0.4); }
-  70% { box-shadow: 0 0 0 5px rgba(201, 184, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(201, 184, 255, 0); }
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background-color: var(--ui-success);
 }
 
-/* Hull boundary feedback context shifts — kept in sync with QuizCard.css's
-   correct/incorrect colors. */
-.compiler-editor-container-hull.hull-success { border-color: var(--orbit-teal); }
-.compiler-editor-container-hull.hull-error { border-color: var(--orbit-rose); }
+/* Graded state of the editor — kept in sync with QuizCard's row states. */
+.compiler-editor-container-hull.hull-success { border-color: var(--ui-success); box-shadow: 0 0 0 1px var(--ui-success); }
+.compiler-editor-container-hull.hull-error { border-color: var(--ui-danger); box-shadow: 0 0 0 1px var(--ui-danger); }
 
-/* Overwrite active ace layouts padding parameters dynamically if any */
 #code_editor, #compiler_core_editor {
-  font-family: 'Fira Code', 'Courier New', Courier, monospace !important;
-  font-size: 0.88rem !important;
+  font-family: var(--ui-font-mono) !important;
+  font-size: var(--ui-fs-base) !important;
 }
 
 /* =========================================================================
-   ❌ VALIDATION CRASH ALERT BOXES
+   VALIDATION ERROR (.ui-callout--danger)
    ========================================================================= */
-.compiler-exception-alert {
-  display: flex;
+.compiler-exception-alert.ui-callout {
   align-items: flex-start;
-  gap: 10px;
-  background-color: rgba(255, 179, 199, 0.10);
-  border: 1px solid rgba(255, 179, 199, 0.35);
-  color: var(--orbit-rose-text);
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  line-height: 1.4;
-  margin-bottom: 16px;
+  font-size: var(--ui-fs-sm);
 }
-.exception-text-string { font-weight: 700; }
+.compiler-exception-alert svg { margin-top: 3px; }
+.exception-text-string {
+  font-weight: var(--ui-fw-medium);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 
 /* =========================================================================
-   🟢 SUCCESS VERIFIED LOGS DRAWER ARCHITECTURE
+   SUCCESS + EXPLANATION (.ui-callout--success)
    ========================================================================= */
-.compiler-success-feedback-drawer {
-  background-color: rgba(143, 224, 216, 0.10);
-  border: 1px solid rgba(143, 224, 216, 0.30);
-  border-radius: 10px;
-  padding: 14px 18px;
-  margin-top: 20px;
+.compiler-success-feedback-drawer.ui-callout {
+  flex-direction: column;
+  gap: var(--ui-space-2);
+  padding: var(--ui-space-4) var(--ui-space-5);
 }
 
 .success-feedback-header-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--orbit-teal-text);
-  margin-bottom: 10px;
-  letter-spacing: 0.2px;
+  gap: var(--ui-space-2);
+  font-size: var(--ui-fs-2xs);
+  font-weight: var(--ui-fw-bold);
+  letter-spacing: var(--ui-tracking-wide);
+  text-transform: uppercase;
 }
 
-.compiler-success-feedback-drawer .compiler-markdown-body p {
-  color: var(--orbit-teal-text) !important;
-  font-size: 0.88rem !important;
-  margin: 0 !important;
+.compiler-success-feedback-drawer .quiz-md {
+  font-size: var(--ui-fs-base);
+  color: var(--ui-text-2);
 }
 
-/* Stagger animations sequences */
+/* Entry animation — also used by DynamicCardRenderer / ModuleDetail. */
 .animate-fade-up { animation: compilerNodeIn 0.35s ease-out both; }
 @keyframes compilerNodeIn {
   from { opacity: 0; transform: translateY(6px); }

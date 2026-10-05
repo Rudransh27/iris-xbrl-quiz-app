@@ -7,6 +7,7 @@ import {
   LightningCharge, ShieldFillCheck
 } from "react-bootstrap-icons";
 import api from "./services/api";
+import "./SuperAdminDashboard.css";
 
 export default function SuperAdminDashboard() {
   const [loading, setLoading] = useState(true);
@@ -122,29 +123,24 @@ export default function SuperAdminDashboard() {
       {error && <Alert variant="warning" className="font-monospace">{error}</Alert>}
 
       {/* PLATFORM ORBIT BANNER */}
-      <div className="p-4 mb-4 rounded-4 text-white d-flex align-items-center justify-content-between flex-wrap gap-3"
-           style={{ background: "#0F0D1F", borderBottom: "5px solid #1c183a" }}>
+      <div className="ui-hero admin-hub-banner p-4 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
         <div className="d-flex align-items-center gap-4">
-          <div className="rounded-circle" style={{
-            width: "48px", height: "48px",
-            background: "radial-gradient(circle at 35% 35%, #7C3AED, #2D1B69)",
-            boxShadow: "0 0 0 6px rgba(124,58,237,0.15)"
-          }}></div>
+          <div className="rounded-circle admin-hub-banner__orb"></div>
           <div>
             <h4 className="fw-bold m-0" style={{ letterSpacing: "0.5px", fontSize: "19px" }}>IRIS Orbit</h4>
-            <p className="m-0 font-monospace" style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>
+            <p className="m-0 font-monospace admin-hub-banner__sub">
               Innovate · Resolve · Inspire · Scale
             </p>
             <div className="d-flex gap-2 mt-2 flex-wrap">
               {["IFILE", "CARBON", "IDEAL", "DATATECH"].map((chip) => (
-                <span key={chip} className="badge bg-white bg-opacity-10 text-white font-monospace rounded-3" style={{ fontSize: "10px" }}>{chip}</span>
+                <span key={chip} className="badge font-monospace rounded-3 admin-hub-banner__chip">{chip}</span>
               ))}
             </div>
           </div>
         </div>
         <div className="text-sm-end">
           <h2 className="fw-bold m-0" style={{ fontSize: "26px" }}>{platformMetrics.totalUsers}</h2>
-          <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", fontWeight: "600" }}>verified users across platform</div>
+          <div className="admin-hub-banner__sub" style={{ fontWeight: "600" }}>verified users across platform</div>
         </div>
       </div>
 
@@ -215,13 +211,13 @@ export default function SuperAdminDashboard() {
                   <div key={idx} className="d-flex align-items-center justify-content-between pb-2 border-bottom">
                     <div className="d-flex align-items-center gap-2">
                       <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white text-uppercase font-monospace"
-                           style={{ width: "28px", height: "28px", fontSize: "10px", backgroundColor: "#2563EB", flexShrink: 0 }}>{adm.avatar}</div>
+                           style={{ width: "28px", height: "28px", fontSize: "11px", backgroundColor: "var(--ui-accent)", flexShrink: 0 }}>{adm.avatar}</div>
                       <div>
                         <div className="fw-bold" style={{ fontSize: "12.5px", color: "var(--text-primary)" }}>{adm.name}</div>
                         <div className="text-muted font-monospace" style={{ fontSize: "11px" }}>{adm.role}</div>
                       </div>
                     </div>
-                    <span className={`badge font-monospace rounded-3 px-2 py-1 ${adm.status === "Active" ? "bg-success bg-opacity-10 text-success" : "bg-warning bg-opacity-10 text-warning"}`} style={{ fontSize: "10px" }}>
+                    <span className={`badge font-monospace rounded-3 px-2 py-1 ${adm.status === "Active" ? "bg-success bg-opacity-10 text-success" : "bg-warning bg-opacity-10 text-warning"}`} style={{ fontSize: "11px" }}>
                       {adm.status}
                     </span>
                   </div>
@@ -248,7 +244,7 @@ export default function SuperAdminDashboard() {
               <div key={idx} className="d-flex align-items-center justify-content-between py-2 border-bottom">
                 <div className="d-flex align-items-center gap-3">
                   <div className="d-flex align-items-center justify-content-center rounded-3"
-                       style={{ width: "32px", height: "32px", color: "#7C3AED", backgroundColor: "rgba(124,58,237,0.12)", flexShrink: 0 }}>
+                       style={{ width: "32px", height: "32px", color: "var(--ui-accent-text)", backgroundColor: "var(--ui-accent-soft)", flexShrink: 0 }}>
                     <Broadcast size={15} />
                   </div>
                   <div>

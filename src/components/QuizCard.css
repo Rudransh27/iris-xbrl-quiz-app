@@ -1,165 +1,207 @@
 /* src/components/QuizCard.css
-   Redesigned onto the shared --orbit-* tokens (was hardcoded to a fixed
-   white/light palette, no dark-mode override). Selected = lavender (was
-   amber), correct = teal (was light-sea-green, kept the same hue family),
-   incorrect = rose (was a plain crimson literal) — this exact 3-state
-   language is also used by CodeCard.css; keep both in sync. */
+   MCQ card: a .ui-card (radius-xl, roomy padding) with the mascot beside
+   the question, then options as large selectable rows. Row states:
+     hover    → --ui-hover
+     selected → accent border + --ui-accent-soft fill
+     correct  → --ui-success-soft / --ui-success-text
+     wrong    → --ui-danger-soft / --ui-danger-text
+   The A/B/C… key is a CSS counter (no markup). The explanation is a
+   .ui-callout. Question/explanation typography: QuizMarkdown.css. */
 
-.question-card {
-  width: 100%;
-  background-color: var(--orbit-surface);
-  border: 1px solid var(--orbit-border);
-  border-top: 3px solid var(--orbit-lavender);
-  border-radius: 14px;
-  padding: 24px;
+.question-card.ui-card {
   position: relative;
-  z-index: 5;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--ui-space-4);
+  row-gap: var(--ui-space-6);
+  align-items: center;
+  border-radius: var(--ui-radius-xl);
+  padding: clamp(20px, 4vw, 40px);
   box-sizing: border-box;
-  box-shadow: var(--orbit-shadow-sm);
 }
 
-/* 🖼️ Optional Quiz Illustration Adjustments */
+.question-card > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+/* Optional illustration */
 .quiz-question-image {
+  display: block;
   width: 100%;
   max-height: 240px;
   object-fit: contain;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  background-color: var(--orbit-surface-subtle);
-  border: 1px solid var(--orbit-border);
+  border-radius: var(--ui-radius-lg);
+  background-color: var(--ui-surface-2);
+  border: 1px solid var(--ui-border);
 }
 
-/* Mascot/Tom Img Layout Adjustment if any */
-.tom-img {
+/* Mascot sits beside the question, like a prompt avatar */
+.question-card > .tom-img {
+  grid-column: 1;
+  align-self: start;
   display: block;
-  max-width: 65px;
+  width: 52px;
   height: auto;
-  margin: 0 auto 16px auto;
-  opacity: 0.95;
 }
 
-/* =========================================================================
-   🎯 QUESTION MARKDOWN TEXT CORE
-   ========================================================================= */
-.quiz-question-text {
-  margin-bottom: 24px;
-  text-align: center;
+/* ================= QUESTION ================= */
+.question-card > .quiz-question-text {
+  grid-column: 2;
 }
 
-.quiz-question-text.markdown-body p,
-.quiz-question-text.markdown-body h1,
-.quiz-question-text.markdown-body h2,
-.quiz-question-text.markdown-body h3 {
-  font-size: 1.15rem !important;
-  font-weight: 700 !important;
-  color: var(--orbit-text-heading) !important;
-  line-height: 1.45 !important;
-  margin: 0 !important;
+.quiz-question-text.quiz-md p,
+.quiz-question-text.quiz-md h1,
+.quiz-question-text.quiz-md h2,
+.quiz-question-text.quiz-md h3 {
+  font-family: var(--ui-font-display);
+  font-size: clamp(var(--ui-fs-lg), 2.2vw, var(--ui-fs-xl));
+  font-weight: var(--ui-fw-bold);
+  color: var(--ui-text);
+  line-height: var(--ui-lh-snug);
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--ui-space-2);
 }
 
-/* =========================================================================
-   🎮 OPTIONS GRID
-   ========================================================================= */
+.quiz-question-text.quiz-md > :last-child { margin-bottom: 0; }
+
+/* ================= OPTIONS (large selectable rows) ================= */
 .options-grid {
-  display: grid;
-  grid-template-columns: 1fr; /* Single column flow for mobile and clean parsing default */
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-3);
   width: 100%;
   box-sizing: border-box;
-}
-
-@media (min-width: 640px) {
-  .options-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2-column distribution on bigger screens */
-  }
+  counter-reset: quiz-option;
 }
 
 .option-button {
+  counter-increment: quiz-option;
   width: 100%;
-  background-color: var(--orbit-surface);
-  border: 2px solid var(--orbit-border);
-  border-radius: 12px;
-  padding: 14px 20px;
-  font-size: 0.94rem;
-  font-weight: 600;
-  color: var(--orbit-text-body);
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-4);
+  padding: var(--ui-space-3) var(--ui-space-4);
+  background-color: var(--ui-surface);
+  border: 1px solid var(--ui-border-2);
+  border-radius: var(--ui-radius);
+  font-family: var(--ui-font-sans);
+  font-size: var(--ui-fs-md);
+  font-weight: var(--ui-fw-medium);
+  line-height: var(--ui-lh-snug);
+  color: var(--ui-text);
   text-align: left;
   cursor: pointer;
-  outline: none;
   box-sizing: border-box;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
+  transition: background-color var(--ui-duration) var(--ui-ease), border-color var(--ui-duration) var(--ui-ease), box-shadow var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
 }
 
-/* Hover conditions when user hasn't submitted yet */
-.option-button:hover:not(:disabled) {
-  background-color: rgba(201, 184, 255, 0.10);
-  border-color: var(--orbit-lavender);
-  color: var(--orbit-text-heading);
+/* Option key: A / B / C … (✓ / ✕ once graded) */
+.option-button::before {
+  content: counter(quiz-option, upper-alpha);
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--ui-radius-sm);
+  border: 1px solid var(--ui-border-2);
+  background-color: var(--ui-surface-2);
+  color: var(--ui-text-3);
+  font-size: var(--ui-fs-sm);
+  font-weight: var(--ui-fw-bold);
+  transition: inherit;
 }
 
-/* 💻 Option State 1: Active Selection Profile before submission — the one
-   thing you've actively chosen, not yet graded. */
+.option-button:hover:not(:disabled):not(.selected) {
+  background-color: var(--ui-hover);
+}
+
+.option-button:focus-visible {
+  outline: none;
+  border-color: var(--ui-accent);
+  box-shadow: var(--ui-ring);
+}
+
+/* Selected, not yet graded */
 .option-button.selected {
-  background-color: rgba(201, 184, 255, 0.16);
-  border-color: var(--orbit-lavender);
-  color: var(--orbit-lavender-text) !important;
-  font-weight: 700;
+  background-color: var(--ui-accent-soft);
+  border-color: var(--ui-accent);
+  box-shadow: 0 0 0 1px var(--ui-accent);
+}
+.option-button.selected::before {
+  background-color: var(--ui-accent);
+  border-color: var(--ui-accent);
+  color: var(--ui-on-accent);
 }
 
-/* 🟢 Option State 2: SUCCESS VERIFIED LOGIC (Correct Answer) */
+/* Correct answer */
 .option-button.correct {
-  background-color: rgba(143, 224, 216, 0.14) !important;
-  border-color: var(--orbit-teal) !important;
-  color: var(--orbit-teal-text) !important;
-  font-weight: 700;
+  background-color: var(--ui-success-soft);
+  border-color: var(--ui-success);
+  box-shadow: 0 0 0 1px var(--ui-success);
+  color: var(--ui-success-text);
+  font-weight: var(--ui-fw-semibold);
+}
+.option-button.correct::before {
+  content: "\2713";
+  background-color: var(--ui-success);
+  border-color: var(--ui-success);
+  color: var(--ui-surface);
 }
 
-/* 🔴 Option State 3: EXCEPTION CRASH LOGIC (Incorrect Selection) */
+/* Wrong pick */
 .option-button.incorrect {
-  background-color: rgba(255, 179, 199, 0.14) !important;
-  border-color: var(--orbit-rose) !important;
-  color: var(--orbit-rose-text) !important;
-  font-weight: 700;
+  background-color: var(--ui-danger-soft);
+  border-color: var(--ui-danger);
+  box-shadow: 0 0 0 1px var(--ui-danger);
+  color: var(--ui-danger-text);
+  font-weight: var(--ui-fw-semibold);
+}
+.option-button.incorrect::before {
+  content: "\2715";
+  background-color: var(--ui-danger);
+  border-color: var(--ui-danger);
+  color: var(--ui-surface);
 }
 
-/* Generic Disabled States override when quiz state hits answered flag */
+/* After grading: the rows that aren't the answer / the pick step back */
 .option-button:disabled {
-  cursor: not-allowed;
+  cursor: default;
+}
+.option-button:disabled:not(.correct):not(.incorrect) {
+  opacity: 0.6;
 }
 
-/* =========================================================================
-   📖 COLLAPSIBLE KNOWLEDGE EXPLANATION VIEW
-   ========================================================================= */
-.quiz-explanation {
-  margin-top: 24px;
-  background-color: var(--orbit-surface-subtle);
-  border-top: 2px dashed var(--orbit-border-strong);
-  padding: 16px 20px;
-  border-radius: 0 0 14px 14px;
+.quiz-options-empty {
+  justify-content: center;
+  text-align: center;
+}
+
+/* ================= EXPLANATION (.ui-callout) ================= */
+.quiz-explanation.ui-callout {
+  flex-direction: column;
+  gap: var(--ui-space-2);
+  padding: var(--ui-space-4) var(--ui-space-5);
 }
 
 .quiz-explanation h4 {
-  font-size: 0.9rem;
-  font-weight: 800;
-  color: var(--orbit-text-heading);
+  font-family: var(--ui-font-sans);
+  font-size: var(--ui-fs-2xs);
+  font-weight: var(--ui-fw-bold);
+  color: var(--ui-text-3);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 0 0 8px 0;
+  letter-spacing: var(--ui-tracking-wide);
+  margin: 0;
 }
 
-/* Internal text rendering inside explanation markdown node */
-.quiz-explanation .markdown-body p {
-  font-size: 0.88rem !important;
-  color: var(--orbit-text-body) !important;
-  line-height: 1.5 !important;
-  margin: 0 !important;
+.quiz-explanation .quiz-md {
+  font-size: var(--ui-fs-base);
+  color: var(--ui-text-2);
 }
 
-/* Format internal standard sub-elements blocks if code hints occur */
-.quiz-explanation .markdown-body pre,
-.quiz-explanation .markdown-body code {
-  background-color: var(--orbit-border) !important;
-  color: var(--orbit-text-heading) !important;
-  font-size: 0.8rem !important;
+@media (max-width: 480px) {
+  .question-card > .tom-img { width: 40px; }
+  .option-button { font-size: var(--ui-fs-base); gap: var(--ui-space-3); min-height: 56px; }
 }

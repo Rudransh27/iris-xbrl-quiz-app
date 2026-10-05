@@ -1,10 +1,9 @@
 // src/admin/components/AdminCategoryManager.jsx
 import React, { useState, useEffect, useContext } from "react";
 import { Form, Button, Alert, Spinner, Row, Col, Table, Badge } from "react-bootstrap";
-import { TagFill, PencilSquare, Trash, PlusCircle, XCircle, ArrowDownUp } from "react-bootstrap-icons";
+import { TagFill, PencilSquare, Trash, PlusCircle, XCircle, SignpostSplit } from "react-bootstrap-icons";
 import api from "../services/api";
 import AuthContext from "../../context/AuthContext";
-import AdminModuleReorderModal from "./AdminModuleReorderModal";
 
 // Category ("Tag") CRUD — a flat grouping layer for the Learn page, gated by
 // the exact same three-layer visibility scope Module already has (Global /
@@ -13,7 +12,9 @@ import AdminModuleReorderModal from "./AdminModuleReorderModal";
 // every module always resolves to a real category, so deleting a
 // non-default one just moves its modules to Uncategorized (never deletes
 // the modules themselves).
-export default function AdminCategoryManager() {
+// onOpenPaths(tag): opens the Learning Paths page filtered to this tag (live
+// dashboard). Without it (legacy /admin dashboard) the Paths button is hidden.
+export default function AdminCategoryManager({ onOpenPaths } = {}) {
   const { user } = useContext(AuthContext);
   const isSuperAdmin = user?.role === "superadmin";
 
@@ -33,13 +34,24 @@ export default function AdminCategoryManager() {
   const [selectedTeams, setSelectedTeams] = useState([]);
   const [sequentialUnlock, setSequentialUnlock] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [reorderingCategory, setReorderingCategory] = useState(null);
+  const [pathCounts, setPathCounts] = useState({});
 
   const loadCategories = async () => {
     setLoading(true);
     try {
-      const res = await api.getCategories();
+      const [res, pathsRes] = await Promise.all([
+        api.getCategories(),
+        api.getAdminPaths().catch(() => ({ data: [] })),
+      ]);
       setCategories(res?.data || []);
+      const counts = {};
+      (pathsRes?.data || []).forEach((p) => {
+        const key = (p.categoryId?._id || p.categoryId || "").toString();
+        counts[key] = counts[key] || { total: 0, published: 0 };
+        counts[key].total += 1;
+        if (p.status === "published") counts[key].published += 1;
+      });
+      setPathCounts(counts);
     } catch (err) {
       setError(err.message || "Failed to load categories.");
     } finally {
@@ -190,10 +202,9 @@ export default function AdminCategoryManager() {
         <TagFill size={20} /> Tags
       </h4>
       <p className="text-muted small">
-        Tags group modules on the Learn page (Onboarding, Product, Market, …). Every module always has one —
-        pick it directly in the module's own create/edit form. A tag can be scoped Global, Departmental, or
-        Team-Specific, exactly like a module's own visibility. The "Uncategorized" tag is permanent, Global,
-        and holds any module nobody has tagged yet.
+        Tags group learning <strong>paths</strong> on the Learn page (Onboarding, Product, Market, …): Learn → Tag → Path → modules.
+        Build paths in <strong>Learning Paths</strong> (or press <SignpostSplit /> Paths on a tag). A tag can be scoped Global,
+        Departmental, or Team-Specific. The "Uncategorized" tag is permanent.
       </p>
 
       {error && <Alert variant="danger">{error}</Alert>}
@@ -317,7 +328,7 @@ export default function AdminCategoryManager() {
           <Form.Check
             type="switch"
             id="cat-sequential-unlock"
-            label="Sequential unlock — only the first module is open; each next one unlocks once the previous is completed"
+            label="Sequential unlock (old Tag → Region view only — each path has its own setting)"
             checked={sequentialUnlock}
             onChange={(e) => setSequentialUnlock(e.target.checked)}
             className="small"
@@ -341,9 +352,9 @@ export default function AdminCategoryManager() {
               <th>Description</th>
               <th>Scope</th>
               <th>Order</th>
-              <th>Sequence</th>
+              <th>Paths</th>
               <th></th>
-              <th style={{ width: 140 }}></th>
+              <th style={{ width: 200 }}></th>
             </tr>
           </thead>
           <tbody>
@@ -354,21 +365,25 @@ export default function AdminCategoryManager() {
                 <td>{scopeBadge(cat)}</td>
                 <td>{cat.order}</td>
                 <td>
-                  {cat.sequentialUnlock !== false
-                    ? <Badge bg="primary">Locked in order</Badge>
-                    : <Badge bg="light" text="dark">All open</Badge>}
+                  {pathCounts[cat._id]
+                    ? <Badge bg={pathCounts[cat._id].published ? "primary" : "secondary"}>
+                        {pathCounts[cat._id].published}/{pathCounts[cat._id].total} published
+                      </Badge>
+                    : <span className="text-muted small">None</span>}
                 </td>
                 <td>{cat.isDefault && <Badge bg="info">Default bucket</Badge>}</td>
                 <td className="text-end">
-                  <Button
-                    size="sm"
-                    variant="outline-primary"
-                    className="me-1"
-                    onClick={() => setReorderingCategory(cat)}
-                    title="Reorder modules"
-                  >
-                    <ArrowDownUp />
-                  </Button>
+                  {onOpenPaths && (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-1"
+                      onClick={() => onOpenPaths(cat)}
+                      title="See and build this tag's paths"
+                    >
+                      <SignpostSplit className="me-1" /> Paths
+                    </Button>
+                  )}
                   {!cat.isDefault && (
                     <>
                       <Button size="sm" variant="outline-secondary" className="me-1" onClick={() => startEdit(cat)}>
@@ -389,12 +404,6 @@ export default function AdminCategoryManager() {
         </Table>
       )}
 
-      {reorderingCategory && (
-        <AdminModuleReorderModal
-          category={reorderingCategory}
-          onClose={() => setReorderingCategory(null)}
-        />
-      )}
     </div>
   );
 }

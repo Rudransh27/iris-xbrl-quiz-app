@@ -1,46 +1,45 @@
 /* src/components/Layout.css */
 
-/* 📁 SECTION HEADERS (Main, Engage, Content, etc.) */
-.nav-section {
-  font-size: 11px;
-  color: var(--text-secondary) !important; 
+/* Legacy sidebar list styles (pre-OrbitShell). Nothing in the app renders
+   .nav-section / .nav-item today, but this sheet is loaded globally, so the
+   rules are kept token-based and scoped to a sidebar context — a bare
+   `.nav-item` would otherwise restyle every Bootstrap nav item app-wide. */
+.orbit-sidebar .nav-section {
+  font-size: var(--ui-fs-2xs);
+  color: var(--ui-text-3);
   padding: 16px 20px 6px;
-  letter-spacing: 1.2px;
+  letter-spacing: var(--ui-tracking-wide);
   text-transform: uppercase;
-  font-weight: 800;
-  opacity: 0.85;
+  font-weight: var(--ui-fw-semibold);
 }
 
-/* 🔗 INDIVIDUAL LINK BLOCKS */
-.nav-item {
+.orbit-sidebar .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 11px 20px;
-  font-size: 14px;
-  color: var(--text-primary) !important; 
+  padding: 10px 16px;
+  margin: 0 8px;
+  border-radius: var(--ui-radius);
+  font-size: var(--ui-fs-base);
+  font-weight: var(--ui-fw-medium);
+  color: var(--ui-text-2);
   cursor: pointer;
-  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-  border-left: 4px solid transparent;
-  font-weight: 600;
+  transition: background-color var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
 }
 
-/* 👥 LINK HOVER STATE (Drops into Frosted Blue) */
-.nav-item:hover {
-  background: var(--curriculum-hover) !important;
-  color: var(--text-primary) !important;
-  padding-left: 24px; /* Soft tactical slide effect */
+.orbit-sidebar .nav-item:hover {
+  background: var(--ui-hover);
+  color: var(--ui-text);
 }
 
-/* 🎯 SELECTED FOCUS STATE (Highlights text using deep Cerulean / Active Tint) */
-.nav-item.active {
-  color: var(--border-hud-tactile) !important; 
-  background: var(--curriculum-icon-bg) !important;
-  border-left-color: var(--bg-hud-banner) !important;
-  font-weight: 800;
+.orbit-sidebar .nav-item.active {
+  background: var(--ui-accent-soft);
+  color: var(--ui-accent-text);
+  font-weight: var(--ui-fw-semibold);
 }
 
-/* 📥 SCROLLER SCALABILITY REINFORCEMENTS */
+/* Main scroll container (OrbitShell <main>) — scrollbar chrome is hidden in
+   OrbitShell.css; these keep a quiet token thumb wherever it does show. */
 .content-fluid-scroller::-webkit-scrollbar {
   width: 6px;
 }
@@ -48,6 +47,6 @@
   background: transparent;
 }
 .content-fluid-scroller::-webkit-scrollbar-thumb {
-  background: var(--border-tactile);
-  border-radius: 20px;
+  background: var(--ui-border-2);
+  border-radius: var(--ui-radius-pill);
 }

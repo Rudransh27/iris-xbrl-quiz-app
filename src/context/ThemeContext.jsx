@@ -3,16 +3,31 @@ import React, { createContext, useState, useEffect } from "react";
 
 export const ThemeContext = createContext();
 
+const STORAGE_KEY = "iris_orbit_theme";
+
+// public/theme-init.js already applied this before first paint; reading the
+// attribute back keeps React's initial state identical to what's on screen.
+function initialTheme() {
+  const applied = document.documentElement.getAttribute("data-theme");
+  if (applied === "dark" || applied === "light") return applied;
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === "dark" || saved === "light") return saved;
+  } catch { /* storage blocked */ }
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
 export function ThemeProvider({ children }) {
-  // Read previous saved session preference or default natively to light
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("iris_orbit_theme") || "light";
-  });
+  const [theme, setTheme] = useState(initialTheme);
 
   useEffect(() => {
-    // Inject attribute token straight over document node layout tree root
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("iris_orbit_theme", theme);
+    const root = document.documentElement;
+    // data-theme drives our tokens (src/styles/tokens.css); data-bs-theme
+    // switches Bootstrap's own components to their dark variants.
+    root.setAttribute("data-theme", theme);
+    root.setAttribute("data-bs-theme", theme);
+    root.style.colorScheme = theme;
+    try { localStorage.setItem(STORAGE_KEY, theme); } catch { /* storage blocked */ }
   }, [theme]);
 
   const toggleTheme = () => {

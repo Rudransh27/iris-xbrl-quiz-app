@@ -16,8 +16,6 @@
     "@react-three/drei": "^10.6.1",
     "@react-three/fiber": "^9.3.0",
     "ace-builds": "^1.43.2",
-    "antd": "^5.26.6",
-    "axios": "^1.16.1",
     "bootstrap": "^5.3.7",
     "framer-motion": "^12.23.6",
     "prismjs": "^1.30.0",
@@ -30,12 +28,9 @@
     "react-google-recaptcha": "^3.1.0",
     "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
-    "react-progressbar": "^15.4.1",
-    "react-refractor": "^4.0.0",
     "react-router-dom": "^7.7.0",
-    "react-syntax-highlighter": "^15.6.1",
+    "react-syntax-highlighter": "^16.1.1",
     "react-toastify": "^11.0.5",
-    "react-tsparticles": "^2.12.2",
     "react-use": "^17.6.0",
     "recharts": "^3.1.0",
     "remark-gfm": "^4.0.1",
@@ -43,8 +38,7 @@
     "socket.io-client": "^4.8.3",
     "sweetalert2": "^11.23.0",
     "three": "^0.179.1",
-    "tsparticles": "^3.9.1",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

@@ -1,7 +1,8 @@
 // src/components/QuizCard.jsx
 import React from "react";
 import tomImg from "../assets/tom.png";
-import "./QuizCard.css"; 
+import "./QuizMarkdown.css";
+import "./QuizCard.css";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -20,11 +21,11 @@ const QuizCard = ({
   const safeOptions = options || [];
 
   return (
-    <div className="question-card">
+    <div className="question-card ui-card">
       {quizImage && <img src={quizImage} alt="Quiz visual aid" className="quiz-question-image" />}
       <img src={tomImg} alt="Tom" className="tom-img" />
 
-      <div className="quiz-question-text markdown-body">
+      <div className="quiz-question-text markdown-body quiz-md">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{question}</ReactMarkdown>
       </div>
 
@@ -52,16 +53,16 @@ const QuizCard = ({
           })
         ) : (
           // ⚠️ Graceful user feedback instead of a hard application crash
-          <div className="text-muted small p-3 border rounded font-monospace text-center w-100 bg-light">
+          <div className="quiz-options-empty ui-callout ui-callout--warning">
             ⚠️ [DATA EXCEPTION]: No interaction options found for this quiz card.
           </div>
         )}
       </div>
 
       {answered && explanation && (
-        <div className="quiz-explanation">
+        <div className="quiz-explanation ui-callout">
           <h4>Explanation:</h4>
-          <div className="markdown-body">
+          <div className="markdown-body quiz-md">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{explanation}</ReactMarkdown>
           </div>
         </div>

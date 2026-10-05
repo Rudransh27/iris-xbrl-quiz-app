@@ -10,6 +10,7 @@ import { setCurrentModule } from "../components/OrbitDashboard/currentModuleStor
 import AuthContext from "../context/AuthContext";
 import "../components/OrbitDashboard/OrbitDashboard.css";
 import "../components/OrbitDashboard/TagCard.css";
+import { safeId } from "../utils/safeNav";
 
 // Mounted three ways: `/orbit/modules` (no filter, every visible module —
 // the long-standing meaning of this path, still relied on by quiz-completion
@@ -19,7 +20,7 @@ import "../components/OrbitDashboard/TagCard.css";
 // present, is passed straight through to the backend's ?categoryId= filter
 // on workspace-curriculum — nothing is filtered client-side.
 export default function ModuleTrail() {
-  const { categoryId } = useParams();
+  const categoryId = safeId(useParams().categoryId);
   const [modules, setModules] = useState([]);
   const [category, setCategory] = useState(null);
   // 🎯 ACCURACY FIX: was completedCardIds (any attempted card, right or
@@ -126,17 +127,17 @@ export default function ModuleTrail() {
   }).length;
 
   return (
-    <div style={{ maxWidth: 1240, margin: "0 auto", padding: "20px 28px 32px", display: "flex", flexDirection: "column", gap: 18 }}>
+    <div className="ui-page">
       {categoryId ? (
         // Plain, minimal tag header — replaces the full Learn hero here so
         // drilling into a tag doesn't just repeat the exact same big "Fuel
         // Your Orbit" block the learner already saw one click ago. Just a
         // back button and the tag name, no bar/background/border around it.
         <div className="tag-context-bar">
-          <button type="button" className="tag-context-bar__back" onClick={() => navigate("/orbit/tags")} aria-label="Back to all tags">
+          <button type="button" className="ui-btn ui-btn--secondary ui-btn--icon ui-btn--pill tag-context-bar__back" onClick={() => navigate("/orbit/tags")} aria-label="Back to all tags">
             <ArrowLeft size={15} />
           </button>
-          <h2 className="tag-context-bar__current">{category?.name || "…"}</h2>
+          <h2 className="ui-h2 tag-context-bar__current">{category?.name || "…"}</h2>
         </div>
       ) : (
         <LearnHero

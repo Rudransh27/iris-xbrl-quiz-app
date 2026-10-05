@@ -1,4 +1,5 @@
-/* src/pages/Auth.css */
+/* src/pages/Auth.css — used by EmailVerificationPage (link-based verification).
+   Tokens only (--ui-*), so it follows the light/dark theme. */
 
 /* Main Full Window Layout Wrapping Canvas */
 .auth-page-main-content {
@@ -7,8 +8,7 @@
   justify-content: center;
   align-items: center;
   padding: 40px 20px;
-  /* Unified site canvas, theme-aware */
-  background-color: var(--orbit-canvas) !important;
+  background-color: var(--ui-bg) !important;
   min-height: calc(100vh - 74px);
   box-sizing: border-box;
 }
@@ -16,10 +16,10 @@
 /* Master container defining the double box stack layout width */
 .insta-style-wrapper {
   width: 100%;
-  max-width: 350px; /* Precise Instagram layout standardized width */
+  max-width: 400px;
   display: flex;
   flex-direction: column;
-  gap: 12px; /* Perfect distance separating the twin boxes */
+  gap: 12px;
 }
 
 .auth-card-wrapper {
@@ -33,46 +33,39 @@
    ========================================================================= */
 .auth-card {
   width: 100%;
-  background-color: #ffffff !important; /* Pure high-intensity bright white */
-  
-  /* 🎯 THE SPECIFICATION: Main box gets smooth border radius, border is crisp and sharp */
-  border: 1px solid #cbd5e1 !important; /* Clean high-visibility slate grey border */
-  border-radius: 12px !important; /* Elegant premium curved corners only for the main box */
-  
+  background-color: var(--ui-surface) !important;
+  border: 1px solid var(--ui-border) !important;
+  border-radius: var(--ui-radius-xl) !important;
   padding: 32px 28px !important;
-  box-shadow: 0 4px 12px rgba(15, 37, 110, 0.02) !important; /* Subtle premium depth elevation */
+  box-shadow: var(--ui-shadow-sm) !important;
 }
 
 /* Dynamic Headings Core Typography */
 .auth-card h1 {
-  font-size: 1.65rem;
-  font-weight: 700;
-  color: #0f172a; /* Strong deep charcoal text contrast */
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-fs-2xl);
+  font-weight: var(--ui-fw-heavy);
+  color: var(--ui-text);
   margin-bottom: 0.4rem;
-  letter-spacing: -0.4px;
+  letter-spacing: var(--ui-tracking-tight);
 }
 
 .auth-card p {
-  font-size: 0.88rem;
-  color: #64748b; /* Muted subtext lines */
+  font-size: var(--ui-fs-base);
+  color: var(--ui-text-2);
   margin-bottom: 1.4rem;
 }
 
-/* =========================================================================
-   📥 INPUT ELEMENT FIELDS SYSTEM (Strictly Flat Instagram Sharp Corners)
-   ========================================================================= */
+/* Inputs */
 .auth-card .form-control {
-  background-color: #fafafa; /* Smooth clean flat inner background */
-  
-  /* 🎯 THE SPECIFICATION: Hard zero border radius for strict Instagram rectangle look */
-  border: 1px solid #cbd5e1; /* Sharp clean grey borderline */
-  border-radius: 0px !important; /* ❌ INPUTS RADIUS REMOVED COMPLETELY (Flat Corners) */
-  
+  background-color: var(--ui-surface);
+  border: 1px solid var(--ui-border-2);
+  border-radius: var(--ui-radius-sm) !important;
   padding: 10px 12px;
-  font-size: 14px;
-  height: 38px; /* High density compact size tracking */
-  color: #0f172a;
-  transition: border-color 0.15s ease-in-out;
+  font-size: var(--ui-fs-base);
+  height: 42px;
+  color: var(--ui-text);
+  transition: border-color var(--ui-duration) var(--ui-ease), box-shadow var(--ui-duration) var(--ui-ease);
 }
 
 /* Select specific alignment formatting padding overrides */
@@ -81,11 +74,11 @@
   padding-bottom: 0 !important;
 }
 
-/* Precise borderline focus transition when clicking fields */
+/* Focus ring */
 .auth-card .form-control:focus {
-  background-color: #ffffff;
-  border-color: #94a3b8 !important; /* Clean dark grey highlight border stroke */
-  box-shadow: none !important; /* No extra blurry shadows */
+  background-color: var(--ui-surface);
+  border-color: var(--ui-accent) !important;
+  box-shadow: var(--ui-ring) !important;
   outline: none !important;
 }
 
@@ -97,71 +90,66 @@
   transform: translateY(-50%);
   background: none !important;
   border: none !important;
-  color: #334155;
-  font-size: 13px;
-  font-weight: 600;
+  color: var(--ui-accent-text);
+  font-size: var(--ui-fs-sm);
+  font-weight: var(--ui-fw-semibold);
   cursor: pointer;
   z-index: 10;
   padding: 0;
 }
 .insta-inner-toggle-btn:hover {
-  color: #0f256e;
+  text-decoration: underline;
 }
 
-/* =========================================================================
-   🚀 PRIMARY BUTTONS AND LINK CORE GLOWS (#0f256e Brand Sync)
-   ========================================================================= */
+/* Primary buttons */
 .auth-card .btn-primary {
-  background-color: #0f256e !important; /* Royal Navy Primary Corporate Blue */
-  border-color: #0f256e !important;
-  font-weight: 600;
-  font-size: 14px;
-  border-radius: 6px !important; /* Subtle smooth curves only for core action buttons */
+  background-color: var(--ui-accent) !important;
+  border-color: var(--ui-accent) !important;
+  color: var(--ui-on-accent) !important;
+  font-weight: var(--ui-fw-semibold);
+  font-size: var(--ui-fs-base);
+  border-radius: var(--ui-radius) !important;
   padding: 6px 12px;
-  height: 36px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.15s ease;
+  transition: background-color var(--ui-duration) var(--ui-ease);
 }
 
 .auth-card .btn-primary:hover:not(:disabled) {
-  opacity: 0.92;
+  background-color: var(--ui-accent-hover) !important;
 }
 
 .auth-card .btn-primary:disabled {
-  background-color: rgba(15, 37, 110, 0.45) !important;
-  border-color: transparent !important;
-  color: #ffffff !important;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .auth-forgot-password-link {
-  font-size: 12px;
-  font-weight: 600;
-  color: #0f256e !important;
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-semibold);
+  color: var(--ui-accent-text) !important;
   text-decoration: none !important;
 }
 .auth-forgot-password-link:hover {
   text-decoration: underline !important;
 }
 
-/* =========================================================================
-   📦 CARD 2: BOTTOM ISOLATED SWITCH BOX (Curved Corners & Bright Canvas)
-   ========================================================================= */
+/* Bottom isolated switch box */
 .auth-isolated-switch-box {
-  background-color: #ffffff; /* Matching bright white background */
-  border: 1px solid #cbd5e1; /* Precise clean matching border line */
-  border-radius: 12px; /* Uniform 12px radius matching the main form card above */
-  font-size: 14px;
-  color: #334155;
+  background-color: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-lg);
+  font-size: var(--ui-fs-base);
+  color: var(--ui-text-2);
 }
 
 .auth-switch-trigger-btn {
   background: none !important;
   border: none !important;
-  color: #0f256e !important; /* Hyperlinks match the platform identity */
-  font-weight: 700;
+  color: var(--ui-accent-text) !important;
+  font-weight: var(--ui-fw-bold);
   cursor: pointer;
   padding: 0;
   display: inline-block;
@@ -178,25 +166,27 @@
 }
 
 .auth-alert-compact {
-  font-size: 12px !important;
-  padding: 10px !important;
-  border-radius: 6px !important;
-  font-weight: 600;
+  font-size: var(--ui-fs-sm) !important;
+  padding: 10px 14px !important;
+  border-radius: var(--ui-radius) !important;
+  font-weight: var(--ui-fw-semibold);
 }
 
-/* Responsive Adaptive Viewports step media controls */
+/* EmailVerificationPage helpers (replace former inline styles) */
+.auth-ev-title { color: var(--ui-text); }
+.auth-ev-spinner { color: var(--ui-accent); }
+.auth-ev-hint { font-size: var(--ui-fs-sm); line-height: 1.4; color: var(--ui-text-3); }
+.auth-card .auth-ev-hint { color: var(--ui-text-3); margin-bottom: 0; }
+
+/* Responsive */
 @media (max-width: 576px) {
   .auth-page-main-content {
     padding: 15px;
   }
   .insta-style-wrapper {
-    max-width: 92%;
+    max-width: 100%;
   }
   .auth-card {
     padding: 24px 20px !important;
-    border-radius: 12px !important; /* Preserves curves flawlessly on smaller screens */
-  }
-  .auth-isolated-switch-box {
-    border-radius: 12px;
   }
 }

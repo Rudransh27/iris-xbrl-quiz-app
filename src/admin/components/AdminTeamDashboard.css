@@ -114,7 +114,7 @@
   background: var(--orbit-surface-subtle);
   border: 1px solid var(--orbit-border);
   color: var(--orbit-text-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--bs-font-monospace);
   padding: 2px 7px;
   border-radius: 3px;
@@ -127,7 +127,7 @@
 }
 
 .team-hub-no-admin {
-  color: #dc2626;
+  color: var(--ui-danger-text);
 }
 
 .team-hub-member-list {
@@ -179,7 +179,7 @@
   background: var(--orbit-brand-muted);
   color: var(--orbit-brand);
   font-family: var(--bs-font-monospace);
-  font-size: 10px;
+  font-size: 11px;
   padding: 2px 7px;
   border-radius: 3px;
 }

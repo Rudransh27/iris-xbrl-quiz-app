@@ -47,7 +47,7 @@
   display: inline-block;
   background: var(--orbit-surface-subtle);
   color: var(--orbit-text-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.6px;
   padding: 3px 8px;
@@ -66,7 +66,7 @@
   flex-wrap: nowrap !important;
   -ms-overflow-style: none;
   scrollbar-width: thin;
-  scrollbar-color: var(--orbit-brand-muted, #b8b4e8) transparent;
+  scrollbar-color: var(--orbit-brand-muted) transparent;
   /* On a short viewport this list runs past the fold with no other cue that
      it scrolls — a visible (not hover-only) scrollbar thumb is the signal. */
 }
@@ -76,7 +76,7 @@
 }
 
 .admin-nav-links-stack::-webkit-scrollbar-thumb {
-  background-color: var(--orbit-brand-muted, #b8b4e8);
+  background-color: var(--orbit-brand-muted);
   border-radius: 3px;
 }
 
@@ -226,17 +226,20 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  background: var(--orbit-surface);
-  border: 1px solid var(--orbit-border);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-lg);
   padding: 16px;
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .admin-launcher-card:hover {
-  background: var(--orbit-surface-subtle);
-  border-color: var(--orbit-border-strong);
+  background: var(--ui-surface);
+  border-color: var(--ui-border-2);
+  box-shadow: var(--ui-shadow-md);
+  transform: translateY(-1px);
 }
 
 .admin-launcher-card-icon {
@@ -246,8 +249,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--card-accent, var(--orbit-brand)) 14%, var(--orbit-surface));
-  color: var(--card-accent, var(--orbit-brand));
+  border-radius: var(--ui-radius);
+  background: color-mix(in srgb, var(--card-accent, var(--ui-accent)) 14%, var(--ui-surface));
+  color: var(--card-accent, var(--ui-accent));
 }
 
 .admin-launcher-card-title {

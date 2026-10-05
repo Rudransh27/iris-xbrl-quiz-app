@@ -1,16 +1,13 @@
 /* src/components/Footer.css
-   Rewritten onto the shared --orbit-* tokens (src/index.css) — this used to
-   declare its own fixed-light "--duo-*" token set with no [data-theme="dark"]
-   override at all, so the footer stayed white regardless of the site's theme
-   toggle. Now it themes automatically like every other redesigned page. */
+   Legacy site footer. Tokens only (--ui-*) — follows the light/dark theme. */
 
 .duo-site-footer {
   width: 100%;
-  background-color: var(--orbit-canvas);
-  border-top: 1px solid var(--orbit-border);
+  background-color: var(--ui-surface);
+  border-top: 1px solid var(--ui-border);
   padding: 56px 24px 0 24px;
   box-sizing: border-box;
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--ui-font-sans);
 }
 
 .duo-footer-container {
@@ -42,29 +39,35 @@
 }
 
 .duo-footer-heading {
-  font-size: 14px;
-  font-weight: 900;
-  color: var(--orbit-text-heading);
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-fs-2xs);
+  font-weight: var(--ui-fw-bold);
+  color: var(--ui-text-3);
   margin: 0 0 16px 0;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: var(--ui-tracking-wide);
 }
 
 .duo-footer-text-link a,
 .duo-contact-node a {
-  color: var(--orbit-brand);
+  color: var(--ui-accent-text);
   text-decoration: none !important;
-  font-weight: 800;
-  font-size: 14px;
+  font-weight: var(--ui-fw-semibold);
+  font-size: var(--ui-fs-base);
+}
+
+.duo-footer-text-link a:hover,
+.duo-contact-node a:hover {
+  text-decoration: underline !important;
 }
 
 .duo-company-description,
 .duo-contact-node,
 .duo-social-text {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--orbit-text-muted);
-  line-height: 1.55;
+  font-size: var(--ui-fs-sm);
+  font-weight: var(--ui-fw-regular);
+  color: var(--ui-text-2);
+  line-height: var(--ui-lh-body);
   margin: 8px 0 0 0;
 }
 
@@ -80,17 +83,19 @@
 
 .product-link {
   text-decoration: none !important;
-  font-size: 14px;
-  font-weight: 800;
-  transition: color 0.15s ease;
+  font-size: var(--ui-fs-base);
+  font-weight: var(--ui-fw-medium);
+  color: var(--ui-text-2);
+  transition: color var(--ui-duration) var(--ui-ease);
 }
 
-.link-azure { color: var(--orbit-sky-text); }
-.link-pink  { color: var(--orbit-pink-text); }
-.link-gold  { color: var(--orbit-lavender-text); }
+/* One accent colour — the former per-link hues are neutral now. */
+.link-azure,
+.link-pink,
+.link-gold { color: var(--ui-text-2); }
 
 .product-link:hover {
-  color: var(--orbit-brand);
+  color: var(--ui-accent-text);
   text-decoration: underline !important;
 }
 
@@ -98,47 +103,40 @@
 .duo-social-icons {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin-top: 14px;
 }
 
 .duo-social-btn {
   width: 38px;
   height: 38px;
-  border-radius: 11px;
-  background-color: var(--orbit-surface);
-  border: 1.5px solid var(--orbit-border);
+  border-radius: var(--ui-radius);
+  background-color: var(--ui-surface-2);
+  border: 1px solid var(--ui-border);
+  color: var(--ui-text-2);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
+  font-size: var(--ui-fs-lg);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease), border-color var(--ui-duration) var(--ui-ease);
+}
+
+.duo-social-btn:hover {
+  background-color: var(--ui-accent-soft);
+  border-color: var(--ui-accent-soft-2);
+  color: var(--ui-accent-text);
 }
 
 .duo-social-btn:active {
   transform: translateY(1px);
 }
 
-/* Kept as real brand colors (LinkedIn blue, etc.) — not part of the
-   lavender/white canvas inconsistency, so left untouched on purpose. */
-.social-linkedin { color: #0077b5; }
-.social-linkedin:hover { border-color: #0077b5; }
-
-.social-twitter { color: #3a86ff; }
-.social-twitter:hover { border-color: #3a86ff; }
-
-.social-facebook { color: #1877f2; }
-.social-facebook:hover { border-color: #1877f2; }
-
-.social-youtube { color: #ff006e; }
-.social-youtube:hover { border-color: #ff006e; }
-
 /* ================= BOTTOM METADATA BAND ================= */
 .duo-footer-bottom {
-  border-top: 1px solid var(--orbit-border);
+  border-top: 1px solid var(--ui-border);
   padding: 24px 0;
-  background-color: var(--orbit-surface-subtle);
+  background-color: var(--ui-surface-2);
   margin: 0 -24px;
 }
 
@@ -146,8 +144,15 @@
   max-width: 1140px;
   margin: 0 auto;
   padding: 0 24px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--orbit-text-muted);
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-medium);
+  color: var(--ui-text-3);
   text-align: center;
 }
+
+.duo-footer-bottom p.duo-footer-credit {
+  margin-top: 4px;
+  font-weight: var(--ui-fw-regular);
+}
+
+.duo-footer-bottom a { color: var(--ui-accent-text); }

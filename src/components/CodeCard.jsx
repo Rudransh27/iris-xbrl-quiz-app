@@ -11,13 +11,18 @@ import {
   ExclamationTriangle,
   Files,
 } from "react-bootstrap-icons";
-import api from "../admin/services/api";
+import "./QuizMarkdown.css";
 import "./CodeCard.css";
 
 import "ace-builds/src-noconflict/mode-xml";
 import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
+
+// 🔒 Code-fence text goes through innerHTML (for Prism's markup); anything not
+// run through Prism.highlight (which escapes) is escaped with this, so
+// ```foo <img src=x onerror=…>``` in a question/hint can't run as script.
+const escapeHtml = (text) => text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const CodeCard = ({
   title,
@@ -61,32 +66,12 @@ const CodeCard = ({
     return () => observer.disconnect();
   }, []);
 
-  const [hasRecorded, setHasRecorded] = useState(false);
+  // 🔒 SERVER-SIDE GRADING: this card used to POST its own completion via
+  // `api.post(...)` — a method the api module doesn't have, so it threw on
+  // every answer and was silently swallowed. Recording is (and always was)
+  // done by useQuizEngine, which now submits the answer for server grading;
+  // the card itself only renders.
 
-  useEffect(() => {
-    // Reset guard when card changes
-    setHasRecorded(false);
-  }, [cardId]);
-
-  useEffect(() => {
-    if (isCorrect === null || hasRecorded) return;
-
-    const recordAttempt = async () => {
-      try {
-        await api.post("/progress/card-completed", {
-          cardId,
-          topicId,
-          moduleId,
-          isCorrect,
-        });
-        setHasRecorded(true);
-      } catch (error) {
-        console.error("Failed to record code card completion:", error);
-      }
-    };
-
-    recordAttempt();
-  }, [isCorrect, cardId, topicId, moduleId]); // hasRecorded NOT in deps
   const handleCopy = (text, which) => {
     if (!navigator.clipboard) return;
     navigator.clipboard.writeText(text).then(() => {
@@ -114,7 +99,7 @@ const CodeCard = ({
       const match = /language-(\w+)/.exec(className || "");
       const lang = match ? match[1] : "xml";
 
-      let highlighted = children;
+      let highlighted = "";
       try {
         if (Prism.languages[lang]) {
           highlighted = Prism.highlight(
@@ -123,11 +108,11 @@ const CodeCard = ({
             lang,
           );
         } else {
-          highlighted = String(children).replace(/\n$/, "");
+          highlighted = escapeHtml(String(children).replace(/\n$/, ""));
         }
       } catch (error) {
         console.error("Highlight error:", error);
-        highlighted = String(children).replace(/\n$/, "");
+        highlighted = escapeHtml(String(children).replace(/\n$/, ""));
       }
 
       return (
@@ -142,16 +127,16 @@ const CodeCard = ({
   };
 
   return (
-    <div className="compiler-code-card-shell">
+    <div className="compiler-code-card-shell ui-card">
       <h3 className="compiler-card-main-title">{title}</h3>
 
       {/* 📚 TAXONOMY SCHEMAS REFERENCE CODE BLOCKS */}
       {taxonomyCode && (
         <div className="compiler-code-snippet-box">
-          <div className="compiler-snippet-header font-monospace">
+          <div className="compiler-snippet-header">
             <span>📚 TAXONOMY RULES METADATA (.XML)</span>
             <button
-              className="compiler-copy-btn"
+              className="compiler-copy-btn ui-btn ui-btn--ghost ui-btn--sm"
               onClick={() => handleCopy(taxonomyCode, "taxonomy")}
               type="button"
             >
@@ -159,7 +144,7 @@ const CodeCard = ({
               <span>{copySuccessTax ? "Copied!" : "Copy XML"}</span>
             </button>
           </div>
-          <div className="compiler-prism-scroller">
+          <div className="compiler-prism-scroller quiz-code">
             <pre>
               <code
                 className="language-xml"
@@ -179,10 +164,10 @@ const CodeCard = ({
       {/* 📄 UNVALIDATED EXECUTABLE CODE BLOCKS */}
       {instanceCode && (
         <div className="compiler-code-snippet-box">
-          <div className="compiler-snippet-header font-monospace">
+          <div className="compiler-snippet-header">
             <span>📄 REPORTING INSTANCE TEMPLATE</span>
             <button
-              className="compiler-copy-btn"
+              className="compiler-copy-btn ui-btn ui-btn--ghost ui-btn--sm"
               onClick={() => handleCopy(instanceCode, "instance")}
               type="button"
             >
@@ -190,7 +175,7 @@ const CodeCard = ({
               <span>{copySuccessInst ? "Copied!" : "Copy Template"}</span>
             </button>
           </div>
-          <div className="compiler-prism-scroller">
+          <div className="compiler-prism-scroller quiz-code">
             <pre>
               <code
                 className="language-xml"
@@ -209,7 +194,7 @@ const CodeCard = ({
 
       {/* 🎯 QUESTION CONTENT DESCRIPTIVE PANELS */}
       <div className="compiler-question-prompt-viewport">
-        <div className="compiler-markdown-body markdown-body">
+        <div className="compiler-markdown-body markdown-body quiz-md quiz-md--prism">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
             {question}
           </ReactMarkdown>
@@ -220,7 +205,7 @@ const CodeCard = ({
       <div className="compiler-hint-action-row">
         {hint && isCorrect === false && (
           <button
-            className="compiler-hint-toggle-trigger font-monospace"
+            className="compiler-hint-toggle-trigger ui-btn ui-btn--soft ui-btn--sm"
             onClick={() => setShowHint(!showHint)}
           >
             <Lightbulb size={13} className="bulb-vector" />
@@ -232,8 +217,8 @@ const CodeCard = ({
       </div>
 
       {showHint && (
-        <div className="compiler-hint-floating-drawer animate-fade-up">
-          <div className="compiler-markdown-body markdown-body">
+        <div className="compiler-hint-floating-drawer ui-callout ui-callout--warning animate-fade-up">
+          <div className="compiler-markdown-body markdown-body quiz-md quiz-md--prism">
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
               {hint}
             </ReactMarkdown>
@@ -245,7 +230,7 @@ const CodeCard = ({
       <div
         className={`compiler-editor-container-hull ${isCorrect === true ? "hull-success" : isCorrect === false ? "hull-error" : ""}`}
       >
-        <div className="editor-console-header font-monospace">
+        <div className="editor-console-header">
           <span className="live-pulse-dot"></span>
           <span>LIVE TESTING CONSOLE // ACE LAYER RUNNING</span>
         </div>
@@ -271,7 +256,7 @@ const CodeCard = ({
 
       {/* ❌ VALIDATION ERROR EXCEPTIONS RESPONSES */}
       {validationError && (
-        <div className="compiler-exception-alert font-monospace animate-fade-up">
+        <div className="compiler-exception-alert ui-callout ui-callout--danger animate-fade-up">
           <ExclamationTriangle size={14} className="flex-shrink-0" />
           <div className="exception-text-string">{validationError}</div>
         </div>
@@ -279,12 +264,12 @@ const CodeCard = ({
 
       {/* 🟢 SUCCESS COMPILATION FEEDBACK SHEETS */}
       {isCorrect === true && explanation && (
-        <div className="compiler-success-feedback-drawer animate-fade-up">
-          <div className="success-feedback-header-title font-monospace">
+        <div className="compiler-success-feedback-drawer ui-callout ui-callout--success animate-fade-up">
+          <div className="success-feedback-header-title">
             <Check2Circle size={15} />
             <span>COMPILATION EXECUTED SUCCESSFUL // EXPLANATION LOG</span>
           </div>
-          <div className="compiler-markdown-body markdown-body">
+          <div className="compiler-markdown-body markdown-body quiz-md quiz-md--prism">
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
               {explanation}
             </ReactMarkdown>

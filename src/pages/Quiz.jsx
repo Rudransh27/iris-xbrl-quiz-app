@@ -23,10 +23,28 @@ import {
 } from "react-bootstrap-icons";
 import Swal from 'sweetalert2';
 import { buildTagSuffix, buildLearnBackPath } from "../utils/tagReturnPath";
+import { withOrbitBridge } from "../utils/sandboxBridge";
 import "./Quiz.css";
+import { safeId, safeIdOrToken } from "../utils/safeNav";
+
+// 🔒 HTML module iframe sandbox. With allow-same-origin a module's script
+// runs with Orbit's own origin (it could read the session token and call the
+// API as whoever is viewing it), so modules run WITHOUT it by default.
+// Sandbox flags also apply to frames nested inside the module, so an
+// embedded SharePoint video would lose its Microsoft sign-in — a superadmin
+// can mark such a module "trusted" (card content.sandboxTrusted; cleared
+// automatically if anyone else edits the HTML) to keep allow-same-origin.
+// VITE_STRICT_HTML_SANDBOX=true forces strict mode even for trusted modules.
+const STRICT_HTML_SANDBOX = "allow-scripts allow-popups allow-forms";
+const TRUSTED_HTML_SANDBOX = "allow-scripts allow-popups allow-forms allow-same-origin";
+const sandboxFor = (card) => (card?.content?.sandboxTrusted === true && import.meta.env.VITE_STRICT_HTML_SANDBOX !== "true"
+  ? TRUSTED_HTML_SANDBOX : STRICT_HTML_SANDBOX);
 
 const Quiz = () => {
-  const { moduleId, topicId } = useParams();
+  const params = useParams();
+  const moduleId = safeId(params.moduleId);
+  // Flat (express) modules open at /quiz/:moduleId/undefined.
+  const topicId = safeIdOrToken(params.topicId, "undefined");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -39,13 +57,14 @@ const Quiz = () => {
   // (or, missing the region, the region-picker one level up from it).
   const tagId = new URLSearchParams(location.search).get("tag");
   const regionParam = new URLSearchParams(location.search).get("region");
+  const pathParam = new URLSearchParams(location.search).get("path");
 
   // Must land inside the persistent Orbit shell (Learn page), not the legacy
   // chrome-less /modules route.
   const getExitRedirectPath = () => {
-    const tagSuffix = buildTagSuffix(tagId, regionParam);
+    const tagSuffix = buildTagSuffix(tagId, regionParam, pathParam);
     return isExpressFlatModule
-      ? buildLearnBackPath(tagId, regionParam)
+      ? buildLearnBackPath(tagId, regionParam, pathParam)
       : `/orbit/modules/${moduleId}/topics${tagSuffix}`;
   };
 
@@ -61,7 +80,7 @@ const Quiz = () => {
     resetModule,
     isCardReached,
     isCardCorrect,
-  } = useQuizEngine(moduleId, topicId, navigate, tagId, regionParam);
+  } = useQuizEngine(moduleId, topicId, navigate, tagId, regionParam, pathParam);
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -81,7 +100,9 @@ const Quiz = () => {
   // across unrelated re-renders.
   const sandboxBlobUrl = useMemo(() => {
     if (!state.activeSandboxPayload) return null;
-    const blob = new Blob([state.activeSandboxPayload], { type: "text/html" });
+    // The module's HTML is loaded unchanged, plus Orbit's small bridge script
+    // (first-answer capture + exit containment — see utils/sandboxBridge.js).
+    const blob = new Blob([withOrbitBridge(state.activeSandboxPayload)], { type: "text/html" });
     return URL.createObjectURL(blob);
   }, [state.activeSandboxPayload]);
 
@@ -115,94 +136,107 @@ const Quiz = () => {
   // sandbox embedded as one card among several in a standard multi-card module.
   const isWholeModuleSandbox = state.moduleType === "html_sandbox";
 
+  // 🔒 SERVER-SIDE GRADING: answers captured by the bridge are forwarded one
+  // by one, strictly in order; the module's final submission waits for all
+  // of them, so the server always sees each question's first answer before
+  // the submission that ends the attempt.
+  const sandboxQueueRef = useRef(Promise.resolve());
+  const sandboxOpenedAtRef = useRef(Date.now());
+  useEffect(() => {
+    if (state.activeSandboxPayload) sandboxOpenedAtRef.current = Date.now();
+  }, [state.activeSandboxPayload]);
+
   // 🚀 CROSS-FRAME MESSAGE LISTENER PIPELINE
   useEffect(() => {
+    const enqueue = (task) => {
+      sandboxQueueRef.current = sandboxQueueRef.current.then(task, task);
+      return sandboxQueueRef.current;
+    };
+
     const handleIframeMessageInterceptor = (event) => {
       // 🔒 Sandbox iframes are Blob URLs, so event.origin is literally the string "null" —
       // meaningless as an allowlist. Instead, trust only messages whose source window is
       // exactly the iframe we mounted, plus a shape-check on the payload.
       if (event.source !== sandboxIframeRef.current?.contentWindow) return;
-      if (!event.data || !event.data.fromSandboxEngine) return;
-      if (typeof event.data.score !== "number" || typeof event.data.maxPossibleScore !== "number") return;
+      const data = event.data;
+      if (!data || typeof data !== "object" || !currentCard?._id) return;
+      const cardId = currentCard._id;
 
-      if (event.data.type === "HTML_SIMULATION_SUBMIT") {
-        console.log("📥 Captured telemetry metrics from Sandbox Canvas frame:", event.data);
-
-        const captured = {
-          score: event.data.score,
-          maxScore: event.data.maxPossibleScore,
-          rawTelemetryAnswers: event.data.textResponses
+      // A "server feedback" module asks whether an answer is right: record +
+      // grade it on the server, then reply to the module with the result.
+      if (data.fromOrbitBridge && data.type === "ORBIT_CHECK") {
+        if (typeof data.qid !== "string" || typeof data.chosen !== "string" || typeof data.id !== "string") return;
+        const reply = (result) => {
+          try { event.source.postMessage({ type: "ORBIT_CHECK_RESULT", id: data.id, result }, "*"); } catch { /* iframe gone */ }
         };
+        enqueue(() => api.recordSandboxAnswer(cardId, data.qid, data.chosen)
+          .then((res) => {
+            if (res?.xpChange) applyAutoSaveXp(res.xpChange);
+            reply({ ok: true, isCorrect: !!res?.isCorrect, pending: !!res?.pending, correct: res?.correct || null });
+          })
+          .catch(() => reply({ ok: false })));
+        return;
+      }
 
-        // Cache data attributes inside local component state safely
+      // One answer captured in-page by Orbit's bridge.
+      if (data.fromOrbitBridge && data.type === "ORBIT_ANSWER") {
+        if (typeof data.qid !== "string" || typeof data.chosen !== "string") return;
+        enqueue(() => api.recordSandboxAnswer(cardId, data.qid, data.chosen)
+          .then((res) => { if (res?.xpChange) applyAutoSaveXp(res.xpChange); })
+          .catch((e) => console.warn("Sandbox answer not recorded:", e)));
+        return;
+      }
+
+      if (data.fromSandboxEngine && data.type === "HTML_SIMULATION_SUBMIT") {
+        // Only the per-question answers are used — the module's own
+        // score / isCorrect / points are ignored; the server grades.
+        const questions = Array.isArray(data.textResponses?.questions)
+          ? data.textResponses.questions
+          : (Array.isArray(data.textResponses) ? data.textResponses : []);
+        const captured = { score: null, maxScore: null, rawTelemetryAnswers: { questions }, saved: false };
         setSandboxAnswers(captured);
 
         // ✅ RELEASE SUBMIT CONSTRAINTS: Force update fields flag to open up navigation gates
         updateFields('answered', true);
 
-        // 🔒 AUTO-SAVE: Persist to backend immediately so data survives even if the user exits
-        // before clicking "Finish Track". The manual "Finish Track" click will upsert again (harmless).
-        //
-        // 🎯 BUG FIX (HTML module XP not visible): this used to be a bare
-        // fire-and-forget call that never read the response at all — the
-        // database was correctly updated (that's why global XP looked right
-        // on the NEXT page), but nothing in this session's local state ever
-        // learned an award happened, so there was no XP to show even if a
-        // results screen had been reached. Capturing xpChange here and
-        // applying it via applyAutoSaveXp fixes that at the source.
-        if (currentCard?._id) {
-          const payload = {
-            cardId: currentCard._id,
-            answeredScore: captured.score,
-            totalPossibleWeight: captured.maxScore,
-            textResponses: captured.rawTelemetryAnswers
-          };
-          api.recordCardCompletion(
-            currentCard._id,
-            isExpressFlatModule ? '' : topicId,
-            moduleId,
-            true,
-            payload
-          ).then(backendResponse => {
-            const serverXpChange = backendResponse?.xpChange ?? backendResponse?.data?.xpChange ?? 0;
-            applyAutoSaveXp(serverXpChange);
+        // 🔒 AUTO-SAVE: grade + persist immediately so the attempt survives even if the
+        // learner exits before clicking "Finish Track".
+        const timeSpentDelta = Math.round((Date.now() - sandboxOpenedAtRef.current) / 1000);
+        enqueue(() => api.submitSandbox(cardId, questions, timeSpentDelta)
+          .then((backendResponse) => {
+            setSandboxAnswers({ ...captured, score: backendResponse.score, maxScore: backendResponse.maxScore, saved: true });
+            applyAutoSaveXp(backendResponse?.xpChange || 0);
             verifyModuleProgressIfComplete(backendResponse);
-          }).catch(e => console.warn('Auto-save sandbox progress failed:', e));
-        }
+            const pending = backendResponse?.pendingManual
+              ? ` · ${backendResponse.pendingManual} answer(s) awaiting admin review`
+              : "";
+            // Non-blocking (Sweetalert2 toasts render outside React's tree).
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: 'Module submitted!',
+              text: `Score: ${backendResponse.score}/${backendResponse.maxScore}${pending}`,
+              showConfirmButton: false,
+              timer: 2600,
+            });
+          })
+          .catch((e) => {
+            console.warn('Sandbox submission failed:', e);
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'warning',
+              title: 'Submission not saved yet',
+              text: 'We will retry when you click Finish.',
+              showConfirmButton: false,
+              timer: 2600,
+            });
+          }));
 
-        // Throw a beautiful user notification so the trainee knows their score hit the cluster boundaries.
-        // Non-blocking (Sweetalert2 toasts render outside React's tree), so it
-        // keeps showing over whatever comes next without holding up the exit below.
-        Swal.fire({
-          toast: true,
-          position: 'top-end',
-          icon: 'success',
-          title: 'Simulation Results Captured!',
-          text: `Score: ${event.data.score}/${event.data.maxPossibleScore}`,
-          showConfirmButton: false,
-          timer: 2200,
-          background: '#e3faf5',
-          color: '#0f6e56'
-        });
-
-        // 🎯 AUTO-EXIT ("must exit automatically, no rocket click needed",
-        // "fast, no white page"): the embedded HTML module's own
-        // "Complete & Finish Module" button already fires this exact
-        // message — that click IS the learner's intent to leave. It also
-        // separately (and independently of this app) tries its own
-        // self-navigation ~700ms later (window.location.replace("about:
-        // blank")) as a fallback for when it's opened with no parent at
-        // all — if OUR exit is slower than that, the learner briefly sees
-        // that blank white iframe before this overlay finally closes. A
-        // short, fixed 300ms here (not tied to the toast's own timer, which
-        // used to be 2800ms) safely wins that race every time, while still
-        // giving the rocket's liftoff animation a moment to register instead
-        // of vanishing with zero transition. Always closes the fullscreen
-        // overlay; whole-module sandboxes additionally land on the results
-        // screen (same quizFinished transition the manual eject already
-        // used, so earned XP/score still shows) — a sandbox embedded as one
-        // card among several in a bigger module just returns to the standard
-        // flow instead, since there may be more cards ahead.
+        // 🎯 AUTO-EXIT: the module's own "Finish" click IS the learner's intent to
+        // leave. Close the overlay quickly (before the module's own about:blank
+        // fallback ~700ms later); whole-module sandboxes land on the results screen.
         setIsEjecting(true);
         setTimeout(() => {
           updateFields("activeSandboxPayload", null);
@@ -217,7 +251,8 @@ const Quiz = () => {
     return () => {
       window.removeEventListener("message", handleIframeMessageInterceptor);
     };
-  }, [currentCard?._id, updateFields, isExpressFlatModule, topicId, moduleId, isWholeModuleSandbox]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentCard?._id, updateFields, isWholeModuleSandbox, applyAutoSaveXp, verifyModuleProgressIfComplete]);
 
   // 🎯 BUG FIX ("second attempt has no exit/rocket button"): on a fresh
   // attempt the learner sees a briefing card with a manual "Launch Fullscreen
@@ -282,8 +317,6 @@ const Quiz = () => {
       text: 'Any unsaved progress in this current learning track will be lost.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#c8557c',
-      cancelButtonColor: '#8b8399',
       confirmButtonText: 'Yes, exit track',
       cancelButtonText: 'Cancel'
     }).then((res) => {
@@ -302,8 +335,6 @@ const Quiz = () => {
       text: `All progress, submitted answers, and XP earned in this ${resetScopeLabel.toLowerCase()} will be permanently erased, and you'll start over from Card 1. This cannot be undone.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#c8557c',
-      cancelButtonColor: '#8b8399',
       confirmButtonText: `Yes, reset ${resetScopeLabel.toLowerCase()}`,
       cancelButtonText: 'Cancel'
     }).then(async (res) => {
@@ -317,8 +348,6 @@ const Quiz = () => {
           title: 'Reset complete — starting fresh!',
           showConfirmButton: false,
           timer: 2200,
-          background: '#e3faf5',
-          color: '#0f6e56'
         });
       } catch (e) {
         console.error('Module reset failed:', e);
@@ -326,7 +355,6 @@ const Quiz = () => {
           icon: 'error',
           title: 'Reset failed',
           text: 'Something went wrong — please try again.',
-          confirmButtonColor: '#c8557c'
         });
       }
     });
@@ -334,7 +362,7 @@ const Quiz = () => {
 
   if (state.loading) {
     return (
-      <div className="cyber-loading-container font-monospace">
+      <div className="cyber-loading-container">
         <div className="cyber-spinner"></div>
         <span>COMPILING PAYLOAD NODES...</span>
       </div>
@@ -343,7 +371,7 @@ const Quiz = () => {
 
   if (!state.content || state.content.length === 0) {
     return (
-      <div className="no-modules-placeholder font-monospace text-center m-5">
+      <div className="no-modules-placeholder">
         ⚠️ [SYSTEM EXCEPTION]: Empty cluster tracks resolved.
       </div>
     );
@@ -403,7 +431,6 @@ const Quiz = () => {
           icon: 'warning',
           title: 'Challenge Pending!',
           text: 'Please navigate through the workspace, complete the final challenge step, and hit "Submit for AI Feedback" inside the simulation card first.',
-          confirmButtonColor: '#6f5fc0'
         });
         return;
       }
@@ -411,9 +438,8 @@ const Quiz = () => {
       // Compile answers telemetry object straight out of cached local hook states
       const telemetryProgressPayload = {
         cardId: currentCard._id,
-        answeredScore: sandboxAnswers.score,
-        totalPossibleWeight: sandboxAnswers.maxScore,
-        textResponses: sandboxAnswers.rawTelemetryAnswers
+        textResponses: sandboxAnswers.rawTelemetryAnswers,
+        saved: sandboxAnswers.saved,
       };
       
       console.log("📡 [Network Handshake] Passing packaged simulation values to hook executor:", telemetryProgressPayload);
@@ -473,8 +499,6 @@ const Quiz = () => {
         text: 'Please solve the prerequisite interactive challenges first.',
         showConfirmButton: false,
         timer: 1800,
-        background: '#ffeef2',
-        color: '#c8557c'
       });
     }
   };
@@ -514,7 +538,7 @@ const Quiz = () => {
     };
 
     return (
-      <div className="html-sandbox-fullscreen-overlay bg-light position-fixed top-0 start-0 w-100 vh-100" style={{ zIndex: 9999, fontFamily: 'Plus Jakarta Sans' }}>
+      <div className="html-sandbox-fullscreen-overlay position-fixed top-0 start-0 w-100 vh-100">
         {/* Permanent top-right "Abort Mission" control — no hover tracking,
             no slide animation, always on screen and always clickable. */}
         <button
@@ -537,14 +561,14 @@ const Quiz = () => {
               <div className="eject-modal-actions">
                 <button
                   type="button"
-                  className="eject-modal-btn eject-modal-btn--stay"
+                  className="eject-modal-btn eject-modal-btn--stay ui-btn ui-btn--secondary ui-btn--lg"
                   onClick={() => setShowEjectModal(false)}
                 >
                   Hold Position! 🧑‍🚀
                 </button>
                 <button
                   type="button"
-                  className="eject-modal-btn eject-modal-btn--go"
+                  className="eject-modal-btn eject-modal-btn--go ui-btn ui-btn--primary ui-btn--lg"
                   onClick={handleConfirmEject}
                 >
                   Eject! 🪂
@@ -562,8 +586,7 @@ const Quiz = () => {
             title="Fullscreen Native Sandbox Execution Terminal"
             width="100%"
             height="100%"
-            style={{ border: "none" }}
-            sandbox="allow-scripts allow-popups allow-forms allow-same-origin"
+            sandbox={sandboxFor(currentCard)}
           />
         </div>
       </div>
@@ -574,7 +597,7 @@ const Quiz = () => {
   // Standard UI Rendering Architecture (Unmodified Backward-Compatible Pipeline)
   // =========================================================================
   return (
-    <div className="quiz-simulation-player custom-dashboard-layout-root global-viewport-lock" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+    <div className="quiz-simulation-player custom-dashboard-layout-root global-viewport-lock">
       <div className="quiz-ambient-mesh-grid"></div>
 
       <QuizPlayerHeader
@@ -597,15 +620,15 @@ const Quiz = () => {
       <div className="main-flexible-workspace-deck d-flex position-relative">
         
         <button 
-          className={`iris-drawer-toggle-trigger ${isSidebarOpen ? 'trigger-aside' : 'trigger-flush'}`}
+          className={`iris-drawer-toggle-trigger ui-btn ui-btn--secondary ui-btn--icon ui-btn--sm ${isSidebarOpen ? 'trigger-aside' : 'trigger-flush'}`}
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         >
           {isSidebarOpen ? <ListNested size={16} /> : <List size={16} />}
         </button>
 
-        <div className={`quiz-dynamic-sidebar-rails font-monospace ${isSidebarOpen ? 'drawer-expanded' : 'drawer-collapsed'}`}>
+        <div className={`quiz-dynamic-sidebar-rails ${isSidebarOpen ? 'drawer-expanded' : 'drawer-collapsed'}`}>
           <div className="sidebar-rails-header text-start">
-            <span className="sidebar-rails-header-label">Course Syllabus</span>
+            <span className="sidebar-rails-header-label ui-eyebrow ui-eyebrow--caps">Course Syllabus</span>
           </div>
           <div className="sidebar-scrollable-menu-nodes cb-sidebar-scroll-track">
             {(() => {
@@ -696,23 +719,18 @@ const Quiz = () => {
         <div className="dock-content-alignment">
           <div className="dock-left-wing">
             {state.currentIndex > 0 && (
-              <button className="dock-nav-btn prev-action-trigger" onClick={handlePrev}>
-                <ChevronLeft size={14} /> <span>Previous</span>
+              <button className="dock-nav-btn prev-action-trigger ui-btn ui-btn--secondary ui-btn--lg" onClick={handlePrev}>
+                <ChevronLeft size={16} /> <span>Previous</span>
               </button>
             )}
           </div>
           <div className="dock-right-wing">
             <button
-              className={`dock-nav-btn submit-action-trigger ${(state.answered || isPassiveNavCard || isCurrentCardReached) ? 'action-node-pulsing' : ''}`}
+              className={`dock-nav-btn submit-action-trigger ui-btn ui-btn--primary ui-btn--lg ${isHtmlSandboxCard ? 'submit-action-trigger--wide' : ''} ${(state.answered || isPassiveNavCard || isCurrentCardReached) ? 'action-node-pulsing' : ''}`}
               onClick={handleDockClick}
               disabled={isButtonDisabled}
-              style={{
-                background: isButtonDisabled ? '#cbd5e1' : 'linear-gradient(135deg, var(--orbit-lavender), var(--orbit-sky))',
-                cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
-                minWidth: isHtmlSandboxCard ? '280px' : 'auto'
-              }}
             >
-              <span>{buttonText}</span> <ChevronRight size={14} />
+              <span>{buttonText}</span> <ChevronRight size={16} />
             </button>
           </div>
         </div>

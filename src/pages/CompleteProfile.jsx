@@ -64,21 +64,17 @@ export default function CompleteProfile() {
 
   return (
     <AuthLayout>
-      <div className="auth-fade-in" style={{ width: "100%", maxWidth: "380px" }}>
-        <h1 style={{
-          fontSize: "clamp(22px, 2.8vw, 28px)", fontWeight: "800",
-          letterSpacing: "-0.5px", color: "var(--orbit-text-heading)",
-          margin: "0 0 6px", lineHeight: 1.2,
-        }}>
+      <div className="auth-fade-in auth-pane">
+        <h1 className="auth-title">
           One last thing.
         </h1>
-        <p style={{ fontSize: "14px", color: "var(--orbit-text-muted)", margin: "0 0 24px", lineHeight: 1.6 }}>
+        <p className="auth-sub">
           You signed in with Microsoft — just tell us your team so we can show you the right content.
         </p>
 
-        {error && <div className="auth-alert-error" style={{ marginBottom: "14px" }}>{error}</div>}
+        {error && <div className="auth-alert-error">{error}</div>}
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <form onSubmit={handleSubmit} className="auth-form auth-form--tight">
           <select
             className="auth-select"
             value={selectedDeptCode}
@@ -106,11 +102,11 @@ export default function CompleteProfile() {
           </select>
 
           {regionsData.length > 0 && (
-            <div style={{ marginTop: "2px" }}>
-              <span style={{ fontSize: "12px", color: "var(--orbit-text-muted)", display: "block", marginBottom: "6px" }}>
-                Your region <span style={{ opacity: 0.7 }}>(optional — pick one or more)</span>
+            <div className="auth-region">
+              <span className="auth-region__label">
+                Your region (optional — pick one or more)
               </span>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+              <div className="auth-chips">
                 {regionsData.map(r => {
                   const isSelected = selectedRegionIds.includes(r._id);
                   return (
@@ -119,17 +115,12 @@ export default function CompleteProfile() {
                       type="button"
                       onClick={() => toggleRegion(r._id)}
                       disabled={loading}
-                      style={{
-                        background: isSelected ? "var(--orbit-brand-muted)" : "var(--orbit-surface-subtle)",
-                        border: `1px solid ${isSelected ? "var(--orbit-brand)" : "var(--orbit-border)"}`,
-                        borderRadius: "var(--radius-full)",
-                        padding: "4px 12px", fontSize: "12px",
-                        color: "var(--orbit-text-body)", cursor: "pointer",
-                        fontFamily: "inherit", fontWeight: isSelected ? "700" : "500",
-                        display: "inline-flex", alignItems: "center", gap: "4px",
-                      }}
+                      className={`auth-chip${isSelected ? " is-selected" : ""}`}
                     >
-                      <span style={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: r.color || "#6366f1", display: "inline-block" }} />
+                      <span
+                        className="auth-chip__dot"
+                        style={r.color ? { backgroundColor: r.color } : undefined}
+                      />
                       {r.name}
                     </button>
                   );
@@ -139,9 +130,8 @@ export default function CompleteProfile() {
           )}
 
           <button
-            type="submit" className="auth-btn-primary"
+            type="submit" className="auth-btn-primary auth-mt-2"
             disabled={loading || !isValid}
-            style={{ marginTop: "8px" }}
           >
             {loading ? "Saving…" : "Continue →"}
           </button>

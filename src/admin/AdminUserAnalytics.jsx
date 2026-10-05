@@ -196,7 +196,7 @@ async function processDeptGradeImport(file) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-export default function AdminUserAnalytics() {
+export default function AdminUserAnalytics({ onOpenLearner }) {
   const { user: currentUser } = useContext(AuthContext);
   const [stats,   setStats]   = useState(null);
   const [modules, setModules] = useState([]);
@@ -790,7 +790,7 @@ export default function AdminUserAnalytics() {
                   return (
                     <div key={u._id} onClick={() => setSelectedUser(isSel ? null : u)}
                       style={{ padding: "10px 16px", borderBottom: i < filteredUsers.length - 1 ? "1px solid var(--orbit-border)" : "none", cursor: "pointer", background: isSel ? "var(--orbit-brand-muted)" : "transparent", transition: "background 0.12s", display: "flex", alignItems: "center", gap: "10px" }}
-                      onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "rgba(124,110,247,0.06)"; }}
+                      onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "color-mix(in srgb, var(--ui-accent) 6%, transparent)"; }}
                       onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = isSel ? "var(--orbit-brand-muted)" : "transparent"; }}
                     >
                       <div style={{ width: "30px", height: "30px", borderRadius: "50%", flexShrink: 0, background: isSel ? "var(--orbit-brand)" : "var(--orbit-border)", color: isSel ? "var(--orbit-text-inverse)" : "var(--orbit-text-muted)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "800" }}>
@@ -802,7 +802,7 @@ export default function AdminUserAnalytics() {
                       </div>
                       <div style={{ flexShrink: 0, textAlign: "right" }}>
                         <div style={{ fontSize: "11px", fontWeight: "800", color: "var(--orbit-brand)" }}>☄️{u.xp || 0}</div>
-                        <div style={{ fontSize: "10px", color: "var(--orbit-text-muted)" }}>{u.cardsCompleted || 0} cards</div>
+                        <div style={{ fontSize: "11px", color: "var(--orbit-text-muted)" }}>{u.cardsCompleted || 0} cards</div>
                       </div>
                     </div>
                   );
@@ -844,6 +844,11 @@ export default function AdminUserAnalytics() {
                     {chip.l}: {chip.v}
                   </div>
                 ))}
+                {onOpenLearner && (
+                  <button type="button" className="ui-btn ui-btn--primary ui-btn--sm" onClick={() => onOpenLearner(selectedUser._id)}>
+                    Open full report
+                  </button>
+                )}
               </div>
             </div>
 
@@ -909,7 +914,7 @@ export default function AdminUserAnalytics() {
 
                         {/* Admin feedback */}
                         {adminFeedback && (
-                          <div style={{ marginTop: "8px", padding: "8px 12px", background: "rgba(124,110,247,0.07)", borderRadius: "8px", borderLeft: "3px solid var(--orbit-brand)", fontSize: "11px", color: "var(--orbit-text-body)", fontStyle: "italic" }}>
+                          <div style={{ marginTop: "8px", padding: "8px 12px", background: "color-mix(in srgb, var(--ui-accent) 7%, transparent)", borderRadius: "8px", borderLeft: "3px solid var(--orbit-brand)", fontSize: "11px", color: "var(--orbit-text-body)", fontStyle: "italic" }}>
                             💬 {adminFeedback}
                           </div>
                         )}

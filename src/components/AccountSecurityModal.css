@@ -1,0 +1,22 @@
+/* src/components/AccountSecurityModal.css
+   The dialog itself is the shared .ui-modal-overlay / .ui-modal / .ui-field /
+   .ui-input / .ui-btn primitives (src/styles/ui.css); this file only sizes it
+   and lays out the form. */
+
+.cpm-dialog { max-width: 420px; }
+
+.cpm-dialog .ui-modal__head { align-items: center; }
+.cpm-title { display: flex; align-items: center; gap: var(--ui-space-2); }
+.cpm-title svg { color: var(--ui-accent-text); flex-shrink: 0; }
+
+.cpm-form { display: flex; flex-direction: column; }
+.cpm-body { display: flex; flex-direction: column; gap: var(--ui-space-4); }
+
+.cpm-error,
+.cpm-success { margin: 0; }
+.cpm-success { justify-content: center; text-align: center; font-weight: var(--ui-fw-semibold); }
+
+@media (max-width: 480px) {
+  .cpm-actions { flex-direction: column-reverse; }
+  .cpm-actions .ui-btn { width: 100%; }
+}

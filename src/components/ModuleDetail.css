@@ -1,265 +1,142 @@
-/* src/components/ModuleDetail.css */
+/* src/components/ModuleDetail.css
+   Module overview: .ui-page with a header (track eyebrow, title, lead), the
+   topics accordion as a .ui-list, a sticky summary card on the right, and
+   reviews below. Tokens only — follows light/dark automatically. */
 
 .module-detail-page {
   position: relative;
   width: 100%;
-  background-color: var(--orbit-canvas); /* Unified site canvas, theme-aware */
-  padding: 30px 0 60px 0; /* Compressed compact layout breathing height */
-  min-height: calc(100vh - 74px);
-  overflow: hidden;
 }
 
-.detail-ambient-grid {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background-image: radial-gradient(rgba(15, 37, 110, 0.02) 1px, transparent 0);
-  background-size: 26px 26px;
-  z-index: 1;
-}
+.module-detail-wrapper { gap: var(--ui-space-6); }
 
-.module-detail-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
-  position: relative;
-  z-index: 5;
-}
-
-/* Back navigation anchor configuration */
 .detail-back-btn {
-  background: transparent;
-  border: 1px solid rgba(15, 37, 110, 0.12);
-  color: #0f256e;
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 5px 12px;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  margin-bottom: 24px;
-  transition: all 0.2s ease;
-}
-.detail-back-btn:hover {
-  background-color: #0f256e;
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(15, 37, 110, 0.12);
+  align-self: flex-start;
+  margin-left: calc(-1 * var(--ui-space-3));
+  margin-bottom: calc(-1 * var(--ui-space-3));
 }
 
-/* Two-column structural distribution system layout */
+/* Two-column layout */
 .module-detail-layout-split {
   display: grid;
-  grid-template-columns: 1.3fr 0.7fr; 
-  gap: 36px;
-  align-items: flex-start;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.85fr);
+  gap: var(--ui-space-8);
+  align-items: start;
 }
 
-/* =========================================================================
-   🎯 LEFT PANEL: STANDARD PREMIUM CONTRAST RESET (No Harsh Blacks)
-   ========================================================================= */
+/* ================= LEFT PANEL ================= */
 .module-detail-left-panel {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  width: 100%;
+  gap: var(--ui-space-6);
+  min-width: 0;
 }
 
-.detail-pill-tag {
-  font-size: 0.68rem;
-  font-weight: 700;
-  background-color: rgba(15, 37, 110, 0.05);
-  color: #0f256e;
-  padding: 3px 8px;
-  border-radius: 4px;
-  letter-spacing: 0.5px;
-  margin-bottom: 10px;
-}
-
-.detail-main-title {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #0f172a; /* 🎯 STANDARD: Premium Elite Charcoal (Not harsh black) */
-  letter-spacing: -0.8px;
-  line-height: 1.2;
-  margin-bottom: 12px;
-}
-
-.detail-main-desc {
-  font-size: 0.94rem;
-  color: #334155; /* 🎯 STANDARD: Soft Developer Charcoal Slate for beautiful reading */
-  line-height: 1.55;
-  max-width: 680px;
-  margin-bottom: 28px;
-}
+.md-header { max-width: none; }
+.detail-pill-tag { letter-spacing: 0.04em; }
+.detail-main-title { overflow-wrap: anywhere; }
+.detail-main-desc { max-width: 680px; }
 
 .curriculum-header-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 100%;
-  border-bottom: 1px dashed #e2e8f0;
-  padding-bottom: 6px;
-  margin-bottom: 16px;
+  gap: var(--ui-space-2);
+  color: var(--ui-text-3);
+  margin-bottom: calc(-1 * var(--ui-space-3));
 }
+.curriculum-heading { margin: 0; }
 
-.curriculum-heading {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #1e293b; /* Balanced header text profile */
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
+/* ================= TOPICS ACCORDION (ui-list) ================= */
+.topics-accordion-group { width: 100%; }
 
-/* =========================================================================
-   🔮 PROFESSIONAL TOPICS ACCORDION MATRIX (Clean Compact & Balanced Colors)
-   ========================================================================= */
-.topics-accordion-group {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 10px;
-}
-
-.accordion-node-item {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0; /* Soft border line instead of hard dark boundaries */
-  border-radius: 8px;
-  overflow: hidden;
-  transition: all 0.2s ease-in-out;
-}
+.accordion-node-item { display: flex; flex-direction: column; }
+.accordion-node-item + .accordion-node-item { border-top: 1px solid var(--ui-border); }
 
 .accordion-trigger-row {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 14px 18px; /* Balanced tight cell spacing */
-  cursor: pointer;
   user-select: none;
-  background-color: #ffffff;
-  transition: background-color 0.15s ease;
 }
-
-.accordion-trigger-row:hover {
-  background-color: #f8fafc;
-}
+.accordion-node-item.active-node .accordion-trigger-row { background: var(--ui-surface-2); }
 
 .trigger-title-stack {
   display: flex;
   align-items: center;
-  gap: 14px;
-}
-
-.topic-index-badge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #64748b; /* Soft metadata slate tracking labels */
+  gap: var(--ui-space-3);
+  min-width: 0;
 }
 
 .accordion-title-text {
-  font-size: 0.94rem;
-  font-weight: 600; /* 🎯 STANDARD: Rounded bold weighting pass */
-  color: #1e293b; /* 🎯 STANDARD: Elegant Dark Slate look */
+  font-size: var(--ui-fs-base);
+  font-weight: var(--ui-fw-semibold);
+  color: var(--ui-text);
 }
 
 .accordion-arrow-vector {
-  color: #64748b;
-  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  color: var(--ui-text-3);
+  transition: transform var(--ui-duration) var(--ui-ease);
 }
-.accordion-arrow-vector.rotated {
-  transform: rotate(180deg);
-}
+.accordion-arrow-vector.rotated { transform: rotate(180deg); }
 
-/* Collapsible drawer container parameters */
+/* Collapsible drawer */
 .accordion-collapsible-drawer {
-  background-color: #f8fafc; /* Slick light sub-bedding matrix */
-  border-top: 1px solid #f1f5f9;
-  padding: 12px 18px 12px 46px;
+  background: var(--ui-surface-2);
+  border-top: 1px solid var(--ui-border);
+  padding: var(--ui-space-2) var(--ui-space-5) var(--ui-space-3) 64px;
 }
 
-.chapters-links-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+.chapters-links-stack { display: flex; flex-direction: column; gap: 2px; }
 
 .chapter-document-anchor-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 0;
+  gap: var(--ui-space-2);
+  padding: 7px var(--ui-space-2);
+  margin: 0 calc(-1 * var(--ui-space-2));
+  border-radius: var(--ui-radius-sm);
   cursor: pointer;
-  color: #475569; /* Balanced slate gray link text */
-  transition: all 0.15s ease;
+  color: var(--ui-text-2);
+  transition: background-color var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
+}
+.chapter-document-anchor-row:hover { background: var(--ui-hover); color: var(--ui-accent-text); }
+
+.doc-title-string { font-size: var(--ui-fs-sm); font-weight: var(--ui-fw-medium); }
+.doc-type-label {
+  margin-left: var(--ui-space-2);
+  font-family: var(--ui-font-mono);
+  font-size: var(--ui-fs-2xs);
+  color: var(--ui-text-3);
 }
 
-.doc-title-string {
-  font-size: 0.88rem;
-  font-weight: 500;
-}
+/* Card-type icons — category tones only to tell types apart */
+.md-card-icon { flex-shrink: 0; color: var(--ui-accent-text); }
+.md-card-icon--quiz  { color: var(--cat-green-text); }
+.md-card-icon--code  { color: var(--cat-rose-text); }
+.md-card-icon--video { color: var(--cat-sky-text); }
+.md-card-icon--pdf   { color: var(--cat-amber-text); }
+.md-card-icon--ppt   { color: var(--cat-teal-text); }
 
-.chapter-document-anchor-row:hover {
-  transform: translateX(3px);
-}
+.no-chapters-notice { font-size: var(--ui-fs-sm); color: var(--ui-text-3); padding: var(--ui-space-2) 0; }
 
-/* =========================================================================
-   🟢 HOVER BLOOM SYNC ENGINE (Premium Balanced Profiles)
-   ========================================================================= */
-
-/* iFile -> Pista Green Sync */
-.dept-context-ifile .accordion-node-item:hover,
-.dept-context-ifile .accordion-node-item.active-node { border-color: rgba(144, 238, 144, 0.8); }
-.dept-context-ifile .accordion-node-item.active-node .topic-index-badge { color: #2e7d32; }
-.dept-context-ifile .chapter-document-anchor-row:hover { color: #2e7d32 !important; }
-.dept-context-ifile .doc-icon-tint { color: rgba(144, 238, 144, 1); }
-
-/* iDEAL -> Light Pink Sync */
-.dept-context-ideal .accordion-node-item:hover,
-.dept-context-ideal .accordion-node-item.active-node { border-color: rgba(255, 182, 193, 0.7); }
-.dept-context-ideal .accordion-node-item.active-node .topic-index-badge { color: #c2185b; }
-.dept-context-ideal .chapter-document-anchor-row:hover { color: #c2185b !important; }
-.dept-context-ideal .doc-icon-tint { color: rgba(255, 182, 193, 1); }
-
-/* Carbon -> Corporate Blue Sync */
-.dept-context-carbon .accordion-node-item:hover,
-.dept-context-carbon .accordion-node-item.active-node { border-color: rgba(15, 37, 110, 0.3); }
-.dept-context-carbon .accordion-node-item.active-node .topic-index-badge { color: #0f256e; }
-.dept-context-carbon .chapter-document-anchor-row:hover { color: #0f256e !important; }
-.dept-context-carbon .doc-icon-tint { color: #0f256e; }
-
-.no-chapters-notice {
-  font-size: 0.8rem;
-  color: #64748b;
-}
-
-/* Sticky card management framework layout sidebar */
+/* Sticky summary card */
+.module-detail-right-panel { min-width: 0; }
 .sticky-sidebar-card-holder {
-  position: sticky;
-  top: 94px;
+  position: sticky; /* inside the shell's scrolling main area */
+  top: var(--ui-space-6);
 }
 
-/* Transitions engine keyframes trigger */
+.md-loading { min-height: 50vh; }
+
+/* Entry animation */
 .animate-fade-up { animation: detIn 0.4s ease-out both; }
 @keyframes detIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-/* =========================================================================
-   📱 RESPONSIVE BREAKPOINT GRID CONSTRAINTS
-   ========================================================================= */
-@media (max-width: 992px) {
-  .module-detail-layout-split {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-  .sticky-sidebar-card-holder {
-    position: static;
-  }
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1024px) {
+  .module-detail-layout-split { grid-template-columns: minmax(0, 1fr); gap: var(--ui-space-6); }
+  .sticky-sidebar-card-holder { position: static; }
 }
 
-@media (max-width: 576px) {
-  .detail-main-title { font-size: 1.75rem; }
-  .accordion-collapsible-drawer { padding-left: 20px; }
+@media (max-width: 640px) {
+  .accordion-collapsible-drawer { padding-left: var(--ui-space-5); }
 }

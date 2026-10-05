@@ -35,15 +35,19 @@ const handleFetchResponse = async (response) => {
   }
 
   if (!response.ok) {
-    // 🚨 CONCURRENT LOGIN OR TIMEOUT BREACH DETECTED
-    if (response.status === 401) {
-      console.error("Security Interceptor: Token invalidated or concurrent login detected.");
-      
+    // 🚨 The server ended this session (expired, signed out elsewhere, a
+    // password change, an admin) — back to the login page with the reason.
+    // Without a stored session (e.g. a wrong password on the login form) the
+    // message is shown where the request was made instead.
+    if (response.status === 401 && localStorage.getItem('token')) {
+      console.error("Security Interceptor: this session is no longer valid.");
+
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('iris_studio_active_tree_state');
-      
-      window.location.href = '/login?session_status=concurrent_kickout';
+
+      const status = data.code === 'session_expired' ? 'expired' : data.code === 'session_revoked' ? 'revoked' : 'signed_out';
+      window.location.href = `/login?session_status=${status}`;
       return;
     }
     throw new Error(data.message || 'Server request execution breakdown.');
@@ -110,6 +114,43 @@ async function getModuleScopeState(moduleId, topicId) {
     console.error('Module Scope State API Error:', error);
     throw error;
   }
+}
+
+// ---------------- Server-side grading ----------------
+// The browser sends ANSWERS only; the server grades, awards XP and returns
+// the verdict (plus, for quiz cards, the correct option + explanation —
+// revealed only after grading).
+async function postGrading(path, body) {
+  const response = await apiFetch(`${API_BASE_URL}/grading${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    body: JSON.stringify(body),
+  });
+  return handleFetchResponse(response);
+}
+
+// quiz: answer = { selectedOption }   code: answer = { userCodeAnswer }
+async function gradeCardAttempt(cardId, answer, timeSpentDelta = 0) {
+  const idempotencyKey = (globalThis.crypto && globalThis.crypto.randomUUID)
+    ? globalThis.crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return postGrading(`/cards/${cardId}/attempt`, { answer, idempotencyKey, timeSpentDelta });
+}
+
+// One answer captured by the in-page bridge of an HTML module.
+async function recordSandboxAnswer(cardId, qid, chosen) {
+  return postGrading(`/cards/${cardId}/sandbox-answer`, { qid, chosen });
+}
+
+// The HTML module's final submission. Only {id, userAnswer, ...} per
+// question matter — any score/isCorrect the module computed is ignored.
+async function submitSandbox(cardId, questions, timeSpentDelta = 0) {
+  return postGrading(`/cards/${cardId}/sandbox-submit`, { questions, timeSpentDelta });
+}
+
+// Admin: what will grading detect in this HTML? → { ok, summary } | { ok:false, error }
+async function previewSandboxKey(htmlSource) {
+  return postGrading('/admin/preview-key', { htmlSource });
 }
 
 // 🎯 REATTEMPT: learner self-service reset — archives this module's/topic's
@@ -241,21 +282,7 @@ async function resetPassword(token, newPassword) {
   }
 }
 
-// ---------------- Validation + Upload ----------------
-async function validateCode(validatorName, userCode) {
-  try {
-    const response = await apiFetch(`${API_BASE_URL}/validate-code`, {
-      method: 'POST',
-      headers: getPublicHeader(),
-      body: JSON.stringify({ validatorName, userCode }),
-    });
-    return await handleFetchResponse(response);
-  } catch (error) {
-    console.error('Validation API Error:', error);
-    return { isCorrect: false, error: 'Connection to validation service failed.' };
-  }
-}
-
+// ---------------- Upload ----------------
 async function uploadImage(imageFile) {
   try {
     const formData = new FormData();
@@ -370,6 +397,16 @@ async function uploadPdfCard(contextParam, pdfFile, cardDetails, cardId = null) 
 }
 
 // ---------------- Daily Reads Architecture ----------------
+// Records (server-side) that the learner opened this read — the streak's
+// "daily_read" credit is only granted after a real open.
+async function openDailyRead(readId) {
+  const response = await apiFetch(`${API_BASE_URL}/daily-reads/${readId}/open`, {
+    method: 'POST',
+    headers: getAuthHeader(),
+  });
+  return handleFetchResponse(response);
+}
+
 async function getTodaysRead() {
   try {
     const response = await apiFetch(`${API_BASE_URL}/daily-reads/todays-read`, {
@@ -522,6 +559,10 @@ const api = {
   getUserProgress,
   getModuleScopeState,
   resetModuleProgress,
+  gradeCardAttempt,
+  recordSandboxAnswer,
+  submitSandbox,
+  previewSandboxKey,
   login,
   register,
   verifyEmail,
@@ -530,13 +571,13 @@ const api = {
   completeProfile,
   forgotPassword,
   resetPassword,
-  validateCode,
   uploadImage,
   uploadVideoCard,
   uploadDocumentCard,
   uploadPptCard,
   uploadPdfCard,
   getTodaysRead,
+  openDailyRead,
   createDailyRead,
   getAllDailyReads,
   updateDailyRead,
@@ -548,6 +589,238 @@ const api = {
   createNewsPost, 
  
   // Add this method inside your api = { ... } object
+// ---------------- Learn: Tag → Path → modules ----------------
+  getLearnTags: async () => {
+    const response = await apiFetch(`${API_BASE_URL}/learn/tags`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getLearnTagPaths: async (categoryId) => {
+    const response = await apiFetch(`${API_BASE_URL}/learn/tags/${categoryId}/paths`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getLearnPath: async (pathId) => {
+    const response = await apiFetch(`${API_BASE_URL}/learn/paths/${pathId}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getLegacyPath: async (categoryId, regionId) => {
+    const qs = new URLSearchParams({ categoryId, ...(regionId ? { regionId } : {}) }).toString();
+    const response = await apiFetch(`${API_BASE_URL}/learn/legacy-path?${qs}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+
+  // ---------------- Pre/Post checks (learner) ----------------
+  getPathCheck: async (pathId, kind) => {
+    const response = await apiFetch(`${API_BASE_URL}/assessments/paths/${pathId}/${kind}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  submitPathCheck: async (pathId, kind, answers) => {
+    const response = await apiFetch(`${API_BASE_URL}/assessments/paths/${pathId}/${kind}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify({ answers }),
+    });
+    return handleFetchResponse(response);
+  },
+  getPathCheckResult: async (pathId) => {
+    const response = await apiFetch(`${API_BASE_URL}/assessments/paths/${pathId}/result`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+
+  // ---------------- Path builder (admin) ----------------
+  getAdminPaths: async (categoryId) => {
+    const qs = categoryId ? `?categoryId=${categoryId}` : '';
+    const response = await apiFetch(`${API_BASE_URL}/paths${qs}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  createPath: async (payload) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify(payload),
+    });
+    return handleFetchResponse(response);
+  },
+  updatePath: async (pathId, payload) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify(payload),
+    });
+    return handleFetchResponse(response);
+  },
+  publishPath: async (pathId, published) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}/publish`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ published }),
+    });
+    return handleFetchResponse(response);
+  },
+  duplicatePath: async (pathId) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}/duplicate`, { method: 'POST', headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  deletePath: async (pathId) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}`, { method: 'DELETE', headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  reorderPaths: async (categoryId, pathIds) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/reorder`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ categoryId, pathIds }),
+    });
+    return handleFetchResponse(response);
+  },
+  // Pre/Post test of a path (built from the module question bank)
+  getPathForm: async (pathId) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}/form`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  generatePathForm: async (pathId, perModule) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}/form/generate`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ perModule }),
+    });
+    return handleFetchResponse(response);
+  },
+  swapPathFormQuestion: async (pathId, kind, questionId) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}/form/swap`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ kind, questionId }),
+    });
+    return handleFetchResponse(response);
+  },
+  lockPathForm: async (pathId) => {
+    const response = await apiFetch(`${API_BASE_URL}/paths/${pathId}/form/lock`, { method: 'POST', headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+
+  // ---------------- Question bank (admin) ----------------
+  getBankModules: async (search = '') => {
+    const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+    const response = await apiFetch(`${API_BASE_URL}/bank/modules${qs}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getBankQuestions: async (moduleId, status) => {
+    const qs = status ? `?status=${status}` : '';
+    const response = await apiFetch(`${API_BASE_URL}/bank/modules/${moduleId}/questions${qs}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  createBankQuestion: async (moduleId, payload) => {
+    const response = await apiFetch(`${API_BASE_URL}/bank/modules/${moduleId}/questions`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify(payload),
+    });
+    return handleFetchResponse(response);
+  },
+  updateBankQuestion: async (questionId, payload) => {
+    const response = await apiFetch(`${API_BASE_URL}/bank/questions/${questionId}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify(payload),
+    });
+    return handleFetchResponse(response);
+  },
+  approveBankQuestion: async (questionId) => {
+    const response = await apiFetch(`${API_BASE_URL}/bank/questions/${questionId}/approve`, { method: 'POST', headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  deleteBankQuestion: async (questionId) => {
+    const response = await apiFetch(`${API_BASE_URL}/bank/questions/${questionId}`, { method: 'DELETE', headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  importBankQuestions: async (rows, dryRun) => {
+    const response = await apiFetch(`${API_BASE_URL}/bank/import`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ rows, dryRun }),
+    });
+    return handleFetchResponse(response);
+  },
+  aiDraftBankQuestions: async (moduleId, count) => {
+    const response = await apiFetch(`${API_BASE_URL}/bank/modules/${moduleId}/ai-draft`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ count }),
+    });
+    return handleFetchResponse(response);
+  },
+  getPrePostReport: async (params = {}) => {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
+    const response = await apiFetch(`${API_BASE_URL}/assessments/admin/report${qs ? `?${qs}` : ''}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getPrePostPathReport: async (pathId, params = {}) => {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
+    const response = await apiFetch(`${API_BASE_URL}/assessments/admin/report/paths/${pathId}${qs ? `?${qs}` : ''}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  downloadPrePostCsv: async (pathId, params = {}) => {
+    const qs = new URLSearchParams({ ...Object.fromEntries(Object.entries(params).filter(([, v]) => v)), format: 'csv' }).toString();
+    const url = pathId
+      ? `${API_BASE_URL}/assessments/admin/report/paths/${pathId}?${qs}`
+      : `${API_BASE_URL}/assessments/admin/report?${qs}`;
+    const response = await apiFetch(url, { headers: getAuthHeader() });
+    if (!response.ok) throw new Error('CSV export failed.');
+    const blob = await response.blob();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = pathId ? 'pre-post-path.csv' : 'pre-post-report.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  },
+  resetAssessmentAttempt: async (pathId, userId, kind, reason) => {
+    const response = await apiFetch(`${API_BASE_URL}/assessments/admin/paths/${pathId}/users/${userId}/reset`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ kind, reason }),
+    });
+    return handleFetchResponse(response);
+  },
+
+  // ---------------- Sign-in activity (admin) ----------------
+  getAuthEvents: async (params = {}) => {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
+    const response = await apiFetch(`${API_BASE_URL}/admin/auth/events${qs ? `?${qs}` : ''}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  downloadAuthEventsCsv: async (params = {}) => {
+    const qs = new URLSearchParams({ ...Object.fromEntries(Object.entries(params).filter(([, v]) => v)), format: 'csv' }).toString();
+    const response = await apiFetch(`${API_BASE_URL}/admin/auth/events?${qs}`, { headers: getAuthHeader() });
+    if (!response.ok) throw new Error('CSV export failed.');
+    const blob = await response.blob();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'sign-in-activity.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  },
+  getUserSessions: async (userId) => {
+    const response = await apiFetch(`${API_BASE_URL}/admin/auth/users/${userId}/sessions`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  revokeUserSessions: async (userId) => {
+    const response = await apiFetch(`${API_BASE_URL}/admin/auth/users/${userId}/sessions/revoke`, { method: 'POST', headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+
+  // ---------------- Learner reports ----------------
+  getLearnerRoster: async (params = {}) => {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
+    const response = await apiFetch(`${API_BASE_URL}/reports/learners${qs ? `?${qs}` : ''}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getLearnerReport: async (userId) => {
+    const response = await apiFetch(`${API_BASE_URL}/reports/learners/${userId}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getLearnerModuleDetail: async (userId, moduleId) => {
+    const response = await apiFetch(`${API_BASE_URL}/reports/learners/${userId}/modules/${moduleId}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  // userId → that learner's report; no userId → the roster (with its filters).
+  downloadLearnerCsv: async (userId, params = {}, fallbackName = 'learner-report.csv') => {
+    const qs = new URLSearchParams({ ...Object.fromEntries(Object.entries(params).filter(([, v]) => v)), format: 'csv' }).toString();
+    const url = userId ? `${API_BASE_URL}/reports/learners/${userId}?${qs}` : `${API_BASE_URL}/reports/learners?${qs}`;
+    const response = await apiFetch(url, { headers: getAuthHeader() });
+    if (!response.ok) throw new Error('CSV export failed.');
+    const name = /filename="([^"]+)"/.exec(response.headers.get('Content-Disposition') || '')?.[1];
+    const blob = await response.blob();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = name || fallbackName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  },
+
 getWorkspaceCurriculum: async (categoryId, regionId) => {
   const params = new URLSearchParams();
   if (categoryId) params.set('categoryId', categoryId);
@@ -1242,15 +1515,19 @@ getWorkspaceCurriculum: async (categoryId, regionId) => {
     return handleFetchResponse(response);
   },
 
-  // Ends the session server-side (clears the session-binding cookie + Redis
-  // record) instead of only discarding the token client-side. Best-effort —
+  // Ends THIS session server-side (its session record + the binding cookie)
+  // instead of only discarding the token client-side; other devices stay
+  // signed in, and the Microsoft session is not touched. Best-effort —
   // AuthContext's logout() already clears local state regardless of whether
-  // this call succeeds, so a network hiccup here shouldn't block logging out.
-  logoutUser: async () => {
+  // this call succeeds. `keepalive` lets it finish while the page navigates
+  // away. reason "idle" = the inactivity timer (App.jsx).
+  logoutUser: async (reason) => {
     try {
       const response = await apiFetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
-        headers: getAuthHeader(),
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+        body: JSON.stringify(reason ? { reason } : {}),
+        keepalive: true,
       });
       return await handleFetchResponse(response);
     } catch (error) {

@@ -7,6 +7,8 @@ import remarkGfm from 'remark-gfm';
 import './DocumentationPage.css';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { safeId } from "../utils/safeNav";
+import { buildTagSuffix } from "../utils/tagReturnPath";
 
 // Function to remove emojis safely from a string string layout parameters
 const removeEmojis = (str) => {
@@ -39,9 +41,15 @@ const components = {
 };
 
 const DocumentationPage = () => {
-    const { moduleId, topicId, cardId } = useParams();
+    const params = useParams();
+  const moduleId = safeId(params.moduleId);
+  const topicId = safeId(params.topicId);
+  const cardId = safeId(params.cardId);
     const navigate = useNavigate();
     const location = useLocation();
+    // Only validated tag/region/path ids are carried through (see tagReturnPath.js).
+    const returnQuery = new URLSearchParams(location.search);
+    const returnSuffix = buildTagSuffix(returnQuery.get("tag"), returnQuery.get("region"), returnQuery.get("path"));
 
     const [moduleData, setModuleData] = useState(null);
     const [currentTopic, setCurrentTopic] = useState(null);
@@ -114,7 +122,7 @@ const DocumentationPage = () => {
     }, [moduleId, topicId, cardId]);
 
     const handleBackClick = () => {
-        navigate(`/orbit/modules/${moduleId}${location.search}`);
+        navigate(`/orbit/modules/${moduleId}${returnSuffix}`);
     };
 
     const toggleSidebar = () => {
@@ -127,7 +135,7 @@ const DocumentationPage = () => {
 
     const renderCardContent = (card) => {
         if (!card || !card.content || card.card_type !== 'knowledge') {
-            return <p className="text-muted italic">No documentation content payload mapped for this tracking cell.</p>;
+            return <p className="ui-text doc-empty-note">No documentation content payload mapped for this tracking cell.</p>;
         }
 
         const { text } = card.content;
@@ -150,9 +158,9 @@ const DocumentationPage = () => {
 
     if (loading) {
         return (
-            <div className="doc-loading-overlay-screen">
-                <div className="spinner-border text-primary mb-2" role="status"></div>
-                <div className="fw-semibold text-muted">Synchronizing Workspace Documentation Nodes...</div>
+            <div className="ui-loading doc-loading-overlay-screen">
+                <span className="ui-spinner ui-spinner--lg" role="status"></span>
+                <div>Synchronizing Workspace Documentation Nodes...</div>
             </div>
         );
     }
@@ -160,10 +168,10 @@ const DocumentationPage = () => {
     if (error) {
         return (
             <div className="doc-error-fallback-container">
-                <div className="alert alert-danger shadow-sm border-0 px-4 py-3" role="alert">
-                    <h5 className="alert-heading fw-bold">System Resolution Error</h5>
-                    <p className="m-0 fs-6">{error}</p>
-                    <button className="btn btn-outline-danger btn-sm mt-3 fw-bold rounded-2" onClick={handleBackClick}>
+                <div className="ui-card ui-card--roomy doc-error-card" role="alert">
+                    <h5 className="ui-h3">System Resolution Error</h5>
+                    <p className="ui-text">{error}</p>
+                    <button className="ui-btn ui-btn--danger-soft ui-btn--sm doc-error-card__btn" onClick={handleBackClick}>
                         &larr; Return to Dashboard
                     </button>
                 </div>
@@ -172,7 +180,7 @@ const DocumentationPage = () => {
     }
 
     if (!currentCard || !moduleData || !currentTopic) {
-        return <div className="doc-error-fallback-container text-muted fw-medium">Core structure state tracking context mismatch.</div>;
+        return <div className="doc-error-fallback-container ui-text">Core structure state tracking context mismatch.</div>;
     }
 
     const allKnowledgeCardsInTopic = currentTopic.cards.filter(card => card.card_type === 'knowledge');
@@ -187,7 +195,7 @@ const DocumentationPage = () => {
             <aside className={`doc-navigation-sidebar ${isSidebarOpen ? 'sidebar-drawer-active' : ''}`}>
                 <div className="doc-sidebar-top-branding">
                     <div className="doc-sidebar-topic-meta-box">
-                        <span className="doc-sidebar-topic-tag">Active Topic</span>
+                        <span className="ui-eyebrow ui-eyebrow--caps doc-sidebar-topic-tag">Active Topic</span>
                         <h2 className="doc-sidebar-topic-heading-title" title={currentTopic.title}>
                             {removeEmojis(currentTopic.title)}
                         </h2>
@@ -202,7 +210,7 @@ const DocumentationPage = () => {
                         {allKnowledgeCardsInTopic.map((card) => (
                             <li key={card._id} className="doc-sidebar-li-node">
                                 <Link 
-                                    to={`/modules/${moduleId}/topics/${topicId}/cards/${card._id}/documentation`} 
+                                    to={`/orbit/modules/${moduleId}/topics/${topicId}/cards/${card._id}/documentation${returnSuffix}`} 
                                     className={`doc-sidebar-anchor-link ${card._id === cardId ? 'link-node-active' : ''}`}
                                     onClick={closeSidebar}
                                 >
@@ -225,7 +233,7 @@ const DocumentationPage = () => {
                 
                 {/* Mobile Floating Action Control Header HUD */}
                 <div className="doc-mobile-sticky-action-bar">
-                    <button className="doc-mobile-back-btn" onClick={handleBackClick}>
+                    <button className="ui-btn ui-btn--ghost ui-btn--sm doc-mobile-back-btn" onClick={handleBackClick}>
                         &larr; Exit
                     </button>
                     <div className="doc-mobile-center-title-truncate">{removeEmojis(currentCard.content.title)}</div>
@@ -241,20 +249,20 @@ const DocumentationPage = () => {
                 </div>
                 
                 {/* Dynamic Content Canvas Surface Housing */}
-                <div className="doc-article-surface-card">
-                    <button className="doc-desktop-back-anchor-btn" onClick={handleBackClick}>
+                <div className="ui-page ui-page--narrow doc-article-surface-card">
+                    <button className="ui-btn ui-btn--ghost ui-btn--sm doc-desktop-back-anchor-btn" onClick={handleBackClick}>
                         &larr; Back to Module Curriculum
                     </button>
                     
                     <header className="doc-article-header-group">
-                        <div className="doc-breadcrumb-badge-pill">documentation view</div>
-                        <h1 className="doc-main-article-title-text">{currentCard.content.title}</h1>
+                        <div className="ui-eyebrow doc-breadcrumb-badge-pill">documentation view</div>
+                        <h1 className="ui-h1 doc-main-article-title-text">{currentCard.content.title}</h1>
                         <p className="doc-main-article-topic-sublabel">
-                            Module Context: <span className="text-dark fw-semibold">{moduleData.title}</span> &bull; Topic: <span className="text-muted">{currentTopic.title}</span>
+                            Module Context: <span className="doc-meta-strong">{moduleData.title}</span> &bull; Topic: <span className="doc-meta-muted">{currentTopic.title}</span>
                         </p>
                     </header>
                     
-                    <hr className="doc-separator-line-divider" />
+                    <hr className="ui-divider doc-separator-line-divider" />
                     
                     {/* Render dynamically evaluated markdown layouts logs content */}
                     {renderCardContent(currentCard)}
@@ -262,14 +270,14 @@ const DocumentationPage = () => {
                     {/* 🔄 BOTTOM FOOTER PAGINATION NAVIGATION MATRIX */}
                     <footer className="doc-bottom-pagination-footer-nav">
                         {prevCard ? (
-                            <Link to={`/modules/${moduleId}/topics/${topicId}/cards/${prevCard._id}/documentation`} className="doc-pagi-link pagi-left-align">
+                            <Link to={`/orbit/modules/${moduleId}/topics/${topicId}/cards/${prevCard._id}/documentation${returnSuffix}`} className="ui-card ui-card--interactive doc-pagi-link pagi-left-align">
                                 <div className="pagi-meta-sub">Previous Node</div>
                                 <div className="pagi-title-text-truncate">{removeEmojis(prevCard.content.title)}</div>
                             </Link>
                         ) : <div className="pagi-spacer-box"></div>}
                         
                         {nextCard ? (
-                            <Link to={`/modules/${moduleId}/topics/${topicId}/cards/${nextCard._id}/documentation`} className="doc-pagi-link pagi-right-align">
+                            <Link to={`/orbit/modules/${moduleId}/topics/${topicId}/cards/${nextCard._id}/documentation${returnSuffix}`} className="ui-card ui-card--interactive doc-pagi-link pagi-right-align">
                                 <div className="pagi-meta-sub">Next Node &rarr;</div>
                                 <div className="pagi-title-text-truncate">{removeEmojis(nextCard.content.title)}</div>
                             </Link>

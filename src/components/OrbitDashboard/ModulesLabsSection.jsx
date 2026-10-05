@@ -42,25 +42,23 @@ export default function ModulesLabsSection({
   return (
     <div>
       {loading ? (
-        <div className="orbit-ml-grid orbit-ml-grid--fixed">
+        <div className="mlc-grid mlc-grid--fixed">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="orbit-ml-card orbit-ml-card--skeleton" style={{ animationDelay: `${i * 0.06}s` }}>
-              <div className="orbit-ml-card__thumb" />
-              <div className="orbit-ml-card__body">
-                <div className="orbit-skel-line" style={{ width: "40%" }} />
-                <div className="orbit-skel-line" style={{ width: "85%", height: 16 }} />
-                <div className="orbit-skel-line" style={{ width: "60%" }} />
-              </div>
+            <div key={i} className="ui-card mlc mlc--skeleton" aria-hidden="true">
+              <div className="ui-card__media mlc__media ui-skeleton" />
+              <div className="ui-skeleton mlc__skel mlc__skel--sm" />
+              <div className="ui-skeleton mlc__skel mlc__skel--lg" />
+              <div className="ui-skeleton mlc__skel mlc__skel--md" />
             </div>
           ))}
         </div>
       ) : cards.length === 0 ? (
-        <div className="orbit-ml-empty">
-          <Globe2 size={26} />
-          <p style={{ margin: 0 }}>No modules assigned yet.</p>
+        <div className="ui-empty">
+          <span className="ui-icon-tile ui-icon-tile--neutral ui-icon-tile--lg"><Globe2 size={22} /></span>
+          <p className="ui-empty__title">No modules assigned yet.</p>
         </div>
       ) : (
-        <div className="orbit-ml-grid orbit-ml-grid--fixed">
+        <div className="mlc-grid mlc-grid--fixed">
           {cards.map((card, i) => (
             <ModuleLabCard key={card.id} card={card} index={i} onClick={() => onOpenModule(card.module)} />
           ))}

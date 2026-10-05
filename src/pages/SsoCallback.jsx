@@ -1,12 +1,25 @@
 // src/pages/SsoCallback.jsx
 // Landing point for the Microsoft SSO redirect chain — the backend's
 // GET /api/auth/microsoft/callback sends the browser here with either
-// ?token=<jwt> (success) or ?error=<message> (domain rejection, cancelled
-// sign-in, etc.), never raw Microsoft tokens.
+// #token=<jwt> (success — in the fragment so it never reaches server logs)
+// or ?error=<code> (domain rejection, cancelled sign-in, etc.), never raw
+// Microsoft tokens.
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import AuthLayout from "../components/auth/AuthLayout";
+import { takeRedirectPath } from "../utils/safeNav";
+
+const SSO_ERRORS = {
+  start_failed: "Could not start Microsoft sign-in. Please try again.",
+  cancelled: "Microsoft sign-in was cancelled or did not complete.",
+  profile_missing: "Microsoft did not return the expected account details.",
+  domain_denied: "Access denied. Only corporate emails from @irisregtech.com or @irisbusiness.com are allowed.",
+  not_member: "Guest accounts from other organisations can't sign in. Please use your IRIS Microsoft account.",
+  identity_conflict: "This email is already linked to a different Microsoft account. Please contact your administrator.",
+  session_failed: "Sign-in succeeded but session creation failed. Please try again.",
+  failed: "Microsoft sign-in failed. Please try again or contact IT.",
+};
 
 export default function SsoCallback() {
   const navigate = useNavigate();
@@ -15,11 +28,14 @@ export default function SsoCallback() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    const errorMessage = params.get("error");
+    const token = new URLSearchParams(window.location.hash.replace(/^#/, "")).get("token");
+    const errorCode = params.get("error");
+    // Drop the token from the address bar / history right away.
+    if (window.location.hash) window.history.replaceState(null, "", window.location.pathname + window.location.search);
 
-    if (errorMessage) {
-      setError(errorMessage);
+    if (errorCode) {
+      // Only fixed codes are accepted — never echo text from the URL.
+      setError(SSO_ERRORS[errorCode] || SSO_ERRORS.failed);
       return;
     }
 
@@ -46,8 +62,7 @@ export default function SsoCallback() {
 
       // A logged-in user always lands straight in the Orbit dashboard —
       // "/" (the marketing homepage) is only ever for logged-out visitors.
-      const redirect = localStorage.getItem("redirectPath") || "/orbit";
-      localStorage.removeItem("redirectPath");
+      const redirect = takeRedirectPath("/orbit");
       navigate(redirect, { replace: true });
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -55,13 +70,13 @@ export default function SsoCallback() {
 
   return (
     <AuthLayout>
-      <div className="auth-fade-in" style={{ width: "100%", maxWidth: "380px", textAlign: "center" }}>
+      <div className="auth-fade-in auth-pane auth-pane--center">
         {error ? (
           <>
-            <h1 style={{ fontSize: "22px", fontWeight: "800", color: "var(--orbit-text-heading)", margin: "0 0 10px" }}>
+            <h1 className="auth-title auth-title--sm">
               Sign-in failed
             </h1>
-            <div className="auth-alert-error" style={{ marginBottom: "20px", textAlign: "left" }}>
+            <div className="auth-alert-error">
               {error}
             </div>
             <button type="button" className="auth-btn-primary" onClick={() => navigate("/login")}>
@@ -70,12 +85,8 @@ export default function SsoCallback() {
           </>
         ) : (
           <>
-            <div style={{
-              width: "28px", height: "28px", borderRadius: "50%", margin: "0 auto 18px",
-              border: "3px solid var(--orbit-border)", borderTopColor: "var(--orbit-brand)",
-              animation: "orbit-spin 0.7s linear infinite",
-            }} />
-            <p style={{ fontSize: "14px", color: "var(--orbit-text-muted)" }}>
+            <div className="auth-spinner auth-spinner--lg" />
+            <p className="auth-sub">
               Finishing Microsoft sign-in…
             </p>
           </>

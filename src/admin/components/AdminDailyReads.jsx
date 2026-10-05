@@ -206,7 +206,7 @@ export default function AdminDailyReadForm({ setActiveTab }) {
       <Card.Body className="p-4">
         <div className="d-flex align-items-center justify-content-between mb-1">
           <h4 className="fw-bold text-dark-title m-0">Daily Reads</h4>
-          <Badge bg="success" className="d-flex align-items-center gap-1 font-monospace px-2 py-1" style={{ fontSize: '10px' }}>
+          <Badge bg="success" className="d-flex align-items-center gap-1 font-monospace px-2 py-1" style={{ fontSize: '11px' }}>
             <Building size={10} /> DEPARTMENTAL FEED ONLY
           </Badge>
         </div>
@@ -278,7 +278,7 @@ export default function AdminDailyReadForm({ setActiveTab }) {
                         hasRead ? "orbit-calendar__cell--has-read" : "",
                         isToday ? "orbit-calendar__cell--today" : "",
                       ].join(" ").trim()}
-                      style={isSelected ? { outline: '2px solid var(--orbit-brand, #0f256e)', outlineOffset: '1px' } : undefined}
+                      style={isSelected ? { outline: '2px solid var(--ui-accent)', outlineOffset: '1px' } : undefined}
                       role="button"
                       tabIndex={0}
                       title={hasRead ? readsByDate[key].title : (isToday ? "Today — nothing posted yet" : undefined)}
@@ -333,7 +333,7 @@ export default function AdminDailyReadForm({ setActiveTab }) {
                   variant="primary"
                   onClick={openCreateForm}
                   disabled={isSuperAdmin && !selectedDepartmentId}
-                  style={{ borderRadius: '6px', backgroundColor: '#0f256e', borderColor: '#0f256e', fontWeight: '600', fontSize: '13.5px' }}
+                  style={{ borderRadius: '6px', backgroundColor: 'var(--ui-accent)', borderColor: 'var(--ui-accent)', fontWeight: '600', fontSize: '13.5px' }}
                 >
                   <SendCheckFill size={14} className="me-2" /> Publish Today's Daily Read
                 </Button>
@@ -393,14 +393,14 @@ function DailyReadPreview({ read, canManage, onEdit, onDelete }) {
         {read.tags && read.tags.length > 0 && (
           <div className="d-flex flex-wrap gap-1 mb-3">
             {read.tags.map((tag, i) => (
-              <Badge key={i} bg="light" text="dark" className="border font-monospace" style={{ fontSize: '10px' }}>#{tag}</Badge>
+              <Badge key={i} bg="light" text="dark" className="border font-monospace" style={{ fontSize: '11px' }}>#{tag}</Badge>
             ))}
           </div>
         )}
         <p className="text-body" style={{ whiteSpace: 'pre-wrap', fontSize: '13.5px', lineHeight: '1.7' }}>{read.content}</p>
         {read.referenceLink && (
           <div className="mt-3 pt-3 border-top">
-            <div className="text-muted text-uppercase fw-bold mb-1" style={{ fontSize: '10px', letterSpacing: '0.5px' }}>Reference</div>
+            <div className="text-muted text-uppercase fw-bold mb-1" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>Reference</div>
             <a href={read.referenceLink} target="_blank" rel="noreferrer" style={{ fontSize: '13px', wordBreak: 'break-all' }}>{read.referenceLink}</a>
           </div>
         )}
@@ -530,7 +530,7 @@ function DailyReadForm({
         <Button variant="light" type="button" onClick={onCancel} disabled={loading} style={{ borderRadius: '6px', fontSize: '13.5px', fontWeight: '500' }}>
           Cancel
         </Button>
-        <Button variant="primary" type="submit" disabled={loading} style={{ borderRadius: '6px', backgroundColor: '#0f256e', borderColor: '#0f256e', fontWeight: '600', fontSize: '13.5px', paddingLeft: '20px', paddingRight: '20px' }}>
+        <Button variant="primary" type="submit" disabled={loading} style={{ borderRadius: '6px', backgroundColor: 'var(--ui-accent)', borderColor: 'var(--ui-accent)', fontWeight: '600', fontSize: '13.5px', paddingLeft: '20px', paddingRight: '20px' }}>
           {loading ? <Spinner animation="border" size="sm" /> : <><SendCheckFill size={14} className="me-1.5" /> {isEditing ? 'Save Changes' : 'Publish'}</>}
         </Button>
       </div>

@@ -43,7 +43,7 @@ function computeScores(questions) {
 function QuestionBreakdown({ questions }) {
   if (!questions || questions.length === 0) {
     return (
-      <p style={{ color: '#94a3b8', fontSize: 13, margin: 0 }}>
+      <p style={{ color: 'var(--ui-text-3)', fontSize: 13, margin: 0 }}>
         No question data — make sure the HTML card sends{' '}
         <code>textResponses.questions</code> in its postMessage.
       </p>
@@ -60,8 +60,8 @@ function QuestionBreakdown({ questions }) {
           <div
             key={q.id || idx}
             style={{
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
+              background: 'var(--ui-surface-2)',
+              border: '1px solid var(--ui-border)',
               borderRadius: 8,
               padding: '11px 14px',
             }}
@@ -70,35 +70,35 @@ function QuestionBreakdown({ questions }) {
               {/* icon */}
               {isMcq ? (
                 q.isCorrect ? (
-                  <CheckCircleFill size={15} color="#16a34a" style={{ marginTop: 2, flexShrink: 0 }} />
+                  <CheckCircleFill size={15} color="var(--ui-success-text)" style={{ marginTop: 2, flexShrink: 0 }} />
                 ) : (
-                  <XCircleFill size={15} color="#dc2626" style={{ marginTop: 2, flexShrink: 0 }} />
+                  <XCircleFill size={15} color="var(--ui-danger-text)" style={{ marginTop: 2, flexShrink: 0 }} />
                 )
               ) : (
-                <DashCircle size={15} color="#6366f1" style={{ marginTop: 2, flexShrink: 0 }} />
+                <DashCircle size={15} color="var(--ui-accent-text)" style={{ marginTop: 2, flexShrink: 0 }} />
               )}
 
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: '#0f172a', marginBottom: 6 }}>
-                  <span style={{ color: '#94a3b8', marginRight: 5 }}>Q{idx + 1}.</span>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ui-text)', marginBottom: 6 }}>
+                  <span style={{ color: 'var(--ui-text-3)', marginRight: 5 }}>Q{idx + 1}.</span>
                   {q.questionText}
                 </div>
 
                 {isMcq && (
                   <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', fontSize: 12 }}>
                     <div>
-                      <span style={{ color: '#64748b' }}>Answered: </span>
-                      <span style={{ fontWeight: 700, color: q.isCorrect ? '#16a34a' : '#dc2626' }}>
+                      <span style={{ color: 'var(--ui-text-2)' }}>Answered: </span>
+                      <span style={{ fontWeight: 700, color: q.isCorrect ? 'var(--ui-success-text)' : 'var(--ui-danger-text)' }}>
                         {q.userAnswer || '(no answer)'}
                       </span>
                     </div>
                     {!q.isCorrect && q.correctAnswer && (
                       <div>
-                        <span style={{ color: '#64748b' }}>Correct: </span>
-                        <span style={{ fontWeight: 700, color: '#16a34a' }}>{q.correctAnswer}</span>
+                        <span style={{ color: 'var(--ui-text-2)' }}>Correct: </span>
+                        <span style={{ fontWeight: 700, color: 'var(--ui-success-text)' }}>{q.correctAnswer}</span>
                       </div>
                     )}
-                    <div style={{ color: '#94a3b8' }}>
+                    <div style={{ color: 'var(--ui-text-3)' }}>
                       {q.points}/{q.maxPoints} pts
                     </div>
                   </div>
@@ -107,19 +107,19 @@ function QuestionBreakdown({ questions }) {
                 {isText && (
                   <div
                     style={{
-                      background: '#fff',
-                      border: '1px solid #e2e8f0',
+                      background: 'var(--ui-surface)',
+                      border: '1px solid var(--ui-border)',
                       borderRadius: 6,
                       padding: '8px 10px',
                       fontSize: 12.5,
-                      color: '#334155',
+                      color: 'var(--ui-text-2)',
                       whiteSpace: 'pre-wrap',
                       marginTop: 4,
                       lineHeight: 1.6,
                     }}
                   >
                     {q.userAnswer ? q.userAnswer : (
-                      <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Left blank</span>
+                      <span style={{ color: 'var(--ui-text-3)', fontStyle: 'italic' }}>Left blank</span>
                     )}
                   </div>
                 )}
@@ -180,23 +180,23 @@ export default function AdminUserAnalytics() {
     (u.department || '').toLowerCase().includes(search.toLowerCase())
   );
 
-  const xpColor = (xp) => xp >= 200 ? '#16a34a' : xp >= 80 ? '#d97706' : '#64748b';
+  const xpColor = (xp) => xp >= 200 ? 'var(--ui-success)' : xp >= 80 ? 'var(--ui-warning)' : 'var(--ui-text-2)';
   const initial = (name) => (name || 'U')[0].toUpperCase();
 
   // ── LEFT: user list ─────────────────────────────────────────────────────
   const UserListPanel = () => (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#fff' }}>
-      <div style={{ padding: '18px 16px 12px', borderBottom: '1px solid #e2e8f0' }}>
-        <p style={{ fontWeight: 700, fontSize: 13.5, color: '#0f172a', margin: '0 0 10px' }}>
-          All Users <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: 12 }}>({users.length})</span>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--ui-surface)' }}>
+      <div style={{ padding: '18px 16px 12px', borderBottom: '1px solid var(--ui-border)' }}>
+        <p style={{ fontWeight: 700, fontSize: 13.5, color: 'var(--ui-text)', margin: '0 0 10px' }}>
+          All Users <span style={{ fontWeight: 400, color: 'var(--ui-text-3)', fontSize: 12 }}>({users.length})</span>
         </p>
         <div style={{ position: 'relative' }}>
-          <Search size={13} style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+          <Search size={13} style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: 'var(--ui-text-3)' }} />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search name, email, dept…"
-            style={{ width: '100%', padding: '7px 10px 7px 28px', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: 12.5, outline: 'none', color: '#0f172a' }}
+            style={{ width: '100%', padding: '7px 10px 7px 28px', border: '1.5px solid var(--ui-border)', borderRadius: 8, fontSize: 12.5, outline: 'none', color: 'var(--ui-text)' }}
           />
         </div>
       </div>
@@ -205,13 +205,13 @@ export default function AdminUserAnalytics() {
         {loadingList ? (
           <div className="text-center p-4"><Spinner size="sm" /></div>
         ) : listError ? (
-          <div style={{ padding: 16, margin: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, fontSize: 12.5, color: '#dc2626', lineHeight: 1.6 }}>
+          <div style={{ padding: 16, margin: 12, background: 'var(--ui-danger-soft)', border: '1px solid color-mix(in srgb, var(--ui-danger) 30%, var(--ui-surface))', borderRadius: 8, fontSize: 12.5, color: 'var(--ui-danger-text)', lineHeight: 1.6 }}>
             <strong>Error loading users:</strong><br />{listError}
             <br /><br />
-            <span style={{ color: '#64748b' }}>Restart the backend server and refresh this page.</span>
+            <span style={{ color: 'var(--ui-text-2)' }}>Restart the backend server and refresh this page.</span>
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ padding: 24, color: '#94a3b8', fontSize: 13, textAlign: 'center' }}>No users found</div>
+          <div style={{ padding: 24, color: 'var(--ui-text-3)', fontSize: 13, textAlign: 'center' }}>No users found</div>
         ) : filtered.map((u, i) => {
           const isActive = selectedUser?._id === u._id;
           return (
@@ -220,9 +220,9 @@ export default function AdminUserAnalytics() {
               onClick={() => handleSelect(u)}
               style={{
                 padding: '11px 16px',
-                borderBottom: '1px solid #f1f5f9',
-                borderLeft: isActive ? '3px solid #0f256e' : '3px solid transparent',
-                background: isActive ? '#eff6ff' : '#fff',
+                borderBottom: '1px solid var(--ui-border)',
+                borderLeft: isActive ? '3px solid var(--ui-accent)' : '3px solid transparent',
+                background: isActive ? 'var(--ui-accent-soft)' : 'var(--ui-surface)',
                 cursor: 'pointer',
                 transition: 'background 0.15s',
               }}
@@ -230,24 +230,24 @@ export default function AdminUserAnalytics() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: '50%',
-                  background: isActive ? '#0f256e' : '#e2e8f0',
-                  color: isActive ? '#fff' : '#64748b',
+                  background: isActive ? 'var(--ui-accent)' : 'var(--ui-surface-3)',
+                  color: isActive ? 'var(--ui-on-accent)' : 'var(--ui-text-2)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 12, fontWeight: 700, flexShrink: 0,
                 }}>
                   {initial(u.username)}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: 12.5, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontWeight: 600, fontSize: 12.5, color: 'var(--ui-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {u.username}
                   </div>
-                  <div style={{ fontSize: 11, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: 11, color: 'var(--ui-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {u.department || u.email}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: xpColor(u.xp) }}>{u.xp} Lightyears</div>
-                  <div style={{ fontSize: 10.5, color: '#94a3b8' }}>{u.cardsCompleted} cards</div>
+                  <div style={{ fontSize: 11, color: 'var(--ui-text-3)' }}>{u.cardsCompleted} cards</div>
                 </div>
               </div>
             </div>
@@ -261,17 +261,17 @@ export default function AdminUserAnalytics() {
   const DetailPanel = () => {
     if (!selectedUser) {
       return (
-        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 10, color: '#94a3b8' }}>
+        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 10, color: 'var(--ui-text-3)' }}>
           <PersonFill size={38} />
           <div style={{ fontSize: 13.5 }}>Select a user to view their analytics</div>
         </div>
       );
     }
     if (loadingDetail) {
-      return <div className="text-center p-5 mt-4"><Spinner animation="border" style={{ color: '#0f256e' }} /></div>;
+      return <div className="text-center p-5 mt-4"><Spinner animation="border" style={{ color: 'var(--ui-accent-text)' }} /></div>;
     }
     if (!detail) {
-      return <div style={{ padding: 24, color: '#dc2626', fontSize: 13 }}>Failed to load analytics for this user.</div>;
+      return <div style={{ padding: 24, color: 'var(--ui-danger-text)', fontSize: 13 }}>Failed to load analytics for this user.</div>;
     }
 
     const { user, overview, sandboxResults, topicProgress } = detail;
@@ -286,18 +286,18 @@ export default function AdminUserAnalytics() {
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
 
         {/* ── user header ── */}
-        <div style={{ padding: '20px 24px', background: 'linear-gradient(135deg,#0f256e 0%,#1d4ed8 100%)', flexShrink: 0 }}>
+        <div style={{ padding: '20px 24px', background: 'var(--ui-accent)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'rgba(255,255,255,0.18)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700 }}>
+            <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'color-mix(in srgb, var(--ui-on-accent) 18%, transparent)', color: 'var(--ui-on-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700 }}>
               {initial(user.username)}
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 15.5, color: '#fff' }}>{user.username}</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.72)' }}>{user.email}</div>
+              <div style={{ fontWeight: 700, fontSize: 15.5, color: 'var(--ui-on-accent)' }}>{user.username}</div>
+              <div style={{ fontSize: 12, color: 'color-mix(in srgb, var(--ui-on-accent) 72%, transparent)' }}>{user.email}</div>
             </div>
             <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{user.xp} Lightyears</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--ui-on-accent)' }}>{user.xp} Lightyears</div>
+              <div style={{ fontSize: 11, color: 'color-mix(in srgb, var(--ui-on-accent) 60%, transparent)' }}>
                 Joined {new Date(user.joinedAt).toLocaleDateString()}
               </div>
             </div>
@@ -305,22 +305,22 @@ export default function AdminUserAnalytics() {
         </div>
 
         {/* ── stats row ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, background: '#e2e8f0', flexShrink: 0 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, background: 'var(--ui-surface-3)', flexShrink: 0 }}>
           {[
             { label: 'Cards Done',     value: overview.totalCardsCompleted },
             { label: 'Topics Done',    value: overview.totalTopicsCompleted },
             { label: 'Quiz Accuracy',  value: overview.quizAccuracy !== null ? `${overview.quizAccuracy}%` : 'N/A' },
             { label: 'Sandbox Cards',  value: overview.sandboxCardsAttempted },
           ].map(s => (
-            <div key={s.label} style={{ background: '#fff', padding: '13px 14px', textAlign: 'center' }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: '#0f256e' }}>{s.value}</div>
-              <div style={{ fontSize: 10.5, color: '#64748b', marginTop: 2 }}>{s.label}</div>
+            <div key={s.label} style={{ background: 'var(--ui-surface)', padding: '13px 14px', textAlign: 'center' }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--ui-accent-text)' }}>{s.value}</div>
+              <div style={{ fontSize: 11, color: 'var(--ui-text-2)', marginTop: 2 }}>{s.label}</div>
             </div>
           ))}
         </div>
 
         {/* ── tab bar ── */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', flexShrink: 0 }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--ui-border)', background: 'var(--ui-surface-2)', flexShrink: 0 }}>
           {TABS.map(({ k, label }) => (
             <button
               key={k}
@@ -328,8 +328,8 @@ export default function AdminUserAnalytics() {
               style={{
                 padding: '10px 18px', border: 'none', background: 'none',
                 fontWeight: 600, fontSize: 12.5,
-                color: activeTab === k ? '#0f256e' : '#64748b',
-                borderBottom: activeTab === k ? '2px solid #0f256e' : '2px solid transparent',
+                color: activeTab === k ? 'var(--ui-accent)' : 'var(--ui-text-2)',
+                borderBottom: activeTab === k ? '2px solid var(--ui-accent)' : '2px solid transparent',
                 cursor: 'pointer', whiteSpace: 'nowrap',
               }}
             >
@@ -344,7 +344,7 @@ export default function AdminUserAnalytics() {
           {/* SANDBOX */}
           {activeTab === 'sandbox' && (
             sandboxResults.length === 0 ? (
-              <div style={{ color: '#94a3b8', fontSize: 13, textAlign: 'center', paddingTop: 40 }}>
+              <div style={{ color: 'var(--ui-text-3)', fontSize: 13, textAlign: 'center', paddingTop: 40 }}>
                 No sandbox cards attempted yet.
               </div>
             ) : sandboxResults.map((r, idx) => {
@@ -357,19 +357,19 @@ export default function AdminUserAnalytics() {
               const totalScore = autoScore + (hasAdminGrade ? r.adminScore : 0);
               const totalMax   = autoMax + descMax;
               const pct = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : null;
-              const pctColor = pct === null ? '#94a3b8' : pct >= 70 ? '#16a34a' : pct >= 40 ? '#d97706' : '#dc2626';
+              const pctColor = pct === null ? 'var(--ui-text-3)' : pct >= 70 ? 'var(--ui-success)' : pct >= 40 ? 'var(--ui-warning)' : 'var(--ui-danger)';
               const pendingGrading = descCount > 0 && !hasAdminGrade;
 
               return (
-                <div key={idx} style={{ border: '1.5px solid #e2e8f0', borderRadius: 12, marginBottom: 10, overflow: 'hidden' }}>
+                <div key={idx} style={{ border: '1.5px solid var(--ui-border)', borderRadius: 12, marginBottom: 10, overflow: 'hidden' }}>
                   {/* card header row */}
                   <div
                     onClick={() => setExpandedIdx(isOpen ? null : idx)}
-                    style={{ padding: '13px 18px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', background: isOpen ? '#f0f9ff' : '#fff', transition: 'background 0.15s' }}
+                    style={{ padding: '13px 18px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', background: isOpen ? 'var(--ui-info-soft)' : 'var(--ui-surface)', transition: 'background 0.15s' }}
                   >
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: 13.5, color: '#0f172a' }}>{r.cardTitle}</div>
-                      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>
+                      <div style={{ fontWeight: 600, fontSize: 13.5, color: 'var(--ui-text)' }}>{r.cardTitle}</div>
+                      <div style={{ fontSize: 11, color: 'var(--ui-text-3)', marginTop: 3 }}>
                         {r.timesAttempted}× attempted · Last: {new Date(r.lastAttempted).toLocaleDateString()}
                         {r.questions?.length > 0 && ` · ${r.questions.length} questions`}
                       </div>
@@ -378,21 +378,21 @@ export default function AdminUserAnalytics() {
                       <div style={{ fontWeight: 800, fontSize: 15, color: pctColor }}>
                         {totalMax > 0 ? `${totalScore}/${totalMax}` : '—'}
                       </div>
-                      <div style={{ fontSize: 11, color: '#94a3b8' }}>
+                      <div style={{ fontSize: 11, color: 'var(--ui-text-3)' }}>
                         {pendingGrading ? 'pending grading' : pct !== null ? `${pct}%` : '—'}
                       </div>
                     </div>
                     {pct !== null && (
-                      <div style={{ width: 5, height: 38, background: '#e2e8f0', borderRadius: 4, overflow: 'hidden', flexShrink: 0 }}>
+                      <div style={{ width: 5, height: 38, background: 'var(--ui-surface-3)', borderRadius: 4, overflow: 'hidden', flexShrink: 0 }}>
                         <div style={{ width: '100%', height: `${pct}%`, background: pctColor, marginTop: `${100 - pct}%`, transition: 'height 0.4s' }} />
                       </div>
                     )}
-                    {isOpen ? <ChevronDown size={14} color="#64748b" /> : <ChevronRight size={14} color="#64748b" />}
+                    {isOpen ? <ChevronDown size={14} color="var(--ui-text-2)" /> : <ChevronRight size={14} color="var(--ui-text-2)" />}
                   </div>
 
                   {/* expanded question breakdown */}
                   {isOpen && (
-                    <div style={{ padding: '4px 18px 16px', borderTop: '1px solid #e2e8f0', background: '#fafcff' }}>
+                    <div style={{ padding: '4px 18px 16px', borderTop: '1px solid var(--ui-border)', background: 'var(--ui-surface-2)' }}>
                       <div style={{ paddingTop: 12 }}>
                         <QuestionBreakdown questions={r.questions} />
                       </div>
@@ -405,21 +405,21 @@ export default function AdminUserAnalytics() {
 
           {/* QUIZ */}
           {activeTab === 'quiz' && (
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '18px 22px' }}>
-              <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 14 }}>
+            <div style={{ background: 'var(--ui-surface-2)', border: '1px solid var(--ui-border)', borderRadius: 12, padding: '18px 22px' }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--ui-text)', marginBottom: 14 }}>
                 Multiple-Choice & Code Cards
               </div>
               <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 16 }}>
                 {[
-                  { label: 'Attempted',  value: overview.quizCardsAttempted, color: '#0f256e' },
-                  { label: 'Correct',    value: overview.quizCorrect,        color: '#16a34a' },
-                  { label: 'Incorrect',  value: overview.quizCardsAttempted - overview.quizCorrect, color: '#dc2626' },
+                  { label: 'Attempted',  value: overview.quizCardsAttempted, color: 'var(--ui-accent-text)' },
+                  { label: 'Correct',    value: overview.quizCorrect,        color: 'var(--ui-success-text)' },
+                  { label: 'Incorrect',  value: overview.quizCardsAttempted - overview.quizCorrect, color: 'var(--ui-danger-text)' },
                   { label: 'Accuracy',   value: overview.quizAccuracy !== null ? `${overview.quizAccuracy}%` : 'N/A',
-                    color: overview.quizAccuracy >= 70 ? '#16a34a' : '#d97706' },
+                    color: overview.quizAccuracy >= 70 ? 'var(--ui-success-text)' : 'var(--ui-warning-text)' },
                 ].map(s => (
                   <div key={s.label}>
                     <div style={{ fontSize: 24, fontWeight: 800, color: s.color }}>{s.value}</div>
-                    <div style={{ fontSize: 11, color: '#64748b' }}>{s.label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--ui-text-2)' }}>{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -436,18 +436,18 @@ export default function AdminUserAnalytics() {
           {/* TOPICS */}
           {activeTab === 'topics' && (
             topicProgress.length === 0 ? (
-              <div style={{ color: '#94a3b8', fontSize: 13, textAlign: 'center', paddingTop: 40 }}>
+              <div style={{ color: 'var(--ui-text-3)', fontSize: 13, textAlign: 'center', paddingTop: 40 }}>
                 No topics started yet.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {topicProgress.map((t, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: t.isCompleted ? '#16a34a' : '#d97706', flexShrink: 0 }} />
-                    <div style={{ flex: 1, fontSize: 12.5, color: '#334155' }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'var(--ui-surface-2)', borderRadius: 8, border: '1px solid var(--ui-border)' }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: t.isCompleted ? 'var(--ui-success)' : 'var(--ui-warning)', flexShrink: 0 }} />
+                    <div style={{ flex: 1, fontSize: 12.5, color: 'var(--ui-text-2)' }}>
                       {t.isCompleted ? 'Completed' : 'In progress'}
                     </div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#0f256e' }}>{t.bestXP} Lightyears</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--ui-accent-text)' }}>{t.bestXP} Lightyears</div>
                   </div>
                 ))}
               </div>
@@ -460,10 +460,10 @@ export default function AdminUserAnalytics() {
 
   return (
     <div style={{ height: 'calc(100vh - 60px)', display: 'flex', overflow: 'hidden' }}>
-      <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid #e2e8f0', overflowY: 'auto' }}>
+      <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid var(--ui-border)', overflowY: 'auto' }}>
         <UserListPanel />
       </div>
-      <div style={{ flex: 1, overflowY: 'auto', background: '#f8fafc' }}>
+      <div style={{ flex: 1, overflowY: 'auto', background: 'var(--ui-surface-2)' }}>
         <DetailPanel />
       </div>
     </div>

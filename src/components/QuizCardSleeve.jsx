@@ -6,6 +6,7 @@ import CodeCard from "./CodeCard";
 import VideoCard from "./VideoCard"; 
 import PptCard from "./PptCard"; 
 import PdfCard from "./PdfCard"; 
+import { RocketTakeoffFill } from "react-bootstrap-icons";
 import './QuizCardSleeve.css';
 
 export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, updateFields, onVideoEnded }) {
@@ -27,9 +28,15 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
       );
     }
 
+    // 🔒 SERVER-SIDE GRADING: learners never receive the answer key with the
+    // card. The correct option / explanation arrive in the server's grading
+    // response (or Review Mode, for an already-answered card) and are kept
+    // on progressByCardId; card content only carries them for admins.
+    const revealed = state.progressByCardId?.[currentCard._id] || {};
+
     if (currentCard.card_type === "quiz") {
-      const rawCorrectIndex = currentCard.content?.correctIndex;
-      const cleanCorrectIndex = rawCorrectIndex !== undefined ? Number(rawCorrectIndex) : 0;
+      const rawCorrectIndex = revealed.correctIndex ?? currentCard.content?.correctIndex;
+      const cleanCorrectIndex = rawCorrectIndex !== undefined && rawCorrectIndex !== null ? Number(rawCorrectIndex) : null;
       const cleanSelectedOption = state.selectedOption !== null ? Number(state.selectedOption) : null;
 
       return (
@@ -44,7 +51,7 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
           }}
           answered={state.answered}
           isCorrect={state.isCorrect}
-          explanation={currentCard.content?.explanation}
+          explanation={state.answered ? (revealed.explanation ?? currentCard.content?.explanation) : null}
           quizImage={currentCard.imageUrl}
         />
       );
@@ -57,7 +64,7 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
           taxonomyCode={currentCard.content?.taxonomy}
           instanceCode={currentCard.content?.code}
           question={currentCard.content?.question}
-          explanation={state.answered && state.isCorrect ? currentCard.content?.explanation : null}
+          explanation={state.answered && state.isCorrect ? (revealed.explanation ?? currentCard.content?.explanation) : null}
           hint={currentCard.content?.hint}
           userAnswer={state.userCodeAnswer}
           onAnswer={state.answered ? () => {} : (code) => updateFields('userCodeAnswer', code)}
@@ -119,15 +126,15 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
       const priorSubmission = state?.progressByCardId?.[currentCard._id];
 
       return (
-        <div className="sandbox-launcher-card-housing">
+        <div className="sandbox-launcher-card-housing ui-card">
           <div className="sandbox-launcher-graphics-box">
-            <div className="sandbox-mascot-emoji">🚀</div>
+            <div className="sandbox-mascot-emoji ui-icon-tile ui-icon-tile--lg"><RocketTakeoffFill size={22} /></div>
             <h4 className="sandbox-launcher-main-title">{currentCard.content?.title || "Interactive Sandbox Workspace"}</h4>
-            <p className="sandbox-launcher-explanation-text">
+            <p className="sandbox-launcher-explanation-text ui-text">
               This section contains an interactive, native simulation workspace assignment. Launch the fullscreen container stage below to complete your execution tasks.
             </p>
             {priorSubmission?.attempted && (
-              <p className="sandbox-prior-submission-note">
+              <p className="sandbox-prior-submission-note ui-callout ui-callout--accent">
                 📋 Previous submission: {priorSubmission.score}/{priorSubmission.maxScore || 0}
                 {priorSubmission.timesAttempted > 1 ? ` · attempted ${priorSubmission.timesAttempted}×` : ""}
                 {" "}— relaunching starts a fresh attempt.
@@ -137,7 +144,7 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
 
           <button
             type="button"
-            className="sandbox-fullscreen-trigger-btn"
+            className="sandbox-fullscreen-trigger-btn ui-btn ui-btn--primary ui-btn--lg"
             onClick={() => {
               if (!rawHtmlPayload || rawHtmlPayload.trim() === "") {
                 console.warn("⚠️ Cannot launch workspace: HTML source payload code string is empty.");
@@ -155,7 +162,7 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
     }
 
     return (
-      <div className="quiz-unsupported-node font-monospace">
+      <div className="quiz-unsupported-node ui-callout ui-callout--danger">
         ⚠️ [SYSTEM EXCEPTION]: Unknown card payload structure detected.
       </div>
     );

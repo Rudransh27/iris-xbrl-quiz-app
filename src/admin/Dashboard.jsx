@@ -310,7 +310,7 @@ export default function Dashboard() {
             )}
             {loading ? (
               <div className="text-center p-5 mt-5">
-                <Spinner animation="border" style={{ color: "#0f256e" }} />
+                <Spinner animation="border" style={{ color: "var(--ui-accent-text)" }} />
               </div>
             ) : (
               <div className="admin-scrollable-workspace-pane hide-scrollbar">
@@ -323,8 +323,8 @@ export default function Dashboard() {
                             <div
                               className="hud-icon-wrapper"
                               style={{
-                                backgroundColor: "#f0f9ff",
-                                color: "#0369a1",
+                                backgroundColor: "var(--ui-info-soft)",
+                                color: "var(--ui-info-text)",
                               }}
                             >
                               <People size={20} />
@@ -346,8 +346,8 @@ export default function Dashboard() {
                             <div
                               className="hud-icon-wrapper"
                               style={{
-                                backgroundColor: "#f5f3ff",
-                                color: "#4f46e5",
+                                backgroundColor: "var(--ui-accent-soft)",
+                                color: "var(--ui-accent-text)",
                               }}
                             >
                               <Collection size={20} />
@@ -369,8 +369,8 @@ export default function Dashboard() {
                             <div
                               className="hud-icon-wrapper"
                               style={{
-                                backgroundColor: "#f0fdf4",
-                                color: "#16a34a",
+                                backgroundColor: "var(--ui-success-soft)",
+                                color: "var(--ui-success-text)",
                               }}
                             >
                               <Book size={20} />
@@ -392,8 +392,8 @@ export default function Dashboard() {
                             <div
                               className="hud-icon-wrapper"
                               style={{
-                                backgroundColor: "#fffbeb",
-                                color: "#d97706",
+                                backgroundColor: "var(--ui-warning-soft)",
+                                color: "var(--ui-warning-text)",
                               }}
                             >
                               <BarChartLine size={20} />
@@ -415,8 +415,8 @@ export default function Dashboard() {
                             <div
                               className="hud-icon-wrapper"
                               style={{
-                                backgroundColor: "#fef2f2",
-                                color: "#dc2626",
+                                backgroundColor: "var(--ui-danger-soft)",
+                                color: "var(--ui-danger-text)",
                               }}
                             >
                               <CpuFill size={20} />

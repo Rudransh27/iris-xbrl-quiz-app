@@ -1,14 +1,14 @@
-/* src/components/LoginBonusToast.css */
-
-/* Overrides react-toastify's default toast chrome so this one reads as a
-   small on-brand pill rather than a generic wide notification card. */
+/* src/components/LoginBonusToast.css
+   Overrides react-toastify's default toast chrome so this one reads as a
+   small pill (class "login-bonus-toast" is set from AuthContext). Tokens only
+   — see src/styles/README.md. */
 .Toastify__toast.login-bonus-toast {
   min-height: unset;
-  border-radius: 999px;
+  border-radius: var(--ui-radius-pill);
   padding: 6px 8px 6px 16px;
-  background: var(--orbit-glass-bg, #ffffff);
-  border: 1px solid var(--orbit-glass-border, #e5e0f7);
-  box-shadow: 0 8px 24px -8px rgba(124, 110, 247, 0.35);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow-md);
   width: fit-content;
   max-width: 92vw;
 }
@@ -22,7 +22,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: "Nunito", system-ui, sans-serif;
+  font-family: var(--ui-font-sans);
 }
 
 .login-bonus-toast-icon {
@@ -32,15 +32,15 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--orbit-brand-muted, #ede9fe);
-  color: var(--orbit-brand, #7c6ef7);
+  background: var(--ui-accent-soft);
+  color: var(--ui-accent-text);
   flex-shrink: 0;
 }
 
 .login-bonus-toast-text {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--orbit-text-heading, #1f1533);
+  font-size: var(--ui-fs-sm);
+  font-weight: var(--ui-fw-semibold);
+  color: var(--ui-text);
   white-space: nowrap;
 }
 
@@ -48,11 +48,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 900;
-  color: #ffffff;
-  background: var(--orbit-brand, #7c6ef7);
-  border-radius: 999px;
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-bold);
+  color: var(--ui-on-accent);
+  background: var(--ui-accent);
+  border-radius: var(--ui-radius-pill);
   padding: 3px 10px;
   animation: login-bonus-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

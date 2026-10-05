@@ -1,6 +1,6 @@
 /* src/admin/components/AdminRegionManager.css
    Modern look for the Regions admin panel — reuses the app's existing
-   --orbit-*/--radius-* theme tokens (same ones TagCard.css / AdminDashboard
+   --orbit-* / --radius-* theme tokens (same ones TagCard.css / AdminDashboard
    .css already use) so this reads as part of the same studio, in both
    light and dark mode, rather than a bolted-on plain-Bootstrap screen. */
 
@@ -71,7 +71,7 @@
 
 .arm-toggle__btn--active {
   background: var(--orbit-brand);
-  color: #fff;
+  color: var(--ui-on-accent);
   box-shadow: var(--orbit-shadow-sm);
 }
 
@@ -193,16 +193,16 @@
 }
 
 .arm-icon-btn--danger:hover {
-  background: color-mix(in srgb, #dc2626 12%, var(--orbit-surface));
-  color: #dc2626;
-  border-color: color-mix(in srgb, #dc2626 40%, var(--orbit-border));
+  background: color-mix(in srgb, var(--ui-danger) 12%, var(--orbit-surface));
+  color: var(--ui-danger-text);
+  border-color: color-mix(in srgb, var(--ui-danger) 40%, var(--orbit-border));
 }
 
 .arm-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   padding: 3px 8px;
   border-radius: var(--radius-full);
@@ -291,8 +291,8 @@
 }
 
 .arm-list-row__remove:hover {
-  background: color-mix(in srgb, #dc2626 14%, transparent);
-  color: #dc2626;
+  background: color-mix(in srgb, var(--ui-danger) 14%, transparent);
+  color: var(--ui-danger-text);
 }
 
 .arm-empty {

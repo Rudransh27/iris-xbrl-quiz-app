@@ -7,9 +7,10 @@ import api from '../admin/services/api';
 import { ArrowLeft, ChevronDown, JournalText, Book, CodeSquare, PlayCircle, FileEarmarkPdf, FileEarmarkPpt, CheckCircle } from 'react-bootstrap-icons'; // 🌟 Imported icons for card formatting types
 import './ModuleDetail.css';
 import AuthContext from '../context/AuthContext';
+import { safeId } from "../utils/safeNav";
 
 export default function ModuleDetail() {
-  const { moduleId } = useParams();
+  const moduleId = safeId(useParams().moduleId);
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useContext(AuthContext);
@@ -80,29 +81,33 @@ export default function ModuleDetail() {
   // 🛠️ HELPER: Dynamic Format Icon Render Engine
   const getCardIcon = (type) => {
     switch (type?.toLowerCase()) {
-      case 'quiz': return <CheckCircle size={13} className="text-success" />;
-      case 'code': return <CodeSquare size={13} className="text-danger" />;
-      case 'video': return <PlayCircle size={13} className="text-primary" />;
-      case 'pdf': return <FileEarmarkPdf size={13} className="text-warning" />;
+      case 'quiz': return <CheckCircle size={14} className="md-card-icon md-card-icon--quiz" />;
+      case 'code': return <CodeSquare size={14} className="md-card-icon md-card-icon--code" />;
+      case 'video': return <PlayCircle size={14} className="md-card-icon md-card-icon--video" />;
+      case 'pdf': return <FileEarmarkPdf size={14} className="md-card-icon md-card-icon--pdf" />;
       case 'ppt':
-      case 'pptx': return <FileEarmarkPpt size={13} className="text-info" />;
-      default: return <Book size={13} className="doc-icon-tint" />;
+      case 'pptx': return <FileEarmarkPpt size={14} className="md-card-icon md-card-icon--ppt" />;
+      default: return <Book size={14} className="md-card-icon doc-icon-tint" />;
     }
   };
 
   if (loading) {
     return (
-      <div className="cyber-loading-container font-monospace">
-        <div className="cyber-spinner"></div>
-        <span>LOADING PARAMETERS...</span>
+      <div className="ui-page">
+        <div className="ui-loading md-loading">
+          <span className="ui-spinner ui-spinner--lg" role="status" aria-label="Loading" />
+          <span>LOADING PARAMETERS...</span>
+        </div>
       </div>
     );
   }
 
   if (!module) {
     return (
-      <div className="no-modules-placeholder font-monospace text-center m-5">
-        System Error: Module cluster data not resolved.
+      <div className="ui-page">
+        <div className="ui-empty no-modules-placeholder">
+          <p className="ui-empty__title">System Error: Module cluster data not resolved.</p>
+        </div>
       </div>
     );
   }
@@ -140,44 +145,45 @@ export default function ModuleDetail() {
 
   return (
     <div className={`module-detail-page dept-context-${deptClass}`}>
-      <div className="detail-ambient-grid"></div>
-      
-      <div className="module-detail-wrapper">
-        
+      <div className="ui-page module-detail-wrapper">
+
         <button
-          className="detail-back-btn"
+          className="ui-btn ui-btn--ghost ui-btn--sm detail-back-btn"
           onClick={() => navigate(tagId ? `/orbit/tags/${tagId}` : '/orbit/modules')}
         >
           <ArrowLeft size={14} /> <span>{tagId ? `Back to ${tagName || "Category"}` : "Back to Trails"}</span>
         </button>
-        
+
         <div className="module-detail-layout-split">
-          
+
           <div className="module-detail-left-panel animate-fade-up">
-            <span className="detail-pill-tag font-monospace">
-              {module.visibility === "Global" ? "GLOBAL TRACK" : `${getDeptName().toUpperCase()} TRACK`}
-            </span>
-            <h1 className="detail-main-title">{module.title}</h1>
-            <p className="detail-main-desc">{module.description}</p>
-            
+            <header className="ui-page-header__text md-header">
+              <span className="ui-eyebrow detail-pill-tag">
+                {module.visibility === "Global" ? "GLOBAL TRACK" : `${getDeptName().toUpperCase()} TRACK`}
+              </span>
+              <h1 className="ui-h1 detail-main-title">{module.title}</h1>
+              <p className="ui-lead detail-main-desc">{module.description}</p>
+            </header>
+
             <div className="curriculum-header-bar">
-              <JournalText size={16} className="text-muted" />
-              <h3 className="curriculum-heading">Topics Covered in this Module</h3>
+              <JournalText size={16} />
+              <h3 className="ui-h4 curriculum-heading">Topics Covered in this Module</h3>
+              <span className="ui-badge ui-badge--sm">{currentTopics.length}</span>
             </div>
 
-            <div className="topics-accordion-group">
+            <div className="ui-list topics-accordion-group">
               {currentTopics.map((topic, index) => {
                 const currentTopicId = topic._id || topic.id;
                 const isExpanded = expandedTopicIndex === index;
-                
+
                 return (
                   <div key={currentTopicId || index} className={`accordion-node-item ${isExpanded ? 'active-node' : ''}`}>
                     <div
-                      className="accordion-trigger-row"
+                      className="ui-list-item ui-list-item--interactive accordion-trigger-row"
                       onClick={() => handleTopicClick(index)}
                     >
                       <div className="trigger-title-stack">
-                        <span className="topic-index-badge font-monospace">{(index + 1).toString().padStart(2, '0')}</span>
+                        <span className={`ui-index topic-index-badge${isExpanded ? ' ui-index--active' : ''}`}>{(index + 1).toString().padStart(2, '0')}</span>
                         <span className="accordion-title-text">{topic.title}</span>
                       </div>
                       <ChevronDown size={14} className={`accordion-arrow-vector ${isExpanded ? 'rotated' : ''}`} />
@@ -190,16 +196,16 @@ export default function ModuleDetail() {
                             {topicCardsList.map((card) => {
                               const currentCardId = card._id || card.id;
                               return (
-                                <div 
-                                  key={currentCardId} 
-                                  className="chapter-document-anchor-row d-flex align-items-center gap-2"
+                                <div
+                                  key={currentCardId}
+                                  className="chapter-document-anchor-row"
                                   onClick={(e) => handleNavigateToCardDocumentation(currentTopicId, currentCardId, card.card_type, e)}
                                 >
                                   {/* 🛠️ Dynamic Icon applied directly based on card media type mapping */}
                                   {getCardIcon(card.card_type)}
                                   <span className="doc-title-string">
-                                    {card.content?.title || 'Untitled Curriculum Element'} 
-                                    <span className="text-muted font-monospace ms-2 small" style={{ fontSize: '10px' }}>
+                                    {card.content?.title || 'Untitled Curriculum Element'}
+                                    <span className="doc-type-label">
                                       ({card.card_type?.toUpperCase()})
                                     </span>
                                   </span>
@@ -208,7 +214,7 @@ export default function ModuleDetail() {
                             })}
                           </div>
                         ) : (
-                          <div className="no-chapters-notice font-monospace">
+                          <div className="no-chapters-notice">
                             No step components registered inside this topic layer node.
                           </div>
                         )}

@@ -212,7 +212,7 @@ const CreateTeam = ({ onTeamCreated, setActiveTab, embedded = false }) => {
               {!isSuperAdmin && (
                 <Form.Text
                   className="text-primary ps-1 font-monospace"
-                  style={{ fontSize: "10px", fontWeight: "600" }}
+                  style={{ fontSize: "11px", fontWeight: "600" }}
                 >
                   Locked: Allocation scope restricted to your assigned admin
                   department tenant.
@@ -276,8 +276,8 @@ const CreateTeam = ({ onTeamCreated, setActiveTab, embedded = false }) => {
                 style={{
                   borderRadius: "8px",
                   padding: "10px",
-                  backgroundColor: "#0f256e",
-                  borderColor: "#0f256e",
+                  backgroundColor: "var(--ui-accent)",
+                  borderColor: "var(--ui-accent)",
                 }}
               >
                 {loading ? (

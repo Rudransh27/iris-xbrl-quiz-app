@@ -1,0 +1,70 @@
+/* src/components/OrbitDashboard/LearnHome.css
+   The Learn page (CategorySelect): header, search + tabs, Tag tile grid.
+   Layout/composition over the ui.css primitives — tokens only, both themes. */
+
+.learn { gap: var(--ui-space-5); }
+
+/* ---- Toolbar: search left, tabs pinned right ---- */
+.learn-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+  flex-wrap: wrap;
+}
+.learn-toolbar__tabs { flex-shrink: 0; margin-left: auto; }
+
+.learn-search {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-2);
+  flex: 1 1 320px;
+  max-width: 440px;
+  height: 40px;
+  margin: 0;
+  padding: 0 var(--ui-space-2) 0 var(--ui-space-4);
+  border-radius: var(--ui-radius-pill);
+  border: 1px solid var(--ui-border-2);
+  background: var(--ui-surface);
+  color: var(--ui-text-3);
+  cursor: text;
+  transition: border-color var(--ui-duration) var(--ui-ease), box-shadow var(--ui-duration) var(--ui-ease);
+}
+.learn-search:hover { border-color: var(--ui-text-4); }
+.learn-search:focus-within { border-color: var(--ui-accent); box-shadow: var(--ui-ring); }
+.learn-search__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: var(--ui-fs-base);
+  color: var(--ui-text);
+}
+.learn-search__input::placeholder { color: var(--ui-text-4); }
+.learn-search__input::-webkit-search-cancel-button { display: none; }
+.learn-search__clear {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--ui-radius-pill);
+  background: var(--ui-surface-2);
+  color: var(--ui-text-2);
+  cursor: pointer;
+}
+.learn-search__clear:hover { background: var(--ui-surface-3); color: var(--ui-text); }
+.learn-search__clear:focus-visible { outline: none; box-shadow: var(--ui-ring); }
+
+.learn-empty { gap: var(--ui-space-3); }
+
+.learn-skel { display: block; border-radius: var(--ui-radius); }
+.learn-skel--title { width: 280px; height: 32px; }
+
+@media (max-width: 760px) {
+  .learn-search { max-width: none; flex-basis: 100%; }
+  .learn-toolbar__tabs { width: 100%; margin-left: 0; order: -1; } /* tabs first: hiding search never moves them */
+  .learn-toolbar__tabs .ui-tab { flex: 1; }
+}

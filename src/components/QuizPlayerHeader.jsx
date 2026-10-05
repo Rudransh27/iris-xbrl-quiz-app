@@ -15,7 +15,7 @@ export default function QuizPlayerHeader({ currentIndex, totalLength, topicXP, c
       <div className="quiz-header-alignment-container">
         
         {/* ❌ Minimalist Exit Trigger */}
-        <button type="button" className="quiz-header-exit-trigger" onClick={onExit} title="Exit Track">
+        <button type="button" className="quiz-header-exit-trigger ui-btn ui-btn--ghost ui-btn--icon ui-btn--sm" onClick={onExit} title="Exit Track">
           <XLg size={16} />
         </button>
 
@@ -24,7 +24,7 @@ export default function QuizPlayerHeader({ currentIndex, totalLength, topicXP, c
         {onReset && (
           <button
             type="button"
-            className="quiz-header-reset-trigger"
+            className="quiz-header-reset-trigger ui-btn ui-btn--ghost ui-btn--icon ui-btn--sm"
             onClick={onReset}
             title={`Reset/Reattempt this ${resetScopeLabel}`}
           >
@@ -34,19 +34,19 @@ export default function QuizPlayerHeader({ currentIndex, totalLength, topicXP, c
 
         {/* 📊 DYNAMIC PROGRESS ENGINE RAIL */}
         <div className="quiz-header-progress-viewport">
-          <div className="quiz-header-progress-base-rail">
+          <div className="quiz-header-progress-base-rail ui-progress">
             <div
-              className="quiz-header-progress-fluid-beam"
+              className="quiz-header-progress-fluid-beam ui-progress__bar"
               style={{ width: `${Math.max(4, progressPercent)}%` }}
             />
           </div>
-          <span className="quiz-header-step-counter">
+          <span className="quiz-header-step-counter ui-num">
             {currentIndex + 1} / {totalLength} NODES
           </span>
         </div>
         
         {/* 💫 XP TRACKER CLUSTER */}
-        <div className="quiz-header-stat-capsule xp-node-tint" aria-label={`You have ${topicXP} Lightyears`}>
+        <div className="quiz-header-stat-capsule xp-node-tint ui-badge ui-badge--accent ui-badge--lg" aria-label={`You have ${topicXP} Lightyears`}>
           <Trophy size={14} className="stat-vector-icon text-gold-accent" />
           <span className="quiz-stat-count-string">{topicXP} <span className="stat-lbl-dim">Lightyears</span></span>
         </div>
@@ -55,12 +55,12 @@ export default function QuizPlayerHeader({ currentIndex, totalLength, topicXP, c
             is already fully complete (no more retries to spend), so a
             Review pill takes its place instead. */}
         {reviewMode ? (
-          <div className="quiz-header-stat-capsule review-node-tint" aria-label="Review Mode — already completed">
+          <div className="quiz-header-stat-capsule review-node-tint ui-badge ui-badge--success ui-badge--lg" aria-label="Review Mode — already completed">
             <BookmarkStarFill size={14} className="stat-vector-icon" />
             <span className="quiz-stat-count-string"><span className="stat-lbl-dim">REVIEW</span></span>
           </div>
         ) : (
-          <div className="quiz-header-stat-capsule life-node-tint" aria-label={`You have ${chances} chances left`}>
+          <div className="quiz-header-stat-capsule life-node-tint ui-badge ui-badge--danger ui-badge--lg" aria-label={`You have ${chances} chances left`}>
             <ShieldShaded size={14} className="stat-vector-icon text-red-accent" />
             <span className="quiz-stat-count-string">{chances} <span className="stat-lbl-dim">LIVES</span></span>
           </div>

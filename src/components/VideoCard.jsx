@@ -1,5 +1,6 @@
 // src/components/VideoCard.jsx
 import React, { useRef, useEffect } from "react";
+import "./QuizMarkdown.css";
 import "./VideoCard.css";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -95,7 +96,7 @@ export default function VideoCard({ videoUrl, title, description, thumbnailUrl, 
   };
 
   return (
-    <div className="video-training-card animate-fade-in">
+    <div className="video-training-card ui-card animate-fade-in">
       
       {/* =========================================================================
          🎬 PREMIUM GLASSMORPHIC FILM CONTAINER VIEWPORT
@@ -137,7 +138,7 @@ export default function VideoCard({ videoUrl, title, description, thumbnailUrl, 
         ) : (
           <div className="video-error-placeholder-box d-flex flex-column align-items-center justify-content-center p-5 text-center">
             <PlayCircleFill size={48} className="text-muted opacity-50 mb-3" />
-            <span className="font-monospace text-secondary small">
+            <span className="video-error-text">
               [STREAM RUNTIME ERROR]: Video stream address context path missing or unresolved.
             </span>
           </div>
@@ -153,26 +154,26 @@ export default function VideoCard({ videoUrl, title, description, thumbnailUrl, 
         </h3>
 
         {tags && tags.length > 0 && (
-          <div className="video-tags-stack-ribbon d-flex flex-wrap gap-1.5 mb-3">
+          <div className="video-tags-stack-ribbon">
             {tags.map((tag, tIdx) => (
-              <span key={tIdx} className="video-custom-badge-pill font-monospace">
+              <span key={tIdx} className="video-custom-badge-pill ui-badge ui-badge--accent">
                 <TagFill size={9} className="me-1" /> {tag}
               </span>
             ))}
           </div>
         )}
 
-        <div className="video-session-notes-box rounded-3 border">
-          <div className="notes-header-indicator border-bottom px-3 py-2 d-flex align-items-center gap-1.5 fw-bold font-monospace">
-            <InfoCircleFill size={12} style={{ color: 'var(--orbit-lavender-text)' }} />
+        <div className="video-session-notes-box">
+          <div className="notes-header-indicator">
+            <InfoCircleFill size={12} />
             <span>SESSION CORE NOTES MATRIX</span>
           </div>
           
-          <div className="video-markdown-body markdown-body p-3 text-start">
+          <div className="video-markdown-body markdown-body quiz-md">
             {description ? (
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{description}</ReactMarkdown>
             ) : (
-              <p className="text-muted italic small font-monospace m-0">
+              <p className="video-notes-empty">
                 No supplemental documentation metrics compiled inside this learning asset.
               </p>
             )}

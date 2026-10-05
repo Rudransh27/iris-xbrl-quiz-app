@@ -1,4 +1,5 @@
 import React from 'react';
+import './ErrorBoundary.css';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -21,13 +22,15 @@ class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       // You can render any custom fallback UI
       return (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#FF0000', backgroundColor: '#333' }}>
-          <h2>Something went wrong.</h2>
-          <details style={{ whiteSpace: 'pre-wrap', marginTop: '1rem' }}>
-            {this.state.error && this.state.error.toString()}
-            <br />
-            {this.state.errorInfo && this.state.errorInfo.componentStack}
-          </details>
+        <div className="ui-page ui-page--narrow">
+          <div className="ui-empty error-boundary">
+            <h2 className="ui-h3">Something went wrong.</h2>
+            <details className="error-boundary__details ui-mono">
+              {this.state.error && this.state.error.toString()}
+              <br />
+              {this.state.errorInfo && this.state.errorInfo.componentStack}
+            </details>
+          </div>
         </div>
       );
     }

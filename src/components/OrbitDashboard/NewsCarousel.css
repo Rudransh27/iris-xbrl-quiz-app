@@ -6,69 +6,40 @@
 
 .orbit-news-carousel__viewport {
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: var(--ui-radius-lg);
 }
 
-.orbit-news-carousel__arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid var(--orbit-border);
-  background: var(--orbit-surface);
-  color: var(--orbit-text-heading);
-  box-shadow: var(--orbit-shadow-sm);
-  cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
-  z-index: 2;
-}
+/* Prev/next live in the section header (ui-btn icon buttons). */
+.orbit-news-carousel__arrow { flex-shrink: 0; }
 
-.orbit-news-carousel__arrow:hover {
-  background: var(--orbit-brand-muted);
-  transform: translateY(-50%) scale(1.06);
+/* "02 / 12" counter beside the header arrows */
+.orbit-news-carousel__count {
+  margin-right: var(--ui-space-2);
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-medium);
+  color: var(--ui-text-3);
+  font-variant-numeric: tabular-nums;
 }
+.orbit-news-carousel__count strong { color: var(--ui-text); font-weight: var(--ui-fw-bold); }
 
-.orbit-news-carousel__arrow--prev {
-  left: -14px;
-}
-
-.orbit-news-carousel__arrow--next {
-  right: -14px;
-}
-
+/* Story-style segmented progress (each segment is a jump button) */
 .orbit-news-carousel__dots {
   display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 10px;
+  gap: 4px;
+  margin-top: var(--ui-space-3);
 }
-
 .orbit-news-carousel__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  border: none;
+  flex: 1;
+  height: 4px;
+  min-width: 0;
   padding: 0;
-  background: var(--orbit-border);
+  border: none;
+  border-radius: var(--ui-radius-pill);
+  background: var(--ui-surface-3);
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: background-color var(--ui-duration) var(--ui-ease), transform var(--ui-duration) var(--ui-ease);
 }
-
-.orbit-news-carousel__dot--active {
-  background: var(--orbit-brand-dark);
-  transform: scale(1.35);
-}
-
-@media (max-width: 640px) {
-  .orbit-news-carousel__arrow--prev {
-    left: 2px;
-  }
-  .orbit-news-carousel__arrow--next {
-    right: 2px;
-  }
-}
+.orbit-news-carousel__dot:hover { background: var(--ui-border-2); transform: scaleY(1.5); }
+.orbit-news-carousel__dot--seen { background: var(--ui-accent-soft-2); }
+.orbit-news-carousel__dot--active,
+.orbit-news-carousel__dot--active:hover { background: var(--ui-accent); }
