@@ -25,6 +25,7 @@ export default function TopicCard({
   pointsReward,
   cards,
   onClick,
+  index, // optional: position in the list → "01" index pill
 }) {
   const cardsCovered = progress?.cardsCovered || 0;
   const totalCards = progress?.totalCards || 0;
@@ -44,9 +45,11 @@ export default function TopicCard({
     if (!isLocked && onClick) onClick();
   };
 
+  const ctaVariant = isCompleted ? "ui-btn--secondary" : "ui-btn--primary";
+
   return (
     <div
-      className={`topic-card topic-card--${statusKey}`}
+      className={`ui-card${isLocked ? "" : " ui-card--interactive"} topic-card topic-card--${statusKey}`}
       onClick={isLocked ? undefined : onClick}
       role="button"
       tabIndex={isLocked ? -1 : 0}
@@ -55,45 +58,48 @@ export default function TopicCard({
         if (!isLocked && (e.key === "Enter" || e.key === " ")) onClick?.();
       }}
     >
-      {/* Top block — badge/title/meta/status. Grouped as one flex child so
+      {/* Top block — index/badges/title/meta. Grouped as one flex child so
           the footer below can be pinned to the card's bottom edge via
           justify-content: space-between, regardless of how much text this
           block ends up wrapping to. */}
       <div className="topic-card__top">
         <div className="topic-card__heading-row">
-          <span className="topic-card__type-badge">✦ {typeLabel}</span>
+          {typeof index === "number" && (
+            <span className={`ui-index${inProgress ? " ui-index--active" : ""}`}>{String(index + 1).padStart(2, "0")}</span>
+          )}
+          <span className="ui-badge ui-badge--sm topic-card__type-badge">{typeLabel}</span>
 
-          {/* Minimal status indicators — no bulky colored blocks. "Not
-              started" shows nothing at all, the quietest possible default. */}
+          {/* Status badges — "Not started" shows nothing at all, the
+              quietest possible default. */}
           {isLocked && (
-            <span className="topic-card__status topic-card__status--locked" aria-label="Locked">
-              <LockFill size={11} />
+            <span className="ui-badge ui-badge--sm topic-card__status topic-card__status--locked" aria-label="Locked">
+              <LockFill size={10} /> Locked
             </span>
           )}
           {isCompleted && (
-            <span className="topic-card__status topic-card__status--completed" aria-label="Completed">
-              <CheckLg size={12} />
+            <span className="ui-badge ui-badge--sm ui-badge--success topic-card__status topic-card__status--completed" aria-label="Completed">
+              <CheckLg size={11} /> Completed
             </span>
           )}
           {inProgress && (
-            <span className="topic-card__status topic-card__status--in-progress">
+            <span className="ui-badge ui-badge--sm ui-badge--accent topic-card__status topic-card__status--in-progress">
               In Progress
             </span>
           )}
         </div>
 
-        <h3 className="topic-card__title">{title}</h3>
-        {description && <p className="topic-card__description">{description}</p>}
+        <h3 className="ui-card__title ui-clamp-2 topic-card__title">{title}</h3>
+        {description && <p className="ui-clamp-2 topic-card__description">{description}</p>}
 
         <div className="topic-card__meta-row">
           {!!estimatedTime && (
             <span className="topic-card__meta-item">
-              <ClockHistory size={11} /> {estimatedTime} min
+              <ClockHistory size={12} /> {estimatedTime} min
             </span>
           )}
           {!!pointsReward && (
-            <span className="topic-card__meta-item topic-card__meta-item--xp">
-              <StarFill size={11} /> +{pointsReward} Lightyears
+            <span className="ui-badge ui-badge--sm ui-badge--accent topic-card__meta-item--xp">
+              <StarFill size={10} /> +{pointsReward} Lightyears
             </span>
           )}
         </div>
@@ -103,14 +109,17 @@ export default function TopicCard({
           it flush to the bottom of every card in a row, aligned or not. */}
       <div className="topic-card__footer">
         {!isLocked && totalCards > 0 && (
-          <div className="topic-card__progress-track" aria-hidden="true">
-            <div className="topic-card__progress-fill" style={{ width: `${percentage}%` }} />
+          <div className="topic-card__progress-row">
+            <div className={`ui-progress ui-progress--sm topic-card__progress-track${isCompleted ? " ui-progress--success" : ""}`} aria-hidden="true">
+              <div className="ui-progress__bar topic-card__progress-fill" style={{ width: `${percentage}%` }} />
+            </div>
+            <span className="topic-card__progress-label ui-num">{cardsCovered}/{totalCards}</span>
           </div>
         )}
 
         <button
           type="button"
-          className="topic-card__cta"
+          className={`ui-btn ${ctaVariant} ui-btn--sm topic-card__cta`}
           onClick={handleCtaClick}
           disabled={isLocked}
         >

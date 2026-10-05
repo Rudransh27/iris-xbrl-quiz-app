@@ -1,357 +1,112 @@
 /* src/components/IdeasAndRD.css
-   Redesigned onto the shared --orbit-* design tokens (src/index.css) —
-   this page used to declare its own separate, fixed-light "--studio-*"
-   token set with no [data-theme="dark"] override at all, so it rendered as
-   a solid white page (inputs included) regardless of the app's theme
-   toggle. Lavender/sky is the primary accent (matching the dashboard/Learn
-   CTA language), pink for tag markers, teal/lavender for status pills. */
+   Page-scoped composition for Ideas & R&D. Visuals come from the shared
+   primitives in src/styles/ui.css (ui-page, ui-card, ui-field/ui-input/
+   ui-textarea, ui-btn, ui-badge, ui-list, ui-callout, ui-empty, ui-loading);
+   this file only lays them out. See src/styles/README.md. */
 
-/* 🎯 FIXED: Replaced backdrops and added standard top, bottom, left, and right spacing */
-.premium-workspace-shell {
-  width: 100%;
-  /* 🎯 BUG FIX ("everything is very wide"): now that the layout below is
-     stacked (not side-by-side), 1200px let the form and its "Dispatch
-     Innovation" button (width: 100%) stretch across the whole width —
-     proportional at a normal-form width instead. */
-  max-width: 760px;
-  margin: 40px auto;
-  padding: 24px;
-  box-sizing: border-box;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background-color: var(--orbit-canvas);
-}
+/* ── Creation form ─────────────────────────────────────────────────────── */
+.ideas-form-card { padding: var(--ui-space-6); gap: var(--ui-space-4); }
+.ideas-form { display: flex; flex-direction: column; gap: var(--ui-space-5); }
 
-/* Stacked (form on top, submission history below), not side-by-side —
-   the form doesn't benefit from 45% of the width on a wide screen, and
-   stacking keeps focus on one thing at a time. */
-.workspace-grid-row {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
+.ideas-label { display: flex; align-items: center; gap: 6px; }
+.ideas-label svg { color: var(--ui-text-3); flex-shrink: 0; }
 
-.workspace-column-left,
-.workspace-column-right {
-  width: 100%;
-  min-width: 0;
-}
-
-/* ================= LEFT CREATION STUDIO CARD ================= */
-.studio-card {
-  background-color: var(--orbit-surface);
-  border: 1px solid var(--orbit-border);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: var(--orbit-shadow-sm);
-}
-
-.studio-header {
-  display: flex;
+/* Classification segment — pill radios (the input stays focusable, just
+   visually hidden, so keyboard users can still arrow through them). */
+.ideas-tag-row { display: flex; flex-wrap: wrap; gap: var(--ui-space-2); }
+.ideas-tag {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 24px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--ui-radius-pill);
+  border: 1px solid var(--ui-border-2);
+  background: var(--ui-surface);
+  cursor: pointer;
+  transition: border-color var(--ui-duration) var(--ui-ease), background-color var(--ui-duration) var(--ui-ease);
 }
-
-.header-icon-box {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background-color: rgba(201, 184, 255, 0.18);
-  color: var(--orbit-lavender-text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.ideas-tag input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.ideas-tag span {
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ui-text-2);
 }
+.ideas-tag:hover { border-color: var(--ui-text-4); }
+.ideas-tag:focus-within { box-shadow: var(--ui-ring); }
+.ideas-tag--active,
+.ideas-tag--active:hover { border-color: var(--ui-accent); background: var(--ui-accent-soft); }
+.ideas-tag--active span { color: var(--ui-accent-text); }
 
-.studio-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--orbit-text-heading);
-  margin: 0;
-}
-
-.studio-subtitle {
-  font-size: 12.5px;
-  color: var(--orbit-text-muted);
-  margin: 2px 0 0 0;
-}
-
-.studio-field-lbl {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--orbit-text-heading);
+.ideas-note {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 6px;
+  font-size: var(--ui-fs-xs);
+  color: var(--ui-text-3);
 }
 
-.studio-input {
-  width: 100%;
-  background-color: var(--orbit-surface-subtle) !important;
-  border: 1px solid var(--orbit-border) !important;
-  border-radius: 10px !important;
-  padding: 10px 14px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  color: var(--orbit-text-heading) !important;
-  box-shadow: none !important;
-  transition: all 0.15s ease !important;
+/* The default spinner is accent-on-soft; on a primary button it needs to be
+   white-on-accent. */
+.ideas-spinner {
+  width: 16px;
+  height: 16px;
+  border-color: var(--ui-on-accent);
+  border-top-color: transparent;
 }
 
-.studio-input::placeholder {
-  color: var(--orbit-text-muted);
-  opacity: 0.85;
-}
-
-.studio-input:focus {
-  border-color: var(--orbit-lavender) !important;
-  background-color: var(--orbit-surface) !important;
-  box-shadow: 0 0 0 3px rgba(201, 184, 255, 0.18) !important;
-}
-
-.text-area-fix {
-  resize: none;
-  line-height: 1.5;
-}
-
-/* Category Segment Chiclets */
-.chiclet-matrix {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
-.chiclet-pill-target {
-  background-color: var(--orbit-surface-subtle);
-  border: 1px solid var(--orbit-border);
-  border-radius: 10px;
-  padding: 10px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.chiclet-pill-target input {
-  display: none;
-}
-
-.chiclet-pill-target span {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--orbit-text-muted);
-  letter-spacing: 0.5px;
-}
-
-.chiclet-pill-target:hover {
-  border-color: var(--orbit-lavender);
-}
-
-.chiclet-active {
-  background-color: rgba(201, 184, 255, 0.16) !important;
-  border-color: var(--orbit-lavender) !important;
-}
-.chiclet-active span {
-  color: var(--orbit-lavender-text) !important;
-}
-
-.studio-compliance-banner {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--orbit-text-muted);
-  margin-bottom: 20px;
-}
-
-.studio-action-submit {
-  width: 100%;
-  background: linear-gradient(135deg, var(--orbit-lavender), var(--orbit-sky));
-  border: none;
-  color: #20222f;
-  padding: 12px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: filter 0.15s ease;
-}
-.studio-action-submit:hover {
-  filter: brightness(0.94);
-}
-.studio-action-submit:disabled {
-  cursor: not-allowed;
-  opacity: 0.75;
-}
-
-/* ================= RIGHT TIMELINE DIRECTORY ================= */
-.feed-meta-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--orbit-border);
-  margin-bottom: 16px;
-}
-
-.feed-meta-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--orbit-text-heading);
+/* ── Submission directory ──────────────────────────────────────────────── */
+.ideas-directory { display: flex; flex-direction: column; gap: var(--ui-space-3); }
+.ideas-directory__head { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-3); flex-wrap: wrap; }
+.ideas-directory__title {
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ui-space-2);
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-fs-lg);
+  font-weight: var(--ui-fw-bold);
+  letter-spacing: var(--ui-tracking-tight);
+  color: var(--ui-text);
 }
+.ideas-directory__title svg { color: var(--ui-accent-text); }
 
-.feed-counter-pill {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--orbit-lavender-text);
-  background-color: rgba(201, 184, 255, 0.16);
-  padding: 4px 10px;
-  border-radius: 20px;
-}
-
-.feed-scrollable-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-height: 530px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.feed-item-card {
-  background-color: var(--orbit-surface);
-  border: 1px solid var(--orbit-border);
-  border-radius: 14px;
-  padding: 18px;
-  box-sizing: border-box;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.feed-item-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--orbit-shadow-md);
-}
-
-.feed-card-top-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.meta-left-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Fixed, opaque pastel tints (not translucent) — same reasoning as the
-   dashboard's checklist rows: these read against whatever the card's own
-   surface happens to be, so they need to stay legible without depending on
-   which theme is active. A plain fallback covers any status string the two
-   known tints below don't match, so an unrecognized status never renders
-   as unstyled plain text. */
-.feed-status-pill {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  background-color: var(--orbit-surface-subtle);
-  color: var(--orbit-text-muted);
-}
-.badge-tint-building { background-color: #dcedff; color: #1f4e79; }
-.badge-tint-approved { background-color: #ddf6ec; color: #0d3327; }
-
-.feed-timestamp {
-  font-size: 12px;
-  color: var(--orbit-text-muted);
-}
-
-.feed-segment-marker {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--orbit-pink-text);
-  text-transform: uppercase;
-}
-
-.feed-idea-title {
-  font-size: 14.5px;
-  font-weight: 700;
-  color: var(--orbit-text-heading);
-  line-height: 1.45;
-  margin: 0 0 6px 0;
-}
-
-.feed-idea-details {
-  font-size: 13.5px;
-  color: var(--orbit-text-muted);
-  line-height: 1.5;
+.ideas-row { flex-direction: column; align-items: stretch; gap: var(--ui-space-2); padding: var(--ui-space-5); }
+.ideas-row .ui-badge { text-transform: capitalize; }
+.ideas-row__top { display: flex; align-items: center; gap: var(--ui-space-3); flex-wrap: wrap; }
+.ideas-row__date { font-size: var(--ui-fs-xs); color: var(--ui-text-3); }
+.ideas-row__tag { margin-left: auto; font-size: var(--ui-fs-xs); font-weight: var(--ui-fw-semibold); color: var(--ui-text-3); text-transform: uppercase; letter-spacing: 0.04em; }
+.ideas-row__title {
   margin: 0;
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-fs-md);
+  font-weight: var(--ui-fw-bold);
+  letter-spacing: -0.01em;
+  line-height: var(--ui-lh-snug);
+  color: var(--ui-text);
+  overflow-wrap: anywhere;
 }
+.ideas-row__details { margin: 0; font-size: var(--ui-fs-base); line-height: var(--ui-lh-body); color: var(--ui-text-2); overflow-wrap: anywhere; }
 
-/* ================= EVALUATION FEEDBACK BOX ================= */
-.feed-response-container {
-  margin-top: 14px;
-  background-color: var(--orbit-surface-subtle);
-  border-left: 3px solid var(--orbit-lavender);
-  border-radius: 0 8px 8px 0;
-  padding: 12px;
+.ideas-row__feedback {
+  margin-top: var(--ui-space-1);
+  padding: var(--ui-space-3) var(--ui-space-4);
+  background: var(--ui-accent-soft);
+  border-radius: var(--ui-radius);
 }
-
-.response-badge {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--orbit-lavender-text);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.ideas-row__feedback-label {
   margin-bottom: 4px;
+  font-size: var(--ui-fs-2xs);
+  font-weight: var(--ui-fw-bold);
+  color: var(--ui-accent-text);
+  text-transform: uppercase;
+  letter-spacing: var(--ui-tracking-wide);
 }
+.ideas-row__feedback-text { margin: 0; font-size: var(--ui-fs-sm); line-height: var(--ui-lh-body); color: var(--ui-text); font-style: italic; }
 
-.response-text {
-  font-size: 13px;
-  color: var(--orbit-text-heading);
-  line-height: 1.45;
-  margin: 0;
-  font-style: italic;
+@media (max-width: 640px) {
+  .ideas-form-card { padding: var(--ui-space-5); }
+  .ideas-row { padding: var(--ui-space-4); }
 }
-
-/* Loaders and alerts */
-.feed-loading-portal {
-  text-align: center;
-  padding: 40px;
-  color: var(--orbit-lavender-text);
-}
-.feed-loading-portal p {
-  margin-top: 10px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--orbit-text-muted);
-}
-
-.feed-empty-placeholder {
-  text-align: center;
-  padding: 40px;
-  border: 1px dashed var(--orbit-border);
-  border-radius: 14px;
-  color: var(--orbit-text-muted);
-  font-size: 13.5px;
-}
-
-.studio-alert-banner {
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  margin-top: 14px;
-}
-
-.feed-scrollable-stack::-webkit-scrollbar { width: 4px; }
-.feed-scrollable-stack::-webkit-scrollbar-thumb { background-color: var(--orbit-border); border-radius: 4px; }

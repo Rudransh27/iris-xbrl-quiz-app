@@ -1,8 +1,9 @@
 // src/admin/components/AdminPrePostReport.jsx
 // Pre/Post report for Paths that have a Pre/Post check. One row per Path
 // (started / Pre done / Post done / averages / improvement); click a Path
-// for one row per learner. CSV export at both levels. The server scopes the
-// learners to the admin's own department (a Superadmin can pick one).
+// for one row per learner (click a name for that learner's full report).
+// CSV export at both levels. The server scopes the learners to the admin's
+// own department (a Superadmin can pick one); team and region narrow it.
 import React, { useContext, useEffect, useState } from "react";
 import { Table, Spinner, Alert, Button, Form, Row, Col, Badge } from "react-bootstrap";
 import { Download, ArrowLeft, ClipboardCheck } from "react-bootstrap-icons";
@@ -12,16 +13,18 @@ import AuthContext from "../../context/AuthContext";
 const pctCell = (v) => (v === null || v === undefined ? <span className="text-muted">—</span> : `${v}%`);
 const deltaCell = (v) => {
   if (v === null || v === undefined) return <span className="text-muted">—</span>;
-  const color = v > 0 ? "#0f7a4c" : v < 0 ? "#c0392b" : undefined;
+  const color = v > 0 ? "var(--ui-success-text)" : v < 0 ? "var(--ui-danger-text)" : undefined;
   return <span style={{ color, fontWeight: 700 }}>{v > 0 ? `+${v}` : v}</span>;
 };
 
-export default function AdminPrePostReport() {
+export default function AdminPrePostReport({ onOpenLearner }) {
   const { user } = useContext(AuthContext);
   const isSuperAdmin = user?.role === "superadmin";
   const [tags, setTags] = useState([]);
   const [departments, setDepartments] = useState([]);
-  const [filters, setFilters] = useState({ categoryId: "", departmentId: "" });
+  const [teams, setTeams] = useState([]);
+  const [regions, setRegions] = useState([]);
+  const [filters, setFilters] = useState({ categoryId: "", departmentId: "", teamId: "", regionId: "" });
   const [rows, setRows] = useState([]);
   const [detail, setDetail] = useState(null); // { path, summary, data }
   const [loading, setLoading] = useState(true);
@@ -30,7 +33,15 @@ export default function AdminPrePostReport() {
   useEffect(() => {
     api.getCategories().then((r) => setTags(r?.data || [])).catch(() => {});
     if (isSuperAdmin) api.getDepartments().then((d) => setDepartments(Array.isArray(d) ? d : [])).catch(() => {});
+    api.getRegions().then((r) => setRegions((r?.data || []).filter((x) => !x.isDefault))).catch(() => {});
   }, [isSuperAdmin]);
+
+  const teamDept = isSuperAdmin ? filters.departmentId : (user?.department?._id || user?.department || "");
+  useEffect(() => {
+    if (!teamDept) { setTeams([]); return; }
+    api.getTeams(teamDept).then((t) => setTeams(Array.isArray(t) ? t : t?.data || [])).catch(() => setTeams([]));
+  }, [teamDept]);
+  const scope = { departmentId: filters.departmentId, teamId: filters.teamId, regionId: filters.regionId };
 
   useEffect(() => {
     let cancelled = false;
@@ -45,7 +56,7 @@ export default function AdminPrePostReport() {
   const openPath = async (pathId) => {
     setLoading(true); setError("");
     try {
-      const r = await api.getPrePostPathReport(pathId, { departmentId: filters.departmentId });
+      const r = await api.getPrePostPathReport(pathId, scope);
       setDetail(r);
     } catch (err) {
       setError(err.message || "Failed to load this path.");
@@ -55,7 +66,7 @@ export default function AdminPrePostReport() {
   };
 
   const csv = async (pathId) => {
-    try { await api.downloadPrePostCsv(pathId, { categoryId: pathId ? "" : filters.categoryId, departmentId: filters.departmentId }); }
+    try { await api.downloadPrePostCsv(pathId, { ...scope, categoryId: pathId ? "" : filters.categoryId }); }
     catch (err) { setError(err.message || "CSV export failed."); }
   };
 
@@ -65,7 +76,8 @@ export default function AdminPrePostReport() {
       <p className="text-muted small">
         For paths with a Pre/Post check. <strong>Pre</strong> is the learner's starting score (never graded),
         <strong> Post</strong> is their score after the last module, and <strong>improvement</strong> is averaged over learners who took both.
-        "No baseline" = started the path before its Pre-check existed. {isSuperAdmin ? "" : "Showing learners in your department."}
+        "No baseline" = started the path before its Pre-check existed. Open a path and click a learner for their full report,
+        including how they did inside each module. {isSuperAdmin ? "" : "Showing learners in your department."}
       </p>
       {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
 
@@ -86,10 +98,10 @@ export default function AdminPrePostReport() {
             </thead>
             <tbody>
               {detail.data.map((l) => (
-                <tr key={l.userId}>
+                <tr key={l.userId} style={onOpenLearner ? { cursor: "pointer" } : undefined} onClick={onOpenLearner ? () => onOpenLearner(l.userId) : undefined} title={onOpenLearner ? "Open this learner's report" : undefined}>
                   <td><div className="fw-semibold small">{l.username}</div><div className="text-muted" style={{ fontSize: 11 }}>{l.email}</div></td>
                   <td className="small">{l.department}{l.team ? ` · ${l.team}` : ""}</td>
-                  <td>{l.noBaseline ? <Badge bg="light" text="dark">No baseline</Badge> : pctCell(l.prePercent)}</td>
+                  <td>{l.preResetPending ? <Badge bg="warning" text="dark">Reset · retake due</Badge> : l.noBaseline ? <Badge bg="light" text="dark">No baseline</Badge> : pctCell(l.prePercent)}</td>
                   <td>{pctCell(l.postPercent)}</td>
                   <td>{deltaCell(l.improvement)}</td>
                   <td className="small">{l.modulesCompleted}/{l.modulesTotal}</td>
@@ -133,7 +145,7 @@ export default function AdminPrePostReport() {
                       <td className="small">{q.module}</td>
                       <td className="small">{q.difficulty}</td>
                       <td>{q.answered}</td>
-                      <td style={{ fontWeight: 700, color: q.correctPercent < 50 ? "#c0392b" : undefined }}>{q.correctPercent}%</td>
+                      <td style={{ fontWeight: 700, color: q.correctPercent < 50 ? "var(--ui-danger-text)" : undefined }}>{q.correctPercent}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -144,7 +156,7 @@ export default function AdminPrePostReport() {
       ) : (
         <>
           <Row className="g-2 mb-2 align-items-end">
-            <Col md={4}>
+            <Col md={3}>
               <Form.Label className="small fw-semibold">Tag</Form.Label>
               <Form.Select size="sm" value={filters.categoryId} onChange={(e) => setFilters((f) => ({ ...f, categoryId: e.target.value }))}>
                 <option value="">All tags</option>
@@ -152,11 +164,27 @@ export default function AdminPrePostReport() {
               </Form.Select>
             </Col>
             {isSuperAdmin && (
-              <Col md={4}>
+              <Col md={3}>
                 <Form.Label className="small fw-semibold">Department</Form.Label>
-                <Form.Select size="sm" value={filters.departmentId} onChange={(e) => setFilters((f) => ({ ...f, departmentId: e.target.value }))}>
+                <Form.Select size="sm" value={filters.departmentId} onChange={(e) => setFilters((f) => ({ ...f, departmentId: e.target.value, teamId: "" }))}>
                   <option value="">All departments</option>
                   {departments.map((d) => <option key={d._id} value={d._id}>{d.name}</option>)}
+                </Form.Select>
+              </Col>
+            )}
+            <Col md={2}>
+              <Form.Label className="small fw-semibold">Team</Form.Label>
+              <Form.Select size="sm" value={filters.teamId} disabled={!teams.length} onChange={(e) => setFilters((f) => ({ ...f, teamId: e.target.value }))}>
+                <option value="">{teams.length ? "All teams" : "—"}</option>
+                {teams.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
+              </Form.Select>
+            </Col>
+            {regions.length > 0 && (
+              <Col md={2}>
+                <Form.Label className="small fw-semibold">Region</Form.Label>
+                <Form.Select size="sm" value={filters.regionId} onChange={(e) => setFilters((f) => ({ ...f, regionId: e.target.value }))}>
+                  <option value="">All regions</option>
+                  {regions.map((r) => <option key={r._id} value={r._id}>{r.name}</option>)}
                 </Form.Select>
               </Col>
             )}
@@ -176,7 +204,7 @@ export default function AdminPrePostReport() {
                   <tr key={r.pathId} style={{ cursor: "pointer" }} onClick={() => openPath(r.pathId)}>
                     <td>
                       <div className="fw-semibold small">{r.path}</div>
-                      <div className="text-muted" style={{ fontSize: 11 }}>{r.tag}{r.status !== "published" ? " · draft" : ""}</div>
+                      <div className="text-muted" style={{ fontSize: 11 }}>{r.tag}{r.status !== "published" ? " · draft" : ""}{r.assessmentEnabled === false ? " · check switched off" : ""}</div>
                     </td>
                     <td>{r.started}</td>
                     <td>{r.preDone}</td>

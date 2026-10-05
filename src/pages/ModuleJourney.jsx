@@ -6,14 +6,13 @@
 //   /orbit/tags/:categoryId/region/:regionId — the legacy Tag -> Region view
 //       ("all" = no region filter), used until Paths are published.
 // Renders
-// the same real navigation/lock/progress logic ModuleTrail.jsx uses, just
-// laid out as a generated wavy path with numbered nodes instead of a grid —
-// the layout scales to any module count, unlike the mockup's fixed 3-node
-// example.
+// the same real navigation/lock/progress logic ModuleTrail.jsx uses, laid
+// out as a curved "snake" trail of numbered nodes (01, 02, …) with each
+// step's card on alternating sides — scales to any module count.
 import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Globe2, LockFill, Check2, Rocket } from "react-bootstrap-icons";
+import { Globe2, LockFill, Check2, Rocket, ChevronRight, ClipboardCheck } from "react-bootstrap-icons";
 import Swal from "sweetalert2";
 import api from "../admin/services/api";
 import OrbitFooter from "../components/OrbitDashboard/OrbitFooter";
@@ -25,70 +24,54 @@ import "../components/OrbitDashboard/OrbitDashboard.css";
 import "../components/OrbitDashboard/TagCard.css";
 import "../components/OrbitDashboard/JourneyFlow.css";
 import "../components/OrbitDashboard/PathFlow.css";
+import { safeId, safeIdOrToken } from "../utils/safeNav";
 
-// ---- Generated snake-curve path geometry --------------------------------
-// A sine wave banks 1-2 nodes at a time near each crest/trough (where it's
-// changing slowest) and crosses center fastest at the zero points — that's
-// what actually reads as a winding "snake" path rather than a straight line
-// with a wobble, so long as the amplitude is generous enough to be obvious.
-const VIEW_WIDTH = 380;
-const CENTER_X = VIEW_WIDTH / 2;
-const AMPLITUDE = 118;
-const NODE_GAP_Y = 156;
-const TOP_PAD = 54;
-const NODE_R = 33;
-// The bottom margin has to be bigger than TOP_PAD: a node's label can wrap to
-// 2-3 lines, and that text sits below the node with nothing after it to push
-// the canvas taller (overflow:visible content doesn't grow its box for layout
-// purposes) — a symmetric top/bottom pad left the last label overflowing past
-// the canvas's own bottom edge, straight into the footer that follows it.
-const BOTTOM_PAD = 132;
+// Status → ui-badge tone for each step.
+const STATUS_TONE = {
+  Completed: "ui-badge--success",
+  "In Progress": "ui-badge--accent",
+  Locked: "",
+  "Not Started": "ui-badge--outline",
+};
 
-function buildLayout(count) {
-  const nodes = [];
-  for (let i = 0; i < count; i++) {
-    nodes.push({
-      x: CENTER_X + AMPLITUDE * Math.sin(i * 1.05),
-      y: TOP_PAD + i * NODE_GAP_Y,
-    });
-  }
-  const segments = nodes.slice(1).map((n, idx) => {
-    const prev = nodes[idx];
-    const midY = (prev.y + n.y) / 2;
-    return { d: `M ${prev.x} ${prev.y} C ${prev.x} ${midY}, ${n.x} ${midY}, ${n.x} ${n.y}` };
-  });
-  const height = TOP_PAD + BOTTOM_PAD + (count > 0 ? (count - 1) * NODE_GAP_Y : 0);
-  return { nodes, segments, height };
+// S-curve between two node centres: leave and arrive vertically, so
+// consecutive segments join smoothly into one continuous snake.
+function snakeSegment(a, b) {
+  // Handles longer than half the gap give the bend a rounder, snakier S.
+  const k = Math.max((b.y - a.y) * 0.9, 48);
+  return `M ${a.x} ${a.y} C ${a.x} ${a.y + k}, ${b.x} ${b.y - k}, ${b.x} ${b.y}`;
 }
 
-// Deterministic PRNG (no Math.random) so the starfield doesn't reshuffle on
-// every re-render/progress update — same module count always draws the same sky.
-function mulberry32(seed) {
-  return function () {
-    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-// Full-bleed decorative starfield, sized to the path's actual height so stars
-// spread across however long the journey ends up being, not just a fixed strip.
-function buildStars(height) {
-  const rand = mulberry32(1337);
-  const count = Math.max(18, Math.min(46, Math.round(height / 22)));
-  return Array.from({ length: count }, (_, i) => ({
-    id: i,
-    left: rand() * 100,
-    top: rand() * 100,
-    size: 1.6 + rand() * 2.4,
-    delay: rand() * 5,
-    duration: 2.6 + rand() * 2.6,
-  }));
+// The curved trail behind the nodes. Decorative only (pointer-events: none
+// in CSS) so it can never sit between the cursor and a node. A segment is
+// drawn solid in the accent once the step it leaves is done; the rest is a
+// dotted path still to travel.
+function SnakeTrail({ trail, cards }) {
+  const { w, h, points } = trail;
+  if (!w || points.length < 2 || points.some((p) => !p)) return null;
+  const segments = points.slice(1).map((b, i) => ({ d: snakeSegment(points[i], b), done: cards[i]?.pct === 100 }));
+  return (
+    <svg className="jf-snake__trail" width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true" focusable="false">
+      {segments.map((seg, i) => <path key={`t${i}`} d={seg.d} className="jf-snake__track" />)}
+      {segments.map((seg, i) => (!seg.done ? <path key={`o${i}`} d={seg.d} className="jf-snake__todo" /> : (
+        <motion.path
+          key={`d${i}`}
+          d={seg.d}
+          className="jf-snake__done"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ delay: 0.15 + 0.12 * i, duration: 0.45, ease: "easeInOut" }}
+        />
+      )))}
+    </svg>
+  );
 }
 
 export default function ModuleJourney() {
-  const { categoryId, regionId, pathId } = useParams();
+  const params = useParams();
+  const categoryId = safeId(params.categoryId);
+  const regionId = safeIdOrToken(params.regionId, "all");
+  const pathId = safeId(params.pathId);
   const isPathMode = !!pathId;
   const isAllRegions = regionId === "all";
   const [pathData, setPathData] = useState(null);
@@ -282,149 +265,151 @@ export default function ModuleJourney() {
     [cards]
   );
 
+  // Snake trail: measure each node's centre (relative to the snake
+  // container) after layout and on every resize, then draw the curve through
+  // them. Rows only fade in (no transform), so the measurements are final.
+  const snakeRef = useRef(null);
+  const nodeRefs = useRef([]);
+  const [trail, setTrail] = useState({ w: 0, h: 0, points: [] });
+  useLayoutEffect(() => {
+    const el = snakeRef.current;
+    if (!el) return undefined;
+    const measure = () => {
+      const box = el.getBoundingClientRect();
+      const points = nodeRefs.current.slice(0, cards.length).map((n) => {
+        if (!n) return null;
+        const r = n.getBoundingClientRect();
+        return { x: r.left - box.left + r.width / 2, y: r.top - box.top + r.height / 2 };
+      });
+      setTrail({ w: box.width, h: box.height, points });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [cards, loading]);
+
   const inProgressCount = cards.filter((c) => c.pct > 0 && c.pct < 100).length;
-  const layout = useMemo(() => buildLayout(cards.length), [cards.length]);
-  const stars = useMemo(() => buildStars(layout.height), [layout.height]);
+  const doneCount = cards.filter((c) => c.pct === 100).length;
+  const overallPct = cards.length ? Math.round((doneCount / cards.length) * 100) : 0;
+  const crumbCurrent = isPathMode ? (pathData?.name || "…") : isAllRegions ? "All Regions" : (region?.name || "…");
 
   return (
-    <div style={{ maxWidth: 1240, margin: "0 auto", padding: "20px 28px 32px", display: "flex", flexDirection: "column", gap: 8 }}>
-      <div className="jf-breadcrumb">
-        <button type="button" onClick={() => navigate("/orbit/tags")}>Categories</button>
-        <span className="jf-breadcrumb__sep">›</span>
-        <button type="button" onClick={() => navigate(`/orbit/tags/${isPathMode ? (category?._id || "") : categoryId}`)}>{category?.name || "…"}</button>
-        <span className="jf-breadcrumb__sep">›</span>
-        <span className="jf-breadcrumb__current">
-          {isPathMode ? (pathData?.name || "…") : isAllRegions ? "All Regions" : (region?.name || "…")}
-        </span>
-      </div>
+    <div className="ui-page jf-page">
+      <nav className="jf-breadcrumb" aria-label="Breadcrumb">
+        <button type="button" onClick={() => navigate("/orbit/tags")}>Learn</button>
+        <ChevronRight size={11} className="jf-breadcrumb__sep" aria-hidden="true" />
+        <button type="button" onClick={() => navigate(isPathMode ? (category?._id ? `/orbit/tags/${category._id}` : "/orbit/tags") : `/orbit/tags/${categoryId}`, { state: { stayOnList: true } })}>{category?.name || "…"}</button>
+        <ChevronRight size={11} className="jf-breadcrumb__sep" aria-hidden="true" />
+        <span className="jf-breadcrumb__current">{crumbCurrent}</span>
+      </nav>
+
+      <header className="ui-page-header jf-header">
+        <div className="ui-page-header__text">
+          <span className="ui-eyebrow">{category?.name || "Learning path"}</span>
+          <h1 className="ui-h1">{crumbCurrent}</h1>
+          {isPathMode && pathData?.description && <p className="ui-lead">{pathData.description}</p>}
+        </div>
+      </header>
 
       {!loading && (
-        <div className="jf-stat-row">
-          <span className="jf-stat-pill">
-            <span className="jf-dot" style={{ background: "#3ddc97" }} /> {modules.length} module{modules.length === 1 ? "" : "s"}
-          </span>
-          <span className="jf-stat-pill">
-            <span className="jf-dot" style={{ background: "#f27ca6" }} /> {inProgressCount} in progress
-          </span>
-          <span className="jf-stat-pill">
-            <span className="jf-dot" style={{ background: "var(--orbit-brand)" }} /> {user?.xp ?? 0} Lightyears
-          </span>
+        <div className="jf-summary ui-card">
+          <div className="jf-stat-row">
+            <span className="ui-chip jf-stat-pill">
+              <span className="jf-dot jf-dot--modules" /> {modules.length} module{modules.length === 1 ? "" : "s"}
+            </span>
+            <span className="ui-chip jf-stat-pill">
+              <span className="jf-dot jf-dot--progress" /> {inProgressCount} in progress
+            </span>
+            <span className="ui-chip jf-stat-pill">
+              <span className="jf-dot jf-dot--xp" /> {user?.xp ?? 0} Lightyears
+            </span>
+          </div>
+          {cards.length > 0 && (
+            <div className="jf-summary__progress">
+              <div className="jf-summary__labels">
+                <span>{doneCount} of {cards.length} complete</span>
+                <span className="ui-num">{overallPct}%</span>
+              </div>
+              <div className={`ui-progress${overallPct === 100 ? " ui-progress--success" : ""}`}>
+                <div className="ui-progress__bar" style={{ width: `${overallPct}%` }} />
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: "48px 0" }}>
-          <div className="orbit-ml-card orbit-ml-card--skeleton" style={{ height: 300, maxWidth: 380, margin: "0 auto" }} />
+        <div className="jf-snake jf-snake--skeleton" aria-hidden="true">
+          <ol className="jf-snake__list">
+            {[0, 1, 2, 3].map((i) => (
+              <li key={i} className={`jf-snake__row jf-snake__row--${i % 2 ? "r" : "l"}`}>
+                <span className="ui-skeleton jf-snake__node" />
+                <span className="ui-card jf-snake__card">
+                  <span className="ui-skeleton jf-skel-line" />
+                  <span className="ui-skeleton jf-skel-line jf-skel-line--short" />
+                </span>
+              </li>
+            ))}
+          </ol>
         </div>
       ) : cards.length === 0 ? (
-        <div className="jf-region-empty">
-          <Globe2 size={26} />
-          <p style={{ margin: "8px 0 0" }}>No modules here yet.</p>
+        <div className="ui-empty jf-region-empty">
+          <span className="ui-icon-tile ui-icon-tile--neutral ui-icon-tile--lg"><Globe2 size={22} /></span>
+          <p className="ui-empty__title">No modules here yet.</p>
         </div>
       ) : (
         <>
           <div className="jf-mission-start">
-            <span className="jf-mission-start__emoji">🧑‍🚀</span>
+            <span className="jf-mission-start__emoji" aria-hidden="true">🧑‍🚀</span>
             <span className="jf-mission-start__label">MISSION START</span>
           </div>
 
-          <div className="jf-path-wrap">
-            <div className="jf-path-decor" aria-hidden="true">
-              {stars.map((s) => (
-                <span
-                  key={s.id}
-                  className="jf-star"
-                  style={{
-                    left: `${s.left}%`,
-                    top: `${s.top}%`,
-                    width: s.size,
-                    height: s.size,
-                    animationDelay: `${s.delay}s`,
-                    animationDuration: `${s.duration}s`,
-                  }}
-                />
-              ))}
-              <span className="jf-planet jf-planet--ringed" />
-              <span className="jf-planet jf-planet--rust" />
-              <span className="jf-planet jf-planet--moon" />
-              <span className="jf-comet" />
-            </div>
-
-            <div className="jf-path-canvas" style={{ maxWidth: VIEW_WIDTH, aspectRatio: `${VIEW_WIDTH} / ${layout.height}` }}>
-              <svg className="jf-path-svg" viewBox={`0 0 ${VIEW_WIDTH} ${layout.height}`}>
-                {layout.segments.map((seg, i) => {
-                  const traveled = cards[i]?.pct === 100;
-                  // Only the "traveled" segments draw themselves in — framer-motion's
-                  // pathLength animation works by writing its own stroke-dasharray
-                  // inline, which would stomp the dotted CSS style on future segments.
-                  return traveled ? (
-                    <motion.path
-                      key={i}
-                      d={seg.d}
-                      className="jf-path-cord jf-path-cord--done"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.5, delay: 0.15 + i * 0.1, ease: "easeInOut" }}
-                    />
-                  ) : (
-                    <path key={i} d={seg.d} className="jf-path-cord" />
-                  );
-                })}
-              </svg>
-
+          <div className="jf-snake" ref={snakeRef}>
+            <SnakeTrail trail={trail} cards={cards} />
+            <ol className="jf-snake__list">
               {cards.map((card, i) => {
-                const node = layout.nodes[i];
                 const isCurrent = i === currentIndex;
                 const isDone = card.pct === 100;
                 const isBursting = burstIds.has(card.module._id);
                 const isShaking = shakeId === card.module._id;
-                const leftPct = (node.x / VIEW_WIDTH) * 100;
-                const topPct = (node.y / layout.height) * 100;
+                const inProgress = card.pct > 0 && card.pct < 100;
+                const state = card.locked ? "locked" : isDone ? "done" : isCurrent ? "current" : "open";
+                const onActivate = () => (card.kind ? handleCheckClick(card) : handleModuleClick(card.module));
+                const onHover = () => { if (!card.locked) orbitSfx.hover(); };
 
-                let bubbleClass = "jf-node__bubble";
-                if (card.locked) bubbleClass += " jf-node__bubble--locked";
-                else if (isDone) bubbleClass += " jf-node__bubble--done";
-                else if (isCurrent) bubbleClass += " jf-node__bubble--current";
-                else bubbleClass += " jf-node__bubble--open";
+                const stepNumber = card.kind
+                  ? (card.kind === "pre" ? "PRE" : "POST")
+                  : String(cards[0]?.kind === "pre" ? i : i + 1).padStart(2, "0");
+                const hint = card.kind === "pre"
+                  ? (isDone ? "Starting point recorded" : "Records where you start — not graded")
+                  : card.kind === "post"
+                    ? (card.locked ? "Unlocks when every module is done" : isDone ? "Compare with your Pre-check" : "See how much you've learned")
+                    : null;
 
                 return (
-                  <motion.div
+                  <motion.li
                     key={card.module._id}
-                    className={`jf-node-wrap${isShaking ? " jf-node-wrap--shake" : ""}`}
-                    style={{ left: `${leftPct}%`, top: `${topPct}%` }}
-                    initial={{ opacity: 0, scale: 0.4, y: 16 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ delay: 0.08 * i, type: "spring", stiffness: 260, damping: 18 }}
+                    className={`jf-snake__row jf-snake__row--${i % 2 ? "r" : "l"} jf-snake__row--${state}${card.kind ? " jf-snake__row--check" : ""}${isShaking ? " jf-snake__row--shake" : ""}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.05 * i, duration: 0.3, ease: "easeOut" }}
                   >
-                    {isCurrent && (
-                      <span className="jf-node-flag">
-                        <Rocket size={11} /> START
-                      </span>
-                    )}
-
-                    <motion.button
+                    {/* The node is a second, pointer-only hit target for the
+                        same action; the card next to it is the accessible button. */}
+                    <button
                       type="button"
-                      className={bubbleClass}
-                      style={card.pct > 0 && card.pct < 100 ? { "--pct": card.pct } : undefined}
-                      onClick={() => (card.kind ? handleCheckClick(card) : handleModuleClick(card.module))}
-                      onMouseEnter={() => { if (!card.locked) orbitSfx.hover(); }}
-                      whileHover={card.locked ? {} : { scale: 1.08 }}
-                      whileTap={card.locked ? { x: [0, -4, 4, -3, 3, 0] } : { scale: 0.94 }}
-                      aria-label={`${card.title} — ${card.status}`}
-                      title={card.title}
+                      tabIndex={-1}
+                      aria-hidden="true"
+                      className="jf-snake__node"
+                      ref={(el) => { nodeRefs.current[i] = el; }}
+                      onClick={onActivate}
+                      onMouseEnter={onHover}
                     >
-                      <span className="jf-node__ring" aria-hidden="true" />
-                      <span className="jf-node__face">
-                        {card.locked ? (
-                          <LockFill size={18} />
-                        ) : isDone ? (
-                          <Check2 size={22} />
-                        ) : card.kind ? (
-                          <span className="jf-node__number">{card.kind === "pre" ? "PRE" : "POST"}</span>
-                        ) : (
-                          <span className="jf-node__number">{cards[0]?.kind === "pre" ? i : i + 1}</span>
-                        )}
-                      </span>
+                      {isDone ? <Check2 size={24} />
+                        : card.locked ? <LockFill size={15} />
+                        : card.kind ? <ClipboardCheck size={20} />
+                        : <span className="jf-snake__num ui-num">{stepNumber}</span>}
                       {isBursting && (
                         <>
                           <span className="jf-node__spark jf-node__spark--1">✦</span>
@@ -433,16 +418,51 @@ export default function ModuleJourney() {
                           <span className="jf-node__spark jf-node__spark--4">✦</span>
                         </>
                       )}
-                    </motion.button>
+                    </button>
 
-                    <div className={`jf-node-label${card.locked ? " jf-node-label--locked" : ""}${card.kind ? " jf-node-label--check" : ""}`} title={card.title}>
-                      {card.title}
-                    </div>
-                  </motion.div>
+                    <button
+                      type="button"
+                      className="ui-card jf-snake__card"
+                      onClick={onActivate}
+                      onMouseEnter={onHover}
+                      aria-label={`${card.title} — ${isCurrent ? "up next" : card.status}`}
+                    >
+                      <span className="jf-snake__badges">
+                        <span className={`ui-index${isCurrent ? " ui-index--active" : ""}`}>{stepNumber}</span>
+                        {isCurrent ? (
+                          <span className="ui-badge ui-badge--sm ui-badge--solid jf-node-flag">
+                            <Rocket size={10} /> {card.pct > 0 ? "CONTINUE" : "START"}
+                          </span>
+                        ) : (
+                          <span className={`ui-badge ui-badge--sm ${STATUS_TONE[card.status] ?? ""}`}>
+                            {card.locked && <LockFill size={9} />}
+                            {isDone && <Check2 size={11} />}
+                            {card.status}
+                          </span>
+                        )}
+                      </span>
+                      <span className={`jf-snake__title ui-clamp-2${card.kind ? " jf-node-label--check" : ""}`}>{card.title}</span>
+                      {hint && <span className="jf-snake__hint">{hint}</span>}
+                      {inProgress && (
+                        <span className="jf-snake__progress">
+                          <span className="ui-progress ui-progress--sm">
+                            <span className="ui-progress__bar" style={{ width: `${card.pct}%` }} />
+                          </span>
+                          <span className="jf-snake__pct ui-num">{card.pct}%</span>
+                        </span>
+                      )}
+                    </button>
+                  </motion.li>
                 );
               })}
-            </div>
+            </ol>
           </div>
+
+          {overallPct === 100 && (
+            <div className="jf-finish">
+              <span aria-hidden="true">🏁</span> Path complete — nice work!
+            </div>
+          )}
         </>
       )}
 

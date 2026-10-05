@@ -14,9 +14,10 @@ import OrbitFooter from "../components/OrbitDashboard/OrbitFooter";
 import "../components/OrbitDashboard/OrbitDashboard.css";
 import "../components/OrbitDashboard/TagCard.css";
 import "../components/OrbitDashboard/JourneyFlow.css";
+import { safeId } from "../utils/safeNav";
 
 export default function RegionSelect() {
-  const { categoryId } = useParams();
+  const categoryId = safeId(useParams().categoryId);
   const navigate = useNavigate();
   const [category, setCategory] = useState(null);
   const [tiles, setTiles] = useState(null); // null = still deciding; [] handled via redirect
@@ -87,19 +88,12 @@ export default function RegionSelect() {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "20px 28px 32px" }}>
-        <div className="jf-region-grid">
+      <div className="ui-page">
+        <div className="jf-region-grid" aria-hidden="true">
           {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="orbit-ml-card orbit-ml-card--skeleton"
-              style={{
-                minHeight: 108, width: 116, borderRadius: 16, animationDelay: `${i * 0.06}s`,
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 9, padding: "16px 8px",
-              }}
-            >
-              <div className="orbit-skel-line" style={{ width: 52, height: 52, borderRadius: "50%", flexShrink: 0 }} />
-              <div className="orbit-skel-line" style={{ width: "70%", height: 10 }} />
+            <div key={i} className="ui-card jf-region-card jf-region-card--skeleton">
+              <div className="ui-skeleton jf-region-card__skel-icon" />
+              <div className="ui-skeleton jf-region-card__skel-line" />
             </div>
           ))}
         </div>
@@ -108,34 +102,39 @@ export default function RegionSelect() {
   }
 
   return (
-    <div style={{ maxWidth: 1240, margin: "0 auto", padding: "20px 28px 32px", display: "flex", flexDirection: "column", gap: 18 }}>
-      <button type="button" className="rs-back-btn" onClick={() => navigate("/orbit/tags")}>
+    <div className="ui-page">
+      <button type="button" className="ui-btn ui-btn--ghost ui-btn--sm rs-back-btn" onClick={() => navigate("/orbit/tags")}>
         <ArrowLeft size={15} /> Back to Categories
       </button>
 
-      <div className="rs-heading">
-        <span className="rs-heading__eyebrow">{category?.name || "…"}</span>
-        <h1 className="rs-heading__title">Choose Your Region</h1>
-        <p className="rs-heading__desc">
-          This category offers different modules depending on region. Pick yours to see the right path.
-        </p>
-      </div>
+      <header className="ui-page-header rs-heading">
+        <div className="ui-page-header__text">
+          <span className="ui-eyebrow">{category?.name || "…"}</span>
+          <h1 className="ui-h1">Choose Your Region</h1>
+          <p className="ui-lead">
+            This category offers different modules depending on region. Pick yours to see the right path.
+          </p>
+        </div>
+      </header>
 
-      {error && <p className="text-danger" style={{ textAlign: "center" }}>{error}</p>}
+      {error && <div className="ui-callout ui-callout--danger">{error}</div>}
 
       <div className="jf-region-grid">
         {(tiles || []).map((tile) => (
           <button
             type="button"
             key={tile._id}
-            className="jf-region-card"
-            style={{ "--jf-region-color": tile.isAllTile ? "var(--orbit-brand)" : (tile.color || "#6366f1") }}
+            className="ui-card ui-card--interactive jf-region-card"
+            style={{ "--jf-region-color": tile.isAllTile ? "var(--ui-accent)" : (tile.color || "var(--ui-accent)") }}
             onClick={() => navigate(`/orbit/tags/${categoryId}/region/${tile._id}`)}
           >
-            <div className="jf-region-card__icon">
-              {tile.isAllTile ? <Globe2 size={26} color="#ffffff" /> : <RegionIcon code={tile.code} color="#ffffff" size={34} />}
-            </div>
-            <span className="jf-region-card__title">{tile.name}</span>
+            <span className="jf-region-card__icon">
+              {tile.isAllTile ? <Globe2 size={24} color="currentColor" /> : <RegionIcon code={tile.code} color="currentColor" size={34} />}
+            </span>
+            <span className="ui-card__title jf-region-card__title">{tile.name}</span>
+            {typeof tile.moduleCount === "number" && (
+              <span className="ui-badge ui-badge--sm">{tile.moduleCount} module{tile.moduleCount === 1 ? "" : "s"}</span>
+            )}
           </button>
         ))}
       </div>

@@ -2,15 +2,16 @@
 import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import Confetti from "react-confetti";
-import { ArrowClockwise, Stars } from "react-bootstrap-icons";
+import { ArrowClockwise } from "react-bootstrap-icons";
+import { useThemeTokens, CHART_SERIES } from "../ui";
 import "./SlidingPuzzleWidget.css";
 
 const GRID_SIZE = 3;
 const BLANK_ID = GRID_SIZE * GRID_SIZE - 1;
 const WIDGET_SIZE = 210; // px — compact footprint, divides evenly into 3 tiles
 
-// Rotating pastel-rainbow fill per tile number — same 7-accent family used
-// everywhere else in the redesigned dashboard (checklist, calendar).
+// Per-tile modifier class — kept for markup stability; the stylesheet renders
+// every tile in the single Orbit accent tint (numbers carry the puzzle).
 const ACCENTS = ["rose", "pink", "mint", "teal", "sky", "lavender", "lilac"];
 
 const solvedOrder = () => Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, i) => i);
@@ -43,6 +44,9 @@ export default function SlidingPuzzleWidget() {
   const [order, setOrder] = useState(() => scramble());
   const [solved, setSolved] = useState(false);
   const [moves, setMoves] = useState(0);
+  // Theme-resolved category colours for the confetti burst (canvas needs strings).
+  const tokens = useThemeTokens();
+  const confettiColors = CHART_SERIES.map((name) => tokens[name]).filter(Boolean);
 
   const handleTileClick = useCallback(
     (clickedPos) => {
@@ -69,12 +73,15 @@ export default function SlidingPuzzleWidget() {
   return (
     <div className={`orbit-puzzle ${solved ? "orbit-puzzle--solved" : ""}`}>
       <div className="orbit-puzzle__header">
-        <span className="orbit-puzzle__title"><Stars size={11} /> Daily Break Room</span>
+        <div className="orbit-card__head orbit-puzzle__heading">
+          <span className="ui-eyebrow">Unwind</span>
+          <h3 className="orbit-card__title">Daily Break Room</h3>
+        </div>
         {solved ? (
           <span className="orbit-puzzle__solved-badge">Solved! ✨</span>
         ) : (
           <button className="orbit-puzzle__reshuffle" onClick={handleReshuffle} title="Reshuffle">
-            <ArrowClockwise size={12} />
+            <ArrowClockwise size={14} />
           </button>
         )}
       </div>
@@ -104,8 +111,7 @@ export default function SlidingPuzzleWidget() {
             numberOfPieces={60}
             recycle={false}
             gravity={0.25}
-            colors={["#ffb3c7", "#ff9ecf", "#a8e6cf", "#8fe0d8", "#a9d6ff", "#c9b8ff", "#eab8ff"]}
-            style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+            colors={confettiColors.length ? confettiColors : undefined}
           />
         )}
       </div>

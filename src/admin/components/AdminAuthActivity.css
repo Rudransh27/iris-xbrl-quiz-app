@@ -1,0 +1,19 @@
+/* src/admin/components/AdminAuthActivity.css — Sign-in Activity specifics;
+   shared report layout comes from AdminLearnerReport.css (lr-*). */
+
+.aa-time { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.aa-ip { font-family: var(--ui-font-mono, monospace); font-size: var(--ui-fs-xs); white-space: nowrap; }
+.aa-more { display: flex; justify-content: center; }
+
+.aa-sessions { display: flex; flex-direction: column; gap: var(--ui-space-2); }
+.aa-sessions__line { margin: 0; font-size: var(--ui-fs-sm); color: var(--ui-text-2); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.aa-sessions__head { margin: var(--ui-space-2) 0 0; }
+.aa-sessions__list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--ui-space-2); }
+.aa-sessions__list li {
+  padding: var(--ui-space-2) var(--ui-space-3);
+  border: 1px solid var(--ui-border); border-radius: var(--ui-radius);
+  background: var(--ui-surface-2);
+}
+.aa-sessions__list .lr-strong { margin-right: 6px; }
+.aa-confirm { margin: 0 0 var(--ui-space-2); }
+.aa-confirm__actions { display: flex; gap: var(--ui-space-2); justify-content: flex-end; }

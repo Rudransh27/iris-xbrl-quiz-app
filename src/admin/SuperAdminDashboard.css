@@ -1,0 +1,25 @@
+/* Superadmin hub — platform banner.
+   Built on .ui-hero (dark violet band, white text in BOTH themes). Bootstrap
+   utilities (.text-white / .bg-white) are themed by base.css, so the banner's
+   text colours are set explicitly here. */
+.admin-hub-banner .admin-hub-banner__title,
+.admin-hub-banner h2,
+.admin-hub-banner h4 { color: #fff; }
+
+.admin-hub-banner__sub {
+  font-size: var(--ui-fs-xs);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.admin-hub-banner__orb {
+  width: 48px;
+  height: 48px;
+  background: radial-gradient(circle at 35% 35%, #c4b5ff, rgba(255, 255, 255, 0.12));
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.14);
+}
+
+.admin-hub-banner__chip {
+  font-size: var(--ui-fs-2xs);
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}

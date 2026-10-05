@@ -471,7 +471,7 @@ export default function AdminCardForm({
                   <Form.Label className="fw-bold text-success font-monospace small">RAW INJECTED TEXT HTML FILE SOURCE BUFFER</Form.Label>
                   <Form.Control
                     as="textarea" rows={12}
-                    style={{ background: "#111b21", color: "#4df0a6", fontFamily: "monospace", fontSize: "12px", lineHeight: "1.6", borderRadius: "8px" }}
+                    style={{ background: "var(--ui-surface-2)", color: "var(--ui-text)", fontFamily: "monospace", fontSize: "12px", lineHeight: "1.6", borderRadius: "8px" }}
                     placeholder="Paste the complete text source code contents of your interactive .html module document here (e.g., <!DOCTYPE html> ...)"
                     value={htmlSourceCode} onChange={(e) => setHtmlSourceCode(e.target.value)} required
                     disabled={loading || fetchingTopics}
@@ -624,7 +624,7 @@ export default function AdminCardForm({
 
         {/* Real-time Simulator Preview Sidecar Panel */}
         <Col lg={5} xl={4} xs={12} className="position-sticky" style={{ top: "24px" }}>
-          <div className="cb-simulator-device-frame border border-slate bg-dark p-2" style={{ borderRadius: "24px", minHeight: "580px", boxShadow: "0 12px 24px rgba(15,37,110,0.08)" }}>
+          <div className="cb-simulator-device-frame border border-slate bg-dark p-2" style={{ borderRadius: "24px", minHeight: "580px", boxShadow: "0 12px 24px color-mix(in srgb, var(--ui-accent) 8%, transparent)" }}>
             <div className="simulator-glass-screen bg-white p-3 d-flex flex-column justify-content-between h-100" style={{ borderRadius: "18px", minHeight: "562px", position: "relative", color: "var(--text-primary)" }}>
               <div className="sim-screen-top border-bottom pb-2 mb-3 d-flex align-items-center justify-content-between text-muted" style={{ fontSize: "11px", borderColor: "var(--border-tactile) !important" }}>
                 <span className="fw-bold font-monospace" style={{ color: "var(--bg-hud-banner)" }}><Eye className="me-1" /> LIVE PREVIEW INTERFACE</span>
@@ -644,7 +644,7 @@ export default function AdminCardForm({
                   <div className="p-3 border rounded text-center bg-light shadow-sm animate-fade-in" style={{ background: "var(--curriculum-hover)", borderColor: "var(--border-tactile)" }}>
                     <div className="mb-2" style={{ fontSize: "28px" }}>🌐</div>
                     <span className="fw-bold text-dark small d-block mb-1">Interactive Simulation Launchpad</span>
-                    <p className="text-muted font-monospace m-0" style={{ fontSize: "10px" }}>
+                    <p className="text-muted font-monospace m-0" style={{ fontSize: "11px" }}>
                       {htmlSourceCode.trim() ? `✓ Script content cached: (${htmlSourceCode.length} characters)` : "Empty file stream buffer layout..."}
                     </p>
                   </div>
@@ -674,14 +674,14 @@ export default function AdminCardForm({
                         <div style={{ fontSize: "12px", lineHeight: "1.4", fontWeight: "500" }}>{challengeQuestion}</div>
                       </div>
                     )}
-                    <div className="p-2 font-monospace text-muted rounded-3" style={{ fontSize: "11px", background: "#0f172a", color: "#38bdf8", minHeight: "100px", whiteSpace: "pre-wrap" }}>
+                    <div className="p-2 font-monospace text-muted rounded-3" style={{ fontSize: "11px", background: "var(--ui-surface-2)", color: "var(--ui-info-text)", minHeight: "100px", whiteSpace: "pre-wrap" }}>
                       {challengeCode || "// Code configuration stream buffer empty."}
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="sim-screen-bottom border-top pt-2 mt-3 text-center text-muted" style={{ fontSize: "10px", letterSpacing: "0.5px", borderColor: "var(--border-tactile) !important" }}>
+              <div className="sim-screen-bottom border-top pt-2 mt-3 text-center text-muted" style={{ fontSize: "11px", letterSpacing: "0.5px", borderColor: "var(--border-tactile) !important" }}>
                 🔒 END-USER INTERACTION INTERFACE SIMULATOR
               </div>
             </div>

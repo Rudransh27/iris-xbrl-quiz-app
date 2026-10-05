@@ -1,371 +1,161 @@
-/* src/index.css */
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   IRIS ORBIT — DESIGN SYSTEM TOKENS  (Soft Pastel Rainbow · Clean & Airy)
-   Philosophy: No heavy blues/greens. No dark corporate sterility. Instead:
-   soft violet brand, warm typography, pastel category colors, clean whites.
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* src/index.css
+ *
+ * LEGACY TOKEN LAYER. The canonical design tokens live in src/styles/tokens.css
+ * (--ui-* / --cat-*). Every older variable name the app still uses is mapped
+ * onto them here, so existing component CSS follows the new design system and
+ * the light/dark theme automatically. New code should use --ui-* directly.
+ */
 
 :root {
-  /* ── Canvas & surfaces ─────────────────────────────────────────────────── */
-  --orbit-canvas:          #ffffff;      /* Pure white canvas (light mode) */
-  --orbit-surface:         #ffffff;      /* Card / panel surface */
-  --orbit-surface-subtle:  #f7f5ff;      /* Slightly raised surface */
+  /* Surfaces */
+  --orbit-canvas:          var(--ui-bg);
+  --orbit-surface:         var(--ui-surface);
+  --orbit-surface-subtle:  var(--ui-surface-2);
 
-  /* ── Brand (soft violet — warm, not corporate blue) ───────────────────── */
-  --orbit-brand:           #7c6ef7;      /* Primary actions, active states */
-  --orbit-brand-muted:     #ede9fe;      /* Tinted background fills */
-  --orbit-brand-dark:      #5b4ed1;      /* Hover/pressed states */
-  --orbit-brand-light:     #f5f3ff;      /* Very light tint */
+  /* Brand */
+  --orbit-brand:           var(--ui-accent);
+  --orbit-brand-muted:     var(--ui-accent-soft);
+  --orbit-brand-dark:      var(--ui-accent-hover);
+  --orbit-brand-light:     var(--ui-accent-soft);
 
-  /* ── Typography ────────────────────────────────────────────────────────── */
-  --orbit-text-heading:    #1a1523;      /* Deep warm near-black */
-  --orbit-text-body:       #4a4558;      /* Warm medium gray */
-  --orbit-text-muted:      #6b6478;      /* Placeholder / muted labels — darkened from #8b8399 for ~5.6:1 contrast on white (was ~3.6:1, below WCAG's 4.5:1 minimum) */
-  --orbit-text-inverse:    #ffffff;
+  /* Text */
+  --orbit-text-heading:    var(--ui-text);
+  --orbit-text-body:       var(--ui-text-2);
+  --orbit-text-muted:      var(--ui-text-3);
+  --orbit-text-inverse:    var(--ui-on-accent);
 
-  /* ── Borders ───────────────────────────────────────────────────────────── */
-  --orbit-border:          #eae7f4;      /* Default dividers */
-  --orbit-border-strong:   #d3cee8;      /* Stronger dividers */
+  /* Borders */
+  --orbit-border:          var(--ui-border);
+  --orbit-border-strong:   var(--ui-border-2);
 
-  /* ── Pastel category palette — each feature zone gets its own color ────── */
-  /* Modules / Courses */
-  --pastel-modules:        #ede9fe;
-  --pastel-modules-text:   #6d28d9;
-  --pastel-modules-border: #c4b5fd;
+  /* Category palette (feature zones) */
+  --pastel-modules:          var(--cat-violet-soft);
+  --pastel-modules-text:     var(--cat-violet-text);
+  --pastel-modules-border:   var(--ui-accent-soft-2);
+  --pastel-progress:         var(--ui-success-soft);
+  --pastel-progress-text:    var(--ui-success-text);
+  --pastel-progress-border:  var(--ui-success);
+  --pastel-quiz:             var(--cat-rose-soft);
+  --pastel-quiz-text:        var(--cat-rose-text);
+  --pastel-quiz-border:      var(--cat-rose);
+  --pastel-reads:            var(--cat-amber-soft);
+  --pastel-reads-text:       var(--cat-amber-text);
+  --pastel-reads-border:     var(--cat-amber);
+  --pastel-ideas:            var(--ui-warning-soft);
+  --pastel-ideas-text:       var(--ui-warning-text);
+  --pastel-ideas-border:     var(--ui-warning);
+  --pastel-leaderboard:      var(--cat-green-soft);
+  --pastel-leaderboard-text: var(--cat-green-text);
+  --pastel-leaderboard-border: var(--cat-green);
+  --pastel-streak:           var(--cat-amber-soft);
+  --pastel-streak-text:      var(--cat-amber-text);
+  --pastel-streak-border:    var(--cat-amber);
+  --pastel-pink:             var(--cat-rose-soft);
+  --pastel-pink-text:        var(--cat-rose-text);
+  --pastel-pink-border:      var(--cat-rose);
 
-  /* Progress / Completion */
-  --pastel-progress:       #d1fae5;
-  --pastel-progress-text:  #065f46;
-  --pastel-progress-border:#6ee7b7;
+  /* XP pill */
+  --orbit-xp-bg:           var(--ui-accent-soft);
+  --orbit-xp-border:       var(--ui-accent-soft-2);
+  --orbit-xp-text:         var(--ui-accent-text);
 
-  /* Quizzes / Assessments */
-  --pastel-quiz:           #fce7f3;
-  --pastel-quiz-text:      #9d174d;
-  --pastel-quiz-border:    #f9a8d4;
+  /* Progress ring */
+  --orbit-ring-empty:      var(--ui-surface-3);
+  --orbit-ring-partial:    var(--ui-accent);
+  --orbit-ring-complete:   var(--ui-success);
 
-  /* Daily Reads */
-  --pastel-reads:          #fff7ed;
-  --pastel-reads-text:     #c2410c;
-  --pastel-reads-border:   #fdba74;
+  /* Module art gradients — one per category hue */
+  --grad-m1: linear-gradient(135deg, var(--cat-violet) 0%, color-mix(in srgb, var(--cat-violet) 72%, #1b1d24) 100%);
+  --grad-m2: linear-gradient(135deg, var(--cat-rose) 0%, color-mix(in srgb, var(--cat-rose) 72%, #1b1d24) 100%);
+  --grad-m3: linear-gradient(135deg, var(--cat-teal) 0%, color-mix(in srgb, var(--cat-teal) 72%, #1b1d24) 100%);
+  --grad-m4: linear-gradient(135deg, var(--cat-amber) 0%, color-mix(in srgb, var(--cat-amber) 72%, #1b1d24) 100%);
+  --grad-m5: linear-gradient(135deg, var(--cat-sky) 0%, color-mix(in srgb, var(--cat-sky) 72%, #1b1d24) 100%);
+  --grad-m6: linear-gradient(135deg, var(--cat-green) 0%, color-mix(in srgb, var(--cat-green) 72%, #1b1d24) 100%);
 
-  /* Ideas & R&D */
-  --pastel-ideas:          #fef9c3;
-  --pastel-ideas-text:     #92400e;
-  --pastel-ideas-border:   #fde047;
+  /* Shadows */
+  --orbit-shadow-sm:  var(--ui-shadow-sm);
+  --orbit-shadow-md:  var(--ui-shadow-md);
+  --orbit-shadow-lg:  var(--ui-shadow-lg);
 
-  /* Leaderboard */
-  --pastel-leaderboard:    #ecfdf5;
-  --pastel-leaderboard-text:#047857;
-  --pastel-leaderboard-border:#6ee7b7;
+  /* Radius scale */
+  --radius-xs:   var(--ui-radius-xs);
+  --radius-sm:   var(--ui-radius-sm);
+  --radius-md:   var(--ui-radius);
+  --radius-lg:   var(--ui-radius-lg);
+  --radius-xl:   var(--ui-radius-xl);
+  --radius-2xl:  var(--ui-radius-xl);
+  --radius-full: var(--ui-radius-pill);
 
-  /* Streaks */
-  --pastel-streak:         #fffbeb;
-  --pastel-streak-text:    #b45309;
-  --pastel-streak-border:  #fde68a;
+  /* Oldest aliases (App.css era) */
+  --bg-global-canvas:       var(--ui-bg);
+  --bg-tactile-cards:       var(--ui-surface);
+  --border-tactile:         var(--ui-border);
+  --text-primary:           var(--ui-text);
+  --text-secondary:         var(--ui-text-2);
+  --text-inverse:           var(--ui-on-accent);
+  --bg-hud-banner:          var(--ui-accent);
+  --border-hud-tactile:     var(--ui-accent-hover);
+  --curriculum-icon-bg:     var(--ui-accent-soft);
+  --curriculum-icon-text:   var(--ui-accent-text);
+  --curriculum-hover:       var(--ui-hover);
+  --stat-row-border:        var(--ui-border);
+  --badge-progress-bg:      var(--cat-amber-soft);
+  --badge-progress-text:    var(--cat-amber-text);
+  --badge-completed-bg:     var(--ui-success-soft);
+  --badge-completed-text:   var(--ui-success-text);
+  --bg-daily-read:          #2b2066;
+  --border-daily-tactile:   #1d1550;
 
-  /* Pink / Completion — replaces green progress indicators */
-  --pastel-pink:           #fdf2f8;
-  --pastel-pink-text:      #db2777;
-  --pastel-pink-border:    #fbcfe8;
+  /* "Glass" surfaces are now plain surfaces */
+  --orbit-glass-bg:         var(--ui-surface);
+  --orbit-glass-border:     var(--ui-border);
+  --orbit-glass-shadow:     var(--ui-shadow-sm);
+  --orbit-glass-highlight:  linear-gradient(transparent, transparent);
 
-  /* ── XP pill ───────────────────────────────────────────────────────────── */
-  --orbit-xp-bg:           #fdf4ff;
-  --orbit-xp-border:       #c084fc;
-  --orbit-xp-text:         #7e22ce;
+  /* Red accent */
+  --orbit-iris-red:         var(--ui-danger);
+  --orbit-iris-red-bg:      var(--ui-danger-soft);
+  --orbit-iris-red-border:  var(--ui-danger);
 
-  /* ── Progress ring ─────────────────────────────────────────────────────── */
-  --orbit-ring-empty:      #ede9fe;
-  --orbit-ring-partial:    #7c6ef7;
-  --orbit-ring-complete:   #db2777;
+  --orbit-streak-glow:      rgba(217, 119, 6, 0.28);
 
-  /* ── Module card gradients (pastel-leaning, not dark) ──────────────────── */
-  --grad-m1: linear-gradient(135deg, #a78bfa 0%, #7c6ef7 100%);  /* Violet */
-  --grad-m2: linear-gradient(135deg, #f9a8d4 0%, #f472b6 100%);  /* Rose */
-  --grad-m3: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);  /* Mint */
-  --grad-m4: linear-gradient(135deg, #fcd34d 0%, #fb923c 100%);  /* Amber */
-  --grad-m5: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);  /* Sky */
-  --grad-m6: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%);  /* Lavender */
-
-  /* ── Shadows (purple-tinted, soft) ────────────────────────────────────── */
-  --orbit-shadow-sm:  0 1px 3px rgba(124,110,247,0.08), 0 1px 2px rgba(0,0,0,0.04);
-  --orbit-shadow-md:  0 4px 12px rgba(124,110,247,0.12), 0 2px 4px rgba(0,0,0,0.05);
-  --orbit-shadow-lg:  0 10px 32px rgba(124,110,247,0.16), 0 4px 8px rgba(0,0,0,0.06);
-
-  /* ── Border-radius scale ───────────────────────────────────────────────── */
-  --radius-xs:   6px;
-  --radius-sm:   8px;
-  --radius-md:   12px;
-  --radius-lg:   16px;
-  --radius-xl:   20px;
-  --radius-2xl:  28px;
-  --radius-full: 9999px;
-
-  /* ── Legacy aliases (keeps old components working during migration) ─────── */
-  --bg-global-canvas:       var(--orbit-canvas);
-  --bg-tactile-cards:       var(--orbit-surface);
-  --border-tactile:         var(--orbit-border);
-  --text-primary:           var(--orbit-text-heading);
-  --text-secondary:         var(--orbit-text-body);
-  --text-inverse:           var(--orbit-text-inverse);
-  --bg-hud-banner:          var(--orbit-brand);
-  --border-hud-tactile:     var(--orbit-brand-dark);
-  --curriculum-icon-bg:     var(--orbit-brand-muted);
-  --curriculum-icon-text:   var(--orbit-brand);
-  --curriculum-hover:       var(--orbit-brand-light);
-  --stat-row-border:        var(--orbit-border);
-  --badge-progress-bg:      var(--pastel-reads);
-  --badge-progress-text:    var(--pastel-reads-text);
-  --badge-completed-bg:     var(--pastel-progress);
-  --badge-completed-text:   var(--pastel-progress-text);
-  --bg-daily-read:          #2e1065;
-  --border-daily-tactile:   #1e0a4a;
-
-  /* ── Glassmorphic surface (Daily Reads, premium cards) ─────────────────── */
-  --orbit-glass-bg:         rgba(255, 255, 255, 0.62);
-  --orbit-glass-border:     rgba(124, 110, 247, 0.18);
-  --orbit-glass-shadow:     0 4px 28px rgba(124, 110, 247, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  --orbit-glass-highlight:  linear-gradient(135deg, rgba(124,110,247,0.04) 0%, rgba(192,132,252,0.04) 100%);
-
-  /* ── IRIS Red accent (welcome notification, urgent tags) ───────────────── */
-  --orbit-iris-red:         #e11d48;
-  --orbit-iris-red-bg:      rgba(225, 29, 72, 0.06);
-  --orbit-iris-red-border:  rgba(225, 29, 72, 0.25);
-
-  /* ── Plant / streak animation ──────────────────────────────────────────── */
-  --orbit-streak-glow:      rgba(249, 115, 22, 0.28);
-
-  /* ── Dashboard v2 accent palette (Iris Orbit user dashboard — orange-led) ─
-     Scoped to new, uniquely-named tokens so the rest of the app (auth,
-     admin, existing violet brand) is untouched. Consumed only by the
-     components under src/components/OrbitDashboard/. ───────────────────── */
-  --amber-glow:        #ff9f1c;   /* Primary/dominant accent */
-  --honey-bronze:      #ffbf69;   /* Secondary accent */
+  /* Dashboard v2 names — now the single brand accent + themed surfaces */
+  --amber-glow:        var(--ui-accent);
+  --honey-bronze:      var(--cat-amber);
+  --light-sea-green:   var(--ui-success);
+  --amber-glow-dark:   var(--ui-accent-hover);
+  --amber-glow-muted:  var(--ui-accent-soft);
+  --amber-glow-hover:  var(--ui-hover);
+  /* Deliberately FIXED (not themed): legacy code pairs these as
+     "always-light surface + always-dark ink" and also uses --white as text
+     on dark heroes. Don't use them in new code. */
   --white:             #ffffff;
-  --frozen-water:      #cbf3f0;   /* Cool tint surface */
-  --light-sea-green:   #2ec4b6;   /* Success / consistency accent */
+  --frozen-water:      #eef0f5;
+  --ink-strong:        #1b1d24;
+  --ink-muted:         #545a68;
 
-  /* Derived helper tones — hover/pressed variants of the accent, so
-     components don't repeat raw rgba() literals. */
-  --amber-glow-dark:   #e08600;   /* Hover/pressed state for amber-glow */
-  --amber-glow-muted:  rgba(255, 159, 28, 0.14);  /* Translucent tint — safe over light or dark surfaces */
-  --amber-glow-hover:  rgba(255, 159, 28, 0.08);  /* Even lighter translucent hover wash */
+  /* Pastel rainbow set — fills map to category tints, "-text" to category text */
+  --orbit-rose:     var(--cat-rose-soft);
+  --orbit-pink:     var(--cat-rose-soft);
+  --orbit-mint:     var(--cat-green-soft);
+  --orbit-teal:     var(--cat-teal-soft);
+  --orbit-sky:      var(--cat-sky-soft);
+  --orbit-lavender: var(--cat-violet-soft);
+  --orbit-lilac:    var(--ui-accent-soft-2);
 
-  /* Fixed dark ink for elements that sit on a deliberately fixed light
-     surface (--white / --frozen-water) regardless of app theme — e.g. the
-     dashboard's checklist rows and idea card. Unlike --orbit-text-heading,
-     this does NOT swap in dark mode, because its paired background doesn't
-     swap either. */
-  --ink-strong: #1a1523;
-  --ink-muted:  #4a4558;
-
-  /* ── Orbit pastel-rainbow accent set (Learner Dashboard redesign) ────────
-     A second, deliberately no-orange/no-yellow accent family for the
-     IRIS Orbit learner dashboard (src/components/OrbitDashboard/) and the
-     OrbitShell sidebar/topbar. Kept separate from --amber-glow/--honey-bronze
-     and the --pastel-streak/--pastel-reads/--pastel-ideas category tokens
-     above (those stay exactly as-is for Quiz, TopicTrail, CodeCard, Ideas,
-     Daily Reads, and everywhere else that already renders correctly) — only
-     components that explicitly opt into these new var names are affected.
-     Raw pastels (fills/gradients) are identical in both themes; the "-text"
-     variants are darkened for legibility on light surfaces here, and swap
-     to the raw pastel in dark mode below. */
-  --orbit-rose:     #ffb3c7;
-  --orbit-pink:     #ff9ecf;
-  --orbit-mint:     #a8e6cf;
-  --orbit-teal:     #8fe0d8;
-  --orbit-sky:      #a9d6ff;
-  --orbit-lavender: #c9b8ff;
-  --orbit-lilac:    #eab8ff;
-
-  --orbit-rose-text:     #c8557c;
-  --orbit-pink-text:     #c8508f;
-  --orbit-mint-text:     #2f9e79;
-  --orbit-teal-text:     #2f9a90;
-  --orbit-sky-text:      #3f7fc6;
-  --orbit-lavender-text: #6f5fc0;
-  --orbit-lilac-text:    #a24fc0;
+  --orbit-rose-text:     var(--cat-rose-text);
+  --orbit-pink-text:     var(--cat-rose-text);
+  --orbit-mint-text:     var(--cat-green-text);
+  --orbit-teal-text:     var(--cat-teal-text);
+  --orbit-sky-text:      var(--cat-sky-text);
+  --orbit-lavender-text: var(--cat-violet-text);
+  --orbit-lilac-text:    var(--cat-violet-text);
 }
 
-/* ── Eye-soothing slate / deep-indigo dark mode ────────────────────────────
-   No harsh black. Uses a rich slate base (#0b0a14) with purple-tinted surfaces
-   and preserved pastel luminosity across all category tokens. */
 [data-theme="dark"] {
-  /* ── Slate canvas (NOT black) ────────────────────────────────────────────── */
-  --orbit-canvas:          #0b0a14;   /* Deep space slate */
-  --orbit-surface:         #131124;   /* Card surfaces */
-  --orbit-surface-subtle:  #1a1830;   /* Elevated panels */
-
-  /* ── Brand (slightly brighter for dark contrast) ──────────────────────── */
-  --orbit-brand:           #9d91fa;
-  --orbit-brand-muted:     rgba(157,145,250,0.18);
-  --orbit-brand-dark:      #7b6ef0;
-  --orbit-brand-light:     rgba(157,145,250,0.10);
-
-  /* ── Typography ───────────────────────────────────────────────────────── */
-  --orbit-text-heading:    #f0eeff;
-  --orbit-text-body:       #b0a8d0;
-  --orbit-text-muted:      #8b83ad;      /* Lightened from #6a6390 for ~5.3:1 contrast on the dark surface (was ~3.4:1) */
-  --orbit-text-inverse:    #0b0a14;
-
-  /* ── Purple-tinted borders ────────────────────────────────────────────── */
-  --orbit-border:          #312e5c;   /* Soft purple neon border */
-  --orbit-border-strong:   #4a4580;
-
-  /* ── XP pill ──────────────────────────────────────────────────────────── */
-  --orbit-xp-bg:           rgba(192,132,252,0.15);
-  --orbit-xp-border:       rgba(192,132,252,0.45);
-  --orbit-xp-text:         #d8b4fe;
-
-  /* ── Shadows (deeper for slate) ───────────────────────────────────────── */
-  --orbit-shadow-sm:  0 1px 4px rgba(0,0,0,0.55), 0 0 0 1px rgba(49,46,92,0.30);
-  --orbit-shadow-md:  0 4px 16px rgba(0,0,0,0.60), 0 0 0 1px rgba(49,46,92,0.40);
-  --orbit-shadow-lg:  0 12px 40px rgba(0,0,0,0.70), 0 0 0 1px rgba(49,46,92,0.50);
-
-  /* ── Pastel dark variants — hue preserved, luminosity shifted ─────────── */
-  --pastel-modules:         rgba(109,40,217,0.22);
-  --pastel-modules-text:    #c4b5fd;
-  --pastel-modules-border:  rgba(196,181,253,0.35);
-
-  --pastel-progress:        rgba(6,95,70,0.22);
-  --pastel-progress-text:   #6ee7b7;
-  --pastel-progress-border: rgba(110,231,183,0.35);
-
-  --pastel-quiz:            rgba(157,23,77,0.20);
-  --pastel-quiz-text:       #f9a8d4;
-  --pastel-quiz-border:     rgba(249,168,212,0.35);
-
-  --pastel-reads:           rgba(194,65,12,0.20);
-  --pastel-reads-text:      #fdba74;
-  --pastel-reads-border:    rgba(253,186,116,0.35);
-
-  --pastel-ideas:           rgba(146,64,14,0.20);
-  --pastel-ideas-text:      #fde047;
-  --pastel-ideas-border:    rgba(253,224,71,0.35);
-
-  --pastel-leaderboard:     rgba(4,120,87,0.20);
-  --pastel-leaderboard-text:#6ee7b7;
-  --pastel-leaderboard-border:rgba(110,231,183,0.35);
-
-  --pastel-streak:          rgba(180,83,9,0.16);
-  --pastel-streak-text:     #fcd34d;
-  --pastel-streak-border:   rgba(252,211,77,0.32);
-
-  /* Pink — dark variant */
-  --pastel-pink:            rgba(219,39,119,0.18);
-  --pastel-pink-text:       #f9a8d4;
-  --pastel-pink-border:     rgba(249,168,212,0.30);
-
-  /* ── Glassmorphic surface — dark overrides ────────────────────────────── */
-  --orbit-glass-bg:         rgba(19, 17, 36, 0.80);
-  --orbit-glass-border:     rgba(124, 110, 247, 0.28);
-  --orbit-glass-shadow:     0 4px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  --orbit-glass-highlight:  linear-gradient(135deg, rgba(157,145,250,0.06) 0%, rgba(220,38,127,0.04) 100%);
-
-  /* ── IRIS Red — dark variant ───────────────────────────────────────────── */
-  --orbit-iris-red:         #f43f5e;
-  --orbit-iris-red-bg:      rgba(244, 63, 94, 0.10);
-  --orbit-iris-red-border:  rgba(244, 63, 94, 0.30);
-
-  /* ── Legacy aliases (backward compat) ────────────────────────────────── */
-  --bg-global-canvas:       var(--orbit-canvas);
-  --bg-tactile-cards:       var(--orbit-surface);
-  --border-tactile:         var(--orbit-border);
-  --text-primary:           var(--orbit-text-heading);
-  --text-secondary:         var(--orbit-text-body);
-  --text-inverse:           var(--orbit-text-inverse);
-  --bg-hud-banner:          var(--orbit-brand);
-  --border-hud-tactile:     var(--orbit-brand-dark);
-  --curriculum-icon-bg:     var(--orbit-brand-muted);
-  --curriculum-icon-text:   var(--orbit-brand);
-  --curriculum-hover:       var(--orbit-brand-light);
-  --stat-row-border:        var(--orbit-border);
-  --badge-progress-bg:      var(--pastel-reads);
-  --badge-progress-text:    var(--pastel-reads-text);
-  --badge-completed-bg:     var(--pastel-progress);
-  --badge-completed-text:   var(--pastel-progress-text);
-
-  /* ── Orbit pastel-rainbow "-text" variants — dark mode ──────────────────
-     Raw pastels (--orbit-rose, --orbit-pink, etc.) stay identical to the
-     light block above; only the legible-on-light darkened text tints flip
-     to the raw pastel itself, since dark surfaces don't need the darkening. */
-  --orbit-rose-text:     var(--orbit-rose);
-  --orbit-pink-text:     var(--orbit-pink);
-  --orbit-mint-text:     var(--orbit-mint);
-  --orbit-teal-text:     var(--orbit-teal);
-  --orbit-sky-text:      var(--orbit-sky);
-  --orbit-lavender-text: var(--orbit-lavender);
-  --orbit-lilac-text:    var(--orbit-lilac);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   GLOBAL NEBULA CANVAS — warm peach · cream · lavender ambient backdrop
-   Three large soft radial blobs replace the old orbital rings. The blobs
-   are oversized (900–700px) so they read as a continuous atmospheric wash
-   rather than discrete shapes. background-attachment: fixed pins them to
-   the viewport, creating a parallax depth as content scrolls over them.
-   ═══════════════════════════════════════════════════════════════════════════ */
-body {
-  background-color: var(--orbit-canvas);
-  background-image:
-    /* Blob 1 — warm peach, anchored top-right */
-    radial-gradient(ellipse 900px 700px at 92% -5%,
-      rgba(253, 186, 116, 0.38) 0%,
-      rgba(255, 237, 213, 0.22) 38%,
-      transparent 68%),
-    /* Blob 2 — soft lavender, anchored bottom-left */
-    radial-gradient(ellipse 780px 620px at -8% 102%,
-      rgba(196, 181, 253, 0.36) 0%,
-      rgba(221, 214, 254, 0.20) 38%,
-      transparent 68%),
-    /* Blob 3 — creamy center glow, drifts slowly */
-    radial-gradient(ellipse 560px 420px at 55% 48%,
-      rgba(255, 247, 237, 0.28) 0%,
-      transparent 62%),
-    /* Fine coordinate grid — very subtle */
-    linear-gradient(rgba(167,139,250,0.020) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(167,139,250,0.020) 1px, transparent 1px);
-  background-size:
-    200% 200%,   /* blob 1 — oversized for drift */
-    200% 200%,   /* blob 2 */
-    160% 160%,   /* blob 3 */
-    40px 40px,   /* h-grid */
-    40px 40px;   /* v-grid */
-  background-position:
-    100% 0%,     /* blob 1 start */
-    0%   100%,   /* blob 2 start */
-    55%  48%,    /* blob 3 (static) */
-    0 0, 0 0;    /* grid (static) */
-  background-attachment: fixed;
-  animation: global-canvas-shimmer 28s ease-in-out infinite;
-  color: var(--orbit-text-body);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  transition: background-color 0.25s ease, color 0.25s ease;
-  margin: 0;
-  padding: 0;
-}
-
-/* ── Dark-mode nebula canvas — deep rose + indigo blobs on slate ─────────── */
-[data-theme="dark"] body {
-  background-image:
-    /* Blob 1 — deep rose/coral, top-right */
-    radial-gradient(ellipse 900px 700px at 92% -5%,
-      rgba(190, 18, 60, 0.16) 0%,
-      rgba(153, 27, 27, 0.09) 38%,
-      transparent 68%),
-    /* Blob 2 — deep violet, bottom-left */
-    radial-gradient(ellipse 780px 620px at -8% 102%,
-      rgba(109, 40, 217, 0.20) 0%,
-      rgba(91, 33, 182, 0.10) 38%,
-      transparent 68%),
-    /* Blob 3 — purple center */
-    radial-gradient(ellipse 560px 420px at 55% 48%,
-      rgba(157, 145, 250, 0.10) 0%,
-      transparent 62%),
-    linear-gradient(rgba(157,145,250,0.016) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(157,145,250,0.016) 1px, transparent 1px);
-  background-size: 200% 200%, 200% 200%, 160% 160%, 40px 40px, 40px 40px;
-  background-position: 100% 0%, 0% 100%, 55% 48%, 0 0, 0 0;
+  --bg-daily-read:          #231e3d;
+  --border-daily-tactile:   #33295e;
+  --orbit-streak-glow:      rgba(251, 191, 36, 0.25);
 }
 
 /* ── Nebula drift — blobs 1 & 2 slowly shift for an "alive" feel ──────────── */

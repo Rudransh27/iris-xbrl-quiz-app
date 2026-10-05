@@ -3,7 +3,6 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "react-bootstrap-icons";
 import ModuleLabCard from "./ModuleLabCard";
-import RingedPlanetIcon from "./RingedPlanetIcon";
 
 const estimateDuration = (total) => `~${Math.max(5, Math.ceil(total * 1.5))} min`;
 
@@ -43,20 +42,20 @@ export default function PopularModulesRow({ modules, getModuleProgress, onOpenMo
   if (cards.length === 0) return null;
 
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, letterSpacing: "-0.2px", color: "var(--orbit-text-heading)", display: "flex", alignItems: "center", gap: 8 }}>
-          <RingedPlanetIcon size={18} color="var(--orbit-lavender-text)" /> Featured Modules
-        </h2>
-        <Link
-          to="/orbit/modules"
-          style={{ fontSize: 12.5, fontWeight: 700, color: "var(--orbit-lavender-text)", display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" }}
-        >
-          View all in Learn <ArrowRight size={11} />
-        </Link>
+    <div className="mlc-row">
+      <div className="orbit-section-head">
+        <div className="orbit-section-head__text">
+          <span className="ui-eyebrow">Learn</span>
+          <h2 className="orbit-section-head__title">Featured Modules</h2>
+        </div>
+        <div className="orbit-section-head__actions">
+          <Link to="/orbit/modules" className="ui-btn ui-btn--link ui-btn--sm">
+            View all in Learn <ArrowRight size={12} />
+          </Link>
+        </div>
       </div>
 
-      <div className="orbit-ml-grid">
+      <div className="mlc-grid">
         {cards.map((card, i) => (
           <ModuleLabCard key={card.id} card={card} index={i} onClick={() => onOpenModule(card.module)} />
         ))}

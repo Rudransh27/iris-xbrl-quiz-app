@@ -1,0 +1,186 @@
+/* src/styles/tokens.css
+ *
+ * IRIS ORBIT — DESIGN TOKENS (single source of truth)
+ *
+ * Every color, radius, shadow and type size used anywhere in the app should
+ * come from a token in this file. Each token has a light value (:root) and a
+ * dark value ([data-theme="dark"]), so a component written only with tokens
+ * gets a working dark mode for free.
+ *
+ * Structure follows a neutral-surface system: three surface levels, four text
+ * levels, two border strengths, ONE brand accent (Orbit violet) and a small
+ * set of semantic + category colors. Read src/styles/README.md before
+ * styling a component.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* ── Surfaces ───────────────────────────────────────────────────────── */
+  --ui-bg:            #f7f8fa;   /* page canvas */
+  --ui-surface:       #ffffff;   /* cards, panels, menus */
+  --ui-surface-2:     #f2f3f6;   /* subtle fill: inset areas, table header, input bg */
+  --ui-surface-3:     #e8eaef;   /* stronger fill: skeletons, tracks */
+  --ui-hover:         #f0f1f5;   /* row / item hover */
+  --ui-overlay:       rgba(15, 17, 23, 0.48);  /* modal scrim */
+
+  /* ── Text ───────────────────────────────────────────────────────────── */
+  --ui-text:          #1b1d24;   /* headings + primary text */
+  --ui-text-2:        #545a68;   /* body / secondary */
+  --ui-text-3:        #6b7180;   /* muted labels (≥4.5:1 on surface) */
+  --ui-text-4:        #9aa0ab;   /* placeholders, disabled */
+
+  /* ── Borders ────────────────────────────────────────────────────────── */
+  --ui-border:        #e6e8ee;
+  --ui-border-2:      #d5d8e0;
+
+  /* ── Brand accent (Orbit violet) ───────────────────────────────────── */
+  --ui-accent:        #6d4aff;   /* fills: primary buttons, active states */
+  --ui-accent-hover:  #5b37f0;
+  --ui-accent-soft:   #f0ecff;   /* tinted backgrounds */
+  --ui-accent-soft-2: #e2daff;   /* tinted borders / stronger tint */
+  --ui-accent-text:   #5530e8;   /* links, accent text on surfaces */
+  --ui-on-accent:     #ffffff;   /* text on --ui-accent */
+
+  /* ── Semantic ───────────────────────────────────────────────────────── */
+  --ui-success:       #1e8e3e;
+  --ui-success-soft:  #e6f4ea;
+  --ui-success-text:  #137333;
+  --ui-danger:        #d93025;
+  --ui-danger-soft:   #fce8e6;
+  --ui-danger-text:   #b3261e;
+  --ui-warning:       #f9ab00;
+  --ui-warning-soft:  #fef7e0;
+  --ui-warning-text:  #8a5300;
+  --ui-info:          #1a73e8;
+  --ui-info-soft:     #e8f0fe;
+  --ui-info-text:     #1558b0;
+
+  /* ── Category accents (tags, module art, charts) ───────────────────────
+     Use for variety between items — never for meaning (that's semantic). */
+  --cat-violet: #6d4aff;  --cat-violet-soft: #f0ecff;  --cat-violet-text: #5530e8;
+  --cat-teal:   #0d9488;  --cat-teal-soft:   #dcf3f0;  --cat-teal-text:   #0b766c;
+  --cat-amber:  #d97706;  --cat-amber-soft:  #fdf0d8;  --cat-amber-text:  #a75a03;
+  --cat-rose:   #e11d6a;  --cat-rose-soft:   #fde7ef;  --cat-rose-text:   #b8124f;
+  --cat-sky:    #0284c7;  --cat-sky-soft:    #e0f0fb;  --cat-sky-text:    #046aa0;
+  --cat-green:  #16a34a;  --cat-green-soft:  #e3f5e9;  --cat-green-text:  #127a39;
+
+  /* ── Radius ─────────────────────────────────────────────────────────── */
+  --ui-radius-xs:   6px;    /* chips inside dense UI */
+  --ui-radius-sm:   8px;    /* inputs, small buttons */
+  --ui-radius:      10px;   /* buttons, list items, inner cards */
+  --ui-radius-lg:   14px;   /* cards */
+  --ui-radius-xl:   18px;   /* page sections, hero panels, modals */
+  --ui-radius-pill: 999px;
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --ui-shadow-sm: 0 1px 2px rgba(23, 26, 38, 0.06), 0 1px 3px rgba(23, 26, 38, 0.05);
+  --ui-shadow:    0 1px 3px rgba(23, 26, 38, 0.08), 0 4px 12px rgba(23, 26, 38, 0.06);
+  --ui-shadow-md: 0 4px 12px rgba(23, 26, 38, 0.10), 0 2px 4px rgba(23, 26, 38, 0.06);
+  --ui-shadow-lg: 0 12px 32px rgba(23, 26, 38, 0.14), 0 4px 8px rgba(23, 26, 38, 0.08);
+  --ui-ring:      0 0 0 3px rgba(109, 74, 255, 0.28);   /* focus ring */
+
+  /* ── Typography ─────────────────────────────────────────────────────── */
+  --ui-font-sans:    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ui-font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --ui-font-mono:    'Fira Code', 'JetBrains Mono', ui-monospace, Consolas, monospace;
+
+  --ui-fs-2xs: 11px;   /* eyebrows, micro labels (uppercase only) */
+  --ui-fs-xs:  12px;   /* captions, badges */
+  --ui-fs-sm:  12.5px; /* secondary text, table cells */
+  --ui-fs-base:13.5px; /* body, buttons, inputs */
+  --ui-fs-md:  15px;   /* lead text, card titles */
+  --ui-fs-lg:  16px;   /* section titles (small) */
+  --ui-fs-xl:  19px;   /* section titles */
+  --ui-fs-2xl: 24px;   /* page titles */
+  --ui-fs-3xl: 30px;   /* hero titles */
+  --ui-fs-4xl: 40px;   /* landing display */
+
+  --ui-fw-regular: 400;
+  --ui-fw-medium:  500;
+  --ui-fw-semibold:600;
+  --ui-fw-bold:    700;
+  --ui-fw-heavy:   800;
+
+  --ui-lh-tight: 1.15;
+  --ui-lh-snug:  1.35;
+  --ui-lh-body:  1.55;
+  --ui-tracking-tight: -0.02em;
+  --ui-tracking-wide:  0.08em;
+
+  /* ── Spacing (4px grid) ─────────────────────────────────────────────── */
+  --ui-space-1: 4px;
+  --ui-space-2: 8px;
+  --ui-space-3: 12px;
+  --ui-space-4: 16px;
+  --ui-space-5: 20px;
+  --ui-space-6: 24px;
+  --ui-space-8: 32px;
+  --ui-space-10: 40px;
+  --ui-space-12: 48px;
+  --ui-space-16: 64px;
+
+  /* ── Layout ─────────────────────────────────────────────────────────── */
+  --ui-container:        1240px;   /* default page width */
+  --ui-container-narrow: 760px;    /* reading pages, forms */
+  --ui-container-wide:   1400px;   /* admin tables, dashboards */
+  --ui-topbar-h:         56px;
+  --ui-sidebar-w:        82px;
+  --ui-page-pad:         clamp(14px, 2.4vw, 28px);
+
+  /* ── Motion ─────────────────────────────────────────────────────────── */
+  --ui-ease:     cubic-bezier(0.2, 0, 0, 1);
+  --ui-duration: 160ms;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --ui-bg:            #0f1117;
+  --ui-surface:       #181a22;
+  --ui-surface-2:     #20232d;
+  --ui-surface-3:     #2a2d39;
+  --ui-hover:         #232631;
+  --ui-overlay:       rgba(0, 0, 0, 0.62);
+
+  --ui-text:          #eceef3;
+  --ui-text-2:        #b9bec9;
+  --ui-text-3:        #9298a6;
+  --ui-text-4:        #6c7281;
+
+  --ui-border:        #2a2d38;
+  --ui-border-2:      #3a3e4b;
+
+  --ui-accent:        #7c5cff;
+  --ui-accent-hover:  #8f74ff;
+  --ui-accent-soft:   #231e3d;
+  --ui-accent-soft-2: #33295e;
+  --ui-accent-text:   #b6a5ff;
+  --ui-on-accent:     #ffffff;
+
+  --ui-success:       #5bb974;
+  --ui-success-soft:  #16301f;
+  --ui-success-text:  #81c995;
+  --ui-danger:        #f28b82;
+  --ui-danger-soft:   #3b1d1b;
+  --ui-danger-text:   #f6aea9;
+  --ui-warning:       #fdd663;
+  --ui-warning-soft:  #3a2e12;
+  --ui-warning-text:  #fdd663;
+  --ui-info:          #8ab4f8;
+  --ui-info-soft:     #172a45;
+  --ui-info-text:     #a8c7fa;
+
+  --cat-violet: #8f74ff;  --cat-violet-soft: #231e3d;  --cat-violet-text: #b6a5ff;
+  --cat-teal:   #2dd4bf;  --cat-teal-soft:   #12302c;  --cat-teal-text:   #5eead4;
+  --cat-amber:  #fbbf24;  --cat-amber-soft:  #352a12;  --cat-amber-text:  #fcd34d;
+  --cat-rose:   #fb7185;  --cat-rose-soft:   #3a1a26;  --cat-rose-text:   #fda4b4;
+  --cat-sky:    #38bdf8;  --cat-sky-soft:    #102a3b;  --cat-sky-text:    #7dd3fc;
+  --cat-green:  #4ade80;  --cat-green-soft:  #143021;  --cat-green-text:  #86efac;
+
+  --ui-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40);
+  --ui-shadow:    0 1px 3px rgba(0, 0, 0, 0.50), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --ui-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.50), 0 2px 4px rgba(0, 0, 0, 0.40);
+  --ui-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.60), 0 4px 8px rgba(0, 0, 0, 0.45);
+  --ui-ring:      0 0 0 3px rgba(143, 116, 255, 0.40);
+}

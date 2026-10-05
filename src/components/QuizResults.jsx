@@ -3,16 +3,15 @@ import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Label } from 'recharts';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
+import { useThemeTokens } from './ui';
 import './QuizResults.css';
-
-// 🎯 Vibrant Gamified Contrast Palette Mappings
-const CHART_COLORS = {
-  correct: '#58cc02',   /* Bright Active Green */
-  incorrect: '#ff4b4b', /* Signature Coral Crimson */
-};
 
 const QuizResults = ({ score, totalQuestions, onReturn, xp = 0, sandboxScore = null, sandboxMaxScore = null }) => {
   const { width, height } = useWindowSize();
+  // Chart / confetti colours resolved from the theme tokens (recharts and
+  // react-confetti take colour strings, not CSS variables).
+  const tk = useThemeTokens();
+  const CHART_COLORS = { correct: tk['ui-success'], incorrect: tk['ui-danger'] };
 
   const correctAnswers = score;
   const incorrectAnswers = totalQuestions - score;
@@ -29,6 +28,11 @@ const QuizResults = ({ score, totalQuestions, onReturn, xp = 0, sandboxScore = n
   const showConfetti = (score > 0 && score === totalQuestions && totalQuestions > 0) ||
                        (hasSandboxData && sandboxScore > 0 && sandboxScore === sandboxMaxScore);
 
+  // Presentation only: tone of the summary callout (perfect / partial / none correct).
+  const hasGradedData = totalQuestions > 0 || hasSandboxData;
+  const pointsEarned = totalQuestions > 0 ? score : (hasSandboxData ? sandboxScore : 0);
+  const summaryTone = !hasGradedData ? 'accent' : showConfetti ? 'success' : pointsEarned > 0 ? 'warning' : 'danger';
+
   return (
     <div className="quiz-results-viewport-wrapper">
 
@@ -39,18 +43,18 @@ const QuizResults = ({ score, totalQuestions, onReturn, xp = 0, sandboxScore = n
           recycle={false}
           numberOfPieces={250}
           gravity={0.12}
-          colors={['#ffbe0b', '#3a86ff', '#58cc02', '#ff006e']}
+          colors={[tk['cat-amber'], tk['cat-sky'], tk['cat-green'], tk['cat-rose'], tk['ui-accent']]}
         />
       )}
 
-      <div className="quiz-results-card-housing">
+      <div className="quiz-results-card-housing ui-card">
 
         {/* ================= STAGE STATUS HEADER ================= */}
         <h2 className="quiz-results-main-title">
           {showConfetti ? '🎉 PERFECT SCORE! 🎉' : 'STAGE COMPLETE!'}
         </h2>
 
-        <p className="quiz-results-subtext-summary">
+        <p className={`quiz-results-subtext-summary ui-callout ui-callout--${summaryTone}`}>
           {totalQuestions > 0 ? (
             <>You successfully cleared <span className="score-highlight-node">{score}</span> out of{' '}
             <span className="total-highlight-node">{totalQuestions}</span> challenge units correctly.</>
@@ -62,10 +66,38 @@ const QuizResults = ({ score, totalQuestions, onReturn, xp = 0, sandboxScore = n
           )}
         </p>
 
-        {/* ================= XP TACTILE BADGE ================= */}
-        {xp > 0 && (
-          <div className="xp-gain-badge-capsule">
-            <span className="xp-gain-text">+{xp} Lightyears EARNED</span>
+        {/* ================= STAT STRIP (score · accuracy · XP) ================= */}
+        {(hasGradedData || xp > 0) && (
+          <div className="quiz-results-stat-strip ui-stat-strip">
+            {totalQuestions > 0 ? (
+              <>
+                <div className="ui-stat">
+                  <span className="ui-stat__value">{score}/{totalQuestions}</span>
+                  <span className="ui-stat__label">Correct</span>
+                </div>
+                <div className="ui-stat">
+                  <span className="ui-stat__value">{percentageCorrect.toFixed(0)}%</span>
+                  <span className="ui-stat__label">Accuracy</span>
+                </div>
+              </>
+            ) : hasSandboxData ? (
+              <>
+                <div className="ui-stat">
+                  <span className="ui-stat__value">{sandboxScore}/{sandboxMaxScore}</span>
+                  <span className="ui-stat__label">Score</span>
+                </div>
+                <div className="ui-stat">
+                  <span className="ui-stat__value">{sandboxPercentage}%</span>
+                  <span className="ui-stat__label">MCQ Accuracy</span>
+                </div>
+              </>
+            ) : null}
+            {xp > 0 && (
+              <div className="ui-stat xp-gain-badge-capsule">
+                <span className="ui-stat__value xp-gain-text">+{xp}</span>
+                <span className="ui-stat__label">Lightyears earned</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -101,15 +133,13 @@ const QuizResults = ({ score, totalQuestions, onReturn, xp = 0, sandboxScore = n
                 <Tooltip
                   formatter={(value, name) => [`${value} ${name} blocks`, name]}
                   contentStyle={{
-                    backgroundColor: '#182730',
-                    border: 'none',
+                    backgroundColor: tk['ui-surface'],
+                    border: `1px solid ${tk['ui-border']}`,
                     borderRadius: '12px',
-                    color: '#fff',
+                    color: tk['ui-text'],
                     padding: '8px 12px',
                     fontSize: '13px',
-                    fontWeight: '700',
-                    fontFamily: '"Nunito", system-ui, sans-serif',
-                    boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+                    fontWeight: '600',
                   }}
                 />
                 <Legend
@@ -129,20 +159,14 @@ const QuizResults = ({ score, totalQuestions, onReturn, xp = 0, sandboxScore = n
           </div>
         ) : hasSandboxData ? (
           <div className="quiz-results-sandbox-score-block">
-            <div className="sandbox-score-ring-display">
-              <span className="sandbox-score-numerator">{sandboxScore}</span>
-              <span className="sandbox-score-separator">/</span>
-              <span className="sandbox-score-denominator">{sandboxMaxScore}</span>
-            </div>
-            <p className="sandbox-accuracy-label">{sandboxPercentage}% MCQ Accuracy</p>
             <p className="sandbox-text-hint">Written responses saved for instructor review.</p>
           </div>
         ) : (
-          <p className="quiz-results-empty-notice">No graded records mapped in this segment block.</p>
+          <p className="quiz-results-empty-notice ui-small">No graded records mapped in this segment block.</p>
         )}
 
         {/* ================= LOWER CHUNKY CONTROLS COCKPIT BUTTON ================= */}
-        <button type="button" className="quiz-results-return-trigger-btn" onClick={onReturn}>
+        <button type="button" className="quiz-results-return-trigger-btn ui-btn ui-btn--primary ui-btn--lg ui-btn--block" onClick={onReturn}>
           Continue
         </button>
       </div>

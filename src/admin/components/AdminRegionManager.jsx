@@ -20,7 +20,7 @@ import AuthContext from "../../context/AuthContext";
 import AdminRegionModuleReorderModal from "./AdminRegionModuleReorderModal";
 import "./AdminRegionManager.css";
 
-const DEFAULT_COLOR = "#6366f1";
+const DEFAULT_COLOR = "#6366f1"; // data value: stored per region + fed to <input type="color">, so it must stay a literal hex
 
 // Region CRUD is Superadmin-only (a strategic, platform-wide construct like
 // Department) — a Department Admin can still see every region and use this

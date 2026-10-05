@@ -1,35 +1,66 @@
 /* src/components/homepage/IrisOrbitHome.css
-   Self-contained dark cinematic marketing homepage. All tokens are scoped
-   under .ioh-root (not :root) so they never leak into / collide with the
-   app's --orbit-* light/dark theme system used everywhere else. */
+   Marketing landing page. Local variables are scoped under .ioh-root and are
+   all re-pointed at the shared --ui-* / --cat-* tokens (src/styles/tokens.css),
+   so the page follows the app's light/dark theme. Layout = large rounded
+   token-styled blocks (hero, why, platform, outcomes, band, features, closing). */
 
 .ioh-root {
-  --bg:#161826;
-  --surface:#232532;
-  --neutral-900:#1c1e2b; --neutral-800:#2b2d3d; --neutral-700:#3a3d51;
-  --neutral-500:#71748c; --neutral-400:#9497ad; --neutral-300:#b9bccb; --neutral-200:#d5d7e2;
-  --text:#e9e9ed;
-  --accent:#9184d9;
-  --accent-200:#d5cfff; --accent-300:#bdb4f2; --accent-400:#a598e6; --accent-600:#7a6cc4; --accent-700:#5f549b; --accent-800:#443c70;
-  --section:#241f4d;
-  --radius-md:10px; --radius-lg:16px;
-  --teal:#8fe0d8; --pink:#f0a2c0; --sky:#a9d6ff;
-  /* Broader "rainbow" data-coding accents — used sparingly (icon tiles),
-     same rule as the others: lines/glows/marks, never flooded backgrounds. */
-  --amber:#f0c869; --violet:#b48cf0; --coral:#f0876a;
+  --bg: var(--ui-bg);
+  --surface: var(--ui-surface);
+  --neutral-900: var(--ui-surface-2);
+  --neutral-800: var(--ui-border);
+  --neutral-700: var(--ui-border-2);
+  --neutral-500: var(--ui-text-4);
+  --neutral-400: var(--ui-text-3);
+  --neutral-300: var(--ui-text-2);
+  --neutral-200: var(--ui-text-2);
+  --text: var(--ui-text);
+  --accent: var(--ui-accent);
+  --accent-200: var(--ui-accent-text);
+  --accent-300: var(--ui-accent-text);
+  --accent-400: var(--ui-accent);
+  --accent-600: var(--ui-accent);
+  --accent-700: var(--ui-accent-hover);
+  --accent-800: var(--ui-accent-soft-2);
+  --section: var(--ui-accent-soft);
+  --radius-md: var(--ui-radius);
+  --radius-lg: var(--ui-radius-lg);
+  --teal: var(--cat-teal);
+  --pink: var(--cat-rose);
+  --sky: var(--cat-sky);
+  --amber: var(--cat-amber);
+  --violet: var(--cat-violet);
+  --coral: var(--cat-green);
+  /* Fixed tones for the decorative planet / dark band (same in both themes) */
+  --ioh-white: var(--ui-on-accent);
+  --ioh-lilac: color-mix(in srgb, var(--ui-accent) 40%, var(--ui-on-accent));
+  --ioh-deep: color-mix(in srgb, var(--ui-accent-hover) 22%, black);
+  --ioh-deep-2: color-mix(in srgb, var(--ui-accent-hover) 32%, black);
+  --ioh-glow: color-mix(in srgb, var(--ui-accent) 40%, transparent);
 
   background: var(--bg);
   color: var(--text);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--ui-font-sans);
   overflow-x: clip;
   position: relative;
 }
 
 .ioh-root * { box-sizing: border-box; }
 
+/* Session-hydration screen (HomePage.jsx) — shown before .ioh-root mounts. */
+.ioh-loading {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--ui-space-4);
+  background: var(--ui-bg);
+}
+.ioh-loading__text { animation: orbit-pulse-text 1.5s ease-in-out infinite; }
+
 .ioh-root h1, .ioh-root h2, .ioh-root h3 {
-  font-weight: 600;
-  letter-spacing: -0.025em;
+  font-family: var(--ui-font-display);
+  font-weight: var(--ui-fw-bold);
+  letter-spacing: var(--ui-tracking-tight);
+  line-height: var(--ui-lh-tight);
   margin: 0;
   color: var(--text);
 }
@@ -42,15 +73,25 @@
   padding: 0 40px;
 }
 
+/* Sections are large rounded token blocks inset from the viewport edge. */
 .ioh-section {
-  padding: 96px 0;
+  padding: 0;
+  margin: var(--ui-space-6) var(--ui-page-pad) 0;
   position: relative;
 }
+.ioh-root .ioh-section > .ioh-container {
+  max-width: 1200px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-xl);
+  padding: clamp(24px, 4vw, 56px);
+}
+.ioh-root #platform > .ioh-container { background: var(--ui-surface-2); border-color: transparent; }
 
 .ioh-hairline {
   height: 1px;
   width: 100%;
-  background: linear-gradient(90deg, transparent, var(--neutral-700), transparent);
+  background: var(--ui-border);
   border: none;
 }
 
@@ -59,22 +100,22 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: var(--ui-fs-2xs);
+  font-weight: var(--ui-fw-bold);
+  letter-spacing: var(--ui-tracking-wide);
   text-transform: uppercase;
   color: var(--accent-300);
-  background: rgba(145, 132, 217, 0.12);
-  border: 1px solid rgba(145, 132, 217, 0.28);
+  background: var(--ui-accent-soft);
+  border: 1px solid var(--ui-accent-soft-2);
   padding: 6px 14px;
-  border-radius: 999px;
+  border-radius: var(--ui-radius-pill);
 }
 
 .ioh-eyebrow .ioh-float-icon { animation: iohFloat 3.2s ease-in-out infinite; display: inline-block; }
 
 .ioh-section-head { max-width: 640px; margin-bottom: 48px; }
-.ioh-section-head h2 { font-size: 34px; margin: 14px 0 14px; }
-.ioh-section-head p { font-size: 16px; }
+.ioh-section-head h2 { font-size: clamp(26px, 3.2vw, 36px); font-weight: var(--ui-fw-heavy); margin: 14px 0 14px; }
+.ioh-section-head p { font-size: var(--ui-fs-md); }
 
 /* =========================================================================
    Reveal / counters (JS toggles .in / mutates data-to text)
@@ -91,9 +132,9 @@
    ========================================================================= */
 .ioh-nav {
   position: sticky; top: 0; z-index: 40;
-  background: rgba(22, 24, 38, 0.74);
+  background: color-mix(in srgb, var(--ui-bg) 82%, transparent);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--neutral-800);
+  border-bottom: 1px solid var(--ui-border);
 }
 .ioh-nav-inner {
   max-width: 1160px; margin: 0 auto; padding: 14px 40px;
@@ -103,13 +144,13 @@
 .ioh-nav-logo-img {
   height: 42px; width: auto;
   animation: iohFloat 5s ease-in-out infinite;
-  filter: drop-shadow(0 4px 10px rgba(145,132,217,0.35));
+  filter: drop-shadow(0 4px 10px var(--ioh-glow));
 }
 
 .ioh-nav-links { display: flex; gap: 28px; }
 .ioh-nav-link {
-  position: relative; color: var(--neutral-400); text-decoration: none;
-  font-size: 14px; font-weight: 500; padding-bottom: 4px; transition: color 200ms ease;
+  position: relative; color: var(--ui-text-2); text-decoration: none;
+  font-size: var(--ui-fs-base); font-weight: var(--ui-fw-medium); padding-bottom: 4px; transition: color 200ms ease;
 }
 .ioh-nav-link::after {
   content: ""; position: absolute; left: 0; bottom: 0; height: 1px; width: 0;
@@ -118,28 +159,31 @@
 .ioh-nav-link:hover { color: var(--text); }
 .ioh-nav-link:hover::after { width: 100%; }
 
-.ioh-nav-actions { display: flex; align-items: center; gap: 18px; }
-.ioh-nav-signin { color: var(--neutral-300); text-decoration: none; font-size: 14px; font-weight: 500; }
+.ioh-nav-actions { display: flex; align-items: center; gap: 14px; }
+.ioh-nav-actions .ui-btn--icon { flex-shrink: 0; }
+.ioh-nav-signin { color: var(--ui-text-2); text-decoration: none; font-size: var(--ui-fs-base); font-weight: var(--ui-fw-medium); }
 .ioh-nav-signin:hover { color: var(--text); }
 
 /* =========================================================================
    Buttons
    ========================================================================= */
 .ioh-btn {
-  position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 8px;
-  font-family: inherit; font-weight: 600; font-size: 14px; text-decoration: none; cursor: pointer;
-  border-radius: var(--radius-md); padding: 12px 22px; border: 1px solid transparent;
-  transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+  position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: inherit; font-weight: var(--ui-fw-semibold); font-size: var(--ui-fs-base); line-height: 1; text-decoration: none; cursor: pointer;
+  height: 44px;
+  border-radius: var(--ui-radius); padding: 0 22px; border: 1px solid transparent;
+  transition: transform 200ms ease, box-shadow 200ms ease, background-color 200ms ease, border-color 200ms ease, color 200ms ease;
 }
+.ioh-btn:focus-visible { outline: none; box-shadow: var(--ui-ring); }
 .ioh-btn-primary {
-  background: linear-gradient(135deg, var(--accent-400), var(--accent-700));
-  color: #fff;
-  box-shadow: 0 8px 22px -8px rgba(145,132,217,0.55);
+  background: var(--ui-accent);
+  border-color: var(--ui-accent);
+  color: var(--ui-on-accent);
 }
-.ioh-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -8px rgba(145,132,217,0.85); }
+.ioh-btn-primary:hover { background: var(--ui-accent-hover); transform: translateY(-2px); box-shadow: var(--ui-shadow-md); color: var(--ui-on-accent); }
 .ioh-btn-primary .ioh-sheen {
   position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%);
+  background: linear-gradient(115deg, transparent 30%, color-mix(in srgb, var(--ui-on-accent) 40%, transparent) 50%, transparent 70%);
   transform: translateX(-120%);
   transition: transform 850ms ease;
 }
@@ -148,44 +192,51 @@
 .ioh-btn-primary:hover .ioh-arrow { transform: translateX(4px); }
 
 .ioh-btn-ghost {
-  background: transparent; color: var(--text); border-color: var(--neutral-700);
+  background: var(--ui-surface); color: var(--text); border-color: var(--neutral-700);
 }
-.ioh-btn-ghost:hover { border-color: var(--accent-400); color: var(--accent-200); transform: translateY(-2px); }
+.ioh-btn-ghost:hover { border-color: var(--ui-accent); color: var(--ui-accent-text); transform: translateY(-2px); }
 
 /* =========================================================================
    Hero
    ========================================================================= */
-.ioh-hero { position: relative; padding: 56px 0 84px; overflow: hidden; }
+.ioh-hero {
+  position: relative; overflow: hidden;
+  margin: var(--ui-space-4) var(--ui-page-pad) 0;
+  padding: 56px 0 64px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-xl);
+}
 
 .ioh-hero-grid {
   position: absolute; inset: -10% -10%;
   background-image:
-    linear-gradient(var(--neutral-800) 1px, transparent 1px),
-    linear-gradient(90deg, var(--neutral-800) 1px, transparent 1px);
+    linear-gradient(var(--ui-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ui-border) 1px, transparent 1px);
   background-size: 64px 64px;
-  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 78%);
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 78%);
-  opacity: 0.6;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, currentcolor 40%, transparent 78%);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, currentcolor 40%, transparent 78%);
+  opacity: 0.7;
 }
 
 .ioh-aurora { position: absolute; inset: 0; filter: blur(60px); pointer-events: none; }
 .ioh-aurora span {
-  position: absolute; border-radius: 50%; opacity: 0.5;
+  position: absolute; border-radius: 50%; opacity: 0.26;
   animation: iohDrift 22s ease-in-out infinite alternate;
 }
 .ioh-aurora span:nth-child(1) { width: 420px; height: 420px; left: 4%; top: 8%; background: var(--accent-600); }
-.ioh-aurora span:nth-child(2) { width: 360px; height: 360px; right: 6%; top: 2%; background: var(--teal); animation-delay: -6s; opacity: 0.28; }
-.ioh-aurora span:nth-child(3) { width: 340px; height: 340px; right: 22%; bottom: -8%; background: var(--pink); animation-delay: -12s; opacity: 0.22; }
+.ioh-aurora span:nth-child(2) { width: 360px; height: 360px; right: 6%; top: 2%; background: var(--teal); animation-delay: -6s; opacity: 0.16; }
+.ioh-aurora span:nth-child(3) { width: 340px; height: 340px; right: 22%; bottom: -8%; background: var(--pink); animation-delay: -12s; opacity: 0.12; }
 
 .ioh-starfield { position: absolute; inset: 0; pointer-events: none; }
 .ioh-star {
-  position: absolute; border-radius: 50%; background: #fff;
+  position: absolute; border-radius: 50%; background: var(--ui-text-4);
   animation: iohTwinkle 5s ease-in-out infinite alternate;
 }
 
 .ioh-shoot {
   position: absolute; width: 140px; height: 2px;
-  background: linear-gradient(90deg, #fff, transparent);
+  background: linear-gradient(90deg, var(--ui-accent), transparent);
   border-radius: 2px; opacity: 0;
   animation: iohShoot 11s linear infinite;
 }
@@ -194,29 +245,32 @@
 
 .ioh-hero-inner {
   position: relative; z-index: 2;
-  display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; align-items: center;
+  display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); gap: 40px; align-items: center;
 }
 
-/* clamp(), not a fixed 62px — the hero's left column is ~560-600px wide at
-   this grid's proportions, so a flat 62px wrapped "Growth doesn't stand
-   still." and "Neither should you." across 4 lines instead of the intended
-   2, cramming into the lede below it. */
-.ioh-hero-h1 { font-size: clamp(34px, 3.6vw, 52px); line-height: 1.2; margin: 36px 0 26px; }
+/* Display headline: Plus Jakarta Sans 800, tight tracking. clamp() keeps the
+   two-line lockup ("Growth doesn't stand still." / "Neither should you.")
+   inside the left column at desktop widths. */
+.ioh-root .ioh-hero-h1 {
+  font-size: clamp(34px, 3.9vw, var(--ui-fs-4xl));
+  font-weight: var(--ui-fw-heavy);
+  letter-spacing: -0.03em;
+  line-height: var(--ui-lh-tight);
+  margin: 22px 0 20px;
+}
 .ioh-hero-h1 span.ioh-shimmer {
   display: block;
-  margin-top: 8px;
-  background-image: linear-gradient(90deg, var(--pink), var(--accent-200) 45%, var(--sky));
+  margin-top: 6px;
+  background-image: linear-gradient(90deg, var(--ui-accent-text), var(--ui-accent), var(--ui-accent-text));
   background-size: 220% 100%;
   -webkit-background-clip: text; background-clip: text; color: transparent;
   animation: iohShimmer 6.5s linear infinite;
 }
 
-.ioh-hero-lede { font-size: 17px; max-width: 480px; margin-bottom: 46px; }
-.ioh-hero-actions { display: flex; gap: 14px; margin-bottom: 44px; flex-wrap: wrap; margin-top: 26px; }
+.ioh-hero-lede { font-size: var(--ui-fs-lg); max-width: 520px; margin-bottom: 8px; }
+.ioh-hero-actions { display: flex; gap: 12px; margin-bottom: 36px; flex-wrap: wrap; margin-top: 26px; }
 
-.ioh-hero-stats { display: flex; gap: 32px; flex-wrap: wrap; }
-.ioh-stat-num { font-size: 26px; font-weight: 700; color: var(--text); }
-.ioh-stat-label { font-size: 12px; color: var(--neutral-400); margin-top: 2px; }
+.ioh-hero-stats { max-width: 520px; background: var(--ui-surface-2); border-color: transparent; }
 
 /* --- Orbital system --- */
 .ioh-orbit-wrap { position: relative; width: 100%; aspect-ratio: 1 / 1; max-width: 420px; margin: 0 auto; }
@@ -227,7 +281,7 @@
 }
 .ioh-ring {
   position: absolute; border-radius: 50%;
-  border: 1px solid rgba(217, 213, 255, 0.28);
+  border: 1px solid var(--ui-border-2);
   top: 50%; left: 50%; transform: translate(-50%, -50%);
 }
 .ioh-ring--1 { width: 100%; height: 100%; }
@@ -237,8 +291,8 @@
 .ioh-arc {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   border-radius: 50%;
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), currentcolor calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), currentcolor calc(100% - 3px));
 }
 .ioh-arc--1 { width: 100%; height: 100%; background: conic-gradient(from 0deg, transparent 0deg, var(--accent-300) 55deg, transparent 130deg); animation: iohSpin 12s linear infinite; }
 .ioh-arc--2 { width: 72%; height: 72%; background: conic-gradient(from 90deg, transparent 0deg, var(--teal) 45deg, transparent 120deg); animation: iohSpinRev 8s linear infinite; }
@@ -263,16 +317,16 @@
   position: absolute; inset: -32%;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 26% 18%, rgba(236,160,255,0.85), transparent 26%),
-    radial-gradient(circle at 46% 12%, rgba(200,110,235,0.6), transparent 22%),
-    radial-gradient(circle at 70% 14%, rgba(160,95,235,0.65), transparent 24%),
-    radial-gradient(circle at 86% 40%, rgba(110,90,235,0.6), transparent 26%),
-    radial-gradient(circle at 78% 66%, rgba(80,75,215,0.6), transparent 28%),
-    radial-gradient(circle at 54% 84%, rgba(60,55,175,0.58), transparent 30%),
-    radial-gradient(circle at 26% 76%, rgba(195,75,165,0.55), transparent 28%),
-    radial-gradient(circle at 12% 48%, rgba(215,95,190,0.5), transparent 24%),
-    radial-gradient(circle at 50% 48%, rgba(40,20,60,0.35), transparent 60%),
-    radial-gradient(circle at 50% 50%, #170b26 0%, #201233 55%, transparent 78%);
+    radial-gradient(circle at 26% 18%, color-mix(in srgb, var(--cat-rose) 85%, transparent), transparent 26%),
+    radial-gradient(circle at 46% 12%, color-mix(in srgb, var(--cat-violet) 60%, transparent), transparent 22%),
+    radial-gradient(circle at 70% 14%, color-mix(in srgb, var(--cat-violet) 65%, transparent), transparent 24%),
+    radial-gradient(circle at 86% 40%, color-mix(in srgb, var(--ui-accent) 60%, transparent), transparent 26%),
+    radial-gradient(circle at 78% 66%, color-mix(in srgb, var(--ui-accent) 60%, transparent), transparent 28%),
+    radial-gradient(circle at 54% 84%, color-mix(in srgb, var(--ui-accent-hover) 58%, transparent), transparent 30%),
+    radial-gradient(circle at 26% 76%, color-mix(in srgb, var(--cat-rose) 55%, transparent), transparent 28%),
+    radial-gradient(circle at 12% 48%, color-mix(in srgb, var(--cat-rose) 50%, transparent), transparent 24%),
+    radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--ioh-deep) 35%, transparent), transparent 60%),
+    radial-gradient(circle at 50% 50%, var(--ioh-deep) 0%, var(--ioh-deep-2) 55%, transparent 78%);
   filter: blur(3.5px) saturate(1.55);
   animation: iohNebulaSpin 55s linear infinite;
 }
@@ -280,12 +334,12 @@
   position: absolute; inset: -18%;
   border-radius: 50%;
   background:
-    radial-gradient(ellipse 46% 14% at 32% 40%, rgba(10,6,20,0.75), transparent 70%),
-    radial-gradient(ellipse 40% 12% at 66% 58%, rgba(10,6,20,0.7), transparent 70%),
-    radial-gradient(ellipse 30% 10% at 54% 22%, rgba(8,5,16,0.6), transparent 70%),
-    radial-gradient(circle at 62% 26%, rgba(28,16,54,0.55), transparent 34%),
-    radial-gradient(circle at 22% 58%, rgba(16,9,34,0.5), transparent 36%),
-    radial-gradient(circle at 58% 80%, rgba(70,120,255,0.28), transparent 40%);
+    radial-gradient(ellipse 46% 14% at 32% 40%, color-mix(in srgb, var(--ioh-deep) 75%, transparent), transparent 70%),
+    radial-gradient(ellipse 40% 12% at 66% 58%, color-mix(in srgb, var(--ioh-deep) 70%, transparent), transparent 70%),
+    radial-gradient(ellipse 30% 10% at 54% 22%, color-mix(in srgb, var(--ioh-deep) 60%, transparent), transparent 70%),
+    radial-gradient(circle at 62% 26%, color-mix(in srgb, var(--ioh-deep-2) 55%, transparent), transparent 34%),
+    radial-gradient(circle at 22% 58%, color-mix(in srgb, var(--ioh-deep) 50%, transparent), transparent 36%),
+    radial-gradient(circle at 58% 80%, color-mix(in srgb, var(--cat-sky) 28%, transparent), transparent 40%);
   filter: blur(4px);
   mix-blend-mode: multiply;
   animation: iohSpinCCW 80s linear infinite;
@@ -304,7 +358,7 @@
 .ioh-nebula-eye {
   position: absolute; inset: 40%;
   border-radius: 50%;
-  background: radial-gradient(circle at 42% 58%, rgba(228,236,255,0.8), rgba(150,160,255,0.25) 46%, transparent 76%);
+  background: radial-gradient(circle at 42% 58%, color-mix(in srgb, var(--ioh-white) 80%, transparent), color-mix(in srgb, var(--ioh-lilac) 25%, transparent) 46%, transparent 76%);
   filter: blur(3px);
   mix-blend-mode: screen;
   animation: iohScalePulse 5s ease-in-out infinite;
@@ -313,30 +367,30 @@
   position: absolute; top: 20%; right: 18%;
   width: 15%; aspect-ratio: 1 / 1;
   border-radius: 50%;
-  background: radial-gradient(circle, #ffffff, var(--accent-200) 45%, transparent 78%);
-  box-shadow: 0 0 24px 7px rgba(255,255,255,0.9), 0 0 46px 16px rgba(150,180,255,0.4);
+  background: radial-gradient(circle, var(--ioh-white), var(--ioh-lilac) 45%, transparent 78%);
+  box-shadow: 0 0 24px 7px color-mix(in srgb, var(--ioh-white) 90%, transparent), 0 0 46px 16px color-mix(in srgb, var(--cat-sky) 40%, transparent);
   animation: iohScalePulse 3.2s ease-in-out infinite;
 }
 .ioh-nebula-star::before, .ioh-nebula-star::after {
   content: ""; position: absolute; top: 50%; left: 50%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ioh-white) 85%, transparent), transparent);
 }
 .ioh-nebula-star::before { width: 280%; height: 1.4px; transform: translate(-50%, -50%); }
 .ioh-nebula-star::after { width: 1.4px; height: 280%; transform: translate(-50%, -50%); }
 .ioh-nebula-star--sub {
   top: 66%; left: 26%; right: auto;
   width: 7%;
-  background: radial-gradient(circle, #ffffff, #ffd9b0 45%, transparent 78%);
-  box-shadow: 0 0 14px 4px rgba(255,255,255,0.8);
+  background: radial-gradient(circle, var(--ioh-white), color-mix(in srgb, var(--cat-amber) 35%, var(--ioh-white)) 45%, transparent 78%);
+  box-shadow: 0 0 14px 4px color-mix(in srgb, var(--ioh-white) 80%, transparent);
   animation-delay: 1.4s;
 }
 .ioh-nebula-star--sub::before, .ioh-nebula-star--sub::after { opacity: 0.6; }
 .ioh-nebula-spark {
   position: absolute; border-radius: 50%;
-  background: #fff;
+  background: var(--ioh-white);
   animation: iohTwinkle 3s ease-in-out infinite alternate;
 }
-.ioh-nebula-spark--warm { background: #ffd9b0; }
+.ioh-nebula-spark--warm { background: color-mix(in srgb, var(--cat-amber) 35%, var(--ioh-white)); }
 
 .ioh-moon-pivot { position: absolute; inset: 0; }
 .ioh-moon-pivot--1 { animation: iohSpinCW 26s linear infinite; }
@@ -356,11 +410,12 @@
    ========================================================================= */
 .ioh-marquee {
   overflow: hidden;
-  border-top: 1px solid var(--neutral-800);
-  border-bottom: 1px solid var(--neutral-800);
-  padding: 22px 0;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  margin-top: var(--ui-space-6);
+  border-top: 1px solid var(--ui-border);
+  border-bottom: 1px solid var(--ui-border);
+  padding: 20px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, currentcolor 12%, currentcolor 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, currentcolor 12%, currentcolor 88%, transparent);
 }
 .ioh-marquee-track {
   display: flex; width: max-content; gap: 56px;
@@ -368,8 +423,8 @@
 }
 .ioh-marquee-item {
   display: flex; align-items: center; gap: 10px;
-  font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--neutral-300); white-space: nowrap;
+  font-size: var(--ui-fs-xs); font-weight: var(--ui-fw-bold); letter-spacing: var(--ui-tracking-wide); text-transform: uppercase;
+  color: var(--ui-text-2); white-space: nowrap;
 }
 .ioh-marquee-item i { color: var(--accent-300); font-size: 16px; }
 
@@ -378,8 +433,11 @@
    ========================================================================= */
 .ioh-why-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
 .ioh-legend { display: flex; flex-direction: column; gap: 10px; }
-.ioh-legend-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--neutral-300); }
-.ioh-legend-dot { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 10px 1px currentColor; }
+.ioh-why-head .ioh-section-head { margin-bottom: 0; }
+.ioh-legend-item { display: flex; align-items: center; gap: 10px; font-size: var(--ui-fs-sm); color: var(--ui-text-2); }
+.ioh-legend-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ui-accent); }
+.ioh-legend-dot--teal { background: var(--cat-teal); }
+.ioh-legend-dot--pink { background: var(--cat-rose); }
 
 .ioh-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 40px; }
 .ioh-card-grid--2 { grid-template-columns: repeat(2, 1fr); }
@@ -387,83 +445,86 @@
 
 .spot-card {
   position: relative; overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--neutral-800);
-  border-radius: var(--radius-lg);
+  background: var(--ui-surface-2);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-lg);
   padding: 28px;
   transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
 }
 .spot-card::before {
   content: ""; position: absolute; inset: 0; opacity: 0; pointer-events: none;
-  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%), rgba(145,132,217,0.18), transparent 70%);
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%), var(--ui-accent-soft), transparent 70%);
   transition: opacity 220ms ease;
 }
-.spot-card:hover { transform: translateY(-6px); border-color: var(--accent-400); box-shadow: 0 20px 40px -18px rgba(0,0,0,0.55); }
+.spot-card:hover { transform: translateY(-3px); border-color: var(--ui-accent); box-shadow: var(--ui-shadow-md); }
 .spot-card:hover::before { opacity: 1; }
 
 .ioh-card-icon {
-  width: 44px; height: 44px; border-radius: 12px;
+  --_bg: var(--ui-accent-soft); --_fg: var(--ui-accent-text);
+  width: 44px; height: 44px; border-radius: var(--ui-radius);
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px; margin-bottom: 18px; color: #fff;
-  background: linear-gradient(135deg, var(--accent-400), var(--accent-700));
+  font-size: 20px; margin-bottom: 18px;
+  background: var(--_bg); color: var(--_fg);
   transition: transform 220ms ease;
 }
-.spot-card:hover .ioh-card-icon { transform: scale(1.08) rotate(-4deg); }
-.ioh-card-icon--teal   { background: linear-gradient(135deg, var(--teal), #4bab9f); }
-.ioh-card-icon--pink   { background: linear-gradient(135deg, var(--pink), #b45a7d); }
-.ioh-card-icon--amber  { background: linear-gradient(135deg, var(--amber), #c98f2e); }
-.ioh-card-icon--violet { background: linear-gradient(135deg, var(--violet), #6a4fb0); }
-.ioh-card-icon--sky    { background: linear-gradient(135deg, var(--sky), #3f7fc4); }
-.ioh-card-icon--coral  { background: linear-gradient(135deg, var(--coral), #b8543a); }
+.spot-card:hover .ioh-card-icon { transform: scale(1.06); }
+.ioh-card-icon--teal   { --_bg: var(--cat-teal-soft);   --_fg: var(--cat-teal-text); }
+.ioh-card-icon--pink   { --_bg: var(--cat-rose-soft);   --_fg: var(--cat-rose-text); }
+.ioh-card-icon--amber  { --_bg: var(--cat-amber-soft);  --_fg: var(--cat-amber-text); }
+.ioh-card-icon--violet { --_bg: var(--cat-violet-soft); --_fg: var(--cat-violet-text); }
+.ioh-card-icon--sky    { --_bg: var(--cat-sky-soft);    --_fg: var(--cat-sky-text); }
+.ioh-card-icon--coral  { --_bg: var(--cat-green-soft);  --_fg: var(--cat-green-text); }
 
-.spot-card h3 { font-size: 17px; margin-bottom: 10px; position: relative; z-index: 1; }
-.spot-card p { font-size: 14px; position: relative; z-index: 1; }
+.spot-card h3 { font-size: var(--ui-fs-md); margin-bottom: 10px; position: relative; z-index: 1; }
+.spot-card p { font-size: var(--ui-fs-base); position: relative; z-index: 1; }
 
 /* =========================================================================
    Platform preview
    ========================================================================= */
 .ioh-platform-head { text-align: center; max-width: 620px; margin: 0 auto 48px; }
+.ioh-platform-head h2, .ioh-outcome-head h2, .ioh-features-head h2 { font-size: clamp(26px, 3.2vw, 36px); font-weight: var(--ui-fw-heavy); margin: 14px 0 12px; }
 .ioh-platform-head .ioh-eyebrow { margin-bottom: 14px; }
 
 .ioh-browser {
   perspective: 1400px;
 }
 .ioh-browser-window {
-  background: var(--surface);
-  border: 1px solid var(--neutral-800);
-  border-radius: var(--radius-lg);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-lg);
   overflow: hidden;
   transition: transform 120ms ease;
   will-change: transform;
-  box-shadow: 0 40px 80px -30px rgba(0,0,0,0.6);
+  box-shadow: var(--ui-shadow-lg);
 }
 .ioh-browser-bar {
   display: flex; align-items: center; gap: 10px;
-  padding: 12px 16px; background: var(--neutral-900); border-bottom: 1px solid var(--neutral-800);
+  padding: 12px 16px; background: var(--ui-surface-2); border-bottom: 1px solid var(--ui-border);
 }
 .ioh-traffic { display: flex; gap: 6px; }
 .ioh-traffic span { width: 10px; height: 10px; border-radius: 50%; }
-.ioh-traffic span:nth-child(1) { background: #ff6159; }
-.ioh-traffic span:nth-child(2) { background: #ffbd2e; }
-.ioh-traffic span:nth-child(3) { background: #28c840; }
+.ioh-traffic span:nth-child(1) { background: var(--ui-danger); }
+.ioh-traffic span:nth-child(2) { background: var(--ui-warning); }
+.ioh-traffic span:nth-child(3) { background: var(--ui-success); }
 .ioh-browser-url {
-  font-size: 12px; color: var(--neutral-400);
-  background: var(--neutral-800); padding: 4px 12px; border-radius: 999px;
+  font-size: var(--ui-fs-xs); color: var(--ui-text-3);
+  background: var(--ui-surface-3); padding: 4px 12px; border-radius: var(--ui-radius-pill);
 }
 
 .ioh-browser-body { padding: 26px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; }
 
 .ioh-welcome-banner {
   grid-column: 1 / -1; position: relative; overflow: hidden;
-  border-radius: var(--radius-md); padding: 22px 24px;
-  background: radial-gradient(120% 160% at 10% 0%, #3a2f78, var(--section) 60%);
+  border-radius: var(--ui-radius); padding: 22px 24px;
+  background: linear-gradient(135deg, var(--ui-accent-hover), var(--ui-accent));
+  color: var(--ui-on-accent);
 }
-.ioh-welcome-banner h4 { font-size: 18px; margin-bottom: 4px; }
-.ioh-welcome-banner p { font-size: 13px; color: var(--accent-200); }
-.ioh-welcome-star { position: absolute; width: 3px; height: 3px; background: #fff; border-radius: 50%; animation: iohTwinkle 4s ease-in-out infinite alternate; }
+.ioh-welcome-banner h4 { font-family: var(--ui-font-display); font-weight: var(--ui-fw-bold); font-size: var(--ui-fs-lg); margin: 0 0 4px; color: var(--ui-on-accent); }
+.ioh-welcome-banner p { font-size: var(--ui-fs-sm); color: color-mix(in srgb, var(--ui-on-accent) 85%, transparent); }
+.ioh-welcome-star { position: absolute; width: 3px; height: 3px; background: var(--ioh-white); border-radius: 50%; animation: iohTwinkle 4s ease-in-out infinite alternate; }
 .ioh-welcome-comet {
   position: absolute; width: 60px; height: 2px; top: 14px; right: 30px;
-  background: linear-gradient(90deg, transparent, #fff);
+  background: linear-gradient(90deg, transparent, var(--ioh-white));
   opacity: 0; animation: iohShoot 9s linear infinite 2s;
 }
 
@@ -475,31 +536,37 @@
   transition: transform 180ms ease, border-color 180ms ease;
 }
 .ioh-mission-row:hover { transform: translateX(4px); border-color: var(--accent-600); }
-.ioh-mission-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #fff; flex-shrink: 0; }
-.ioh-mission-title { font-size: 13px; font-weight: 600; color: var(--text); }
-.ioh-mission-sub { font-size: 11px; color: var(--neutral-400); }
-.ioh-mission-badge { margin-left: auto; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+.ioh-mission-icon { --_bg: var(--ui-accent-soft); --_fg: var(--ui-accent-text); width: 30px; height: 30px; border-radius: var(--ui-radius-sm); display: flex; align-items: center; justify-content: center; font-size: 15px; background: var(--_bg); color: var(--_fg); flex-shrink: 0; }
+.ioh-mission-icon--teal { --_bg: var(--cat-teal-soft); --_fg: var(--cat-teal-text); }
+.ioh-mission-icon--rose { --_bg: var(--cat-rose-soft); --_fg: var(--cat-rose-text); }
+.ioh-mission-title { font-size: var(--ui-fs-sm); font-weight: var(--ui-fw-semibold); color: var(--text); }
+.ioh-mission-sub { font-size: var(--ui-fs-xs); color: var(--ui-text-3); }
+.ioh-mission-badge { --_bg: var(--ui-accent-soft); --_fg: var(--ui-accent-text); margin-left: auto; font-size: var(--ui-fs-xs); font-weight: var(--ui-fw-bold); padding: 3px 9px; border-radius: var(--ui-radius-pill); background: var(--_bg); color: var(--_fg); }
+.ioh-mission-badge--teal { --_bg: var(--cat-teal-soft); --_fg: var(--cat-teal-text); }
+.ioh-mission-badge--rose { --_bg: var(--cat-rose-soft); --_fg: var(--cat-rose-text); }
 
 .ioh-side-cards { display: flex; flex-direction: column; gap: 16px; }
 .ioh-mini-card { background: var(--neutral-900); border: 1px solid var(--neutral-800); border-radius: var(--radius-md); padding: 16px; }
 .ioh-rocket-tile {
   width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, var(--pink), var(--accent-600)); color: #fff; margin-bottom: 10px;
+  background: var(--ui-accent-soft); color: var(--ui-accent-text); margin-bottom: 10px;
   animation: iohFloat 3.6s ease-in-out infinite;
 }
-.ioh-streak-count { font-size: 24px; font-weight: 700; }
+.ioh-streak-count { font-family: var(--ui-font-display); font-size: var(--ui-fs-xl); font-weight: var(--ui-fw-heavy); color: var(--text); }
+.ioh-mini-title { font-size: var(--ui-fs-sm); font-weight: var(--ui-fw-bold); color: var(--text); }
+.ioh-mini-sub { font-size: var(--ui-fs-xs); color: var(--ui-text-3); margin-top: 4px; }
 .ioh-streak-strip { display: flex; gap: 6px; margin-top: 10px; }
 .ioh-streak-cell {
-  width: 20px; height: 20px; border-radius: 6px; background: var(--neutral-800);
+  width: 20px; height: 20px; border-radius: var(--ui-radius-xs); background: var(--ui-surface-3);
   transform: scale(0.4); opacity: 0; transition: transform 260ms ease, opacity 260ms ease, background 260ms ease;
 }
-.ioh-streak-cell.in { transform: scale(1); opacity: 1; background: var(--accent-500, var(--accent)); }
+.ioh-streak-cell.in { transform: scale(1); opacity: 1; background: var(--ui-accent); }
 
-.ioh-orbit-progress-bar { height: 6px; border-radius: 999px; background: var(--neutral-800); overflow: hidden; margin: 12px 0; }
-.ioh-orbit-progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent-400), var(--accent-200)); transform: scaleX(0); transform-origin: left; transition: transform 1200ms cubic-bezier(.2,.7,.3,1); }
+.ioh-orbit-progress-bar { height: 6px; border-radius: 999px; background: var(--ui-surface-3); overflow: hidden; margin: 12px 0; }
+.ioh-orbit-progress-fill { height: 100%; border-radius: 999px; background: var(--ui-accent); transform: scaleX(0); transform-origin: left; transition: transform 1200ms cubic-bezier(.2,.7,.3,1); }
 .ioh-orbit-progress-fill.in { transform: scaleX(0.33); }
 .ioh-tag-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.ioh-tag { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: rgba(145,132,217,0.14); color: var(--accent-200); }
+.ioh-tag { font-size: var(--ui-fs-2xs); font-weight: var(--ui-fw-bold); padding: 4px 10px; border-radius: var(--ui-radius-pill); background: var(--ui-accent-soft); color: var(--ui-accent-text); }
 
 /* =========================================================================
    Outcome
@@ -510,14 +577,30 @@
 /* =========================================================================
    Gamification band
    ========================================================================= */
-.ioh-band {
-  background: var(--section);
+.ioh-root .ioh-band {
+  /* .ui-hero (added in JSX) supplies the dark-violet gradient + white text;
+     everything inside is rebound to the fixed light-on-dark palette. */
+  --text: var(--ioh-white);
+  --neutral-300: color-mix(in srgb, var(--ioh-white) 78%, transparent);
+  --neutral-700: color-mix(in srgb, var(--ioh-white) 30%, transparent);
+  --accent-200: #c4b5ff;
+  --accent-300: #c4b5ff;
+  --accent-600: var(--ui-accent);
+  --teal: var(--cat-teal);
+  --pink: var(--cat-rose);
+  margin: var(--ui-space-6) var(--ui-page-pad) 0;
+  padding: clamp(32px, 5vw, 72px) 0;
   position: relative; overflow: hidden;
-  padding-bottom: 132px;
 }
+.ioh-root .ioh-band > .ioh-container { background: none; border: 0; border-radius: 0; padding: 0 clamp(24px, 4vw, 56px); }
+.ioh-band .ioh-eyebrow { background: color-mix(in srgb, var(--ioh-white) 12%, transparent); border-color: color-mix(in srgb, var(--ioh-white) 25%, transparent); }
+.ioh-band .ioh-star { background: var(--ioh-white); }
+.ioh-band .ioh-shoot { background: linear-gradient(90deg, var(--ioh-white), transparent); }
+.ioh-band .ioh-btn-ghost { background: transparent; }
+.ioh-band .ioh-btn-ghost:hover { color: var(--ioh-white); border-color: var(--ioh-white); }
 .ioh-band-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; position: relative; z-index: 2; }
 
-.ioh-word-h2 { font-size: 40px; margin: 16px 0 20px; }
+.ioh-root .ioh-word-h2 { font-size: clamp(30px, 4vw, 44px); font-weight: var(--ui-fw-heavy); margin: 16px 0 20px; }
 .ioh-word {
   display: inline-block; opacity: 0; transform: translateY(28px) rotate(3deg); filter: blur(6px);
   transition: opacity 550ms ease, transform 550ms ease, filter 550ms ease;
@@ -525,7 +608,7 @@
 .ioh-word.in { opacity: 1; transform: translateY(0) rotate(0deg); filter: blur(0); }
 .ioh-word--accent { color: var(--accent-300); }
 
-.ioh-band-copy p { font-size: 16px; margin-bottom: 32px; }
+.ioh-band-copy p { font-size: var(--ui-fs-md); margin-bottom: 32px; }
 .ioh-phrase { opacity: 0; transform: translateY(14px); transition: opacity 500ms ease, transform 500ms ease; }
 .ioh-phrase.in { opacity: 1; transform: translateY(0); }
 .ioh-marker {
@@ -552,8 +635,8 @@
 .ioh-sun {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: 17%; height: 17%; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fff, var(--accent-300) 45%, var(--accent-700) 100%);
-  box-shadow: 0 0 40px 10px rgba(189,180,242,0.55), 0 0 90px 30px rgba(145,132,217,0.35);
+  background: radial-gradient(circle at 35% 30%, var(--ioh-white), var(--accent-300) 45%, var(--accent-700) 100%);
+  box-shadow: 0 0 40px 10px color-mix(in srgb, var(--accent-300) 55%, transparent), 0 0 90px 30px color-mix(in srgb, var(--ui-accent) 35%, transparent);
   animation: iohBreathe 4.2s ease-in-out infinite;
 }
 .ioh-halo {
@@ -568,7 +651,7 @@
 
 .ioh-orbit-ring {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  border-radius: 50%; border: 1px solid rgba(217,213,255,0.26);
+  border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ioh-white) 26%, transparent);
 }
 .ioh-orbit-ring--dashed { border-style: dashed; }
 .ioh-orbit-ring--1 { width: 46%; height: 46%; }
@@ -577,8 +660,8 @@
 
 .ioh-comet {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%;
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2.5px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2.5px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), currentcolor calc(100% - 2.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), currentcolor calc(100% - 2.5px));
 }
 .ioh-comet--1 { width: 46%; height: 46%; background: conic-gradient(from 0deg, transparent 0deg, var(--accent-300) 40deg, transparent 100deg); animation: iohSpin 24s linear infinite; }
 .ioh-comet--2 { width: 70%; height: 70%; background: conic-gradient(from 120deg, transparent 0deg, var(--teal) 40deg, transparent 100deg); animation: iohSpinRev 15s linear infinite; }
@@ -592,27 +675,27 @@
   position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%);
   border-radius: 50%;
 }
-.ioh-planet--1 { width: 14px; height: 14px; background: radial-gradient(circle at 35% 30%, var(--accent-200), var(--accent-600)); box-shadow: 0 0 12px 2px rgba(189,180,242,0.6); }
-.ioh-planet--2 { width: 11px; height: 11px; background: radial-gradient(circle at 35% 30%, #d8fbf6, var(--teal)); box-shadow: 0 0 10px 2px rgba(143,224,216,0.55); }
-.ioh-planet--3 { width: 18px; height: 18px; background: radial-gradient(circle at 35% 30%, #ffe1ee, var(--pink)); box-shadow: 0 0 14px 3px rgba(240,162,192,0.55); }
+.ioh-planet--1 { width: 14px; height: 14px; background: radial-gradient(circle at 35% 30%, var(--accent-200), var(--accent-600)); box-shadow: 0 0 12px 2px color-mix(in srgb, var(--accent-300) 60%, transparent); }
+.ioh-planet--2 { width: 11px; height: 11px; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--teal) 30%, var(--ioh-white)), var(--teal)); box-shadow: 0 0 10px 2px color-mix(in srgb, var(--teal) 55%, transparent); }
+.ioh-planet--3 { width: 18px; height: 18px; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--pink) 25%, var(--ioh-white)), var(--pink)); box-shadow: 0 0 14px 3px color-mix(in srgb, var(--pink) 55%, transparent); }
 
 .ioh-moon-outer-pivot { position: absolute; inset: -22px; animation: iohSpinCW 5s linear infinite; }
 .ioh-moon-outer {
   position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%);
-  width: 6px; height: 6px; border-radius: 50%; background: #fff; box-shadow: 0 0 6px 1px #fff;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--ioh-white); box-shadow: 0 0 6px 1px var(--ioh-white);
 }
 
 .ioh-spark {
   position: absolute; width: 4px; height: 4px; background: var(--accent-200); border-radius: 50%;
   animation: iohTwinkle 3.4s ease-in-out infinite alternate;
-  box-shadow: 0 0 8px 2px rgba(213,207,255,0.7);
+  box-shadow: 0 0 8px 2px color-mix(in srgb, var(--accent-200) 70%, transparent);
 }
 
 .ioh-chip {
   position: absolute; display: flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 700; color: var(--accent-100, var(--accent-200));
-  background: rgba(145,132,217,0.16);
-  border: 1px solid rgba(213,207,255,0.35);
+  font-size: var(--ui-fs-xs); font-weight: var(--ui-fw-bold); color: var(--accent-200);
+  background: color-mix(in srgb, var(--ioh-white) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ioh-white) 30%, transparent);
   backdrop-filter: blur(8px);
   padding: 8px 14px; border-radius: 999px;
   animation: iohFloat 5.5s ease-in-out infinite;
@@ -624,29 +707,38 @@
    Feature grid
    ========================================================================= */
 .ioh-features-head { max-width: 620px; margin-bottom: 44px; }
-.ioh-features-section { padding-bottom: 132px; }
+.ioh-features-section { margin-bottom: 0; }
 
 /* =========================================================================
    Closing CTA
    ========================================================================= */
-.ioh-closing { text-align: center; position: relative; overflow: hidden; padding: 110px 0; }
-.ioh-closing h2 { font-size: 46px; margin-bottom: 16px; }
-.ioh-closing p { font-size: 16px; max-width: 520px; margin: 0 auto 30px; }
+.ioh-closing {
+  text-align: center; position: relative; overflow: hidden;
+  margin: var(--ui-space-6) var(--ui-page-pad) 0;
+  padding: clamp(48px, 7vw, 96px) 0;
+  background: var(--ui-accent-soft);
+  border: 1px solid var(--ui-accent-soft-2);
+  border-radius: var(--ui-radius-xl);
+}
+.ioh-closing h2 { font-size: clamp(30px, 4vw, var(--ui-fs-4xl)); font-weight: var(--ui-fw-heavy); margin-bottom: 16px; }
+.ioh-closing p { font-size: var(--ui-fs-md); max-width: 520px; margin: 0 auto 30px; }
+.ioh-closing .ioh-aurora { opacity: 0.6; }
 .ioh-closing-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; position: relative; z-index: 2; }
 
 /* =========================================================================
    Footer
    ========================================================================= */
 .ioh-footer {
-  border-top: 1px solid var(--neutral-800);
-  background: var(--neutral-900);
+  margin-top: var(--ui-space-6);
+  border-top: 1px solid var(--ui-border);
+  background: var(--ui-surface);
   padding: 26px 0;
 }
 .ioh-footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-.ioh-footer-brand { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--neutral-400); }
+.ioh-footer-brand { display: flex; align-items: center; gap: 12px; font-size: var(--ui-fs-sm); color: var(--ui-text-3); }
 .ioh-footer-logo-img { height: 30px; width: auto; }
 .ioh-footer-links { display: flex; gap: 22px; }
-.ioh-footer-links a { color: var(--neutral-400); text-decoration: none; font-size: 13px; }
+.ioh-footer-links a { color: var(--ui-text-2); text-decoration: none; font-size: var(--ui-fs-sm); }
 .ioh-footer-links a:hover { color: var(--text); }
 
 /* =========================================================================
@@ -668,7 +760,7 @@
    rely on that same translate to center themselves in the first place. */
 @keyframes iohSpin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
 @keyframes iohSpinRev { from { transform: translate(-50%, -50%) rotate(360deg); } to { transform: translate(-50%, -50%) rotate(0deg); } }
-@keyframes iohPulseCore { 0%,100% { box-shadow: 0 0 20px 4px rgba(189,180,242,0.5); } 50% { box-shadow: 0 0 40px 12px rgba(189,180,242,0.85); } }
+@keyframes iohPulseCore { 0%,100% { box-shadow: 0 0 20px 4px var(--ioh-glow); } 50% { box-shadow: 0 0 40px 12px var(--ioh-glow); } }
 /* Pure rotation, no translate — for pivots positioned via inset:%, whose own
    center already sits exactly on the orbit's center. Applying iohSpin/
    iohSpinRev (above) to one of these would ADD an extra half-of-own-size
@@ -682,8 +774,8 @@
 @keyframes iohNebulaSpin  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes iohScalePulse  { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 @keyframes iohNebulaGlow {
-  0%, 100% { box-shadow: 0 0 50px 12px rgba(168,60,180,0.32), 0 0 90px 26px rgba(90,70,220,0.2); }
-  50%      { box-shadow: 0 0 68px 18px rgba(200,80,200,0.45), 0 0 122px 34px rgba(110,90,255,0.3); }
+  0%, 100% { box-shadow: 0 0 50px 12px color-mix(in srgb, var(--cat-rose) 32%, transparent), 0 0 90px 26px color-mix(in srgb, var(--ui-accent) 20%, transparent); }
+  50%      { box-shadow: 0 0 68px 18px color-mix(in srgb, var(--cat-rose) 45%, transparent), 0 0 122px 34px color-mix(in srgb, var(--ui-accent) 30%, transparent); }
 }
 @keyframes iohMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @keyframes iohBreathe { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.06); } }
@@ -697,10 +789,11 @@
    ========================================================================= */
 @media (max-width: 900px) {
   .ioh-container { padding: 0 22px; }
-  .ioh-section { padding: 64px 0; }
-  .ioh-section-head h2, .ioh-word-h2 { font-size: 30px; }
-  .ioh-hero { padding: 90px 0 60px; }
-  .ioh-hero-h1 { font-size: clamp(34px, 9vw, 48px); }
+  .ioh-root .ioh-section > .ioh-container { padding: 28px 20px; }
+  .ioh-root .ioh-band > .ioh-container { padding: 0 22px; }
+  .ioh-section-head h2, .ioh-word-h2 { font-size: 28px; }
+  .ioh-hero { padding: 40px 0 36px; }
+  .ioh-hero-h1 { font-size: clamp(32px, 9vw, 44px); }
   .ioh-hero-inner { grid-template-columns: 1fr; }
   .ioh-orbit-wrap, .ioh-chip { display: none; }
   .ioh-nav-links { display: none; }
@@ -708,7 +801,19 @@
   .ioh-browser-body { grid-template-columns: 1fr; }
   .ioh-band-inner { grid-template-columns: 1fr; }
   .ioh-solar { max-width: 280px; }
-  .ioh-closing h2 { font-size: 32px; }
+  .ioh-closing h2 { font-size: 30px; }
+}
+@media (max-width: 640px) {
+  .ioh-root .ioh-hero-stats.ui-stat-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ioh-root .ioh-hero-stats.ui-stat-strip > .ui-stat { padding: 16px 6px; border-top: none; border-left: none; }
+  .ioh-root .ioh-hero-stats.ui-stat-strip > .ui-stat + .ui-stat { border-left: 1px solid var(--ui-border); }
+  .ioh-root .ioh-hero-stats .ui-stat__value { font-size: var(--ui-fs-xl); }
+}
+@media (max-width: 520px) {
+  .ioh-nav-inner { padding: 12px 16px; gap: 10px; }
+  .ioh-nav-actions { gap: 8px; }
+  .ioh-nav-signin { display: none; }
+  .ioh-nav-logo-img { height: 34px; }
 }
 
 /* =========================================================================

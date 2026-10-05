@@ -1,27 +1,20 @@
-/* src/components/Navbar.css */
-/* Redesigned onto the app's real --orbit- and --orbit-glass- design tokens
-   now that the whole site is permanently dark/cosmic (no more light/dark
-   toggle — see src/context/ThemeContext.jsx). The old --nav- aliases here
-   were hardcoded to fixed light values that never actually reacted to
-   theme, so this is a genuine reskin, not just "let dark mode kick in." */
+/* src/components/Navbar.css
+   Legacy top bar (still used on non-Orbit routes). Tokens only (--ui-*), so it
+   follows the app's light/dark theme. Class names are unchanged. */
 
 /* =========================================================================
-   🧱 NAVBAR CONTAINER — glass-cosmic bar
+   NAVBAR CONTAINER
    ========================================================================= */
 .duo-nav-container {
   width: 100%;
-  background: var(--orbit-glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background-image: var(--orbit-glass-highlight);
-  border-bottom: 1px solid var(--orbit-glass-border);
-  box-shadow: var(--orbit-glass-shadow);
+  background: var(--ui-surface);
+  border-bottom: 1px solid var(--ui-border);
   position: sticky;
   top: 0;
   z-index: 1050;
   padding: 0 20px;
   box-sizing: border-box;
-  font-family: "Nunito", system-ui, sans-serif;
+  font-family: var(--ui-font-sans);
 }
 
 .duo-nav-wrapper {
@@ -53,11 +46,11 @@
 .duo-links-panel {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 /* =========================================================================
-   ⚡ NAVIGATION TAB LABELS
+   NAVIGATION LINKS
    ========================================================================= */
 .duo-nav-item-wrapper {
   display: inline-flex;
@@ -65,55 +58,49 @@
 }
 
 .duo-nav-item {
-  color: var(--orbit-text-body);
+  color: var(--ui-text-2);
   text-decoration: none !important;
-  font-size: 13px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
+  font-size: var(--ui-fs-base);
+  font-weight: var(--ui-fw-semibold);
   padding: 8px 14px;
-  border-radius: 12px;
-  border: 2px solid transparent;
+  border-radius: var(--ui-radius-sm);
+  border: 1px solid transparent;
   background-color: transparent;
   display: inline-flex;
   align-items: center;
-  transition: all 0.14s ease;
+  transition: background-color var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
 }
 
 .duo-nav-item:hover:not(.item-disabled) {
-  color: var(--orbit-text-heading);
-  background-color: var(--orbit-brand-light);
+  color: var(--ui-text);
+  background-color: var(--ui-hover);
 }
 
-/* Active Highlight: brand-violet glow, matching the OrbitShell sidebar's
-   active-item treatment for a consistent navigation language site-wide. */
+/* Active: soft accent tint, same language as the Orbit sidebar. */
 .duo-nav-item.item-active {
-  color: var(--orbit-text-heading) !important;
-  background-color: var(--orbit-brand-muted);
-  border: 2px solid var(--orbit-brand);
-  box-shadow: 0 0 16px -4px var(--orbit-brand);
+  color: var(--ui-accent-text) !important;
+  background-color: var(--ui-accent-soft);
 }
 
 .duo-nav-item.item-disabled {
-  color: var(--orbit-text-muted);
-  opacity: 0.4;
+  color: var(--ui-text-3);
+  opacity: 0.6;
   cursor: not-allowed;
   gap: 6px;
   padding: 8px 14px;
-  font-weight: 800;
 }
 
 .duo-disabled-tag {
-  background-color: var(--orbit-glass-border);
-  color: var(--orbit-text-heading);
-  font-size: 8px;
-  font-weight: 900;
-  padding: 2px 5px;
-  border-radius: 5px;
+  background-color: var(--ui-surface-3);
+  color: var(--ui-text-2);
+  font-size: var(--ui-fs-2xs);
+  font-weight: var(--ui-fw-bold);
+  padding: 2px 6px;
+  border-radius: var(--ui-radius-xs);
 }
 
 /* =========================================================================
-   👤 USER HUD (Desktop)
+   USER HUD (Desktop)
    ========================================================================= */
 .duo-actions-desktop {
   display: flex;
@@ -124,9 +111,9 @@
 .duo-user-hud-box {
   display: flex;
   align-items: center;
-  background: var(--orbit-glass-bg);
-  border: 1px solid var(--orbit-glass-border);
-  border-radius: 12px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
   padding: 3px 10px 3px 4px;
 }
 
@@ -138,11 +125,11 @@
 }
 
 .navbar-avatar-frame {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background-color: var(--orbit-surface-subtle);
-  border: 2px solid var(--orbit-glass-border);
+  background-color: var(--ui-accent-soft);
+  border: 1px solid var(--ui-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,7 +137,7 @@
 }
 
 .navbar-avatar-emoji-font {
-  font-size: 14px;
+  font-size: var(--ui-fs-base);
 }
 
 .navbar-avatar-img-element {
@@ -162,34 +149,32 @@
 }
 
 .duo-username-text {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--orbit-text-heading);
+  font-size: var(--ui-fs-sm);
+  font-weight: var(--ui-fw-bold);
+  color: var(--ui-text);
 }
 
-/* XP badge keeps its vivid gamification-amber accent — an intentional,
-   distinct color from the navigational chrome (matches the same pattern
-   used for streak/XP accents elsewhere in the app). */
+/* Lightyears badge — accent-soft pill (same as .ui-badge--accent). */
 .duo-xp-badge {
-  background-color: var(--honey-bronze) !important;
-  color: #241a05 !important;
-  font-weight: 900;
-  font-size: 10px;
-  padding: 4px 8px;
-  border-radius: 6px;
+  background-color: var(--ui-accent-soft) !important;
+  color: var(--ui-accent-text) !important;
+  font-weight: var(--ui-fw-bold);
+  font-size: var(--ui-fs-xs);
+  padding: 4px 10px;
+  border-radius: var(--ui-radius-pill);
 }
 
 .hud-separator {
   width: 1px;
   height: 16px;
-  background-color: var(--orbit-glass-border);
+  background-color: var(--ui-border);
   margin: 0 10px;
 }
 
 .duo-logout-icon-btn {
   background: transparent;
   border: none;
-  color: var(--orbit-text-muted);
+  color: var(--ui-text-3);
   cursor: pointer;
   padding: 2px;
   display: flex;
@@ -197,59 +182,57 @@
 }
 
 .duo-logout-icon-btn:hover {
-  color: var(--orbit-brand);
+  color: var(--ui-accent-text);
 }
 
 /* =========================================================================
-   🌗 THEME TOGGLE — matches the Iris Orbit dashboard's icon-button treatment
-   (see OrbitShell.jsx) so the light/dark control looks consistent site-wide.
+   THEME TOGGLE — ghost icon button (like .ui-btn--ghost.ui-btn--icon)
    ========================================================================= */
 .duo-theme-toggle-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   padding: 0;
-  background: var(--orbit-brand-muted);
-  border: 1px solid var(--orbit-border-strong);
-  border-radius: 8px;
-  color: var(--orbit-brand);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-sm);
+  color: var(--ui-text-2);
   cursor: pointer;
-  transition: all 0.14s ease;
+  transition: background-color var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
 }
 
 .duo-theme-toggle-btn:hover {
-  background: var(--orbit-brand);
-  color: #ffffff;
+  background: var(--ui-hover);
+  color: var(--ui-text);
 }
 
-/* Primary brand-violet Sign In/Log In action button */
+.duo-theme-toggle-btn:focus-visible { outline: none; box-shadow: var(--ui-ring); }
+
+/* Primary Sign In / Log In action button */
 .duo-btn-outline {
   text-decoration: none !important;
-  font-weight: 800;
-  font-size: 12px;
-  text-transform: uppercase;
-  color: #ffffff;
-  background-color: var(--orbit-brand);
-  border: none;
-  border-bottom: 3px solid var(--orbit-brand-dark);
-  padding: 8px 18px;
-  border-radius: 12px;
-  transition: filter 0.14s ease, transform 0.14s ease;
+  font-weight: var(--ui-fw-semibold);
+  font-size: var(--ui-fs-base);
+  color: var(--ui-on-accent);
+  background-color: var(--ui-accent);
+  border: 1px solid var(--ui-accent);
+  height: 36px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--ui-radius-sm);
+  transition: background-color var(--ui-duration) var(--ui-ease);
 }
 
 .duo-btn-outline:hover {
-  filter: brightness(1.06);
-}
-
-.duo-btn-outline:active {
-  transform: translateY(2px);
-  border-bottom-width: 1px;
+  background-color: var(--ui-accent-hover);
+  color: var(--ui-on-accent);
 }
 
 /* =========================================================================
-   📱 RESPONSIVE ADJUSTMENTS
+   RESPONSIVE ADJUSTMENTS
    ========================================================================= */
 .duo-mobile-profile-hero-card,
 .duo-mobile-actions-wrapper {
@@ -260,7 +243,7 @@
   display: none;
   background: transparent;
   border: none;
-  color: var(--orbit-text-heading);
+  color: var(--ui-text);
   cursor: pointer;
 }
 
@@ -279,21 +262,18 @@
 
   .duo-links-panel {
     position: fixed;
-    top: 67px;
+    top: 65px;
     left: -100%;
     width: 100%;
-    height: calc(100vh - 67px);
-    background: var(--orbit-glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    background-image: var(--orbit-glass-highlight);
+    height: calc(100vh - 65px);
+    background: var(--ui-surface);
     flex-direction: column;
     align-items: stretch;
     padding: 20px;
-    gap: 10px;
+    gap: 8px;
     box-sizing: border-box;
     transition: left 0.2s ease;
-    border-top: 1px solid var(--orbit-glass-border);
+    border-top: 1px solid var(--ui-border);
   }
 
   .duo-links-panel.mobile-panel-open {
@@ -309,9 +289,9 @@
 
   .duo-mobile-profile-hero-card {
     display: block;
-    background-color: var(--orbit-surface-subtle);
-    border: 1px solid var(--orbit-glass-border);
-    border-radius: 14px;
+    background-color: var(--ui-surface-2);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius);
     padding: 12px;
     margin-bottom: 8px;
   }
@@ -320,7 +300,7 @@
     display: block;
     margin-top: auto;
     padding-top: 20px;
-    border-top: 1px solid var(--orbit-glass-border);
+    border-top: 1px solid var(--ui-border);
   }
 
   .duo-theme-toggle-btn {
@@ -329,32 +309,31 @@
     justify-content: flex-start;
     gap: 10px;
     padding: 12px;
-    font-size: 14px;
-    font-weight: 800;
-    border-radius: 12px;
+    font-size: var(--ui-fs-base);
+    font-weight: var(--ui-fw-semibold);
+    border-radius: var(--ui-radius);
   }
 
   .duo-btn-primary {
-    background-color: var(--orbit-brand);
-    border: none;
-    border-bottom: 3px solid var(--orbit-brand-dark);
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 800;
+    background-color: var(--ui-accent);
+    border: 1px solid var(--ui-accent);
+    color: var(--ui-on-accent);
+    font-size: var(--ui-fs-base);
+    font-weight: var(--ui-fw-semibold);
     padding: 12px;
-    border-radius: 12px;
+    border-radius: var(--ui-radius);
     cursor: pointer;
     width: 100%;
   }
 
   .duo-btn-secondary {
     background-color: transparent;
-    border: 2px solid var(--orbit-glass-border);
-    color: var(--orbit-brand);
-    font-size: 14px;
-    font-weight: 800;
+    border: 1px solid var(--ui-border-2);
+    color: var(--ui-accent-text);
+    font-size: var(--ui-fs-base);
+    font-weight: var(--ui-fw-semibold);
     padding: 12px;
-    border-radius: 12px;
+    border-radius: var(--ui-radius);
     cursor: pointer;
     width: 100%;
   }

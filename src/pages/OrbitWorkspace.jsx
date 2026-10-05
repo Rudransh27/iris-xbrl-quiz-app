@@ -10,13 +10,12 @@ import {
   CheckLg,
   SendFill,
   BookHalf,
-  BarChart,
 } from "react-bootstrap-icons";
 import AuthContext from "../context/AuthContext";
 import api from "../admin/services/api";
 import DashboardHome from "../components/OrbitDashboard/DashboardHome";
 import OrbitProgressMap from "../components/OrbitDashboard/OrbitProgressMap";
-import SectionHeader from "../components/OrbitDashboard/SectionHeader";
+import { PageHeader } from "../components/ui";
 import OrbitFooter from "../components/OrbitDashboard/OrbitFooter";
 import { getCurrentModule, setCurrentModule } from "../components/OrbitDashboard/currentModuleStorage";
 
@@ -40,19 +39,19 @@ const ProgressRing = ({ pct, size = 52, stroke = 5 }) => {
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ - (pct / 100) * circ;
-  const color = pct === 100 ? "#10b981" : pct > 0 ? "#457b9d" : "#e2e8f0";
+  const color = pct === 100 ? "var(--ui-success)" : pct > 0 ? "var(--ui-accent)" : "var(--ui-surface-3)";
   return (
     <svg
       width={size}
       height={size}
-      style={{ transform: "rotate(-90deg)", flexShrink: 0 }}
+      className="orbit-progress-ring"
     >
       <circle
         cx={size / 2}
         cy={size / 2}
         r={r}
         fill="none"
-        stroke="#e2e8f0"
+        className="orbit-progress-ring__track"
         strokeWidth={stroke}
       />
       <circle
@@ -60,12 +59,12 @@ const ProgressRing = ({ pct, size = 52, stroke = 5 }) => {
         cy={size / 2}
         r={r}
         fill="none"
-        stroke={color}
+        className="orbit-progress-ring__bar"
+        style={{ stroke: color }}
         strokeWidth={stroke}
         strokeDasharray={`${circ} ${circ}`}
         strokeDashoffset={offset}
         strokeLinecap="round"
-        style={{ transition: "stroke-dashoffset 0.5s ease" }}
       />
     </svg>
   );
@@ -75,25 +74,22 @@ const ProgressRing = ({ pct, size = 52, stroke = 5 }) => {
 // MODULE CARD GRADIENT PALETTE
 // ============================================================
 const CARD_GRADIENTS = [
-  "linear-gradient(135deg,#1d3557,#457b9d)",
-  "linear-gradient(135deg,#065f46,#10b981)",
-  "linear-gradient(135deg,#7c2d12,#f97316)",
-  "linear-gradient(135deg,#4c1d95,#8b5cf6)",
-  "linear-gradient(135deg,#831843,#ec4899)",
-  "linear-gradient(135deg,#1e3a5f,#3b82f6)",
+  "var(--grad-m1)",
+  "var(--grad-m2)",
+  "var(--grad-m3)",
+  "var(--grad-m4)",
+  "var(--grad-m5)",
+  "var(--grad-m6)",
 ];
 
 // ============================================================
 // SHARED STYLE TOKENS
 // ============================================================
 const tactilePanelStyle = {
-  background: "var(--bg-tactile-cards)",
-  border: "2px solid var(--border-tactile)",
-  borderBottom: "5px solid var(--border-tactile)",
-  borderRadius: "16px",
-  padding: "24px 28px",
-  boxShadow: "0 4px 0 rgba(0,0,0,0.01)",
-  transition: "background-color 0.2s ease, border-color 0.2s ease",
+  background: "var(--ui-surface)",
+  border: "1px solid var(--ui-border)",
+  borderRadius: "var(--ui-radius-lg)",
+  padding: "var(--ui-space-6)",
 };
 
 // ============================================================
@@ -632,23 +628,14 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
   const renderHome = () => {
     // Skeleton layout -- mirrors real structure, locks dimensions during async load
     if (pageStatus !== "loaded") {
-      const skel = (h, r = "16px", extra = {}) => ({
-        height: h, borderRadius: r,
-        background: "var(--orbit-surface)",
-        border: "1px solid var(--orbit-border)",
-        animation: "orbit-skeleton-pulse 1.5s ease-in-out infinite",
-        ...extra,
-      });
       return (
-        <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-          <div style={skel("130px", "20px")} />
-          <div style={skel("52px", "0 10px 10px 0", { borderLeft: "4px solid var(--orbit-border)" })} />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: "24px" }}>
-            <div style={skel("196px")} />
-            <div style={skel("196px", "20px")} />
+        <div className="orbit-dash orbit-dash--loading">
+          <div className="ui-skeleton orbit-dash-skel orbit-dash-skel--hero" />
+          <div className="orbit-dash__split">
+            <div className="ui-skeleton orbit-dash-skel orbit-dash-skel--card" />
+            <div className="ui-skeleton orbit-dash-skel orbit-dash-skel--card" />
           </div>
-          <div style={skel("112px")} />
-          <div style={skel("118px")} />
+          <div className="ui-skeleton orbit-dash-skel orbit-dash-skel--row" />
         </div>
       );
     }
@@ -1041,9 +1028,9 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
     const totalXp = liveXp;
 
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        <SectionHeader
-          icon={BarChart}
+      <div className="orbit-section-page">
+        <PageHeader
+          eyebrow="Your journey"
           title="Progress"
           subtitle="Track your orbit tier, module completion, and where each module stands."
         />
@@ -1052,43 +1039,22 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
         <OrbitProgressMap xp={totalXp} />
 
         {/* Module activity table */}
-        <div className="orbit-card">
-          <h5
-            style={{
-              fontSize: "15px",
-              fontWeight: "800",
-              color: "var(--orbit-text-heading)",
-              textTransform: "uppercase",
-              margin: "0 0 20px 0",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Module Breakdown
-          </h5>
+        <section className="orbit-progress-breakdown">
+          <div className="ui-section__title">
+            <span className="ui-eyebrow">Modules</span>
+            <h2 className="ui-h3">Module Breakdown</h2>
+          </div>
           {loadingModules ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "32px",
-                color: "var(--orbit-text-muted)",
-                fontWeight: "700",
-              }}
-            >
+            <div className="ui-loading">
               Loading module data...
             </div>
           ) : modules.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "32px",
-                color: "var(--orbit-text-muted)",
-              }}
-            >
+            <div className="ui-empty">
               No modules assigned.
             </div>
           ) : (
-            <div style={{ overflowX: "auto" }}>
-              <table className="orbit-progress-table">
+            <div className="ui-table-wrap">
+              <table className="orbit-progress-table ui-table">
                 <thead>
                   <tr>
                     <th>Activity</th>
@@ -1131,11 +1097,11 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
                           }
                         >
                           {passed ? (
-                            <>
+                            <span className="ui-badge ui-badge--success">
                               <CheckCircleFill size={12} /> True
-                            </>
+                            </span>
                           ) : (
-                            "False"
+                            <span className="ui-badge">False</span>
                           )}
                         </td>
                       </tr>
@@ -1145,7 +1111,7 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
               </table>
             </div>
           )}
-        </div>
+        </section>
         <OrbitFooter />
       </div>
     );
@@ -1168,19 +1134,19 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
     const medalClass = ["orbit-lb-medal--gold", "orbit-lb-medal--silver", "orbit-lb-medal--bronze"];
 
     return (
-      <div>
-        <SectionHeader
-          icon={TrophyFill}
+      <div className="orbit-section-page">
+        <PageHeader
+          eyebrow="Community"
           title="Leaderboard"
           subtitle="See how you and your department stack up this month."
         />
-        <div className="orbit-card">
+        <div className="orbit-lb">
         {loadingLeaderboard ? (
-          <div style={{ textAlign: "center", padding: "60px", color: "var(--orbit-text-muted)", fontWeight: "700" }}>
+          <div className="ui-loading">
             Loading rankings…
           </div>
         ) : leaderboard.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px", color: "var(--orbit-text-muted)" }}>
+          <div className="ui-empty">
             No rankings available yet.
           </div>
         ) : (
@@ -1204,8 +1170,8 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
                   return (
                     <div key={`podium-${rank}`} className={`orbit-lb-podium__col orbit-lb-podium__col--rank${rank} ${isMe ? "orbit-lb-podium__col--me" : ""}`}>
                       <div className={`orbit-lb-medal ${medalClass[rank - 1] || ""}`}>{rank === 1 ? <TrophyFill size={16} /> : `#${rank}`}</div>
-                      <div className="orbit-lb-podium__avatar">{item.avatar}</div>
-                      <div className="orbit-lb-podium__name">{item.name}{isMe && <span className="orbit-lb-you-pill">YOU</span>}</div>
+                      <div className="orbit-lb-podium__avatar ui-avatar ui-avatar--lg">{item.avatar}</div>
+                      <div className="orbit-lb-podium__name">{item.name}{isMe && <span className="orbit-lb-you-pill ui-badge ui-badge--solid ui-badge--sm">YOU</span>}</div>
                       <div className="orbit-lb-podium__xp"><LightningCharge size={11} /> {(item.xp || 0).toLocaleString()}</div>
                     </div>
                   );
@@ -1215,24 +1181,24 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
 
             {/* Flat list — rank 4+ */}
             {rest.length > 0 && (
-              <div className="orbit-lb-list">
+              <div className="orbit-lb-list ui-list">
                 {rest.map((item) => {
                   const isMe = isMeFn(item);
                   const xpBarPct = Math.round(((item.xp || 0) / topXp) * 100);
                   return (
-                    <div key={`lb-row-${item.rank}`} className={`orbit-lb-row ${isMe ? "orbit-lb-row--me" : ""}`}>
-                      <span className="orbit-lb-row__rank">#{item.rank}</span>
-                      <span className="orbit-lb-row__avatar">{item.avatar}</span>
+                    <div key={`lb-row-${item.rank}`} className={`orbit-lb-row ui-list-item ${isMe ? "orbit-lb-row--me" : ""}`}>
+                      <span className={`orbit-lb-row__rank ui-index ${isMe ? "ui-index--active" : ""}`}>#{item.rank}</span>
+                      <span className="orbit-lb-row__avatar ui-avatar">{item.avatar}</span>
                       <div className="orbit-lb-row__body">
                         <div className="orbit-lb-row__name">
                           {item.name}
-                          {isMe && <span className="orbit-lb-you-pill">YOU</span>}
+                          {isMe && <span className="orbit-lb-you-pill ui-badge ui-badge--solid ui-badge--sm">YOU</span>}
                         </div>
-                        <div className="orbit-lb-row__track">
-                          <div className="orbit-lb-row__fill" style={{ width: `${xpBarPct}%` }} />
+                        <div className="orbit-lb-row__track ui-progress ui-progress--sm">
+                          <div className="orbit-lb-row__fill ui-progress__bar" style={{ width: `${xpBarPct}%` }} />
                         </div>
                       </div>
-                      <span className="orbit-lb-row__xp"><LightningCharge size={12} /> {(item.xp || 0).toLocaleString()}</span>
+                      <span className="orbit-lb-row__xp ui-num"><LightningCharge size={12} /> {(item.xp || 0).toLocaleString()}</span>
                     </div>
                   );
                 })}
@@ -1671,37 +1637,37 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
   const renderPipeline = () => {
     const pipelineCards = [
       {
-        tag: "NEW MODULE", color: "var(--pastel-modules)", colorText: "var(--pastel-modules-text)", colorBorder: "var(--pastel-modules-border)",
+        tag: "NEW MODULE", tone: "violet",
         title: "Advanced XBRL Taxonomy Validation",
         desc: "Deep dive into taxonomy structure, namespace management, and validation rule sets for complex regulatory filings.",
         dept: "Your Department", eta: "This Week", icon: "📚",
       },
       {
-        tag: "PLATFORM UPDATE", color: "var(--pastel-progress)", colorText: "var(--pastel-progress-text)", colorBorder: "var(--pastel-progress-border)",
+        tag: "PLATFORM UPDATE", tone: "teal",
         title: "Leaderboard v2 — Team Rankings",
         desc: "The new leaderboard surfaces team-level aggregate scores alongside individual rankings, with weekly performance deltas.",
         dept: "All Teams", eta: "Next Week", icon: "🏆",
       },
       {
-        tag: "CHALLENGE", color: "var(--pastel-quiz)", colorText: "var(--pastel-quiz-text)", colorBorder: "var(--pastel-quiz-border)",
+        tag: "CHALLENGE", tone: "rose",
         title: "Monthly SEC Filing Speed Challenge",
         desc: "Timed event. Complete the full SEC 10-K tagging module in under 30 minutes. Top 3 earn triple XP.",
         dept: "Compliance", eta: "Jun 30", icon: "⏱️",
       },
       {
-        tag: "NEW MODULE", color: "var(--pastel-modules)", colorText: "var(--pastel-modules-text)", colorBorder: "var(--pastel-modules-border)",
+        tag: "NEW MODULE", tone: "violet",
         title: "iXBRL Inline Tagging Masterclass",
         desc: "From anchor tagging to continuation elements — a comprehensive walkthrough of inline XBRL for annual reports.",
         dept: "Reporting", eta: "Jul 7", icon: "🔖",
       },
       {
-        tag: "DEPARTMENT", color: "var(--pastel-reads)", colorText: "var(--pastel-reads-text)", colorBorder: "var(--pastel-reads-border)",
+        tag: "DEPARTMENT", tone: "amber",
         title: "Regulatory Calendar Q3 2026",
         desc: "Filing deadlines, mandatory taxonomy updates, and regulatory changes scoped to your department for Q3.",
         dept: "Your Department", eta: "Jul 1", icon: "📅",
       },
       {
-        tag: "CHALLENGE", color: "var(--pastel-quiz)", colorText: "var(--pastel-quiz-text)", colorBorder: "var(--pastel-quiz-border)",
+        tag: "CHALLENGE", tone: "rose",
         title: "IRIS Knowledge Bowl — Round 2",
         desc: "Team-based trivia event covering XBRL, SEC regulations, and IFRS standards. Register your team by June 28.",
         dept: "All Departments", eta: "Jun 28", icon: "🎯",
@@ -1709,96 +1675,37 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
     ];
 
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+      <div className="orbit-section-page">
 
         {/* Header */}
-        <div>
-          <div style={{
-            fontSize: "10px", fontWeight: "800", letterSpacing: "1.8px",
-            textTransform: "uppercase", color: "var(--orbit-text-muted)", marginBottom: "6px",
-          }}>
-            PIPELINE
-          </div>
-          <h2 style={{
-            margin: "0 0 6px", fontSize: "28px", fontWeight: "900",
-            color: "var(--orbit-text-heading)", letterSpacing: "-0.5px",
-          }}>
-            What's Landing Next
-          </h2>
-          <p style={{ margin: 0, fontSize: "14px", color: "var(--orbit-text-muted)", fontWeight: "500" }}>
-            Upcoming modules, platform updates, and challenges scoped to your department.
-          </p>
-        </div>
+        <PageHeader
+          eyebrow="Pipeline"
+          title="What's Landing Next"
+          subtitle="Upcoming modules, platform updates, and challenges scoped to your department."
+        />
 
         {/* Card grid */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: "16px",
-        }}>
+        <div className="orbit-pipeline-grid">
           {pipelineCards.map((card, i) => (
-            <div
-              key={i}
-              style={{
-                background: "var(--orbit-surface)",
-                border: "1px solid var(--orbit-border)",
-                borderRadius: "14px",
-                padding: "18px 18px 16px",
-                boxShadow: "var(--orbit-shadow-sm)",
-                transition: "all 0.15s ease",
-                display: "flex", flexDirection: "column", gap: "10px",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "var(--orbit-border-strong)";
-                e.currentTarget.style.boxShadow   = "var(--orbit-shadow-md)";
-                e.currentTarget.style.transform   = "translateY(-2px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--orbit-border)";
-                e.currentTarget.style.boxShadow   = "var(--orbit-shadow-sm)";
-                e.currentTarget.style.transform   = "none";
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px" }}>
-                <span style={{
-                  fontSize: "9.5px", fontWeight: "800", letterSpacing: "1.4px",
-                  textTransform: "uppercase", color: card.colorText,
-                  background: card.color, border: `1px solid ${card.colorBorder}`,
-                  padding: "2px 8px", borderRadius: "5px",
-                }}>
+            <div key={i} className="ui-card orbit-pipeline-card">
+              <div className="ui-card__head">
+                <span className={`ui-badge ui-badge--${card.tone} orbit-pipeline-card__tag`}>
                   {card.tag}
                 </span>
-                <span style={{ fontSize: "22px", lineHeight: 1, flexShrink: 0 }}>{card.icon}</span>
+                <span className="ui-icon-tile ui-icon-tile--sm ui-icon-tile--neutral orbit-pipeline-card__icon">{card.icon}</span>
               </div>
 
-              <p style={{
-                margin: 0, fontSize: "14.5px", fontWeight: "700",
-                color: "var(--orbit-text-heading)", lineHeight: 1.35,
-              }}>
+              <p className="ui-card__title">
                 {card.title}
               </p>
 
-              <p style={{
-                margin: 0, fontSize: "12.5px", fontWeight: "400",
-                color: "var(--orbit-text-body)", lineHeight: 1.55,
-                flexGrow: 1,
-              }}>
+              <p className="ui-text orbit-pipeline-card__desc">
                 {card.desc}
               </p>
 
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                fontSize: "11px", color: "var(--orbit-text-muted)", fontWeight: "600",
-                paddingTop: "6px", borderTop: "1px solid var(--orbit-border)",
-                marginTop: "2px",
-              }}>
-                <span>{card.dept}</span>
-                <span style={{
-                  background: "var(--orbit-brand-muted)", color: "var(--orbit-brand)",
-                  border: "1px solid var(--orbit-border-strong)",
-                  padding: "1px 8px", borderRadius: "var(--radius-full)",
-                  fontSize: "10px", fontWeight: "700",
-                }}>
+              <div className="ui-card__foot orbit-pipeline-card__foot">
+                <span className="ui-caption">{card.dept}</span>
+                <span className="ui-badge ui-badge--accent ui-badge--sm">
                   {card.eta}
                 </span>
               </div>
@@ -1807,10 +1714,7 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
         </div>
 
         {/* Footer note */}
-        <p style={{
-          textAlign: "center", fontSize: "12px",
-          color: "var(--orbit-text-muted)", fontStyle: "italic",
-        }}>
+        <p className="ui-caption orbit-pipeline-note">
           Content is curated for your department. Check back regularly — new modules drop every week.
         </p>
       </div>
@@ -1821,22 +1725,8 @@ export default function OrbitWorkspace({ currentViewMode = "learner" }) {
   // ROOT RENDER — section dispatcher
   // ============================================================
   return (
-    <div
-      className="orbit-workspace-node"
-      style={{
-        background: "var(--bg-global-canvas)",
-        padding: "16px 0",
-        minHeight: "100vh",
-        width: "100%",
-        boxSizing: "border-box",
-        transition: "background-color 0.2s ease",
-        color: "var(--text-primary)",
-      }}
-    >
-      <div
-        className="learner-workspace-layout"
-        style={{ maxWidth: "1100px", margin: "0 auto" }}
-      >
+    <div className="orbit-workspace-node">
+      <div className="learner-workspace-layout ui-page ui-page--flush">
         {currentSection === "home"        && renderHome()}
         {currentSection === "modules"     && renderModules()}
         {currentSection === "progress"    && renderProgress()}

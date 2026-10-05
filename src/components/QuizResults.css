@@ -1,205 +1,127 @@
-/* src/components/QuizResults.css */
-
-:root {
-  --amber-gold: #ffbe0bff;
-  --blaze-orange: #fb5607ff;
-  --neon-pink: #ff006eff;
-  --blue-violet: #8338ecff;
-  --azure-blue: #3a86ffff;
-  --duo-green: #58cc02;
-
-  --duo-snow: #ffffff;
-  --duo-gray-plate: #f7f9fa;
-  --duo-border: #e5e5e5;
-  --duo-text-dark: #3c3c3c;
-  --duo-text-slate: #5e6c75;
-}
+/* src/components/QuizResults.css
+   End-of-track results on the shared --ui-* tokens: a centred .ui-card
+   (radius-xl) with the title, a pass/fail .ui-callout summary, a
+   .ui-stat-strip (score · accuracy · XP), the accuracy donut (colours from
+   useThemeTokens in QuizResults.jsx) and a primary Continue button. */
 
 .quiz-results-viewport-wrapper {
   width: 100%;
-  min-height: calc(100vh - 156px); /* Centers nicely dynamically within the quiz deck */
-  background-color: var(--duo-gray-plate);
+  min-height: 100vh;
+  background-color: var(--ui-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: var(--ui-space-8) var(--ui-page-pad);
   box-sizing: border-box;
-  font-family: "Nunito", system-ui, sans-serif;
+  font-family: var(--ui-font-sans);
 }
 
-/* ================= CHUNKY 3D TACTILE STAGE CARD ================= */
-.quiz-results-card-housing {
-  background-color: var(--duo-snow);
-  border: 2px solid var(--duo-border);
-  border-bottom: 6px solid var(--duo-border);
-  border-radius: 28px;
-  padding: 36px 24px;
+.quiz-results-card-housing.ui-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 560px;
+  padding: clamp(24px, 5vw, 44px) clamp(20px, 4vw, 36px);
+  border-radius: var(--ui-radius-xl);
+  box-shadow: var(--ui-shadow);
   box-sizing: border-box;
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  animation: resultPopUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.255) forwards;
+  align-items: stretch;
+  gap: var(--ui-space-5);
+  animation: resultPopUp 0.25s var(--ui-ease) forwards;
 }
 
 .quiz-results-main-title {
-  font-size: 24px;
-  font-weight: 900;
-  color: var(--duo-text-dark);
-  margin: 0;
-  letter-spacing: -0.5px;
-}
-
-.quiz-results-subtext-summary {
-  font-size: 14.5px;
-  font-weight: 700;
-  color: var(--duo-text-slate);
-  line-height: 1.5;
+  font-family: var(--ui-font-display);
+  font-size: clamp(var(--ui-fs-xl), 3vw, var(--ui-fs-2xl));
+  font-weight: var(--ui-fw-heavy);
+  color: var(--ui-text);
+  letter-spacing: var(--ui-tracking-tight);
+  line-height: var(--ui-lh-tight);
   margin: 0;
 }
 
-.score-highlight-node {
-  color: var(--duo-green);
-  font-weight: 900;
+/* Pass / fail summary — .ui-callout (tone set in QuizResults.jsx). Block
+   layout so the inline score spans flow as one sentence. */
+.quiz-results-subtext-summary.ui-callout {
+  display: block;
+  margin: 0;
+  padding: var(--ui-space-3) var(--ui-space-5);
+  font-size: var(--ui-fs-base);
+  font-weight: var(--ui-fw-medium);
+  text-align: center;
 }
 
+.score-highlight-node,
 .total-highlight-node {
-  color: var(--duo-text-dark);
-  font-weight: 900;
+  font-weight: var(--ui-fw-heavy);
+  font-variant-numeric: tabular-nums;
 }
 
-/* ================= HIGH-LEVEL REWARD SYSTEM BADGES ================= */
-.xp-gain-badge-capsule {
-  background-color: #fff9db;
-  border: 2px solid var(--amber-gold);
-  border-bottom-width: 4px;
-  border-radius: 14px;
-  padding: 6px 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+/* ================= STAT STRIP ================= */
+/* Always one row of equal columns (2–3 stats), also on phones. */
+.quiz-results-stat-strip.ui-stat-strip {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+
+.quiz-results-stat-strip > .ui-stat {
+  padding: var(--ui-space-4) var(--ui-space-3);
+}
+
+@media (max-width: 640px) {
+  .quiz-results-stat-strip > .ui-stat + .ui-stat { border-left: 1px solid var(--ui-border); }
+  .quiz-results-stat-strip > .ui-stat:nth-child(n+3) { border-top: 0; }
+  .quiz-results-stat-strip .ui-stat__value { font-size: var(--ui-fs-xl); }
 }
 
 .xp-gain-text {
-  font-size: 12px;
-  font-weight: 900;
-  color: #b27b00;
-  letter-spacing: 0.5px;
+  color: var(--ui-accent-text);
 }
 
-/* ================= RING FRAME STAGE ALIGNMENTS ================= */
+/* ================= ACCURACY DONUT ================= */
 .quiz-results-chart-frame {
   width: 100%;
-  margin: 4px 0;
+  margin: 0;
 }
 
 .quiz-chart-center-metric {
-  font-size: 28px;
-  font-weight: 900;
-  fill: var(--duo-text-dark);
-  font-family: "Nunito", system-ui, sans-serif !important;
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-fs-2xl);
+  font-weight: var(--ui-fw-heavy);
+  fill: var(--ui-text);
 }
 
-/* Recharts Internal Custom Style Alignment Hooks */
+/* Recharts legend text. NOTE: this selector is global (it always was) and
+   reaches every recharts legend in the app — kept global, now token-based
+   (it used to resolve to a fixed light grey). */
 .recharts-legend-item-text {
-  font-size: 12.5px;
-  font-weight: 800;
-  color: var(--duo-text-slate) !important;
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-semibold);
+  color: var(--ui-text-2) !important;
 }
 
-/* ================= FOOTER TARGET TRIGGER BUTTONS ================= */
+/* ================= CONTINUE (.ui-btn--primary --lg --block) ================= */
 .quiz-results-return-trigger-btn {
-  width: 100%;
-  background-color: var(--azure-blue);
-  border: none;
-  border-bottom: 5px solid #1a62d6;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  padding: 14px;
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.1s ease;
-  margin-top: 8px;
-}
-
-.quiz-results-return-trigger-btn:hover {
-  filter: brightness(1.05);
-}
-
-.quiz-results-return-trigger-btn:active {
-  transform: translateY(3px);
-  border-bottom-width: 2px;
+  margin-top: var(--ui-space-1);
 }
 
 .quiz-results-empty-notice {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--duo-text-slate);
   font-style: italic;
-  margin: 24px 0;
+  margin: var(--ui-space-2) 0;
 }
 
-/* ================= SANDBOX SIMULATION SCORE BLOCK ================= */
+/* ================= SANDBOX NOTE ================= */
 .quiz-results-sandbox-score-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin: 16px 0;
-}
-
-.sandbox-score-ring-display {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  background: linear-gradient(135deg, #e8f7f2, #d1fae5);
-  border: 3px solid #34d399;
-  border-radius: 20px;
-  padding: 18px 36px;
-}
-
-.sandbox-score-numerator {
-  font-size: 52px;
-  font-weight: 900;
-  color: #059669;
-  line-height: 1;
-}
-
-.sandbox-score-separator {
-  font-size: 32px;
-  font-weight: 700;
-  color: #6ee7b7;
-}
-
-.sandbox-score-denominator {
-  font-size: 36px;
-  font-weight: 800;
-  color: var(--duo-text-dark);
-  line-height: 1;
-}
-
-.sandbox-accuracy-label {
-  font-size: 15px;
-  font-weight: 800;
-  color: #047857;
   margin: 0;
 }
 
 .sandbox-text-hint {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--duo-text-slate);
+  font-size: var(--ui-fs-sm);
+  color: var(--ui-text-3);
   margin: 0;
-  font-style: italic;
 }
 
 @keyframes resultPopUp {
-  0% { transform: scale(0.9); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% { transform: translateY(8px) scale(0.98); opacity: 0; }
+  100% { transform: none; opacity: 1; }
 }

@@ -1,14 +1,18 @@
 // src/admin/CurriculumBuilder.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Row, Col, Accordion, ListGroup, Card, Badge, Dropdown, Spinner, Button } from 'react-bootstrap';
 import { FolderPlus, PlusCircle, LayoutTextWindow, PlayCircle, QuestionCircle, CodeSquare, ThreeDotsVertical, PencilSquare, Trash, ArrowUp, ArrowDown, FileEarmarkPdf, FileEarmarkPpt, Globe2, Building, Microsoft, LightningChargeFill, WindowPlus, Fire, Star, StarFill } from 'react-bootstrap-icons';
 import api from './services/api';
+import AuthContext from '../context/AuthContext';
 import ConfirmationModal from '../components/ConfirmationModal';
 import StarRating from '../components/StarRating';
 import ModuleReviewsModal from './components/ModuleReviewsModal';
 import './CurriculumBuilder.css';
 
 export default function CurriculumBuilder({ initialModulesList = [], onRefresh, onNavigate }) {
+  // Hot / Popular are platform-wide flags — superadmin only (the API enforces it too).
+  const { user } = useContext(AuthContext);
+  const canFeature = user?.role === 'superadmin';
   const [modules, setModules] = useState(initialModulesList);
   const [reviewsModalModule, setReviewsModalModule] = useState(null);
   
@@ -235,11 +239,11 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
   const renderVisibilityBadge = (visibility) => {
     switch (visibility) {
       case 'Global':
-        return <Badge bg="primary" className="d-flex align-items-center gap-1 font-monospace" style={{ fontSize: '9px' }}><Globe2 size={10}/> GLOBAL</Badge>;
+        return <Badge bg="primary" className="d-flex align-items-center gap-1 font-monospace" style={{ fontSize: '11px' }}><Globe2 size={10}/> GLOBAL</Badge>;
       case 'Departmental':
-        return <Badge bg="success" className="d-flex align-items-center gap-1 font-monospace" style={{ fontSize: '9px' }}><Building size={10}/> DEPT</Badge>;
+        return <Badge bg="success" className="d-flex align-items-center gap-1 font-monospace" style={{ fontSize: '11px' }}><Building size={10}/> DEPT</Badge>;
       case 'Team-Specific':
-        return <Badge bg="dark" className="d-flex align-items-center gap-1 font-monospace text-secondary-brand" style={{ fontSize: '9px' }}><Microsoft size={9}/> TEAM</Badge>;
+        return <Badge bg="dark" className="d-flex align-items-center gap-1 font-monospace text-secondary-brand" style={{ fontSize: '11px' }}><Microsoft size={9}/> TEAM</Badge>;
       default:
         return null;
     }
@@ -273,7 +277,7 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
           <div className="cb-sidebar-header d-flex justify-content-between align-items-center p-3 border-bottom">
             <div>
               <h6 className="m-0 fw-bold text-dark">Course Hierarchy</h6>
-              <small className="text-muted font-monospace" style={{ fontSize: '10px' }}>CURRICULUM TREE</small>
+              <small className="text-muted font-monospace" style={{ fontSize: '11px' }}>CURRICULUM TREE</small>
             </div>
             <Button variant="none" className="p-1 btn-outline-primary btn-sm rounded-2" onClick={() => onNavigate('add-module')}>
               <FolderPlus size={16} />
@@ -294,7 +298,7 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
                             <span
                               role="button"
                               className="d-inline-flex align-items-center gap-1 text-muted"
-                              style={{ fontSize: '10px', cursor: 'pointer' }}
+                              style={{ fontSize: '11px', cursor: 'pointer' }}
                               title="View reviews for this module"
                               onClick={(e) => { e.stopPropagation(); setReviewsModalModule(mod); }}
                             >
@@ -304,7 +308,7 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
                           )}
                           {/* 🚀 HYBRID RENDER UPDATED: Evaluates whether this item skips sub-topic rails accurately */}
                           {(activeModuleId === mod._id && currentModuleData ? currentModuleData.hasTopics === false : mod.hasTopics === false) && (
-                            <Badge bg="info" className="d-flex align-items-center gap-0.5 font-monospace" style={{ fontSize: '9px', color: '#fff' }}>
+                            <Badge bg="info" className="d-flex align-items-center gap-0.5 font-monospace" style={{ fontSize: '11px', color: '#fff' }}>
                               <LightningChargeFill size={9}/> EXPRESS
                             </Badge>
                           )}
@@ -316,6 +320,7 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
                           HTML — react-bootstrap's Button supports polymorphic rendering via `as`
                           to keep identical styling/click behavior without the nested button. */}
                       <div className="d-flex gap-2 align-items-center flex-shrink-0">
+                        {canFeature && (<>
                         <Button
                           as="span"
                           role="button"
@@ -336,6 +341,7 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
                         >
                           {mod.isPopular ? <StarFill size={13} color="var(--amber-glow)" /> : <Star size={13} />}
                         </Button>
+                        </>)}
                         <Button as="span" role="button" variant="none" className="p-0 text-primary hover-edit-action" onClick={(e) => { e.stopPropagation(); onNavigate('add-module', '', '', mod); }}>
                           <PencilSquare size={13} />
                         </Button>
@@ -356,7 +362,7 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
                         </div>
 
                         {fetchingTree && activeModuleId === mod._id && (
-                          <div className="text-center py-4"><Spinner animation="border" size="sm" style={{color: '#0f256e'}} /></div>
+                          <div className="text-center py-4"><Spinner animation="border" size="sm" style={{color: 'var(--ui-accent-text)'}} /></div>
                         )}
 
                         {activeModuleId === mod._id && !fetchingTree && currentModuleData && (
@@ -376,7 +382,7 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
                                     <span className="text-truncate d-inline-block ps-2" style={{ maxWidth: '120px' }}>{topic.title}</span>
                                     
                                     <div className="d-flex align-items-center gap-2 ms-auto">
-                                      <Badge bg="white" className="text-muted border rounded-pill font-monospace" style={{ fontSize: '9px' }}>{topic.cards?.length || 0} C</Badge>
+                                      <Badge bg="white" className="text-muted border rounded-pill font-monospace" style={{ fontSize: '11px' }}>{topic.cards?.length || 0} C</Badge>
                                       <Button variant="none" className="p-0 text-primary hover-edit-action-inline" onClick={(e) => { e.stopPropagation(); onNavigate('add-topic', mod._id, '', topic); }}>
                                         <PencilSquare size={12} />
                                       </Button>
@@ -392,7 +398,7 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
                         )}
                       </>
                     ) : (
-                      <div className="p-3 text-center bg-light text-muted font-monospace border-bottom" style={{ fontSize: '11px', borderLeft: '3px solid #0dcaf0' }}>
+                      <div className="p-3 text-center bg-light text-muted font-monospace border-bottom" style={{ fontSize: '11px', borderLeft: '3px solid var(--ui-info)' }}>
                         ⚡ Express pipeline strategy active. Card assets map directly above.
                       </div>
                     )}
@@ -410,14 +416,14 @@ export default function CurriculumBuilder({ initialModulesList = [], onRefresh, 
               
               <div className="d-flex justify-content-between align-items-center bg-white p-3 border border-slate rounded-3 mb-4 shadow-sm">
                 <div>
-                  <span className="text-uppercase text-muted font-monospace fw-bold" style={{ fontSize: '10px' }}>
+                  <span className="text-uppercase text-muted font-monospace fw-bold" style={{ fontSize: '11px' }}>
                     {isFlatPipelineActive ? "Active Workspace Module (Flat Pipeline)" : "Active Workspace Topic"}
                   </span>
                   <h4 className="fw-bold text-dark m-0 mt-1">{activeWorkspaceTitle}</h4>
                 </div>
                 <Button 
                   className="btn btn-sm btn-primary fw-bold px-3 rounded-2" 
-                  style={{ backgroundColor: '#0f256e', borderColor: '#0f256e' }} 
+                  style={{ backgroundColor: 'var(--ui-accent)', borderColor: 'var(--ui-accent)' }} 
                   onClick={() => onNavigate('add-card', activeModuleId, isFlatPipelineActive ? '' : selectedTopic._id)}
                 >
                   <PlusCircle size={14} className="me-1" /> Add Card Unit

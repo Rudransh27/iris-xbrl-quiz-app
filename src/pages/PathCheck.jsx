@@ -7,23 +7,24 @@
 // Correct answers never reach the browser before submission.
 import React, { useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft } from "react-bootstrap-icons";
+import { ArrowLeft, CheckLg, ClipboardCheck } from "react-bootstrap-icons";
 import Swal from "sweetalert2";
 import api from "../admin/services/api";
 import AuthContext from "../context/AuthContext";
 import OrbitFooter from "../components/OrbitDashboard/OrbitFooter";
 import "../components/OrbitDashboard/OrbitDashboard.css";
 import "../components/OrbitDashboard/PathFlow.css";
+import { safeId } from "../utils/safeNav";
 
 const LETTERS = "ABCDEFGH";
 
 function Review({ review }) {
   return (
-    <div className="pc-panel">
-      <h2 className="pf-card__name" style={{ marginBottom: 6 }}>Your answers</h2>
+    <div className="ui-card ui-card--roomy pc-panel">
+      <h2 className="ui-h3 pc-panel__title">Your answers</h2>
       {review.map((q, i) => (
         <div className="pc-q" key={q.questionId}>
-          <p className="pc-q__text"><span className="pc-q__num">{i + 1}.</span>{q.question}</p>
+          <p className="pc-q__text"><span className="ui-index pc-q__num">{String(i + 1).padStart(2, "0")}</span>{q.question}</p>
           {q.options.map((opt, oi) => {
             let cls = "pc-opt";
             if (oi === q.correctIndex) cls += " pc-opt--correct";
@@ -46,8 +47,8 @@ function Review({ review }) {
 function PostResult({ result }) {
   const improved = result.improvement;
   return (
-    <div className="pc-panel pc-result">
-      <span className="pf-heading__eyebrow">Post-check result</span>
+    <div className="ui-card ui-card--roomy pc-panel pc-result">
+      <span className="ui-eyebrow">Post-check result</span>
       <div className="pc-result__score">{result.percent}%</div>
       <p className="pc-result__line">{result.score} of {result.maxScore} correct</p>
       {result.prePercent !== null && result.prePercent !== undefined ? (
@@ -58,13 +59,15 @@ function PostResult({ result }) {
       ) : (
         <p className="pc-result__line">You had started this path before the Pre-check existed, so there's no starting score to compare with.</p>
       )}
-      {result.xpChange > 0 && <span className="pc-result__xp">+{result.xpChange} Lightyears earned</span>}
+      {result.xpChange > 0 && <span className="ui-badge ui-badge--lg ui-badge--accent pc-result__xp">+{result.xpChange} Lightyears earned</span>}
     </div>
   );
 }
 
 export default function PathCheck() {
-  const { pathId, kind } = useParams();
+  const params = useParams();
+  const pathId = safeId(params.pathId);
+  const kind = params.kind === "post" ? "post" : "pre";
   const navigate = useNavigate();
   const { addUserXP } = useContext(AuthContext);
   const [load, setLoad] = useState({ loading: true, error: "", data: null });
@@ -105,7 +108,6 @@ export default function PathCheck() {
         title: `${missing} question${missing === 1 ? "" : "s"} unanswered`,
         text: "Unanswered questions count as wrong. You can only submit once.",
         showCancelButton: true, confirmButtonText: "Submit anyway", cancelButtonText: "Keep answering",
-        confirmButtonColor: "#6f5fc0",
       });
       if (!confirm.isConfirmed) return;
     }
@@ -117,7 +119,7 @@ export default function PathCheck() {
       if (res.data?.xpChange) addUserXP(res.data.xpChange);
       setDone(res.data);
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Not submitted", text: err.message || "Please try again.", confirmButtonColor: "#6f5fc0" });
+      Swal.fire({ icon: "error", title: "Not submitted", text: err.message || "Please try again." });
     } finally {
       setSubmitting(false);
     }
@@ -127,26 +129,30 @@ export default function PathCheck() {
   const pathName = load.data?.path?.name || done?.path?.name || "";
 
   return (
-    <div className="pf-wrap pf-narrow">
-      <button type="button" className="pf-back" onClick={backToPath}>
+    <div className="ui-page ui-page--narrow pf-wrap pf-narrow">
+      <button type="button" className="ui-btn ui-btn--ghost ui-btn--sm pf-back" onClick={backToPath}>
         <ArrowLeft size={15} /> Back to {pathName || "the path"}
       </button>
 
-      <div>
-        <span className="pf-heading__eyebrow">{pathName}</span>
-        <h1 className="pf-heading__title">{label}</h1>
-      </div>
+      <header className="ui-page-header ui-page-header--center pc-header">
+        <div className="ui-page-header__text">
+          {pathName && <span className="ui-eyebrow">{pathName}</span>}
+          <h1 className="ui-h1">{label}</h1>
+        </div>
+      </header>
 
-      {load.loading && <div className="orbit-ml-card orbit-ml-card--skeleton" style={{ height: 260, borderRadius: 18 }} />}
-      {load.error && <div className="pf-empty">{load.error}</div>}
+      {load.loading && <div className="ui-card pc-panel pc-panel--skeleton ui-skeleton" aria-hidden="true" />}
+      {load.error && <div className="ui-empty pf-empty">{load.error}</div>}
 
       {done && done.kind === "pre" && (
-        <div className="pc-panel pc-result">
-          <div style={{ fontSize: 44 }}>✅</div>
+        <div className="ui-card ui-card--roomy pc-panel pc-result">
+          <span className="ui-icon-tile ui-icon-tile--green ui-icon-tile--lg pc-result__icon" aria-hidden="true">
+            <CheckLg size={26} />
+          </span>
           <p className="pc-result__line"><strong>Thanks — your starting point is recorded.</strong></p>
           <p className="pc-result__line">This isn't graded. After the last module you'll take the Post-check and see how much you've learned.</p>
-          <div className="pc-actions" style={{ justifyContent: "center" }}>
-            <button type="button" className="pc-btn" onClick={backToPath}>Start the first module →</button>
+          <div className="pc-actions pc-actions--center">
+            <button type="button" className="ui-btn ui-btn--primary ui-btn--lg pc-btn" onClick={backToPath}>Start the first module →</button>
           </div>
         </div>
       )}
@@ -155,35 +161,41 @@ export default function PathCheck() {
         <>
           <PostResult result={done} />
           {Array.isArray(done.review) && <Review review={done.review} />}
-          <div className="pc-actions" style={{ justifyContent: "center" }}>
-            <button type="button" className="pc-btn" onClick={backToPath}>Back to the path</button>
+          <div className="pc-actions pc-actions--center">
+            <button type="button" className="ui-btn ui-btn--primary ui-btn--lg pc-btn" onClick={backToPath}>Back to the path</button>
           </div>
         </>
       )}
 
       {!done && load.data && !load.data.available && (
-        <div className="pf-empty">
-          {load.data.reason}
-          <div className="pc-actions" style={{ justifyContent: "center" }}>
-            <button type="button" className="pc-btn pc-btn--ghost" onClick={backToPath}>Back to the path</button>
+        <div className="ui-empty pf-empty">
+          <span className="ui-icon-tile ui-icon-tile--neutral ui-icon-tile--lg" aria-hidden="true"><ClipboardCheck size={22} /></span>
+          <p className="ui-empty__title">{load.data.reason}</p>
+          <div className="pc-actions pc-actions--center">
+            <button type="button" className="ui-btn ui-btn--secondary pc-btn pc-btn--ghost" onClick={backToPath}>Back to the path</button>
           </div>
         </div>
       )}
 
       {!done && load.data?.available && (
-        <div className="pc-panel">
+        <div className="ui-card ui-card--roomy ui-card--raised pc-panel">
           <div className="pc-intro">
             <p>
               {kind === "pre"
                 ? "Before you start, answer these questions so we can see where you're starting from. It isn't graded and you won't see a score now — just answer honestly."
                 : "You've finished every module. Answer the same questions again to see how much you've learned."}
             </p>
-            <p>You can submit only once.</p>
-            <span className="pc-progress">{answeredCount} of {questions.length} answered</span>
+            <p className="pc-intro__note">You can submit only once.</p>
+            <div className="pc-progress-row">
+              <div className="ui-progress">
+                <div className="ui-progress__bar" style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }} />
+              </div>
+              <span className="pc-progress ui-num">{answeredCount} of {questions.length} answered</span>
+            </div>
           </div>
           {questions.map((q, i) => (
             <div className="pc-q" key={q._id} role="radiogroup" aria-label={`Question ${i + 1}`}>
-              <p className="pc-q__text"><span className="pc-q__num">{i + 1}.</span>{q.question}</p>
+              <p className="pc-q__text"><span className="ui-index pc-q__num">{String(i + 1).padStart(2, "0")}</span>{q.question}</p>
               {/* Options arrive shuffled; each keeps its original index `i`,
                   which is what gets submitted. */}
               {q.options.map((opt, oi) => (
@@ -199,8 +211,8 @@ export default function PathCheck() {
             </div>
           ))}
           <div className="pc-actions">
-            <button type="button" className="pc-btn pc-btn--ghost" onClick={backToPath} disabled={submitting}>Not now</button>
-            <button type="button" className="pc-btn" onClick={submit} disabled={submitting || questions.length === 0}>
+            <button type="button" className="ui-btn ui-btn--ghost pc-btn pc-btn--ghost" onClick={backToPath} disabled={submitting}>Not now</button>
+            <button type="button" className="ui-btn ui-btn--primary pc-btn" onClick={submit} disabled={submitting || questions.length === 0}>
               {submitting ? "Submitting…" : `Submit ${label}`}
             </button>
           </div>

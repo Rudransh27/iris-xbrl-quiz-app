@@ -7,10 +7,10 @@ import Swal from 'sweetalert2';
 import { ChevronRight, ArrowLeft, Book, Trophy, ClockHistory } from 'react-bootstrap-icons';
 import './TopicTrail.css';
 import '../components/OrbitDashboard/OrbitDashboard.css';
-import { useStars } from '../components/OrbitDashboard/HeroWelcome';
 import AuthContext from '../context/AuthContext';
 import { setCurrentModule } from '../components/OrbitDashboard/currentModuleStorage';
 import { buildTagSuffix, buildLearnBackPath } from '../utils/tagReturnPath';
+import { safeId } from "../utils/safeNav";
 
 // "90 min" below an hour, "1.5 hrs" once it crosses 60 — avoids an odd-looking
 // "0.5 hours" for anything short, without needing two separate formats.
@@ -21,7 +21,7 @@ const formatDuration = (totalMinutes) => {
 };
 
 export default function TopicTrail() {
-    const { moduleId } = useParams();
+    const moduleId = safeId(useParams().moduleId);
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useContext(AuthContext);
@@ -158,15 +158,13 @@ export default function TopicTrail() {
     }, [topics, userProgress]);
 
     const durationLabel = formatDuration(totalDurationMinutes);
-    const stars = useStars(24);
 
     return (
         <div className="topic-trail-page">
-            <div className="duo-topic-container">
+            <div className="ui-page duo-topic-container">
 
-                {/* Sits above the hero banner (not inside it) — a plain page-level
-                    back action, distinct from the breadcrumb's fixed "Modules"
-                    destination below.
+                {/* A plain page-level back action, distinct from the
+                    breadcrumb's fixed "Modules" destination below.
                     🎯 BUG FIX ("Back to Learn doesn't always go to Learn"):
                     this used navigate(-1) — raw browser-history back — so it
                     could land anywhere depending on how the learner arrived
@@ -175,29 +173,17 @@ export default function TopicTrail() {
                     the real Learn page, not wherever history happens to be. */}
                 <button
                     type="button"
-                    className="topic-back-btn"
+                    className="ui-btn ui-btn--ghost ui-btn--sm topic-back-btn"
                     onClick={() => navigate(learnBackPath)}
                 >
                     <ArrowLeft size={14} /> {tagId ? `Back to ${tagName || "Category"}` : "Back to Learn"}
                 </button>
 
-                {/* ================= HERO HEADER =================
-                    Same galaxy-gradient/starfield/comet shell as the Home and
-                    Learn hero banners, sized down for a sub-page: breadcrumb,
-                    module title, meta row, and the master progress line. */}
-                <div className="orbit-hero orbit-hero--topic">
-                    <div className="orbit-hero__stars" aria-hidden="true">
-                        {stars.map((s) => (
-                            <span
-                                key={s.id}
-                                className="orbit-hero__star"
-                                style={{ top: s.top, left: s.left, width: s.size, height: s.size, animationDelay: s.delay, animationDuration: s.duration }}
-                            />
-                        ))}
-                    </div>
-                    <div className="orbit-hero__comet" aria-hidden="true" />
-
-                    <div className="topic-header">
+                {/* ================= PAGE HEADER =================
+                    Breadcrumb, module title, meta chips, and the master
+                    progress line. */}
+                <header className="ui-page-header topic-header">
+                    <div className="ui-page-header__text topic-header__text">
                         <nav className="topic-header__breadcrumb" aria-label="Breadcrumb">
                             <button type="button" onClick={() => navigate('/orbit/tags')}>Learn</button>
                             <ChevronRight size={10} />
@@ -206,52 +192,52 @@ export default function TopicTrail() {
                             <span className="topic-header__breadcrumb-current">{moduleInfo?.title || '…'}</span>
                         </nav>
 
-                        <h1 className="topic-header__title">{moduleInfo?.title || 'Your Learning Topics'}</h1>
+                        <h1 className="ui-h1 topic-header__title">{moduleInfo?.title || 'Your Learning Topics'}</h1>
 
                         <div className="topic-header__meta-row">
-                            <span className="topic-header__meta-item">
-                                <Book size={13} /> {totalTopicsCount} {totalTopicsCount === 1 ? 'topic' : 'topics'}
+                            <span className="ui-chip topic-header__meta-item">
+                                <Book size={13} /> <strong className="ui-num">{totalTopicsCount}</strong> {totalTopicsCount === 1 ? 'topic' : 'topics'}
                             </span>
                             {durationLabel && (
-                                <span className="topic-header__meta-item">
+                                <span className="ui-chip topic-header__meta-item">
                                     <ClockHistory size={13} /> {durationLabel}
                                 </span>
                             )}
                             {totalPotentialXp > 0 && (
-                                <span className="topic-header__meta-item topic-header__meta-item--xp">
-                                    <Trophy size={13} /> +{totalPotentialXp} Lightyears
+                                <span className="ui-chip topic-header__meta-item topic-header__meta-item--xp">
+                                    <Trophy size={13} /> <strong className="ui-num">+{totalPotentialXp}</strong> Lightyears
                                 </span>
                             )}
                         </div>
                     </div>
 
-                    {/* ================= RAZOR-THIN MASTER PROGRESS LINE ================= */}
+                    {/* ================= MASTER PROGRESS ================= */}
                     {totalTopicsCount > 0 && (
-                        <div className="topic-progress-line-wrap">
+                        <div className="ui-card ui-card--compact topic-progress-line-wrap">
                             <div className="topic-progress-line-labels">
                                 <span>{completedTopicsCount}/{totalTopicsCount} completed</span>
-                                <span>{masterProgressPct}%</span>
+                                <span className="ui-num">{masterProgressPct}%</span>
                             </div>
-                            <div className={`topic-progress-line ${masterProgressPct >= 100 ? 'topic-progress-line--mastered' : ''}`}>
+                            <div className={`ui-progress topic-progress-line ${masterProgressPct >= 100 ? 'ui-progress--success topic-progress-line--mastered' : ''}`}>
                                 <div
-                                    className="topic-progress-line__fill"
+                                    className="ui-progress__bar topic-progress-line__fill"
                                     style={{ width: `${Math.max(masterProgressPct > 0 ? 2 : 0, masterProgressPct)}%` }}
                                 />
                             </div>
                         </div>
                     )}
-                </div>
+                </header>
 
                 {/* ================= TOPICS CARD GRID MATRIX ================= */}
                 <div className="topics-grid-container">
                     {loading ? (
-                        <div className="topic-trail-cards-grid">
+                        <div className="topic-trail-cards-grid" aria-hidden="true">
                             {Array(3).fill(0).map((_, idx) => (
-                                <div className="skeleton-topic-card" key={idx}>
-                                    <div className="skeleton-node skeleton-icon-sphere"></div>
-                                    <div className="skeleton-node skeleton-text-title"></div>
-                                    <div className="skeleton-node skeleton-text-paragraph"></div>
-                                    <div className="skeleton-node skeleton-progress-track"></div>
+                                <div className="ui-card skeleton-topic-card" key={idx}>
+                                    <div className="ui-skeleton skeleton-node skeleton-icon-sphere"></div>
+                                    <div className="ui-skeleton skeleton-node skeleton-text-title"></div>
+                                    <div className="ui-skeleton skeleton-node skeleton-text-paragraph"></div>
+                                    <div className="ui-skeleton skeleton-node skeleton-progress-track"></div>
                                 </div>
                             ))}
                         </div>
@@ -265,6 +251,7 @@ export default function TopicTrail() {
                                 return (
                                     <div className="topic-stagger-wrapper" key={topic._id || index}>
                                         <TopicCard
+                                            index={index}
                                             topicId={topic._id}
                                             moduleId={moduleId}
                                             title={topic.title}
@@ -289,8 +276,8 @@ export default function TopicTrail() {
                             })}
                         </div>
                     ) : (
-                        <div className="no-topics-placeholder">
-                           No topic nodes are currently mapped under this training module track.
+                        <div className="ui-empty no-topics-placeholder">
+                           <p className="ui-empty__title">No topic nodes are currently mapped under this training module track.</p>
                         </div>
                     )}
                 </div>

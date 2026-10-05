@@ -1,10 +1,10 @@
 // src/components/IdeasAndRD.jsx
 import React, { useState, useEffect, useContext } from "react";
-import { Form, Alert, Spinner } from "react-bootstrap";
-import { Lightbulb, ChatLeftText, Tags, Lock, Send, Eye, FileText } from "react-bootstrap-icons";
+import { Form } from "react-bootstrap";
+import { ChatLeftText, Tags, Lock, Send, Eye, FileText } from "react-bootstrap-icons";
 import AuthContext from "../context/AuthContext";
 import api from "../admin/services/api";
-import SectionHeader from "./OrbitDashboard/SectionHeader";
+import { PageHeader } from "./ui";
 import OrbitFooter from "./OrbitDashboard/OrbitFooter";
 import "./IdeasAndRD.css";
 
@@ -91,143 +91,149 @@ export default function IdeasAndRD() {
   };
 
   return (
-    <div className="premium-workspace-shell">
-      <SectionHeader
-        icon={Lightbulb}
+    <div className="ui-page ui-page--narrow ideas-page">
+      <PageHeader
+        eyebrow="Community"
         title="Ideas & R&D"
         subtitle="Submit an idea, track its status, and see what the Product Council decided — every fortnight."
       />
-      <div className="workspace-grid-row">
 
-        {/* ================= LEFT CREATION STUDIO ================= */}
-        <div className="workspace-column-left">
-          <div className="studio-card">
-            {alertMsg.text && (
-              <Alert variant={alertMsg.variant} className="studio-alert-banner">
-                {alertMsg.text}
-              </Alert>
-            )}
-
-            <Form onSubmit={handleIdeaSubmission} className="studio-form">
-              <Form.Group className="mb-3">
-                <Form.Label className="studio-field-lbl">
-                  <ChatLeftText size={13} /> Abstract Summary
-                </Form.Label>
-                <Form.Control 
-                  type="text" 
-                  placeholder="Your innovation in one clear line..." 
-                  value={title} 
-                  onChange={(e) => setTitle(e.target.value)} 
-                  disabled={submitting} 
-                  required 
-                  className="studio-input"
-                />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label className="studio-field-lbl">
-                  <FileText size={13} /> Full Specifications
-                </Form.Label>
-                <Form.Control 
-                  as="textarea" 
-                  rows={4} 
-                  placeholder="Elaborate on structural execution flow (what, why, for whom)..." 
-                  value={details} 
-                  onChange={(e) => setDetails(e.target.value)} 
-                  disabled={submitting} 
-                  required 
-                  className="studio-input text-area-fix"
-                />
-              </Form.Group>
-
-              <Form.Group className="mb-4">
-                <Form.Label className="studio-field-lbl">
-                  <Tags size={13} /> Classification Segment
-                </Form.Label>
-                <div className="chiclet-matrix">
-                  {["product", "process", "technology", "culture"].map((tagName) => (
-                    <label 
-                      key={tagName} 
-                      className={`chiclet-pill-target ${selectedTag === tagName ? "chiclet-active" : ""}`}
-                    >
-                      <input 
-                        type="radio" 
-                        name="rdTags" 
-                        value={tagName} 
-                        checked={selectedTag === tagName} 
-                        onChange={() => setSelectedTag(tagName)}
-                        disabled={submitting}
-                      />
-                      <span className="text-uppercase">{tagName}</span>
-                    </label>
-                  ))}
-                </div>
-              </Form.Group>
-
-              <div className="studio-compliance-banner">
-                <Lock size={12} />
-                <span>Encrypted Channel: Visible only to author and reviewers</span>
-              </div>
-
-              <button type="submit" disabled={submitting} className="studio-action-submit">
-                {submitting ? <Spinner animation="border" size="sm" /> : <><Send size={13} /> Dispatch Innovation</>}
-              </button>
-            </Form>
+      {/* ================= CREATION STUDIO ================= */}
+      <div className="ui-card ideas-form-card">
+        {alertMsg.text && (
+          <div className={`ui-callout ui-callout--${alertMsg.variant === "success" ? "success" : "danger"}`} role="alert">
+            {alertMsg.text}
           </div>
-        </div>
+        )}
 
-        {/* ================= RIGHT METRICS FEED ================= */}
-        <div className="workspace-column-right">
-          <div className="feed-meta-row">
-            <h5 className="feed-meta-title">
-              <Eye size={16} /> Submission Directory
-            </h5>
-            <span className="feed-counter-pill">{myIdeas.length} Registered</span>
+        <Form onSubmit={handleIdeaSubmission} className="ideas-form">
+          <div className="ui-field">
+            <label className="ui-label ideas-label" htmlFor="idea-title">
+              <ChatLeftText size={14} /> Abstract Summary
+            </label>
+            <input
+              id="idea-title"
+              type="text"
+              placeholder="Your innovation in one clear line..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              disabled={submitting}
+              required
+              className="ui-input"
+            />
           </div>
 
-          {loadingHistory ? (
-            <div className="feed-loading-portal">
-              <Spinner animation="border" variant="primary" />
-              <p>Syncing node timeline layers...</p>
-            </div>
-          ) : myIdeas.length === 0 ? (
-            <div className="feed-empty-placeholder">
-              No checked entries found in this directory index loop.
-            </div>
-          ) : (
-            <div className="feed-scrollable-stack">
-              {myIdeas.map((idea) => {
-                const readableDate = new Date(idea.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-                return (
-                  <div key={idea._id} className="feed-item-card">
-                    <div className="feed-card-top-header">
-                      <div className="meta-left-group">
-                        <span className={`feed-status-pill badge-tint-${idea.status?.toLowerCase()}`}>
-                          {idea.status || "Dispatched"}
-                        </span>
-                        <span className="feed-timestamp">{readableDate}</span>
-                      </div>
-                      <span className="feed-segment-marker">#{idea.tag}</span>
-                    </div>
+          <div className="ui-field">
+            <label className="ui-label ideas-label" htmlFor="idea-details">
+              <FileText size={14} /> Full Specifications
+            </label>
+            <textarea
+              id="idea-details"
+              rows={4}
+              placeholder="Elaborate on structural execution flow (what, why, for whom)..."
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              disabled={submitting}
+              required
+              className="ui-textarea"
+            />
+          </div>
 
-                    <h4 className="feed-idea-title">{idea.title}</h4>
-                    <p className="feed-idea-details">{idea.details}</p>
-
-                    {idea.curatorFeedback && (
-                      <div className="feed-response-container">
-                        <div className="response-badge">Official Evaluation</div>
-                        <p className="response-text">"{idea.curatorFeedback}"</p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+          <div className="ui-field">
+            <span className="ui-label ideas-label">
+              <Tags size={14} /> Classification Segment
+            </span>
+            <div className="ideas-tag-row">
+              {["product", "process", "technology", "culture"].map((tagName) => (
+                <label
+                  key={tagName}
+                  className={`ideas-tag ${selectedTag === tagName ? "ideas-tag--active" : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name="rdTags"
+                    value={tagName}
+                    checked={selectedTag === tagName}
+                    onChange={() => setSelectedTag(tagName)}
+                    disabled={submitting}
+                  />
+                  <span>{tagName}</span>
+                </label>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
 
+          <div className="ideas-note">
+            <Lock size={13} />
+            <span>Encrypted Channel: Visible only to author and reviewers</span>
+          </div>
+
+          <button type="submit" disabled={submitting} className="ui-btn ui-btn--primary ui-btn--lg ui-btn--block">
+            {submitting ? <span className="ui-spinner ideas-spinner" role="status" aria-label="Submitting" /> : <><Send size={14} /> Dispatch Innovation</>}
+          </button>
+        </Form>
       </div>
+
+      {/* ================= SUBMISSION DIRECTORY ================= */}
+      <section className="ideas-directory">
+        <div className="ideas-directory__head">
+          <h2 className="ideas-directory__title">
+            <Eye size={16} /> Submission Directory
+          </h2>
+          <span className="ui-badge ui-badge--accent">{myIdeas.length} Registered</span>
+        </div>
+
+        {loadingHistory ? (
+          <div className="ui-loading">
+            <span className="ui-spinner ui-spinner--lg" role="status" aria-label="Loading" />
+            <span>Syncing node timeline layers...</span>
+          </div>
+        ) : myIdeas.length === 0 ? (
+          <div className="ui-empty">
+            <p className="ui-small">No checked entries found in this directory index loop.</p>
+          </div>
+        ) : (
+          <div className="ui-list">
+            {myIdeas.map((idea) => {
+              const readableDate = new Date(idea.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+              return (
+                <div key={idea._id} className="ui-list-item ideas-row">
+                  <div className="ideas-row__top">
+                    <span className={`ui-badge ${ideaStatusTone(idea.status)}`}>
+                      {idea.status || "Dispatched"}
+                    </span>
+                    <span className="ideas-row__date">{readableDate}</span>
+                    <span className="ideas-row__tag">#{idea.tag}</span>
+                  </div>
+
+                  <h3 className="ideas-row__title">{idea.title}</h3>
+                  <p className="ideas-row__details">{idea.details}</p>
+
+                  {idea.curatorFeedback && (
+                    <div className="ideas-row__feedback">
+                      <div className="ideas-row__feedback-label">Official Evaluation</div>
+                      <p className="ideas-row__feedback-text">"{idea.curatorFeedback}"</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
       <OrbitFooter />
     </div>
   );
+}
+
+// Status → ui-badge tone (statuses come from the Idea model enum).
+function ideaStatusTone(status) {
+  switch ((status || "").toLowerCase()) {
+    case "in review": return "ui-badge--warning";
+    case "building":  return "ui-badge--info";
+    case "shipped":
+    case "approved":  return "ui-badge--success";
+    case "rejected":  return "ui-badge--danger";
+    default:          return "";
+  }
 }

@@ -10,8 +10,8 @@ import { toDateKey, anyTaskDone, dailyReadDateKey, getMonthMatrix } from "./dash
 
 const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
 
-// Rotating pastel-rainbow fill per qualified day — purely decorative variety,
-// not tied to which task(s) were done that day.
+// Per-day accent modifier class — kept for markup stability; the stylesheet
+// now renders every qualified day in the single Orbit accent tint.
 const ACCENTS = ["rose", "pink", "mint", "teal", "sky", "lavender", "lilac"];
 
 export default function OrbitCalendar({ history, streak, reads, onSelectRead }) {
@@ -50,10 +50,15 @@ export default function OrbitCalendar({ history, streak, reads, onSelectRead }) 
 
   return (
     <div className="orbit-card orbit-card--compact orbit-calendar-card">
-      <h3 className="orbit-card__title orbit-card__title--tight">Activity Calendar</h3>
+      <div className="orbit-card__head">
+        <span className="ui-eyebrow">Consistency</span>
+        <h3 className="orbit-card__title orbit-card__title--tight">Activity Calendar</h3>
+      </div>
 
       <div className="orbit-calendar__streak">
-        <RocketTakeoffFill size={20} color="var(--orbit-pink-text)" />
+        <span className="ui-icon-tile orbit-calendar__streak-icon">
+          <RocketTakeoffFill size={18} />
+        </span>
         <div>
           <div className="orbit-calendar__streak-num">{streak}</div>
           <div className="orbit-calendar__streak-label">Day Consistency Streak</div>
@@ -62,11 +67,11 @@ export default function OrbitCalendar({ history, streak, reads, onSelectRead }) 
 
       <div className="orbit-calendar__nav">
         <button className="orbit-calendar__nav-btn" onClick={() => shiftMonth(-1)} aria-label="Previous month">
-          <ChevronLeft size={12} />
+          <ChevronLeft size={14} />
         </button>
         <span className="orbit-calendar__month-label">{monthLabel}</span>
         <button className="orbit-calendar__nav-btn" onClick={() => shiftMonth(1)} aria-label="Next month">
-          <ChevronRight size={12} />
+          <ChevronRight size={14} />
         </button>
       </div>
 

@@ -57,7 +57,7 @@ function MemberCard({ member, isTopPerformer, sourceTeamId }) {
         <MemberAvatar member={member} />
         <div className="team-hub-member-name">
           {member.username}
-          {isTopPerformer && <TrophyFill className="ms-1" size={11} color="#d4a017" title="Top performer" />}
+          {isTopPerformer && <TrophyFill className="ms-1" size={11} color="var(--ui-warning-text)" title="Top performer" />}
         </div>
       </div>
       <span className="team-hub-member-xp">{member.xp || 0} XP</span>

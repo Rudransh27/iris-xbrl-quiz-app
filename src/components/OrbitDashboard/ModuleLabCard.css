@@ -1,0 +1,185 @@
+/* src/components/OrbitDashboard/ModuleLabCard.css
+   The ONE module-card anatomy (Learn grid + Home "Featured Modules"), built on
+   the ui-card primitive: media (token gradient art + icon, real image layered
+   on top) → badges → title → 2-line description → footer (duration ·
+   Lightyears · arrow). Tokens only — follows light/dark automatically. */
+
+/* ── Grids ─────────────────────────────────────────────────────────────── */
+.mlc-grid {
+  display: grid;
+  gap: var(--ui-space-4);
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+/* Learn page: pinned 4 / 3 / 2 / 1 columns */
+.mlc-grid--fixed { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1280px) { .mlc-grid--fixed { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 1024px) { .mlc-grid--fixed { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px)  { .mlc-grid--fixed, .mlc-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ── Card ──────────────────────────────────────────────────────────────── */
+.mlc {
+  height: 100%;
+  gap: var(--ui-space-2);
+}
+
+.mlc__media {
+  position: relative;
+  aspect-ratio: 16 / 5;
+  background: var(--mlc-art, var(--grad-m1));
+}
+/* Dark theme: the category hues get lighter, so deepen the art slightly to
+   keep it calm against dark surfaces. */
+[data-theme="dark"] .mlc__media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--ui-bg) 32%, transparent);
+  pointer-events: none;
+}
+
+/* Art layer: always present, so a missing or broken image still shows art. */
+.mlc__art {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+.mlc__art svg {
+  box-sizing: content-box;
+  padding: 9px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--ui-radius-pill);
+  background: color-mix(in srgb, #fff 16%, transparent);
+  transition: transform var(--ui-duration) var(--ui-ease);
+}
+.mlc.ui-card--interactive:hover .mlc__art svg { transform: scale(1.06); }
+
+.mlc__img {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.mlc__status {
+  position: absolute;
+  z-index: 4;
+  top: var(--ui-space-3);
+  right: var(--ui-space-3);
+  box-shadow: var(--ui-shadow-sm);
+}
+
+.mlc__lock-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  color: var(--ui-text-2);
+}
+.mlc__lock-overlay svg {
+  box-sizing: content-box;
+  padding: 12px;
+  border-radius: var(--ui-radius-pill);
+  background: var(--ui-surface);
+  box-shadow: var(--ui-shadow-sm);
+}
+
+.mlc__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--ui-space-1);
+}
+
+.mlc__title { min-height: 0; }
+
+.mlc__desc {
+  margin: 0;
+  font-size: var(--ui-fs-sm);
+  line-height: var(--ui-lh-body);
+  color: var(--ui-text-2);
+}
+
+.mlc__lock-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-medium);
+  color: var(--ui-text-3);
+}
+
+.mlc__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+}
+.mlc__progress .ui-progress { flex: 1; }
+.mlc__progress-label {
+  flex-shrink: 0;
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-semibold);
+  color: var(--ui-text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.mlc__foot {
+  flex-wrap: wrap;
+  gap: var(--ui-space-2) var(--ui-space-3);
+  padding-top: var(--ui-space-3);
+  border-top: 1px solid var(--ui-border);
+}
+
+.mlc__time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ui-fs-sm);
+  font-weight: var(--ui-fw-medium);
+  color: var(--ui-text-3);
+  white-space: nowrap;
+}
+
+.mlc__go { margin-left: auto; }
+.mlc.ui-card--interactive:hover .mlc__go {
+  --_bg: var(--ui-accent);
+  --_fg: var(--ui-on-accent);
+  --_bg-hover: var(--ui-accent-hover);
+}
+
+/* Locked: badge + muted text + desaturated art — no heavy opacity. */
+.mlc--locked { cursor: not-allowed; }
+.mlc--locked .mlc__art { filter: grayscale(0.9); opacity: 0.55; }
+.mlc--locked .mlc__img { filter: grayscale(1); opacity: 0.35; }
+.mlc--locked .mlc__title { color: var(--ui-text-2); }
+.mlc--locked .mlc__desc { color: var(--ui-text-3); }
+
+/* ── Skeleton ──────────────────────────────────────────────────────────── */
+.mlc--skeleton { min-height: 240px; }
+.mlc--skeleton .mlc__media.ui-skeleton {
+  background: linear-gradient(90deg, var(--ui-surface-2) 0%, var(--ui-surface-3) 50%, var(--ui-surface-2) 100%);
+  background-size: 200% 100%;
+  border-radius: calc(var(--ui-radius-lg) - 1px) calc(var(--ui-radius-lg) - 1px) 0 0;
+}
+.mlc__skel { height: 12px; }
+.mlc__skel--sm { width: 40%; }
+.mlc__skel--md { width: 60%; }
+.mlc__skel--lg { width: 85%; height: 16px; }
+
+/* ── "Featured Modules" row (Home) ─────────────────────────────────────── */
+.mlc-row { display: flex; flex-direction: column; gap: var(--ui-space-4); }
+.mlc-row__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  flex-wrap: wrap;
+}
+.mlc-row__title { display: inline-flex; align-items: center; gap: var(--ui-space-2); }

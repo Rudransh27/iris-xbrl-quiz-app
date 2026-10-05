@@ -69,14 +69,14 @@
 }
 
 .ideas-filter-count {
-  background: rgba(0, 0, 0, 0.12);
+  background: color-mix(in srgb, var(--ui-text) 12%, transparent);
   border-radius: 3px;
   padding: 0 6px;
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .ideas-filter-chip--active .ideas-filter-count {
-  background: rgba(255, 255, 255, 0.25);
+  background: color-mix(in srgb, var(--ui-on-accent) 25%, transparent);
 }
 
 /* ── Idea card — no left border, no border-radius, thin uniform border ──── */
@@ -134,7 +134,7 @@
 .ideas-btn-accept {
   background: var(--pastel-progress-text);
   border-color: var(--pastel-progress-text);
-  color: #fff;
+  color: var(--ui-on-accent);
 }
 
 .ideas-btn-accept:hover,

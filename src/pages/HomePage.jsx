@@ -24,55 +24,9 @@ import IrisOrbitHome from "../components/homepage/IrisOrbitHome";
 // gate to fall through and render OrbitOnboarding for a brief moment.
 function OrbitLoadingScreen() {
   return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center",
-      background: `
-        radial-gradient(ellipse 50% 40% at 20% 20%, var(--orbit-brand-light) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 80% 80%, var(--pastel-progress)   0%, transparent 55%),
-        var(--orbit-canvas)
-      `,
-      gap: "18px",
-      fontFamily: "'Inter', system-ui, sans-serif",
-    }}>
-      {/* Spinning orbit ring */}
-      <div style={{
-        position: "relative",
-        width: "52px", height: "52px",
-      }}>
-        {/* Outer pulse ring */}
-        <div style={{
-          position: "absolute", inset: "-8px",
-          borderRadius: "50%",
-          border: "2px solid var(--orbit-brand-muted)",
-          animation: "orbit-ping 1.4s ease-in-out infinite",
-        }} />
-        {/* Spinning ring */}
-        <div style={{
-          width: "52px", height: "52px",
-          borderRadius: "50%",
-          border: "3px solid var(--orbit-brand-muted)",
-          borderTopColor: "var(--orbit-brand)",
-          animation: "orbit-spin 0.85s linear infinite",
-        }} />
-        {/* Center dot */}
-        <div style={{
-          position: "absolute", top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "8px", height: "8px", borderRadius: "50%",
-          background: "var(--orbit-brand)",
-        }} />
-      </div>
-
-      <span style={{
-        fontSize: "12px", fontWeight: "700",
-        color: "var(--orbit-text-muted)",
-        letterSpacing: "1.6px", textTransform: "uppercase",
-        animation: "orbit-pulse-text 1.5s ease-in-out infinite",
-      }}>
-        Syncing session
-      </span>
+    <div className="ioh-loading">
+      <span className="ui-spinner ui-spinner--lg" aria-hidden="true" />
+      <span className="ui-eyebrow ui-eyebrow--caps ioh-loading__text">Syncing session</span>
     </div>
   );
 }

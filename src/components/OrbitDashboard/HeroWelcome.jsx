@@ -30,7 +30,7 @@ export default function HeroWelcome() {
   const stars = useStars(36);
 
   return (
-    <div className="orbit-hero orbit-hero--split">
+    <div className="orbit-hero orbit-hero--split ui-hero">
       <div className="orbit-hero__stars" aria-hidden="true">
         {stars.map((s) => (
           <span
@@ -44,7 +44,7 @@ export default function HeroWelcome() {
 
       <div className="orbit-hero__left">
         <span className="orbit-hero__eyebrow">
-          <RocketTakeoffFill size={11} /> IRIS ORBIT
+          <RocketTakeoffFill size={12} /> IRIS ORBIT
         </span>
 
         <h1 className="orbit-hero__heading">

@@ -5,10 +5,11 @@ import {
   Routes,
   Route,
   Navigate,
+  Link,
   useLocation,
 } from "react-router-dom";
 import { AuthProvider, default as AuthContext } from "./context/AuthContext";
-import { Container, Spinner } from "react-bootstrap";
+import { Spinner } from "./components/ui";
 import HomePage from "./pages/HomePage";
 import TopicTrail from "./pages/TopicTrail";
 import Quiz from "./pages/Quiz";
@@ -19,8 +20,8 @@ import DocumentationPage from "./components/DocumentationPage";
 import AuthPage from "./pages/Auth";
 import SsoCallback from "./pages/SsoCallback";
 import CompleteProfile from "./pages/CompleteProfile";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
+import AccountRecovery from "./pages/AccountRecovery";
+import AccountReset from "./pages/AccountReset";
 import VerifyEmail from "./pages/VerifyEmail";
 import EmailVerificationPage from "./components/EmailVerificationPage";
 import UserProfile from "./pages/UserProfile";
@@ -42,7 +43,19 @@ import "react-toastify/dist/ReactToastify.css";
 import Dashboard from "./admin/Dashboard";
 import useSessionGuard from "./admin/hooks/useSessionGuard";
 import { io } from "socket.io-client";
-import { SERVER_URL } from "./admin/services/config";
+import { SOCKET_ORIGIN, SOCKET_PATH } from "./admin/services/config";
+import api from "./admin/services/api";
+
+// The IRIS Orbit session id inside our own JWT (to tell whether a
+// "session_ended" notice is about this tab's session).
+const tokenSessionId = (token) => {
+  try {
+    const part = String(token).split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(atob(part))?.user?.sessionId || null;
+  } catch {
+    return null;
+  }
+};
 
 // Protected Route for All Logged-In Users (Trainees & Admins Aligned)
 const ProtectedRoute = ({ children }) => {
@@ -51,9 +64,9 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <Container className="d-flex justify-content-center align-items-center vh-100">
-        <Spinner animation="border" variant="primary" />
-      </Container>
+      <div className="ui-loading vh-100">
+        <Spinner size="lg" />
+      </div>
     );
   }
 
@@ -72,9 +85,9 @@ const AdminProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <Container className="d-flex justify-content-center align-items-center vh-100">
-        <Spinner animation="border" variant="primary" />
-      </Container>
+      <div className="ui-loading vh-100">
+        <Spinner size="lg" />
+      </div>
     );
   }
 
@@ -105,9 +118,12 @@ const AppContent = () => {
   const triggerGlobalForceExit = () => {
     if (localStorage.getItem("token") || user) {
       console.warn(
-        "Global Guard: 15-minute idle threshold breached. Invalidating states.",
+        "Global Guard: idle threshold breached. Invalidating states.",
       );
 
+      // End the session on the server too (recorded as an expiry), not just
+      // in this browser — the request outlives the page change (keepalive).
+      if (localStorage.getItem("token")) api.logoutUser("idle");
       localStorage.removeItem("token");
       localStorage.removeItem("iris_studio_active_tree_state");
 
@@ -122,10 +138,22 @@ const AppContent = () => {
     const token = localStorage.getItem("token");
     if (!token || !user || !user.id) return;
 
-    const socket = io(SERVER_URL);
+    // The server authenticates the socket from this token + the session
+    // cookie (sent because of withCredentials) — not from register_session.
+    const socket = io(SOCKET_ORIGIN, { path: SOCKET_PATH, withCredentials: true, auth: { token } });
 
     socket.on("connect", () => {
       socket.emit("register_session", user.id);
+    });
+
+    // The server ended a session of this user (logout in another tab, a
+    // password change, an admin): sign out if it's this tab's session.
+    socket.on("session_ended", (data) => {
+      if (!data?.sessionId || data.sessionId !== tokenSessionId(localStorage.getItem("token"))) return;
+      localStorage.removeItem("token");
+      localStorage.removeItem("iris_studio_active_tree_state");
+      socket.disconnect();
+      window.location.href = "/login?session_status=revoked";
     });
 
     socket.on("force_logout_event", (data) => {
@@ -166,8 +194,8 @@ const AppContent = () => {
           path="/verify-email/:token"
           element={<EmailVerificationPage />}
         />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/forgot-password" element={<AccountRecovery />} />
+        <Route path="/reset-password/:token" element={<AccountReset />} />
 
         {/* ── PUBLIC PAGES ─────────────────────────────────────────── */}
         <Route path="/onboarding" element={<OrbitOnboarding />} />
@@ -243,7 +271,15 @@ const AppContent = () => {
         {/* ⚠️ Fallback Route */}
         <Route
           path="*"
-          element={<h1 className="text-center p-5">404 Not Found</h1>}
+          element={
+            <div className="ui-page ui-page--narrow">
+              <div className="ui-empty">
+                <h1 className="ui-h2">404 Not Found</h1>
+                <p className="ui-small">The page you're looking for doesn't exist or may have moved.</p>
+                <Link to="/" className="ui-btn ui-btn--primary">Back to home</Link>
+              </div>
+            </div>
+          }
         />
         </Routes>
       </Layout>

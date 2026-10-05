@@ -7,9 +7,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../admin/services/api";
 import ModuleJourney from "./ModuleJourney";
+import { safeId, safeIdOrToken } from "../utils/safeNav";
 
 export default function LegacyJourneyRedirect() {
-  const { categoryId, regionId } = useParams();
+  const params = useParams();
+  const categoryId = safeId(params.categoryId);
+  const regionId = safeIdOrToken(params.regionId, "all");
   const navigate = useNavigate();
   const [legacy, setLegacy] = useState(false);
 

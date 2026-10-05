@@ -72,11 +72,11 @@ const EmailVerificationPage = () => {
                       <img src={irisLogo} alt="Iris Logo" className="auth-logo-img" />
                     </div>
 
-                    <h1 className="text-center mb-3 fs-4 fw-bold text-dark">Email Activation</h1>
+                    <h1 className="text-center mb-3 auth-ev-title">Email Activation</h1>
 
                     {/* Dynamic Graphic Status Node Indicator */}
                     <div className="my-3 text-center">
-                        {loading && <Spinner animation="border" style={{ color: '#0f256e' }} />}
+                        {loading && <Spinner animation="border" className="auth-ev-spinner" />}
                         {!loading && success && <CheckCircleFill size={44} className="text-success" />}
                         {!loading && !success && <ExclamationTriangle size={44} className="text-danger" />}
                     </div>
@@ -105,14 +105,13 @@ const EmailVerificationPage = () => {
                         <Link 
                             to="/login" 
                             className="btn btn-primary w-100 text-decoration-none d-flex align-items-center justify-content-center fw-bold"
-                            style={{ height: '36px' }}
                         >
                             Continue to Log In
                         </Link>
                     )}
 
                     {!loading && !success && (
-                        <p className="text-center text-muted m-0 mt-2" style={{ fontSize: '13px', lineSpacing: '1.4' }}>
+                        <p className="text-center m-0 mt-2 auth-ev-hint">
                             Please request a new validation link node or complete registration configurations again.
                         </p>
                     )}

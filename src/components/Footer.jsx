@@ -68,7 +68,7 @@ export default function Footer() {
       {/* Bottom Legal Band */}
       <div className="duo-footer-bottom text-center">
         <p>© {new Date().getFullYear()} IRIS Regtech Solutions. Made with Orbit Engine.</p>
-        <p style={{ fontSize: "11px", opacity: 0.7, marginTop: "4px" }}>
+        <p className="duo-footer-credit">
           3D astronaut model "Falling Spaceman (FanArt)" by wallmasterr, licensed{" "}
           <a
             href="https://creativecommons.org/licenses/by/4.0/"

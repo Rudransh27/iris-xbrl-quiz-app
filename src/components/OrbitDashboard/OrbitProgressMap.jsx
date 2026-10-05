@@ -8,18 +8,9 @@ import "./OrbitProgressMap.css";
 const ORBIT_TARGET = 10000;
 const ORBIT_STEP = ORBIT_TARGET / 3;
 
-// Each orbit gets its own hue from the dashboard's pastel-rainbow accent
-// set (index.css --orbit-rose/mint/lavender etc.) — same family used by the
-// Home dashboard's calendar/checklist/puzzle, so the orbit map reads as
-// part of the same redesigned visual system. Raw hex (not var()) since SVG
-// stroke/fill attribute support for CSS custom properties is inconsistent
-// across browsers, and these particular tokens are identical in both
-// themes anyway (no theme-conditional value to lose by inlining them).
-// trackRgba is the same hue as the ring itself at low opacity — not a
-// generic neutral gray — so the "empty" part of every ring stays visibly
-// readable against both the light and dark canvas (a near-white/near-black
-// neutral token washed out completely in light mode; a tinted version of the
-// ring's own color never does).
+// Colour is driven by each orbit's status (see OrbitProgressMap.css):
+// active = Orbit accent, cleared = success, locked = neutral track — so the
+// map follows the light/dark theme tokens instead of fixed pastel hexes.
 const ORBIT_DEFS = [
   {
     key: "orbit3",
@@ -28,10 +19,6 @@ const ORBIT_DEFS = [
     name: "Practitioner",
     ceil: ORBIT_STEP,
     r: 96,
-    gradId: "opmGradRose",
-    stops: ["#ffb3c7", "#ff9ecf"],
-    solid: "#ff9ecf",
-    trackRgba: "rgba(255, 158, 207, 0.18)",
     desc: "Master the present — what IRIS does, who we compete with, how the market works.",
   },
   {
@@ -41,10 +28,6 @@ const ORBIT_DEFS = [
     name: "Strategist",
     ceil: ORBIT_STEP * 2,
     r: 66,
-    gradId: "opmGradMint",
-    stops: ["#a8e6cf", "#8fe0d8"],
-    solid: "#8fe0d8",
-    trackRgba: "rgba(143, 224, 216, 0.18)",
     desc: "See the gaps. Shape what comes next. Competitive depth, deal patterns, market white space.",
   },
   {
@@ -54,10 +37,6 @@ const ORBIT_DEFS = [
     name: "Architect",
     ceil: ORBIT_TARGET,
     r: 36,
-    gradId: "opmGradLavender",
-    stops: ["#c9b8ff", "#a9d6ff"],
-    solid: "#a9d6ff",
-    trackRgba: "rgba(169, 214, 255, 0.18)",
     desc: "Build what isn't yet. Agentic AI, white-space scans, product specs that go to leadership.",
   },
 ];
@@ -118,12 +97,12 @@ export default function OrbitProgressMap({ xp = 0 }) {
           <div className="opm-title">Your orbit map</div>
           <div className="opm-sub">Three orbits. You start at the edge, move toward the knowledge core.</div>
         </div>
-        <div className="opm-plasma-pill">
+        <div className="opm-plasma-pill ui-badge ui-badge--accent ui-badge--lg">
           <RocketTakeoffFill size={12} /> {Math.round(xp).toLocaleString()} Lightyears
         </div>
       </div>
 
-      <div className="opm-you-badge">
+      <div className="opm-you-badge ui-badge ui-badge--outline">
         {reachedCore
           ? "You've reached the Knowledge Core"
           : `You are on ${activeOrbit.label} · ${activeOrbit.name}`}
@@ -132,14 +111,6 @@ export default function OrbitProgressMap({ xp = 0 }) {
       <div className="opm-body">
         <div className="opm-visual">
           <svg width="240" height="240" viewBox="0 0 240 240" fill="none">
-            <defs>
-              {ORBIT_DEFS.map((o) => (
-                <linearGradient key={o.gradId} id={o.gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor={o.stops[0]} />
-                  <stop offset="100%" stopColor={o.stops[1]} />
-                </linearGradient>
-              ))}
-            </defs>
 
             <circle className="opm-star" cx="3" cy="8" r="1" opacity="0.3" />
             <circle className="opm-star" cx="220" cy="20" r="0.8" opacity="0.2" />
@@ -154,14 +125,13 @@ export default function OrbitProgressMap({ xp = 0 }) {
               const offset = circ - (o.pct / 100) * circ;
               return (
                 <g key={o.key}>
-                  <circle cx="120" cy="120" r={o.r} className="opm-ring-track" stroke={o.trackRgba} />
+                  <circle cx="120" cy="120" r={o.r} className="opm-ring-track" />
                   {o.pct > 0 && (
                     <circle
                       cx="120"
                       cy="120"
                       r={o.r}
-                      className="opm-ring-fill"
-                      stroke={`url(#${o.gradId})`}
+                      className={`opm-ring-fill opm-ring-fill--${o.status}`}
                       strokeDasharray={`${circ} ${circ}`}
                       strokeDashoffset={offset}
                       transform="rotate(-90 120 120)"
@@ -172,7 +142,7 @@ export default function OrbitProgressMap({ xp = 0 }) {
             })}
 
             <g style={{ transform: `translate(${marker.x}px, ${marker.y}px)`, transformBox: "fill-box" }}>
-              <circle r="10" className="opm-marker-halo" fill={activeOrbit.solid} />
+              <circle r="10" className="opm-marker-halo" />
               <circle r="5" className="opm-marker-dot" />
             </g>
           </svg>
@@ -185,7 +155,7 @@ export default function OrbitProgressMap({ xp = 0 }) {
               </>
             ) : (
               <>
-                <div className="opm-center-pct" style={{ color: activeOrbit.solid }}>{activeOrbit.pct}%</div>
+                <div className="opm-center-pct">{activeOrbit.pct}%</div>
                 <div className="opm-center-caption">Orbit {activeOrbit.ordinal}</div>
               </>
             )}
@@ -201,11 +171,10 @@ export default function OrbitProgressMap({ xp = 0 }) {
               <div
                 key={o.key}
                 className={`opm-belt opm-belt--${o.status} ${dimClass}`}
-                style={{ "--opm-accent": o.solid }}
               >
                 <div className="opm-belt-header">
                   <div className="opm-belt-name">
-                    <span className="opm-belt-badge">{o.ordinal}</span>
+                    <span className="opm-belt-badge ui-index">{String(o.ordinal).padStart(2, "0")}</span>
                     {o.label} · {o.name}
                   </div>
                   {o.status === "active" && <div className="opm-belt-tag opm-belt-tag--active">Your orbit</div>}
@@ -217,10 +186,10 @@ export default function OrbitProgressMap({ xp = 0 }) {
                   )}
                 </div>
                 <div className="opm-belt-desc">{o.desc}</div>
-                <div className="opm-progress-track">
+                <div className="opm-progress-track ui-progress ui-progress--sm">
                   <div
-                    className="opm-progress-fill"
-                    style={{ width: `${o.pct}%`, background: `linear-gradient(90deg, ${o.stops[0]}, ${o.stops[1]})` }}
+                    className="opm-progress-fill ui-progress__bar"
+                    style={{ width: `${o.pct}%` }}
                   />
                 </div>
                 <div className="opm-belt-meta">
@@ -234,7 +203,7 @@ export default function OrbitProgressMap({ xp = 0 }) {
           })}
 
           <div className={`opm-core-callout ${reachedCore ? "opm-core-callout--reached" : ""}`}>
-            <div className="opm-core-icon"><LightbulbFill size={16} /></div>
+            <div className="opm-core-icon ui-icon-tile ui-icon-tile--sm"><LightbulbFill size={16} /></div>
             <div>
               <div className="opm-core-title">Knowledge core</div>
               <div className="opm-core-desc">

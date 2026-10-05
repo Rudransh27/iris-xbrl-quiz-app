@@ -17,20 +17,27 @@ ENV VITE_CJS_WORKERS=1
 ARG VITE_SERVER_URL
 ENV VITE_SERVER_URL=$VITE_SERVER_URL
 
-COPY package*.json ./
+# Build as the unprivileged `node` user, not root.
+RUN chown node:node /app
+USER node
+
+COPY --chown=node:node package*.json ./
 RUN npm ci
 
-COPY . .
+COPY --chown=node:node . .
 
 # 🔹 Build with limited threads
 RUN npm run build
 
-FROM nginx:alpine
+# Unprivileged nginx: runs as the `nginx` user and listens on 8080
+# (non-root processes can't bind ports below 1024).
+FROM nginxinc/nginx-unprivileged:alpine
 
 WORKDIR /usr/share/nginx/html
 
-COPY --from=build /app/dist ./
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build --chown=nginx:nginx /app/dist ./
+COPY --chown=nginx:nginx nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+USER nginx
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]

@@ -1,6 +1,6 @@
 // src/components/auth/AuthCaptcha.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// Themed reCAPTCHA frame shared by AuthCard (login/register) and ForgotPassword.
+// Themed reCAPTCHA frame shared by AuthCard (login/register) and AccountRecovery.
 // The reCAPTCHA widget itself is a Google iframe — its internal colors can't be
 // restyled — so this wraps it in a card that matches the rest of the auth form
 // (label, border, verified state) and forwards the `theme` prop to match the

@@ -7,18 +7,12 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import AuthLayout from "../components/auth/AuthLayout";
+import { takeRedirectPath } from "../utils/safeNav";
 
 // ── Spinner ───────────────────────────────────────────────────────────────
 function Spinner() {
   return (
-    <span style={{
-      display: "inline-block",
-      width: "16px", height: "16px", borderRadius: "50%",
-      border: "2px solid rgba(255,255,255,0.4)",
-      borderTopColor: "#fff",
-      animation: "orbit-spin 0.7s linear infinite",
-      flexShrink: 0,
-    }} />
+    <span className="auth-spinner" />
   );
 }
 
@@ -85,8 +79,7 @@ export default function VerifyEmail() {
       const res = await verifyEmail(email, otpString);
       if (res && res.success) {
         setSuccess("Identity verified! Redirecting you to Orbit…");
-        const redirect = localStorage.getItem("redirectPath") || "/";
-        localStorage.removeItem("redirectPath");
+        const redirect = takeRedirectPath("/");
         setTimeout(() => navigate(redirect, { replace: true }), 1400);
       } else {
         setError(res?.message || "Incorrect OTP. Please try again.");
@@ -100,41 +93,28 @@ export default function VerifyEmail() {
 
   return (
     <AuthLayout>
-      <div className="auth-fade-in" style={{ width: "100%", maxWidth: "360px" }}>
+      <div className="auth-fade-in auth-pane auth-pane--sm">
 
         {/* Icon + heading */}
-        <div style={{
-          width: "56px", height: "56px", borderRadius: "50%",
-          background: "var(--orbit-brand-muted)",
-          border: "2px solid var(--orbit-brand)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "22px", marginBottom: "22px",
-        }}>
+        <div className="auth-icon">
           🔐
         </div>
 
-        <h1 style={{
-          fontSize: "clamp(22px, 2.8vw, 28px)", fontWeight: "800",
-          letterSpacing: "-0.5px", color: "var(--orbit-text-heading)",
-          margin: "0 0 8px", lineHeight: 1.2,
-        }}>
+        <h1 className="auth-title">
           Verify your identity.
         </h1>
-        <p style={{ fontSize: "14px", color: "var(--orbit-text-muted)", margin: "0 0 28px", lineHeight: 1.7 }}>
+        <p className="auth-sub">
           Enter the 6-digit code sent to{" "}
-          <strong style={{ color: "var(--orbit-text-body)" }}>{email || "your email"}</strong>.
+          <strong>{email || "your email"}</strong>.
         </p>
 
-        {error   && <div className="auth-alert-error"   style={{ marginBottom: "16px" }}>{error}</div>}
-        {success && <div className="auth-alert-success" style={{ marginBottom: "16px" }}>{success}</div>}
+        {error   && <div className="auth-alert-error">{error}</div>}
+        {success && <div className="auth-alert-success">{success}</div>}
 
         <form onSubmit={handleSubmit}>
           {/* 6 individual OTP boxes */}
           <div
-            style={{
-              display: "flex", gap: "10px", marginBottom: "28px",
-              justifyContent: "center",
-            }}
+            className="auth-otp-row"
             onPaste={handlePaste}
           >
             {otp.map((digit, i) => (
@@ -164,7 +144,7 @@ export default function VerifyEmail() {
           </button>
         </form>
 
-        <div style={{ textAlign: "center", marginTop: "22px", fontSize: "13px", color: "var(--orbit-text-muted)" }}>
+        <div className="auth-switch">
           Wrong account?{" "}
           <button
             type="button" className="auth-link-btn"

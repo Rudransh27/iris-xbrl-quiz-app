@@ -140,7 +140,7 @@ export default function AdminBroadcastForm({ setActiveTab }) {
       <Card.Body className="p-4">
         <div className="d-flex align-items-center justify-content-between mb-1">
           <h4 className="fw-bold text-dark-title m-0">Publish Broadcast</h4>
-          <Badge bg="secondary" className="d-flex align-items-center gap-1 font-monospace px-2 py-1" style={{ fontSize: '10px' }}>
+          <Badge bg="secondary" className="d-flex align-items-center gap-1 font-monospace px-2 py-1" style={{ fontSize: '11px' }}>
             <Broadcast size={10} /> NEWS / BROADCAST
           </Badge>
         </div>
@@ -162,7 +162,7 @@ export default function AdminBroadcastForm({ setActiveTab }) {
                 {isSuperAdmin ? 'Departmental — pick a department below' : 'Departmental — your department only'}
               </option>
             </Form.Select>
-            <Form.Text className="text-muted" style={{ fontSize: '10px' }}>
+            <Form.Text className="text-muted" style={{ fontSize: '11px' }}>
               {isSuperAdmin
                 ? 'As Superadmin, you may broadcast Globally or to any specific department.'
                 : 'As a Department Admin, you may broadcast Globally or to your own department only.'}
@@ -349,7 +349,7 @@ export default function AdminBroadcastForm({ setActiveTab }) {
             <Button variant="light" onClick={() => setActiveTab('overview')} disabled={loading} style={{ borderRadius: '6px', fontSize: '13.5px', fontWeight: '500' }}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit" disabled={loading} style={{ borderRadius: '6px', backgroundColor: '#0f256e', borderColor: '#0f256e', fontWeight: '600', fontSize: '13.5px', paddingLeft: '20px', paddingRight: '20px' }}>
+            <Button variant="primary" type="submit" disabled={loading} style={{ borderRadius: '6px', backgroundColor: 'var(--ui-accent)', borderColor: 'var(--ui-accent)', fontWeight: '600', fontSize: '13.5px', paddingLeft: '20px', paddingRight: '20px' }}>
               {loading ? <Spinner animation="border" size="sm" /> : <><SendCheckFill size={14} className="me-1.5" /> Publish Broadcast</>}
             </Button>
           </div>

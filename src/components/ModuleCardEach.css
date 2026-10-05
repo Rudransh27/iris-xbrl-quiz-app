@@ -1,19 +1,57 @@
-/* ModuleCardEach.css — hover/transition shell only; all colors via inline styles */
+/* ModuleCardEach.css — module summary card (ModuleDetail sidebar). Same
+   anatomy as the Learn module cards: media art → meta row → title →
+   description → progress → CTA. Tokens only. */
 
-.mce-card {
+.mce-card { gap: var(--ui-space-3); }
+
+.mce-card__media {
   position: relative;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  aspect-ratio: 16 / 6;
+  background: var(--mce-art, var(--grad-m1));
+}
+[data-theme="dark"] .mce-card__media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--ui-bg) 32%, transparent);
+}
+.mce-card__art {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--ui-radius-pill);
+  background: color-mix(in srgb, #fff 16%, transparent);
+  color: #fff;
+}
+.mce-card__art svg { width: 26px; height: 26px; }
+
+.mce-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-2);
+  margin-top: var(--ui-space-1);
+}
+.mce-card__dept { gap: 6px; min-width: 0; }
+.mce-card__dept svg { flex-shrink: 0; }
+
+.mce-card__desc {
+  font-size: var(--ui-fs-sm);
+  line-height: var(--ui-lh-body);
+  color: var(--ui-text-2);
 }
 
-.mce-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.09), 0 4px 8px rgba(0, 0, 0, 0.05);
+.mce-card__progress { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+.mce-card__progress-label {
+  font-size: var(--ui-fs-xs);
+  font-weight: var(--ui-fw-semibold);
+  color: var(--ui-text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.mce-card:active {
-  transform: translateY(-1px);
-}
-
-[data-theme="dark"] .mce-card:hover {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28), 0 4px 8px rgba(0, 0, 0, 0.18);
-}
+.mce-card__cta { margin-top: var(--ui-space-2); }

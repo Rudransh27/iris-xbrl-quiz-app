@@ -6,7 +6,10 @@ import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
 
 import jerryImg from "../assets/jerry-cheese.png";
+import "./QuizMarkdown.css";
 import "./LearningCard.css";
+
+const escapeHtml = (text) => text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const components = {
   code({ node, inline, className, children, ...props }) {
@@ -21,7 +24,10 @@ const components = {
     const match = /language-(\w+)/.exec(className || "");
     const lang = match ? match[1] : "xml";
 
-    let highlighted = children;
+    // 🔒 Rendered through innerHTML below (for Prism's markup), so text that
+    // does NOT go through Prism.highlight (which escapes) is escaped here —
+    // otherwise ```foo <img src=x onerror=…>``` in card text runs as script.
+    let highlighted = "";
     try {
       if (Prism.languages[lang]) {
         highlighted = Prism.highlight(
@@ -30,11 +36,11 @@ const components = {
           lang,
         );
       } else {
-        highlighted = String(children).replace(/\n$/, "");
+        highlighted = escapeHtml(String(children).replace(/\n$/, ""));
       }
     } catch (error) {
       console.error("Highlight error:", error);
-      highlighted = String(children).replace(/\n$/, "");
+      highlighted = escapeHtml(String(children).replace(/\n$/, ""));
     }
 
     return (
@@ -64,7 +70,7 @@ const LearningCard = ({
 
   return (
     <div className="knowledge-card">
-      <div className="knowledge-text">
+      <div className="knowledge-text ui-card">
         {/* 🎯 Jerry is now nested inside the card, locked to the top-right */}
         <img src={jerryImg} alt="Jerry mascot" className="jerry-img-top-right" />
         
@@ -80,7 +86,7 @@ const LearningCard = ({
           </div>
         )}
 
-        <div className="knowledge-content markdown-body">
+        <div className="knowledge-content markdown-body quiz-md quiz-md--prism">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
             {text}
           </ReactMarkdown>

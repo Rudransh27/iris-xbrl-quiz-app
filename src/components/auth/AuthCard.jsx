@@ -7,8 +7,8 @@
 //   "register" → Registration form (username + dept + team + email + pw)
 //   "describe" → Post-signup micro-description ("Tell us who's walking in")
 //
-// All API calls preserved exactly. React Bootstrap removed — pure inline styles
-// + AuthLayout's injected CSS utility classes.
+// All API calls preserved exactly. React Bootstrap removed — styling comes
+// from AuthLayout's injected token-based utility classes (auth-*).
 // ─────────────────────────────────────────────────────────────────────────────
 import React, { useState, useContext, useEffect, useLayoutEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -17,20 +17,14 @@ import api from "../../admin/services/api";
 import AuthLayout from "./AuthLayout";
 import AuthCaptcha from "./AuthCaptcha";
 import { API_BASE_URL } from "../../admin/services/config";
+import { takeRedirectPath } from "../../utils/safeNav";
 
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 // ── Spinner (no React Bootstrap dependency) ───────────────────────────────
 function Spinner() {
   return (
-    <span style={{
-      display: "inline-block",
-      width: "16px", height: "16px", borderRadius: "50%",
-      border: "2px solid rgba(255,255,255,0.4)",
-      borderTopColor: "#fff",
-      animation: "orbit-spin 0.7s linear infinite",
-      flexShrink: 0,
-    }} />
+    <span className="auth-spinner" />
   );
 }
 
@@ -41,12 +35,22 @@ const redirectToMicrosoftSso = () => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+const EMPTY_SECRET_INFO = { len: 0, confirmLen: 0, matches: true };
+
 export default function AuthCard() {
   // ── Form fields ────────────────────────────────────────────────────────
   const [email,           setEmail]           = useState("");
-  const [password,        setPassword]        = useState("");
   const [username,        setUsername]        = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  // Password fields are uncontrolled: the values live only in the inputs and
+  // are read on submit. State keeps just what the UI needs (lengths, match).
+  const secretRef  = useRef(null);
+  const confirmRef = useRef(null);
+  const [secretInfo, setSecretInfo] = useState(EMPTY_SECRET_INFO);
+  const updateSecretInfo = () => {
+    const main = secretRef.current?.value || "";
+    const confirm = confirmRef.current?.value || "";
+    setSecretInfo({ len: main.length, confirmLen: confirm.length, matches: main === confirm });
+  };
   const [description,     setDescription]     = useState("");
 
   // ── Dept / team cascade ────────────────────────────────────────────────
@@ -93,16 +97,15 @@ export default function AuthCard() {
       setStep("login");
       const sp = new URLSearchParams(location.search);
       const status = sp.get("session_status");
-      if (status === "concurrent_kickout") {
-        setSecurityNotice({
-          message: "Access revoked: your account signed in on another device.",
-          variant: "danger",
-        });
-      } else if (status === "expired_timeout") {
-        setSecurityNotice({
-          message: "Session expired after 15 minutes of inactivity.",
-          variant: "warning",
-        });
+      const SESSION_NOTICES = {
+        expired: { message: "Your session expired. Please sign in again.", variant: "warning" },
+        expired_timeout: { message: "You were signed out after a period of inactivity.", variant: "warning" },
+        revoked: { message: "You were signed out on this device — you signed out elsewhere, your password changed, or an admin ended the session.", variant: "danger" },
+        signed_out: { message: "You were signed out. Please sign in again.", variant: "warning" },
+        concurrent_kickout: { message: "Access revoked: your account signed in on another device.", variant: "danger" },
+      };
+      if (SESSION_NOTICES[status]) {
+        setSecurityNotice(SESSION_NOTICES[status]);
       } else {
         setSecurityNotice({ message: "", variant: "" });
       }
@@ -139,9 +142,12 @@ export default function AuthCard() {
 
   const availableTeams = departmentsData.find(d => d.code === selectedDeptCode)?.teams || [];
 
-  const isLoginValid    = email.trim() && password.length >= 6;
+  const isLoginValid    = email.trim() && secretInfo.len >= 6;
   const isRegisterValid = username.trim() && email.trim() && selectedDeptCode && selectedTeamId
-                          && password.length >= 6 && password === confirmPassword;
+                          && secretInfo.len >= 6 && secretInfo.confirmLen > 0 && secretInfo.matches;
+
+  // Login and register render different inputs — start each step clean.
+  useEffect(() => { setSecretInfo(EMPTY_SECRET_INFO); }, [step]);
 
   // ── Handlers ──────────────────────────────────────────────────────────
   const handleLogin = async (e) => {
@@ -150,12 +156,11 @@ export default function AuthCard() {
     setError(""); setSuccess(""); setSecurityNotice({ message: "", variant: "" });
     setLoading(true);
     try {
-      const res = await login(email.trim().toLowerCase(), password, captchaToken);
+      const res = await login(email.trim().toLowerCase(), secretRef.current?.value || "", captchaToken);
       if (res.success) {
         // A logged-in user always lands straight in the Orbit dashboard —
         // "/" (the marketing homepage) is only ever for logged-out visitors.
-        const redirect = localStorage.getItem("redirectPath") || "/orbit";
-        localStorage.removeItem("redirectPath");
+        const redirect = takeRedirectPath("/orbit");
         navigate(redirect, { replace: true });
       } else {
         setError(res.message || "Invalid credentials. Please try again.");
@@ -171,13 +176,13 @@ export default function AuthCard() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) { setError("Passwords do not match."); return; }
+    if ((secretRef.current?.value || "") !== (confirmRef.current?.value || "")) { setError("Passwords do not match."); return; }
     if (!captchaToken) { setError("Please complete the CAPTCHA."); return; }
     setError(""); setSuccess(""); setLoading(true);
     try {
       const res = await register(
         username.trim(), email.trim().toLowerCase(),
-        password, selectedDeptCode, selectedTeamId, selectedRegionIds, captchaToken
+        secretRef.current?.value || "", selectedDeptCode, selectedTeamId, selectedRegionIds, captchaToken
       );
       if (res && res.success) {
         setPendingEmail(email.trim().toLowerCase());
@@ -222,29 +227,24 @@ export default function AuthCard() {
           STEP: LOGIN
       ══════════════════════════════════════════════════════════════════ */}
       {step === "login" && (
-        <div className="auth-fade-in" style={{ width: "100%", maxWidth: "380px" }}>
-          <h1 style={{
-            fontSize: "clamp(24px, 3vw, 30px)", fontWeight: "800",
-            letterSpacing: "-0.5px", color: "var(--orbit-text-heading)",
-            margin: "0 0 6px", lineHeight: 1.2,
-          }}>
+        <div className="auth-fade-in auth-pane">
+          <h1 className="auth-title">
             Welcome back.
           </h1>
-          <p style={{ fontSize: "14px", color: "var(--orbit-text-muted)", margin: "0 0 28px", lineHeight: 1.6 }}>
+          <p className="auth-sub">
             Sign in to continue your learning journey.
           </p>
 
           {/* Security notices */}
           {securityNotice.message && (
-            <div className={`auth-alert-${securityNotice.variant === "danger" ? "error" : "warning"}`}
-              style={{ marginBottom: "16px" }}>
+            <div className={`auth-alert-${securityNotice.variant === "danger" ? "error" : "warning"}`}>
               {securityNotice.message}
             </div>
           )}
-          {error   && <div className="auth-alert-error"   style={{ marginBottom: "16px" }}>{error}</div>}
-          {success && <div className="auth-alert-success" style={{ marginBottom: "16px" }}>{success}</div>}
+          {error   && <div className="auth-alert-error">{error}</div>}
+          {success && <div className="auth-alert-success">{success}</div>}
 
-          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <form onSubmit={handleLogin} className="auth-form">
             <input
               className="auth-input"
               type="email" placeholder="Work email"
@@ -252,16 +252,15 @@ export default function AuthCard() {
               disabled={loading} required
             />
 
-            <div style={{ position: "relative" }}>
+            <div className="auth-pw-wrap">
               <input
-                className="auth-input"
+                className="auth-input auth-input--pw"
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                value={password} onChange={e => setPassword(e.target.value)}
+                ref={secretRef} onChange={updateSecretInfo} name="secret" autoComplete={step === "register" ? "new-password" : "current-password"}
                 disabled={loading} required
-                style={{ paddingRight: "60px" }}
               />
-              {password && (
+              {secretInfo.len > 0 && (
                 <button type="button" className="auth-pw-toggle"
                   onClick={() => setShowPassword(p => !p)}>
                   {showPassword ? "Hide" : "Show"}
@@ -270,7 +269,7 @@ export default function AuthCard() {
             </div>
 
             {/* Forgot password */}
-            <div style={{ textAlign: "right", marginTop: "-4px" }}>
+            <div className="auth-forgot-row">
               <button type="button" className="auth-ghost-link"
                 onClick={() => navigate("/forgot-password")}>
                 Forgot password?
@@ -291,9 +290,9 @@ export default function AuthCard() {
           </form>
 
           {/* OR divider + SSO */}
-          <div style={{ margin: "20px 0 0" }}>
+          <div className="auth-sso">
             <div className="auth-or-divider">or</div>
-            <div style={{ marginTop: "12px" }}>
+            <div className="auth-sso__btn">
               <button
                 type="button" className="auth-btn-secondary"
                 onClick={redirectToMicrosoftSso}
@@ -310,7 +309,7 @@ export default function AuthCard() {
           </div>
 
           {/* Switch to register */}
-          <div style={{ textAlign: "center", marginTop: "28px", fontSize: "13px", color: "var(--orbit-text-muted)" }}>
+          <div className="auth-switch">
             Don't have an account?{" "}
             <button type="button" className="auth-link-btn" onClick={switchToRegister}>
               Sign up
@@ -323,22 +322,18 @@ export default function AuthCard() {
           STEP: REGISTER
       ══════════════════════════════════════════════════════════════════ */}
       {step === "register" && (
-        <div className="auth-fade-in" style={{ width: "100%", maxWidth: "380px" }}>
-          <h1 style={{
-            fontSize: "clamp(22px, 2.8vw, 28px)", fontWeight: "800",
-            letterSpacing: "-0.5px", color: "var(--orbit-text-heading)",
-            margin: "0 0 6px", lineHeight: 1.2,
-          }}>
+        <div className="auth-fade-in auth-pane">
+          <h1 className="auth-title">
             Create your account.
           </h1>
-          <p style={{ fontSize: "14px", color: "var(--orbit-text-muted)", margin: "0 0 24px", lineHeight: 1.6 }}>
+          <p className="auth-sub">
             Join IRIS Orbit and start leveling up your skills.
           </p>
 
-          {error   && <div className="auth-alert-error"   style={{ marginBottom: "14px" }}>{error}</div>}
-          {success && <div className="auth-alert-success" style={{ marginBottom: "14px" }}>{success}</div>}
+          {error   && <div className="auth-alert-error">{error}</div>}
+          {success && <div className="auth-alert-success">{success}</div>}
 
-          <form onSubmit={handleRegister} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <form onSubmit={handleRegister} className="auth-form auth-form--tight">
             <input
               className="auth-input"
               type="text" placeholder="Username"
@@ -376,11 +371,11 @@ export default function AuthCard() {
 
             {/* Region(s) — optional multi-select toggle chips */}
             {regionsData.length > 0 && (
-              <div style={{ marginTop: "2px", marginBottom: "4px" }}>
-                <span style={{ fontSize: "12px", color: "var(--orbit-text-muted)", display: "block", marginBottom: "6px" }}>
-                  Your region <span style={{ opacity: 0.7 }}>(optional — pick one or more)</span>
+              <div className="auth-region">
+                <span className="auth-region__label">
+                  Your region (optional — pick one or more)
                 </span>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                <div className="auth-chips">
                   {regionsData.map(r => {
                     const isSelected = selectedRegionIds.includes(r._id);
                     return (
@@ -389,20 +384,11 @@ export default function AuthCard() {
                         type="button"
                         onClick={() => toggleRegion(r._id)}
                         disabled={loading}
-                        style={{
-                          background: isSelected ? "var(--orbit-brand-muted)" : "var(--orbit-surface-subtle)",
-                          border: `1px solid ${isSelected ? "var(--orbit-brand)" : "var(--orbit-border)"}`,
-                          borderRadius: "var(--radius-full)",
-                          padding: "4px 12px", fontSize: "12px",
-                          color: "var(--orbit-text-body)", cursor: "pointer",
-                          fontFamily: "inherit", fontWeight: isSelected ? "700" : "500",
-                          display: "inline-flex", alignItems: "center", gap: "4px",
-                          transition: "background 0.15s, border-color 0.15s",
-                        }}
+                        className={`auth-chip${isSelected ? " is-selected" : ""}`}
                       >
                         <span
-                          className="rounded-circle d-inline-block"
-                          style={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: r.color || "#6366f1" }}
+                          className="auth-chip__dot"
+                          style={r.color ? { backgroundColor: r.color } : undefined}
                         />
                         {r.name}
                       </button>
@@ -419,24 +405,23 @@ export default function AuthCard() {
               disabled={loading} required
             />
 
-            <div style={{ position: "relative" }}>
+            <div className="auth-pw-wrap">
               <input
-                className="auth-input"
+                className="auth-input auth-input--pw"
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                value={password} onChange={e => setPassword(e.target.value)}
+                ref={secretRef} onChange={updateSecretInfo} name="secret" autoComplete={step === "register" ? "new-password" : "current-password"}
                 disabled={loading} required
-                style={{ paddingRight: "60px" }}
               />
-              {password && (
+              {secretInfo.len > 0 && (
                 <button type="button" className="auth-pw-toggle"
                   onClick={() => setShowPassword(p => !p)}>
                   {showPassword ? "Hide" : "Show"}
                 </button>
               )}
             </div>
-            {password && password.length < 6 && (
-              <p className="auth-field-hint" style={{ marginTop: "-4px" }}>
+            {secretInfo.len > 0 && secretInfo.len < 6 && (
+              <p className="auth-field-hint auth-field-hint--tight">
                 Minimum 6 characters
               </p>
             )}
@@ -444,11 +429,11 @@ export default function AuthCard() {
             <input
               className="auth-input"
               type="password" placeholder="Confirm Password"
-              value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+              ref={confirmRef} onChange={updateSecretInfo} name="confirm" autoComplete="new-password"
               disabled={loading} required
             />
-            {confirmPassword && confirmPassword !== password && (
-              <p className="auth-field-hint" style={{ marginTop: "-4px" }}>
+            {secretInfo.confirmLen > 0 && !secretInfo.matches && (
+              <p className="auth-field-hint auth-field-hint--tight">
                 Passwords do not match
               </p>
             )}
@@ -462,18 +447,17 @@ export default function AuthCard() {
             />
 
             <button
-              type="submit" className="auth-btn-primary"
+              type="submit" className="auth-btn-primary auth-mt-1"
               disabled={loading || !isRegisterValid || !captchaToken}
-              style={{ marginTop: "4px" }}
             >
               {loading ? <Spinner /> : "Sign Up"}
             </button>
           </form>
 
           {/* OR + SSO */}
-          <div style={{ margin: "18px 0 0" }}>
+          <div className="auth-sso">
             <div className="auth-or-divider">or</div>
-            <div style={{ marginTop: "12px" }}>
+            <div className="auth-sso__btn">
               <button type="button" className="auth-btn-secondary"
                 onClick={redirectToMicrosoftSso}>
                 <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
@@ -487,7 +471,7 @@ export default function AuthCard() {
             </div>
           </div>
 
-          <div style={{ textAlign: "center", marginTop: "24px", fontSize: "13px", color: "var(--orbit-text-muted)" }}>
+          <div className="auth-switch">
             Already have an account?{" "}
             <button type="button" className="auth-link-btn" onClick={switchToLogin}>
               Log in
@@ -501,49 +485,27 @@ export default function AuthCard() {
           Shown after successful registration, before OTP verification.
       ══════════════════════════════════════════════════════════════════ */}
       {step === "describe" && (
-        <div className="auth-fade-in" style={{ width: "100%", maxWidth: "400px" }}>
+        <div className="auth-fade-in auth-pane auth-pane--lg">
           {/* Chip */}
-          <div style={{
-            display: "inline-block",
-            background: "var(--orbit-brand-muted)", color: "var(--orbit-brand)",
-            fontSize: "10px", fontWeight: "800", letterSpacing: "1.6px",
-            textTransform: "uppercase", padding: "5px 13px",
-            borderRadius: "var(--radius-full)",
-            border: "1px solid var(--orbit-brand)", marginBottom: "20px",
-          }}>
+          <div className="auth-kicker">
             One last thing
           </div>
 
-          <h1 style={{
-            fontSize: "clamp(24px, 3vw, 30px)", fontWeight: "800",
-            letterSpacing: "-0.5px", color: "var(--orbit-text-heading)",
-            margin: "0 0 8px", lineHeight: 1.18,
-            fontFamily: "'Georgia', 'Palatino', serif",
-          }}>
+          <h1 className="auth-title">
             Tell us who's walking in.
           </h1>
-          <p style={{ fontSize: "14px", color: "var(--orbit-text-muted)", margin: "0 0 8px", lineHeight: 1.7 }}>
+          <p className="auth-sub auth-sub--tight">
             Describe yourself in a line. Make it specific. Emojis are encouraged.
           </p>
 
           {/* Example pills */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "22px" }}>
+          <div className="auth-chips auth-chips--spaced">
             {["💻 Best Coder", "📊 Data Wizard", "🚀 Product Dreamer", "🎯 Sharp Analyst"].map((ex, i) => (
               <button
                 key={i}
                 type="button"
                 onClick={() => setDescription(ex)}
-                style={{
-                  background: "var(--orbit-surface-subtle)",
-                  border: "1px solid var(--orbit-border)",
-                  borderRadius: "var(--radius-full)",
-                  padding: "4px 12px", fontSize: "12px",
-                  color: "var(--orbit-text-body)", cursor: "pointer",
-                  fontFamily: "inherit", fontWeight: "500",
-                  transition: "background 0.15s, border-color 0.15s",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = "var(--orbit-brand-muted)"; e.currentTarget.style.borderColor = "var(--orbit-brand)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "var(--orbit-surface-subtle)"; e.currentTarget.style.borderColor = "var(--orbit-border)"; }}
+                className="auth-chip"
               >
                 {ex}
               </button>
@@ -551,7 +513,7 @@ export default function AuthCard() {
           </div>
 
           {/* Description input */}
-          <div style={{ marginBottom: "6px" }}>
+          <div>
             <input
               className="auth-input"
               type="text"
@@ -562,8 +524,8 @@ export default function AuthCard() {
               autoFocus
             />
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-            <span style={{ fontSize: "11px", color: "var(--orbit-text-muted)" }}>
+          <div className="auth-desc-meta">
+            <span className="auth-desc-meta__hint">
               One line. Make it specific.
             </span>
             <span className={`auth-char-counter${descCharsLeft < 20 ? " warn" : ""}${descCharsLeft === 0 ? " limit" : ""}`}>
@@ -572,15 +534,14 @@ export default function AuthCard() {
           </div>
 
           <button
-            type="button" className="auth-btn-primary"
+            type="button" className="auth-btn-primary auth-mb-3"
             onClick={() => handleDescribe(false)}
-            style={{ marginBottom: "12px" }}
             disabled={!description.trim()}
           >
             Continue →
           </button>
 
-          <div style={{ textAlign: "center" }}>
+          <div className="auth-center">
             <button type="button" className="auth-ghost-link" onClick={() => handleDescribe(true)}>
               Skip for now — verify email first
             </button>

@@ -22,6 +22,8 @@ import AdminIdeasReview from "./components/AdminIdeasReview";
 import AdminPlatformAnalytics from "./components/AdminPlatformAnalytics";
 import AdminUserAnalytics from "./AdminUserAnalytics";
 import AdminPrePostReport from "./components/AdminPrePostReport";
+import AdminLearnerReport from "./components/AdminLearnerReport";
+import AdminAuthActivity from "./components/AdminAuthActivity";
 import AdminLearningPaths from "./components/AdminLearningPaths";
 import AdminQuestionBank from "./components/AdminQuestionBank";
 import AdminProgressDashboard from "./components/AdminProgressDashboard";
@@ -49,6 +51,8 @@ const TAB_TITLES = {
   "learning-paths": "Learning Paths",
   "question-bank": "Question Bank",
   "prepost-report": "Pre/Post Report",
+  "learner-report": "Learner Report",
+  "auth-activity": "Sign-in Activity",
   regions: "Regions",
 };
 
@@ -64,6 +68,9 @@ export default function Dashboard1() {
   const [pathsTagFilter, setPathsTagFilter] = useState("");
   const [bankModuleId, setBankModuleId] = useState("");
   const [bankReturnPathId, setBankReturnPathId] = useState(null);
+  // Any report row with a learner's name opens their Learner Report.
+  const [reportLearnerId, setReportLearnerId] = useState("");
+  const openLearner = (userId) => { setReportLearnerId(String(userId || "")); setActiveTab("learner-report"); };
   useEffect(() => {
     if (activeTab !== "learning-paths" && activeTab !== "question-bank") setPathsWizard(null);
   }, [activeTab]);
@@ -179,6 +186,7 @@ export default function Dashboard1() {
 
   const handleFormNavigation = (targetTab, moduleId = "", topicIdOrCount = "", editDataObj = null) => {
     setPassedModuleId(moduleId);
+    if (targetTab === "learner-report") setReportLearnerId("");
     if (!editDataObj) {
       setEditModuleData(null);
       setEditTopicData(null);
@@ -213,7 +221,7 @@ export default function Dashboard1() {
       {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
       
       {loading ? (
-        <div className="text-center p-5"><Spinner animation="border" style={{ color: "#0f256e" }} /></div>
+        <div className="text-center p-5"><Spinner animation="border" style={{ color: "var(--ui-accent-text)" }} /></div>
       ) : (
         <>
           {/* ================= ADMIN CONSOLE LAUNCHER vs. BACK BAR ================= */}
@@ -229,11 +237,11 @@ export default function Dashboard1() {
           {/* ================= OPTIMIZED BENTO STATS COUNTER BAR (Launcher home strip) ================= */}
           {activeTab === "launcher" && (
             <Row className="g-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 mb-4 animate-fade-in">
-              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "#0369a1" }}><People size={20} /></div><div><div className="hud-metric-label">Total Members</div><h3 className="hud-metric-value">{analytics.totalUsers}</h3></div></Card.Body></Card></Col>
-              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "#4f46e5" }}><Collection size={20} /></div><div><div className="hud-metric-label">Active Modules</div><h3 className="hud-metric-value">{analytics.totalModules}</h3></div></Card.Body></Card></Col>
-              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "#16a34a" }}><Book size={20} /></div><div><div className="hud-metric-label">Syllabus Topics</div><h3 className="hud-metric-value">{analytics.totalTopics}</h3></div></Card.Body></Card></Col>
-              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "#d97706" }}><BarChartLine size={20} /></div><div><div className="hud-metric-label">Knowledge Blocks</div><h3 className="hud-metric-value">{analytics.totalCards}</h3></div></Card.Body></Card></Col>
-              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "#dc2626" }}><CpuFill size={20} /></div><div><div className="hud-metric-label">Interactive Tasks</div><h3 className="hud-metric-value">{analytics.interactiveAssets}</h3></div></Card.Body></Card></Col>
+              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "var(--ui-info)" }}><People size={20} /></div><div><div className="hud-metric-label">Total Members</div><h3 className="hud-metric-value">{analytics.totalUsers}</h3></div></Card.Body></Card></Col>
+              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "var(--ui-accent)" }}><Collection size={20} /></div><div><div className="hud-metric-label">Active Modules</div><h3 className="hud-metric-value">{analytics.totalModules}</h3></div></Card.Body></Card></Col>
+              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "var(--ui-success)" }}><Book size={20} /></div><div><div className="hud-metric-label">Syllabus Topics</div><h3 className="hud-metric-value">{analytics.totalTopics}</h3></div></Card.Body></Card></Col>
+              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "var(--ui-warning)" }}><BarChartLine size={20} /></div><div><div className="hud-metric-label">Knowledge Blocks</div><h3 className="hud-metric-value">{analytics.totalCards}</h3></div></Card.Body></Card></Col>
+              <Col><Card className="dashboard-metric-hud-card"><Card.Body className="p-3 d-flex align-items-center gap-3"><div className="hud-icon-wrapper" style={{ '--hud-accent': "var(--ui-danger)" }}><CpuFill size={20} /></div><div><div className="hud-metric-label">Interactive Tasks</div><h3 className="hud-metric-value">{analytics.interactiveAssets}</h3></div></Card.Body></Card></Col>
             </Row>
           )}
 
@@ -281,7 +289,7 @@ export default function Dashboard1() {
               <AdminPlatformAnalytics />
             )}
             {activeTab === "user-analytics" && (
-              <AdminUserAnalytics />
+              <AdminUserAnalytics onOpenLearner={openLearner} />
             )}
             {activeTab === "progress-dashboard" && (
               <AdminProgressDashboard />
@@ -312,7 +320,13 @@ export default function Dashboard1() {
               />
             )}
             {activeTab === "prepost-report" && (
-              <AdminPrePostReport />
+              <AdminPrePostReport onOpenLearner={openLearner} />
+            )}
+            {activeTab === "learner-report" && (
+              <AdminLearnerReport initialUserId={reportLearnerId} />
+            )}
+            {activeTab === "auth-activity" && (
+              <AdminAuthActivity onOpenLearner={openLearner} />
             )}
             {activeTab === "regions" && (
               <AdminRegionManager />

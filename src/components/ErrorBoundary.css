@@ -1,0 +1,30 @@
+/* src/components/ErrorBoundary.css — fallback UI for <ErrorBoundary> */
+.error-boundary {
+  border-color: var(--ui-danger-soft);
+}
+
+.error-boundary .ui-h3 {
+  color: var(--ui-danger-text);
+}
+
+.error-boundary__details {
+  width: 100%;
+  max-height: 320px;
+  overflow: auto;
+  padding: var(--ui-space-3) var(--ui-space-4);
+  border-radius: var(--ui-radius);
+  background: var(--ui-surface-2);
+  color: var(--ui-text-2);
+  font-size: var(--ui-fs-xs);
+  line-height: var(--ui-lh-body);
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.error-boundary__details summary {
+  cursor: pointer;
+  font-family: var(--ui-font-sans);
+  font-weight: var(--ui-fw-semibold);
+  color: var(--ui-text);
+}

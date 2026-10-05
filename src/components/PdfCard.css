@@ -1,36 +1,39 @@
 /* src/components/PdfCard.css
-   Redesigned onto the shared --orbit-* tokens. This card previously relied
-   on raw Bootstrap utility classes (text-dark/text-secondary/text-muted/
-   bg-light/bg-white/btn-light/btn-outline-secondary) for every color —
-   Bootstrap's defaults are fixed light-mode colors that never adapt to
-   this app's theme toggle, so nothing on this card ever changed in dark
-   mode. Replaced with custom classes below; Bootstrap's layout-only
-   utilities (d-flex, position-*, m-2, rounded, etc.) are untouched. */
+   PDF card on the shared --ui-* tokens: a .ui-card (radius-xl) whose
+   viewer frame fills the remaining height of the player column. Mode badge,
+   engine switch and "open" link are .ui-badge / .ui-btn primitives.
+   (Imported by PdfCard.jsx — it previously wasn't imported anywhere, so
+   none of these rules applied.) */
 
-.pdf-card-wrapper {
+.pdf-card-wrapper.ui-card {
   width: 100%;
   max-width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  min-height: 420px;
+  border-radius: var(--ui-radius-xl);
+  padding: clamp(16px, 3vw, 28px);
+  gap: var(--ui-space-4);
+  box-sizing: border-box;
+}
+
+.pdf-card-head {
+  gap: var(--ui-space-3);
 }
 
 .pdf-card-title {
-  color: var(--orbit-text-heading);
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-fs-xl);
+  color: var(--ui-text);
+  letter-spacing: var(--ui-tracking-tight);
+  line-height: var(--ui-lh-tight);
 }
 
 .pdf-card-description {
-  color: var(--orbit-text-muted);
+  color: var(--ui-text-3);
 }
 
 .pdf-mode-badge {
-  display: inline-flex;
-  align-items: center;
-  background-color: var(--orbit-surface-subtle);
-  color: var(--orbit-text-muted);
-  border: 1px solid var(--orbit-border);
-  border-radius: 6px;
-  padding: 3px 8px;
+  flex-shrink: 0;
 }
 
 /* flex:1 (not a fixed px height) — fills whatever space is actually left in
@@ -41,43 +44,27 @@
   min-height: 0;
   width: 100%;
   overflow: hidden;
-  background-color: var(--orbit-surface);
-  border: 1px solid var(--orbit-border);
-  border-top: 3px solid var(--orbit-lavender);
-  border-radius: 8px;
+  background-color: var(--ui-surface-2);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+}
+
+.pdf-viewer-canvas-frame iframe {
+  border: none;
 }
 
 .pdf-empty-state {
-  color: var(--orbit-text-muted);
+  font-size: var(--ui-fs-sm);
+  color: var(--ui-text-3);
 }
 
 .pdf-engine-switch-wrap {
-  background-color: var(--orbit-surface);
-  border: 1px solid var(--orbit-border);
-  border-radius: 6px;
-  box-shadow: var(--orbit-shadow-sm);
+  z-index: 10;
 }
 
 .pdf-engine-switch-btn {
-  background: transparent;
-  border: none;
-  color: var(--orbit-text-muted);
-  cursor: pointer;
-}
-.pdf-engine-switch-btn:hover:not(:disabled) {
-  color: var(--orbit-lavender-text);
+  box-shadow: var(--ui-shadow-sm);
 }
 .pdf-engine-switch-btn:disabled {
-  cursor: default;
-  opacity: 0.8;
-}
-
-.pdf-open-link-btn {
-  background: transparent;
-  border: 1px solid var(--orbit-border-strong);
-  color: var(--orbit-text-muted);
-}
-.pdf-open-link-btn:hover {
-  border-color: var(--orbit-lavender);
-  color: var(--orbit-lavender-text);
+  opacity: 0.85;
 }

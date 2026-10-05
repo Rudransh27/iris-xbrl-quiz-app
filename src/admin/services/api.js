@@ -35,15 +35,19 @@ const handleFetchResponse = async (response) => {
   }
 
   if (!response.ok) {
-    // 🚨 CONCURRENT LOGIN OR TIMEOUT BREACH DETECTED
-    if (response.status === 401) {
-      console.error("Security Interceptor: Token invalidated or concurrent login detected.");
-      
+    // 🚨 The server ended this session (expired, signed out elsewhere, a
+    // password change, an admin) — back to the login page with the reason.
+    // Without a stored session (e.g. a wrong password on the login form) the
+    // message is shown where the request was made instead.
+    if (response.status === 401 && localStorage.getItem('token')) {
+      console.error("Security Interceptor: this session is no longer valid.");
+
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('iris_studio_active_tree_state');
-      
-      window.location.href = '/login?session_status=concurrent_kickout';
+
+      const status = data.code === 'session_expired' ? 'expired' : data.code === 'session_revoked' ? 'revoked' : 'signed_out';
+      window.location.href = `/login?session_status=${status}`;
       return;
     }
     throw new Error(data.message || 'Server request execution breakdown.');
@@ -278,21 +282,7 @@ async function resetPassword(token, newPassword) {
   }
 }
 
-// ---------------- Validation + Upload ----------------
-async function validateCode(validatorName, userCode) {
-  try {
-    const response = await apiFetch(`${API_BASE_URL}/validate-code`, {
-      method: 'POST',
-      headers: getPublicHeader(),
-      body: JSON.stringify({ validatorName, userCode }),
-    });
-    return await handleFetchResponse(response);
-  } catch (error) {
-    console.error('Validation API Error:', error);
-    return { isCorrect: false, error: 'Connection to validation service failed.' };
-  }
-}
-
+// ---------------- Upload ----------------
 async function uploadImage(imageFile) {
   try {
     const formData = new FormData();
@@ -407,6 +397,16 @@ async function uploadPdfCard(contextParam, pdfFile, cardDetails, cardId = null) 
 }
 
 // ---------------- Daily Reads Architecture ----------------
+// Records (server-side) that the learner opened this read — the streak's
+// "daily_read" credit is only granted after a real open.
+async function openDailyRead(readId) {
+  const response = await apiFetch(`${API_BASE_URL}/daily-reads/${readId}/open`, {
+    method: 'POST',
+    headers: getAuthHeader(),
+  });
+  return handleFetchResponse(response);
+}
+
 async function getTodaysRead() {
   try {
     const response = await apiFetch(`${API_BASE_URL}/daily-reads/todays-read`, {
@@ -571,13 +571,13 @@ const api = {
   completeProfile,
   forgotPassword,
   resetPassword,
-  validateCode,
   uploadImage,
   uploadVideoCard,
   uploadDocumentCard,
   uploadPptCard,
   uploadPdfCard,
   getTodaysRead,
+  openDailyRead,
   createDailyRead,
   getAllDailyReads,
   updateDailyRead,
@@ -750,6 +750,71 @@ const api = {
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = pathId ? 'pre-post-path.csv' : 'pre-post-report.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  },
+  resetAssessmentAttempt: async (pathId, userId, kind, reason) => {
+    const response = await apiFetch(`${API_BASE_URL}/assessments/admin/paths/${pathId}/users/${userId}/reset`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }, body: JSON.stringify({ kind, reason }),
+    });
+    return handleFetchResponse(response);
+  },
+
+  // ---------------- Sign-in activity (admin) ----------------
+  getAuthEvents: async (params = {}) => {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
+    const response = await apiFetch(`${API_BASE_URL}/admin/auth/events${qs ? `?${qs}` : ''}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  downloadAuthEventsCsv: async (params = {}) => {
+    const qs = new URLSearchParams({ ...Object.fromEntries(Object.entries(params).filter(([, v]) => v)), format: 'csv' }).toString();
+    const response = await apiFetch(`${API_BASE_URL}/admin/auth/events?${qs}`, { headers: getAuthHeader() });
+    if (!response.ok) throw new Error('CSV export failed.');
+    const blob = await response.blob();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'sign-in-activity.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  },
+  getUserSessions: async (userId) => {
+    const response = await apiFetch(`${API_BASE_URL}/admin/auth/users/${userId}/sessions`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  revokeUserSessions: async (userId) => {
+    const response = await apiFetch(`${API_BASE_URL}/admin/auth/users/${userId}/sessions/revoke`, { method: 'POST', headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+
+  // ---------------- Learner reports ----------------
+  getLearnerRoster: async (params = {}) => {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
+    const response = await apiFetch(`${API_BASE_URL}/reports/learners${qs ? `?${qs}` : ''}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getLearnerReport: async (userId) => {
+    const response = await apiFetch(`${API_BASE_URL}/reports/learners/${userId}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  getLearnerModuleDetail: async (userId, moduleId) => {
+    const response = await apiFetch(`${API_BASE_URL}/reports/learners/${userId}/modules/${moduleId}`, { headers: getAuthHeader() });
+    return handleFetchResponse(response);
+  },
+  // userId → that learner's report; no userId → the roster (with its filters).
+  downloadLearnerCsv: async (userId, params = {}, fallbackName = 'learner-report.csv') => {
+    const qs = new URLSearchParams({ ...Object.fromEntries(Object.entries(params).filter(([, v]) => v)), format: 'csv' }).toString();
+    const url = userId ? `${API_BASE_URL}/reports/learners/${userId}?${qs}` : `${API_BASE_URL}/reports/learners?${qs}`;
+    const response = await apiFetch(url, { headers: getAuthHeader() });
+    if (!response.ok) throw new Error('CSV export failed.');
+    const name = /filename="([^"]+)"/.exec(response.headers.get('Content-Disposition') || '')?.[1];
+    const blob = await response.blob();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = name || fallbackName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1450,15 +1515,19 @@ getWorkspaceCurriculum: async (categoryId, regionId) => {
     return handleFetchResponse(response);
   },
 
-  // Ends the session server-side (clears the session-binding cookie + Redis
-  // record) instead of only discarding the token client-side. Best-effort —
+  // Ends THIS session server-side (its session record + the binding cookie)
+  // instead of only discarding the token client-side; other devices stay
+  // signed in, and the Microsoft session is not touched. Best-effort —
   // AuthContext's logout() already clears local state regardless of whether
-  // this call succeeds, so a network hiccup here shouldn't block logging out.
-  logoutUser: async () => {
+  // this call succeeds. `keepalive` lets it finish while the page navigates
+  // away. reason "idle" = the inactivity timer (App.jsx).
+  logoutUser: async (reason) => {
     try {
       const response = await apiFetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
-        headers: getAuthHeader(),
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+        body: JSON.stringify(reason ? { reason } : {}),
+        keepalive: true,
       });
       return await handleFetchResponse(response);
     } catch (error) {

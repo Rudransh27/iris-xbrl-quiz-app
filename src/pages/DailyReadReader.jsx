@@ -25,6 +25,9 @@ export default function DailyReadReader() {
         // Match the target item id securely out of the history array
         const targetArticle = allArticles.find(item => (item._id || item.id) === readId);
         setArticle(targetArticle);
+        // Server-side record of the open — the streak credit for reading
+        // is only granted at least the reading threshold after this.
+        if (targetArticle) api.openDailyRead(targetArticle._id || targetArticle.id).catch(() => {});
       } catch (err) {
         console.error("Reader Core: Failed to fetch historical document stream", err);
       } finally {
@@ -73,8 +76,8 @@ export default function DailyReadReader() {
 
   if (loading) {
     return (
-      <div className="daily-reader-loader">
-        <div className="daily-reader-spinner"></div>
+      <div className="ui-loading daily-reader-loader">
+        <span className="ui-spinner ui-spinner--lg" role="status" aria-label="Loading" />
         <span>Parsing article stream array...</span>
       </div>
     );
@@ -82,27 +85,33 @@ export default function DailyReadReader() {
 
   if (!article) {
     return (
-      <div className="daily-reader-shell layout-error-padding">
-        <button type="button" onClick={() => navigate("/orbit")} className="daily-reader-back-btn">
-          <ArrowLeft size={14} /> Back to Orbit
-        </button>
-        <div className="daily-reader-error-card">
-          <h4>Article Node Disconnected</h4>
-          <p>The requested newsletter could not be pulled from your department tenant records.</p>
+      <div className="ui-page ui-page--narrow daily-reader-shell">
+        <div>
+          <button type="button" onClick={() => navigate("/orbit")} className="ui-btn ui-btn--ghost ui-btn--sm">
+            <ArrowLeft size={14} /> Back to Orbit
+          </button>
+        </div>
+        <div className="ui-callout ui-callout--danger daily-reader-error-card">
+          <div>
+            <h4>Article Node Disconnected</h4>
+            <p>The requested newsletter could not be pulled from your department tenant records.</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="daily-reader-shell">
+    <div className="ui-page ui-page--narrow daily-reader-shell">
       {/* Return Navigation Anchor */}
-      <button type="button" onClick={() => navigate("/orbit")} className="daily-reader-back-btn">
-        <ArrowLeft size={14} /> Back to Orbit Workspace
-      </button>
+      <div>
+        <button type="button" onClick={() => navigate("/orbit")} className="ui-btn ui-btn--ghost ui-btn--sm">
+          <ArrowLeft size={14} /> Back to Orbit Workspace
+        </button>
+      </div>
 
       {/* Main Content Article Panel */}
-      <div className="daily-reader-article-card">
+      <article className="ui-section daily-reader-article">
 
         {/* Banner Image */}
         {article.imageUrl && (
@@ -111,27 +120,31 @@ export default function DailyReadReader() {
           </div>
         )}
 
-        {/* Tags Stack Ribbon */}
-        {article.tags && article.tags.length > 0 && (
-          <div className="daily-reader-tags-ribbon">
-            {article.tags.map((tag, i) => (
-              <span key={i} className="daily-reader-tag-chip">
-                #{tag}
-              </span>
-            ))}
+        <header className="daily-reader-head">
+          <span className="ui-eyebrow">Daily Read</span>
+
+          <h1 className="daily-reader-headline">
+            {article.title}
+          </h1>
+
+          {/* Metadata Floor Line */}
+          <div className="daily-reader-meta-row">
+            <span className="meta-item"><Person size={14} /> Published by System Authority</span>
+            <span className="meta-item"><Calendar3 size={14} /> {new Date(article.createdAt).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+            <span className="meta-item"><Bookmark size={14} /> Departmental Feed</span>
           </div>
-        )}
 
-        <h1 className="daily-reader-headline">
-          {article.title}
-        </h1>
-
-        {/* Metadata Floor Line */}
-        <div className="daily-reader-meta-row">
-          <span className="meta-item"><Person size={14} /> Published by System Authority</span>
-          <span className="meta-item"><Calendar3 size={14} /> {new Date(article.createdAt).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-          <span className="meta-item"><Bookmark size={14} /> Departmental Feed</span>
-        </div>
+          {/* Tags Stack Ribbon */}
+          {article.tags && article.tags.length > 0 && (
+            <div className="daily-reader-tags-ribbon">
+              {article.tags.map((tag, i) => (
+                <span key={i} className="ui-badge ui-badge--accent daily-reader-tag-chip">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </header>
 
         {/* Content Body Display Arena — rendered as Markdown for proper
             headings/emphasis/lists/links instead of one plain-text blob. */}
@@ -148,8 +161,8 @@ export default function DailyReadReader() {
             </a>
           </div>
         )}
-        
-      </div>
+
+      </article>
     </div>
   );
 }

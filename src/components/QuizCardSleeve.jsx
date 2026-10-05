@@ -6,6 +6,7 @@ import CodeCard from "./CodeCard";
 import VideoCard from "./VideoCard"; 
 import PptCard from "./PptCard"; 
 import PdfCard from "./PdfCard"; 
+import { RocketTakeoffFill } from "react-bootstrap-icons";
 import './QuizCardSleeve.css';
 
 export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, updateFields, onVideoEnded }) {
@@ -125,15 +126,15 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
       const priorSubmission = state?.progressByCardId?.[currentCard._id];
 
       return (
-        <div className="sandbox-launcher-card-housing">
+        <div className="sandbox-launcher-card-housing ui-card">
           <div className="sandbox-launcher-graphics-box">
-            <div className="sandbox-mascot-emoji">🚀</div>
+            <div className="sandbox-mascot-emoji ui-icon-tile ui-icon-tile--lg"><RocketTakeoffFill size={22} /></div>
             <h4 className="sandbox-launcher-main-title">{currentCard.content?.title || "Interactive Sandbox Workspace"}</h4>
-            <p className="sandbox-launcher-explanation-text">
+            <p className="sandbox-launcher-explanation-text ui-text">
               This section contains an interactive, native simulation workspace assignment. Launch the fullscreen container stage below to complete your execution tasks.
             </p>
             {priorSubmission?.attempted && (
-              <p className="sandbox-prior-submission-note">
+              <p className="sandbox-prior-submission-note ui-callout ui-callout--accent">
                 📋 Previous submission: {priorSubmission.score}/{priorSubmission.maxScore || 0}
                 {priorSubmission.timesAttempted > 1 ? ` · attempted ${priorSubmission.timesAttempted}×` : ""}
                 {" "}— relaunching starts a fresh attempt.
@@ -143,7 +144,7 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
 
           <button
             type="button"
-            className="sandbox-fullscreen-trigger-btn"
+            className="sandbox-fullscreen-trigger-btn ui-btn ui-btn--primary ui-btn--lg"
             onClick={() => {
               if (!rawHtmlPayload || rawHtmlPayload.trim() === "") {
                 console.warn("⚠️ Cannot launch workspace: HTML source payload code string is empty.");
@@ -161,7 +162,7 @@ export default function QuizCardSleeve({ currentCard, state, topicId, moduleId, 
     }
 
     return (
-      <div className="quiz-unsupported-node font-monospace">
+      <div className="quiz-unsupported-node ui-callout ui-callout--danger">
         ⚠️ [SYSTEM EXCEPTION]: Unknown card payload structure detected.
       </div>
     );

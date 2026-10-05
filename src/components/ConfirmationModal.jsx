@@ -25,42 +25,40 @@ const ConfirmationModal = ({
   const isButtonDisabled = requireTextVerification && verificationInput.trim() !== "DELETE";
 
   return (
-    <div className="duo-modal-overlay" onClick={onClose}>
-      <div className="duo-modal-container" onClick={(e) => e.stopPropagation()}>
-        <div className="duo-card-shine"></div>
-        
+    <div className="ui-modal-overlay confirm-overlay" onClick={onClose}>
+      <div className="ui-modal confirm-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
         {/* ================= MODAL HEADER ================= */}
-        <div className="duo-modal-header">
-          <h3 className={`duo-modal-title ${variant === 'danger' ? 'text-danger-title' : ''}`}>
+        <div className="ui-modal__head">
+          <h3 className={`ui-h3 ${variant === 'danger' ? 'confirm-title--danger' : ''}`}>
             {title}
           </h3>
           {/* ⚡ FIXED: Added explicit e.stopPropagation() to cut off structural click bubbling loops */}
-          <button 
-            type="button" 
-            className="duo-modal-close-btn" 
+          <button
+            type="button"
+            className="ui-btn ui-btn--ghost ui-btn--sm ui-btn--icon"
             onClick={(e) => {
               e.stopPropagation();
               onClose();
-            }} 
+            }}
             aria-label="Close modal"
           >
             &times;
           </button>
         </div>
-        
+
         {/* ================= MODAL BODY ================= */}
-        <div className="duo-modal-body">
-          <p className="duo-modal-text">{message}</p>
-          
+        <div className="ui-modal__body confirm-body">
+          <p className="confirm-text">{message}</p>
+
           {/* 🎯 VERIFICATION LAYER CHECK ENGINE */}
           {requireTextVerification && (
-            <div className="duo-modal-verification-wrapper">
-              <label className="duo-verification-label">
-                Type <span className="destructive-token">DELETE</span> to confirm permanent destructive actions:
+            <div className="ui-field confirm-verify">
+              <label className="ui-label">
+                Type <span className="confirm-token">DELETE</span> to confirm permanent destructive actions:
               </label>
-              <input 
-                type="text" 
-                className="duo-verification-input"
+              <input
+                type="text"
+                className="ui-input"
                 placeholder="Type DELETE in capital letters"
                 value={verificationInput}
                 onChange={(e) => setVerificationInput(e.target.value)}
@@ -69,21 +67,17 @@ const ConfirmationModal = ({
             </div>
           )}
         </div>
-        
-        {/* ================= MODAL FOOTER CHUNKY ACTION ROW ================= */}
-        <div className="duo-modal-footer">
-          <button type="button" className="duo-modal-btn duo-modal-btn-cancel" onClick={onClose}>
+
+        {/* ================= MODAL FOOTER ACTION ROW ================= */}
+        <div className="ui-modal__foot">
+          <button type="button" className="ui-btn ui-btn--secondary" onClick={onClose}>
             Cancel
           </button>
-          <button 
+          <button
             type="button"
-            className={`duo-modal-btn duo-modal-btn-confirm ${variant === 'danger' ? 'btn-danger-fill' : 'btn-primary-fill'}`} 
+            className={`ui-btn ${variant === 'danger' ? 'ui-btn--danger' : 'ui-btn--primary'}`}
             onClick={onConfirm}
             disabled={isButtonDisabled}
-            style={{
-              opacity: isButtonDisabled ? 0.4 : 1,
-              cursor: isButtonDisabled ? 'not-allowed' : 'pointer'
-            }}
           >
             {confirmButtonText}
           </button>

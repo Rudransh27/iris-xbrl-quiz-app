@@ -154,7 +154,7 @@ export default function AdminOverviewGrid({ analytics, onNavigate }) {
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-bold m-0" style={{ fontSize: "15px" }}>Ideas Inbox</h5>
               {pendingIdeas !== null && (
-                <span className="badge text-danger font-monospace px-2 py-1 rounded-3" style={{ backgroundColor: "rgba(220,90,48,0.1)", color: "#9a3412" }}>
+                <span className="badge text-danger font-monospace px-2 py-1 rounded-3" style={{ backgroundColor: "color-mix(in srgb, var(--ui-warning) 10%, transparent)", color: "var(--ui-warning-text)" }}>
                   {pendingIdeas.length} pending
                 </span>
               )}
@@ -166,12 +166,12 @@ export default function AdminOverviewGrid({ analytics, onNavigate }) {
               <div className="p-3 rounded-3 border bg-opacity-25" style={{ backgroundColor: "var(--bg-global-canvas)", borderBottom: "3px solid var(--border-tactile)" }}>
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <div className="d-flex align-items-center gap-2">
-                    <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-purple bg-purple bg-opacity-10" style={{ width: "24px", height: "24px", fontSize: "10px", color: "#7C3AED" }}>
+                    <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-purple bg-purple bg-opacity-10" style={{ width: "24px", height: "24px", fontSize: "11px", color: "var(--ui-accent-text)" }}>
                       {(mostRecentIdea.userName || "??").substring(0, 2).toUpperCase()}
                     </div>
                     <span className="fw-bold" style={{ fontSize: "12.5px" }}>{mostRecentIdea.userName}</span>
                   </div>
-                  <span className="badge bg-warning text-dark font-monospace text-capitalize" style={{ fontSize: "10px" }}>{mostRecentIdea.status}</span>
+                  <span className="badge bg-warning text-dark font-monospace text-capitalize" style={{ fontSize: "11px" }}>{mostRecentIdea.status}</span>
                 </div>
                 <div className="fw-bold mb-1" style={{ fontSize: "13px", color: "var(--text-primary)" }}>{mostRecentIdea.title}</div>
                 <p className="text-secondary m-0 mb-2" style={{ fontSize: "12px", lineHeight: "1.4" }}>{(mostRecentIdea.details || '').slice(0, 90)}{(mostRecentIdea.details || '').length > 90 ? '…' : ''}</p>
@@ -190,7 +190,7 @@ export default function AdminOverviewGrid({ analytics, onNavigate }) {
           <Card className="p-4 h-100 border-0 rounded-4 shadow-sm" style={{ backgroundColor: "var(--bg-tactile-cards)", border: "2px solid var(--border-tactile)" }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-bold m-0" style={{ fontSize: "15px" }}>Top Team</h5>
-              <TrophyFill size={16} color="#d4a017" />
+              <TrophyFill size={16} color="var(--ui-warning-text)" />
             </div>
 
             {topTeam === null ? (

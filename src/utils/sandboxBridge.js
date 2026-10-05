@@ -13,7 +13,12 @@
 //     A capture-phase click listener flushes pending answers BEFORE the
 //     module's own click handlers run, so all answers are posted ahead of
 //     the module's HTML_SIMULATION_SUBMIT message.
-//  2. EXIT CONTAINMENT. After submitting, modules call window.close(),
+//  2. SERVER FEEDBACK (opt-in). A module that declares
+//     <meta name="orbit-feedback" content="server"> receives its HTML with
+//     the answers removed, and calls
+//       orbitCheck(qid, answer).then(r => r.ok && r.isCorrect / r.correct.key / r.correct.text)
+//     to have Orbit record + grade the answer and reveal the right one.
+//  3. EXIT CONTAINMENT. After submitting, modules call window.close(),
 //     history.back() and finally location.replace("about:blank"). Inside an
 //     iframe, history.back() walks the TOP-LEVEL session history — it could
 //     navigate the learner off the Orbit page. close/back/go are neutralised
@@ -47,6 +52,24 @@ const BRIDGE_SOURCE = `
   document.addEventListener('change', function () { setTimeout(poll, 0); }, true);
   document.addEventListener('keyup', function () { setTimeout(poll, 0); }, true);
   setInterval(poll, 750);
+  var pending = {}, seq = 0;
+  window.orbitCheck = function (qid, chosen) {
+    return new Promise(function (resolve) {
+      var id = 'c' + (++seq);
+      var answer = chosen == null ? '' : String(chosen);
+      pending[id] = resolve;
+      sent[String(qid)] = answer; // the poll needn't post it again
+      post({ type: 'ORBIT_CHECK', id: id, qid: String(qid), chosen: answer });
+      setTimeout(function () { if (pending[id]) { delete pending[id]; resolve({ ok: false }); } }, 15000);
+    });
+  };
+  window.addEventListener('message', function (e) {
+    if (e.source !== window.parent) return;
+    var d = e.data || {};
+    if (d.type !== 'ORBIT_CHECK_RESULT' || !pending[d.id]) return;
+    var done = pending[d.id]; delete pending[d.id];
+    done(d.result || { ok: false });
+  });
   try { window.close = function () {}; } catch (e) {}
   try { window.history.back = function () {}; window.history.go = function () {}; } catch (e) {}
 })();

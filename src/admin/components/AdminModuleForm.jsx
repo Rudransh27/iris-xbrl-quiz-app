@@ -198,10 +198,10 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
       if (savedId) {
         const priorHot = !!editData?.isHotModule;
         const priorPopular = !!editData?.isPopular;
-        if (isHotModule !== priorHot) {
+        if (isSuperAdmin && isHotModule !== priorHot) {
           await api.setHotModule(savedId, isHotModule);
         }
-        if (isPopular !== priorPopular) {
+        if (isSuperAdmin && isPopular !== priorPopular) {
           await api.setPopularModule(savedId, isPopular);
         }
       }
@@ -274,7 +274,7 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
   if (loadingStructure) {
     return (
       <div className="text-center p-5">
-        <Spinner animation="border" style={{ color: "#0f256e" }} />
+        <Spinner animation="border" style={{ color: "var(--ui-accent-text)" }} />
         <p className="mt-2 text-muted small">Loading cluster structural parameters...</p>
       </div>
     );
@@ -397,7 +397,8 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
           </Col>
         </Row>
 
-        {/* 🔥⭐ CURATION FLAGS */}
+        {/* 🔥⭐ CURATION FLAGS — platform-wide, superadmin only */}
+        {isSuperAdmin && (
         <Row className="g-3 mb-3">
           <Col md={6}>
             <Form.Check
@@ -422,6 +423,7 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
             <small className="text-muted d-block mt-1">Capped at 4 modules platform-wide.</small>
           </Col>
         </Row>
+        )}
 
         {/* 🎛️ LAYER 2 DYNAMIC PARENT SELECTOR — multi-select checkbox grid,
             mirroring the team selector below. A Superadmin can publish one
@@ -500,7 +502,7 @@ export default function AdminModuleForm({ editData = null, onModuleAdded, setAct
         </Form.Group>
 
         <div className="d-flex gap-2">
-          <Button type="submit" className="admin-btn-primary px-4 d-flex align-items-center justify-content-center" disabled={loading || uploadingImage} style={{ backgroundColor: '#0f256e', borderColor: '#0f256e' }}>
+          <Button type="submit" className="admin-btn-primary px-4 d-flex align-items-center justify-content-center" disabled={loading || uploadingImage} style={{ backgroundColor: 'var(--ui-accent)', borderColor: 'var(--ui-accent)' }}>
             {loading ? <Spinner animation="border" size="sm" /> : editData ? 'Apply Variations Changes' : 'Instantiate Module Root'}
           </Button>
           <Button type="button" variant="light" className="border px-4 fw-semibold btn-sm text-secondary" onClick={() => setActiveTab('overview')} disabled={loading || uploadingImage} style={{ borderRadius: '6px' }}>

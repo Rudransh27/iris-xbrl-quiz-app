@@ -27,8 +27,11 @@ import {
   PiCheckBold,
   PiPlayBold,
   PiRocketLaunchFill,
+  PiSunBold,
+  PiMoonBold,
 } from "react-icons/pi";
 import AuthContext from "../../context/AuthContext";
+import { ThemeContext } from "../../context/ThemeContext";
 import irisOrbitLogo from "../../assets/iris-orbit-logo.png";
 import "./IrisOrbitHome.css";
 
@@ -183,6 +186,7 @@ const PARAGRAPH_PHRASES = [
 // ============================================================
 export default function IrisOrbitHome() {
   const { user } = useContext(AuthContext);
+  const { theme, toggleTheme } = useContext(ThemeContext) || {};
   const navigate = useNavigate();
 
   const rootRef = useRef(null);
@@ -364,6 +368,14 @@ export default function IrisOrbitHome() {
             </a>
             <button
               type="button"
+              className="ui-btn ui-btn--ghost ui-btn--icon"
+              aria-label="Toggle theme"
+              onClick={toggleTheme}
+            >
+              {theme === "dark" ? <PiSunBold size={18} /> : <PiMoonBold size={18} />}
+            </button>
+            <button
+              type="button"
               className="ioh-btn ioh-btn-primary"
               onClick={() => navigate(launchTarget)}
             >
@@ -410,18 +422,18 @@ export default function IrisOrbitHome() {
               </a>
             </div>
 
-            <div className="ioh-hero-stats">
-              <div>
-                <div className="ioh-stat-num" data-to="3">0</div>
-                <div className="ioh-stat-label">Orbits to master</div>
+            <div className="ui-stat-strip ioh-hero-stats">
+              <div className="ui-stat">
+                <div className="ui-stat__value" data-to="3">0</div>
+                <div className="ui-stat__label">Orbits to master</div>
               </div>
-              <div>
-                <div className="ioh-stat-num" data-to="12">0</div>
-                <div className="ioh-stat-label">Modules live</div>
+              <div className="ui-stat">
+                <div className="ui-stat__value" data-to="12">0</div>
+                <div className="ui-stat__label">Modules live</div>
               </div>
-              <div>
-                <div className="ioh-stat-num">Daily</div>
-                <div className="ioh-stat-label">Streaks &amp; missions</div>
+              <div className="ui-stat">
+                <div className="ui-stat__value">Daily</div>
+                <div className="ui-stat__label">Streaks &amp; missions</div>
               </div>
             </div>
           </div>
@@ -488,7 +500,7 @@ export default function IrisOrbitHome() {
       <section className="ioh-section" id="why-orbit">
         <div className="ioh-container">
           <div className="ioh-why-head" data-reveal>
-            <div className="ioh-section-head" style={{ marginBottom: 0 }}>
+            <div className="ioh-section-head">
               <span className="ioh-eyebrow"><PiCrosshairBold className="ioh-float-icon" size={13} /> WHY ORBIT EXISTS</span>
               <h2>Three forces, one shared orbit.</h2>
               <p>
@@ -497,9 +509,9 @@ export default function IrisOrbitHome() {
               </p>
             </div>
             <div className="ioh-legend">
-              <span className="ioh-legend-item"><span className="ioh-legend-dot" style={{ background: "var(--accent-300)", color: "var(--accent-300)" }} /> AI</span>
-              <span className="ioh-legend-item"><span className="ioh-legend-dot" style={{ background: "var(--teal)", color: "var(--teal)" }} /> Sales &amp; Marketing at Scale</span>
-              <span className="ioh-legend-item"><span className="ioh-legend-dot" style={{ background: "var(--pink)", color: "var(--pink)" }} /> Delivery &amp; Product Teams at Scale</span>
+              <span className="ioh-legend-item"><span className="ioh-legend-dot" /> AI</span>
+              <span className="ioh-legend-item"><span className="ioh-legend-dot ioh-legend-dot--teal" /> Sales &amp; Marketing at Scale</span>
+              <span className="ioh-legend-item"><span className="ioh-legend-dot ioh-legend-dot--pink" /> Delivery &amp; Product Teams at Scale</span>
             </div>
           </div>
 
@@ -554,34 +566,34 @@ export default function IrisOrbitHome() {
                     widget). */}
                 <div className="ioh-missions">
                   <div className="ioh-mission-row">
-                    <span className="ioh-mission-icon" style={{ background: "linear-gradient(135deg,#8fe0d8,#4bab9f)" }}>
+                    <span className="ioh-mission-icon ioh-mission-icon--teal">
                       <PiCheckBold size={15} />
                     </span>
                     <div>
                       <div className="ioh-mission-title">Today&apos;s Read</div>
                       <div className="ioh-mission-sub">Completed</div>
                     </div>
-                    <span className="ioh-mission-badge" style={{ background: "rgba(143,224,216,0.16)", color: "var(--teal)" }}>+10</span>
+                    <span className="ioh-mission-badge ioh-mission-badge--teal">+10</span>
                   </div>
                   <div className="ioh-mission-row">
-                    <span className="ioh-mission-icon" style={{ background: "linear-gradient(135deg,var(--accent-400),var(--accent-700))" }}>
+                    <span className="ioh-mission-icon">
                       <PiPlayBold size={14} />
                     </span>
                     <div>
                       <div className="ioh-mission-title">Module 1: Introduction to XBRL</div>
                       <div className="ioh-mission-sub">In progress</div>
                     </div>
-                    <span className="ioh-mission-badge" style={{ background: "rgba(145,132,217,0.16)", color: "var(--accent-200)" }}>58%</span>
+                    <span className="ioh-mission-badge">58%</span>
                   </div>
                   <div className="ioh-mission-row">
-                    <span className="ioh-mission-icon" style={{ background: "linear-gradient(135deg,#f0a2c0,#b45a7d)" }}>
+                    <span className="ioh-mission-icon ioh-mission-icon--rose">
                       <PiLightbulbFilamentBold size={15} />
                     </span>
                     <div>
                       <div className="ioh-mission-title">Idea Submission</div>
                       <div className="ioh-mission-sub">Not started</div>
                     </div>
-                    <span className="ioh-mission-badge" style={{ background: "rgba(240,162,192,0.16)", color: "var(--pink)" }}>+10</span>
+                    <span className="ioh-mission-badge ioh-mission-badge--rose">+10</span>
                   </div>
                 </div>
 
@@ -602,8 +614,8 @@ export default function IrisOrbitHome() {
                   </div>
 
                   <div className="ioh-mini-card">
-                    <div style={{ fontSize: 13, fontWeight: 700 }}>Orbit 3 · Practitioner</div>
-                    <div style={{ fontSize: 12, color: "var(--neutral-400)", marginTop: 4 }}>1,104 / 3,333 lightyears</div>
+                    <div className="ioh-mini-title">Orbit 3 · Practitioner</div>
+                    <div className="ioh-mini-sub">1,104 / 3,333 lightyears</div>
                     <div className="ioh-orbit-progress-bar">
                       <div className="ioh-orbit-progress-fill" data-reveal />
                     </div>
@@ -646,7 +658,7 @@ export default function IrisOrbitHome() {
       </section>
 
       {/* ================= GAMIFICATION BAND ================= */}
-      <section className="ioh-section ioh-band" id="gamification">
+      <section className="ioh-section ioh-band ui-hero" id="gamification">
         <Starfield stars={BAND_STARS} />
         <span className="ioh-shoot ioh-shoot--1" style={{ top: "20%" }} aria-hidden="true" />
 

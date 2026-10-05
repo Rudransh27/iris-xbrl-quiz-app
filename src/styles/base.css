@@ -1,0 +1,382 @@
+/* src/styles/base.css
+ *
+ * Global element styles + theming bridges for third-party CSS (Bootstrap,
+ * react-toastify, SweetAlert2). Loaded after Bootstrap and index.css, so
+ * everything here is token-driven and follows data-theme automatically.
+ */
+
+/* ── Document ──────────────────────────────────────────────────────────── */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+  background-color: var(--ui-bg);
+}
+
+body {
+  background-color: var(--ui-bg);
+  background-image: none;
+  color: var(--ui-text-2);
+  font-family: var(--ui-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv11", "ss01";
+  transition: background-color var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: var(--ui-font-display);
+  color: var(--ui-text);
+  font-weight: var(--ui-fw-bold);
+  letter-spacing: var(--ui-tracking-tight);
+  line-height: var(--ui-lh-tight);
+}
+/* Compact default heading scale (class-styled headings override this). */
+h1, .h1 { font-size: var(--ui-fs-2xl); }
+h2, .h2 { font-size: var(--ui-fs-xl); }
+h3, .h3 { font-size: var(--ui-fs-lg); }
+h4, .h4 { font-size: var(--ui-fs-md); }
+h5, .h5, h6, .h6 { font-size: var(--ui-fs-base); }
+
+a { color: var(--ui-accent-text); }
+a:hover { color: var(--ui-accent-hover); }
+
+code, kbd, pre, samp { font-family: var(--ui-font-mono); }
+
+::selection { background: var(--ui-accent-soft-2); color: var(--ui-text); }
+
+:focus-visible {
+  outline: 2px solid var(--ui-accent);
+  outline-offset: 2px;
+}
+
+/* Thin, theme-aware scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--ui-border-2) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--ui-border-2); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BOOTSTRAP BRIDGE — map Bootstrap 5.3's variables onto our tokens.
+   data-bs-theme is set alongside data-theme (ThemeContext / theme-init.js),
+   so Bootstrap's own dark rules apply, and these overrides align colours.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root, [data-bs-theme] {
+  --bs-body-font-family: var(--ui-font-sans);
+  --bs-body-bg: var(--ui-surface);
+  --bs-body-color: var(--ui-text-2);
+  --bs-emphasis-color: var(--ui-text);
+  --bs-heading-color: var(--ui-text);
+  --bs-secondary-color: var(--ui-text-3);
+  --bs-tertiary-color: var(--ui-text-4);
+  --bs-secondary-bg: var(--ui-surface-2);
+  --bs-tertiary-bg: var(--ui-surface-2);
+  --bs-border-color: var(--ui-border);
+  --bs-border-color-translucent: var(--ui-border);
+  --bs-link-color: var(--ui-accent-text);
+  --bs-link-hover-color: var(--ui-accent-hover);
+  --bs-primary: var(--ui-accent);
+  --bs-primary-text-emphasis: var(--ui-accent-text);
+  --bs-primary-bg-subtle: var(--ui-accent-soft);
+  --bs-primary-border-subtle: var(--ui-accent-soft-2);
+  --bs-success-text-emphasis: var(--ui-success-text);
+  --bs-success-bg-subtle: var(--ui-success-soft);
+  --bs-danger-text-emphasis: var(--ui-danger-text);
+  --bs-danger-bg-subtle: var(--ui-danger-soft);
+  --bs-warning-text-emphasis: var(--ui-warning-text);
+  --bs-warning-bg-subtle: var(--ui-warning-soft);
+  --bs-info-text-emphasis: var(--ui-info-text);
+  --bs-info-bg-subtle: var(--ui-info-soft);
+  --bs-border-radius: var(--ui-radius-sm);
+  --bs-border-radius-sm: var(--ui-radius-xs);
+  --bs-border-radius-lg: var(--ui-radius);
+  --bs-border-radius-xl: var(--ui-radius-lg);
+  --bs-box-shadow: var(--ui-shadow);
+  --bs-box-shadow-sm: var(--ui-shadow-sm);
+  --bs-box-shadow-lg: var(--ui-shadow-lg);
+  --bs-focus-ring-color: rgba(109, 74, 255, 0.28);
+}
+/* RGB triplets can't be derived from var() — set per theme. */
+:root, [data-bs-theme="light"] {
+  --bs-body-bg-rgb: 255, 255, 255;
+  --bs-body-color-rgb: 84, 90, 104;
+  --bs-primary-rgb: 109, 74, 255;
+  --bs-link-color-rgb: 85, 48, 232;
+  --bs-light-rgb: 242, 243, 246;
+  --bs-dark-rgb: 27, 29, 36;
+}
+[data-bs-theme="dark"] {
+  --bs-body-bg-rgb: 24, 26, 34;
+  --bs-body-color-rgb: 185, 190, 201;
+  --bs-primary-rgb: 124, 92, 255;
+  --bs-link-color-rgb: 182, 165, 255;
+  --bs-light-rgb: 32, 35, 45;
+  --bs-dark-rgb: 236, 238, 243;
+  --bs-focus-ring-color: rgba(143, 116, 255, 0.40);
+}
+
+/* Utilities that hard-code light colours */
+.bg-white  { background-color: var(--ui-surface) !important; }
+.bg-light, .bg-body-tertiary, .bg-body-secondary { background-color: var(--ui-surface-2) !important; }
+.text-dark, .text-body-emphasis { color: var(--ui-text) !important; }
+.text-body { color: var(--ui-text-2) !important; }
+.text-muted, .text-secondary, .text-body-secondary { color: var(--ui-text-3) !important; }
+.text-primary { color: var(--ui-accent-text) !important; }
+.border, .border-top, .border-bottom, .border-start, .border-end { border-color: var(--ui-border) !important; }
+
+/* Buttons */
+.btn {
+  --bs-btn-font-weight: 600;
+  --bs-btn-font-size: var(--ui-fs-base);
+  --bs-btn-border-radius: var(--ui-radius-sm);
+  --bs-btn-padding-x: 14px;
+  --bs-btn-padding-y: 6px;
+  --bs-btn-focus-box-shadow: var(--ui-ring);
+  transition: background-color var(--ui-duration) var(--ui-ease), border-color var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
+}
+.btn-sm { --bs-btn-padding-x: 10px; --bs-btn-padding-y: 4px; --bs-btn-font-size: var(--ui-fs-sm); }
+.btn-lg { --bs-btn-padding-x: 18px; --bs-btn-padding-y: 8px; --bs-btn-font-size: var(--ui-fs-md); --bs-btn-border-radius: var(--ui-radius); }
+.btn-primary {
+  --bs-btn-color: var(--ui-on-accent);
+  --bs-btn-bg: var(--ui-accent);
+  --bs-btn-border-color: var(--ui-accent);
+  --bs-btn-hover-color: var(--ui-on-accent);
+  --bs-btn-hover-bg: var(--ui-accent-hover);
+  --bs-btn-hover-border-color: var(--ui-accent-hover);
+  --bs-btn-active-color: var(--ui-on-accent);
+  --bs-btn-active-bg: var(--ui-accent-hover);
+  --bs-btn-active-border-color: var(--ui-accent-hover);
+  --bs-btn-disabled-color: var(--ui-on-accent);
+  --bs-btn-disabled-bg: var(--ui-accent);
+  --bs-btn-disabled-border-color: var(--ui-accent);
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--ui-accent-text);
+  --bs-btn-border-color: var(--ui-accent-soft-2);
+  --bs-btn-hover-color: var(--ui-accent-text);
+  --bs-btn-hover-bg: var(--ui-accent-soft);
+  --bs-btn-hover-border-color: var(--ui-accent-soft-2);
+  --bs-btn-active-color: var(--ui-accent-text);
+  --bs-btn-active-bg: var(--ui-accent-soft);
+  --bs-btn-active-border-color: var(--ui-accent);
+  --bs-btn-disabled-color: var(--ui-text-4);
+  --bs-btn-disabled-border-color: var(--ui-border);
+}
+.btn-secondary, .btn-light, .btn-outline-secondary, .btn-outline-dark, .btn-outline-light {
+  --bs-btn-color: var(--ui-text);
+  --bs-btn-bg: var(--ui-surface);
+  --bs-btn-border-color: var(--ui-border-2);
+  --bs-btn-hover-color: var(--ui-text);
+  --bs-btn-hover-bg: var(--ui-hover);
+  --bs-btn-hover-border-color: var(--ui-border-2);
+  --bs-btn-active-color: var(--ui-text);
+  --bs-btn-active-bg: var(--ui-surface-3);
+  --bs-btn-active-border-color: var(--ui-border-2);
+  --bs-btn-disabled-color: var(--ui-text-4);
+  --bs-btn-disabled-bg: var(--ui-surface-2);
+  --bs-btn-disabled-border-color: var(--ui-border);
+}
+.btn-success {
+  --bs-btn-color: #fff; --bs-btn-bg: var(--ui-success); --bs-btn-border-color: var(--ui-success);
+  --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--ui-success-text); --bs-btn-hover-border-color: var(--ui-success-text);
+}
+.btn-danger {
+  --bs-btn-color: #fff; --bs-btn-bg: var(--ui-danger); --bs-btn-border-color: var(--ui-danger);
+  --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--ui-danger-text); --bs-btn-hover-border-color: var(--ui-danger-text);
+}
+[data-theme="dark"] .btn-success, [data-theme="dark"] .btn-danger { --bs-btn-color: #10121a; --bs-btn-hover-color: #10121a; }
+.btn-outline-danger {
+  --bs-btn-color: var(--ui-danger-text); --bs-btn-border-color: var(--ui-danger);
+  --bs-btn-hover-color: var(--ui-danger-text); --bs-btn-hover-bg: var(--ui-danger-soft); --bs-btn-hover-border-color: var(--ui-danger);
+}
+.btn-outline-success {
+  --bs-btn-color: var(--ui-success-text); --bs-btn-border-color: var(--ui-success);
+  --bs-btn-hover-color: var(--ui-success-text); --bs-btn-hover-bg: var(--ui-success-soft); --bs-btn-hover-border-color: var(--ui-success);
+}
+.btn-link { --bs-btn-color: var(--ui-accent-text); --bs-btn-hover-color: var(--ui-accent-hover); text-decoration: none; }
+
+/* Forms */
+.form-control, .form-select {
+  padding: 6px 11px;
+  min-height: 36px;
+  background-color: var(--ui-surface);
+  border-color: var(--ui-border-2);
+  color: var(--ui-text);
+  border-radius: var(--ui-radius-sm);
+  font-size: var(--ui-fs-base);
+}
+.form-control::placeholder { color: var(--ui-text-4); }
+.form-control:focus, .form-select:focus {
+  background-color: var(--ui-surface);
+  border-color: var(--ui-accent);
+  color: var(--ui-text);
+  box-shadow: var(--ui-ring);
+}
+.form-control:disabled, .form-select:disabled { background-color: var(--ui-surface-2); color: var(--ui-text-3); }
+.form-label { color: var(--ui-text); font-weight: 600; font-size: var(--ui-fs-sm); margin-bottom: 6px; }
+.form-text { color: var(--ui-text-3); }
+.form-check-input { background-color: var(--ui-surface); border-color: var(--ui-border-2); }
+.form-check-input:checked { background-color: var(--ui-accent); border-color: var(--ui-accent); }
+.form-check-input:focus { border-color: var(--ui-accent); box-shadow: var(--ui-ring); }
+.input-group-text { background-color: var(--ui-surface-2); border-color: var(--ui-border-2); color: var(--ui-text-3); }
+
+/* Cards, list groups, dropdowns, modals */
+.card {
+  --bs-card-bg: var(--ui-surface);
+  --bs-card-border-color: var(--ui-border);
+  --bs-card-border-radius: var(--ui-radius-lg);
+  --bs-card-inner-border-radius: calc(var(--ui-radius-lg) - 1px);
+  --bs-card-cap-bg: var(--ui-surface-2);
+  --bs-card-color: var(--ui-text-2);
+  --bs-card-title-color: var(--ui-text);
+}
+.list-group {
+  --bs-list-group-bg: var(--ui-surface);
+  --bs-list-group-color: var(--ui-text-2);
+  --bs-list-group-border-color: var(--ui-border);
+  --bs-list-group-action-hover-bg: var(--ui-hover);
+  --bs-list-group-action-hover-color: var(--ui-text);
+  --bs-list-group-active-bg: var(--ui-accent);
+  --bs-list-group-active-border-color: var(--ui-accent);
+  --bs-list-group-active-color: var(--ui-on-accent);
+  --bs-list-group-border-radius: var(--ui-radius);
+}
+.dropdown-menu {
+  --bs-dropdown-bg: var(--ui-surface);
+  --bs-dropdown-color: var(--ui-text-2);
+  --bs-dropdown-border-color: var(--ui-border);
+  --bs-dropdown-border-radius: var(--ui-radius);
+  --bs-dropdown-link-color: var(--ui-text);
+  --bs-dropdown-link-hover-color: var(--ui-text);
+  --bs-dropdown-link-hover-bg: var(--ui-hover);
+  --bs-dropdown-link-active-bg: var(--ui-accent-soft);
+  --bs-dropdown-link-active-color: var(--ui-accent-text);
+  --bs-dropdown-box-shadow: var(--ui-shadow-md);
+  box-shadow: var(--ui-shadow-md);
+}
+.modal {
+  --bs-modal-bg: var(--ui-surface);
+  --bs-modal-color: var(--ui-text-2);
+  --bs-modal-border-color: var(--ui-border);
+  --bs-modal-border-radius: var(--ui-radius-xl);
+  --bs-modal-inner-border-radius: calc(var(--ui-radius-xl) - 1px);
+  --bs-modal-header-border-color: var(--ui-border);
+  --bs-modal-footer-border-color: var(--ui-border);
+  --bs-modal-box-shadow: var(--ui-shadow-lg);
+}
+.modal-title { font-family: var(--ui-font-display); color: var(--ui-text); font-weight: 700; }
+.modal-backdrop { --bs-backdrop-bg: #0b0c10; --bs-backdrop-opacity: 0.55; }
+.btn-close { filter: var(--ui-btn-close-filter, none); }
+[data-theme="dark"] .btn-close { --ui-btn-close-filter: invert(1) grayscale(100%) brightness(200%); }
+
+/* Tables */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--ui-text-2);
+  --bs-table-border-color: var(--ui-border);
+  --bs-table-striped-bg: var(--ui-surface-2);
+  --bs-table-striped-color: var(--ui-text-2);
+  --bs-table-hover-bg: var(--ui-hover);
+  --bs-table-hover-color: var(--ui-text);
+  --bs-table-active-bg: var(--ui-accent-soft);
+  font-size: var(--ui-fs-sm);
+}
+.table > thead > tr > th, .table > thead th {
+  color: var(--ui-text-3);
+  font-weight: 600;
+  font-size: var(--ui-fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background-color: var(--ui-surface-2);
+}
+.table-light, .table-dark { --bs-table-bg: var(--ui-surface-2); --bs-table-color: var(--ui-text); --bs-table-border-color: var(--ui-border); }
+
+/* Navs, tabs, accordion, alerts, badges, progress, pagination */
+.nav-link { color: var(--ui-text-3); }
+.nav-link:hover, .nav-link:focus { color: var(--ui-text); }
+.nav-tabs { --bs-nav-tabs-border-color: var(--ui-border); --bs-nav-tabs-link-active-color: var(--ui-text); --bs-nav-tabs-link-active-bg: var(--ui-surface); --bs-nav-tabs-link-active-border-color: var(--ui-border) var(--ui-border) var(--ui-surface); --bs-nav-tabs-link-hover-border-color: transparent; }
+.nav-pills { --bs-nav-pills-link-active-bg: var(--ui-accent-soft); --bs-nav-pills-link-active-color: var(--ui-accent-text); --bs-nav-pills-border-radius: var(--ui-radius-sm); }
+.accordion {
+  --bs-accordion-bg: var(--ui-surface);
+  --bs-accordion-color: var(--ui-text-2);
+  --bs-accordion-border-color: var(--ui-border);
+  --bs-accordion-btn-color: var(--ui-text);
+  --bs-accordion-btn-bg: var(--ui-surface);
+  --bs-accordion-active-color: var(--ui-text);
+  --bs-accordion-active-bg: var(--ui-surface-2);
+  --bs-accordion-btn-focus-box-shadow: var(--ui-ring);
+  --bs-accordion-border-radius: var(--ui-radius);
+  --bs-accordion-inner-border-radius: calc(var(--ui-radius) - 1px);
+}
+[data-theme="dark"] .accordion-button::after { filter: invert(1) brightness(1.6); }
+.alert { --bs-alert-border-radius: var(--ui-radius); font-size: var(--ui-fs-base); }
+.alert-primary, .alert-info { --bs-alert-color: var(--ui-info-text); --bs-alert-bg: var(--ui-info-soft); --bs-alert-border-color: transparent; }
+.alert-success { --bs-alert-color: var(--ui-success-text); --bs-alert-bg: var(--ui-success-soft); --bs-alert-border-color: transparent; }
+.alert-danger { --bs-alert-color: var(--ui-danger-text); --bs-alert-bg: var(--ui-danger-soft); --bs-alert-border-color: transparent; }
+.alert-warning { --bs-alert-color: var(--ui-warning-text); --bs-alert-bg: var(--ui-warning-soft); --bs-alert-border-color: transparent; }
+.alert-secondary, .alert-light, .alert-dark { --bs-alert-color: var(--ui-text-2); --bs-alert-bg: var(--ui-surface-2); --bs-alert-border-color: var(--ui-border); }
+.badge { font-weight: 600; letter-spacing: 0.01em; border-radius: var(--ui-radius-pill); padding: 0.35em 0.7em; }
+.badge.bg-light, .badge.bg-secondary { background-color: var(--ui-surface-2) !important; color: var(--ui-text-2) !important; }
+.progress, .progress-stacked { --bs-progress-bg: var(--ui-surface-3); --bs-progress-bar-bg: var(--ui-accent); --bs-progress-border-radius: var(--ui-radius-pill); }
+.pagination {
+  --bs-pagination-color: var(--ui-text-2); --bs-pagination-bg: var(--ui-surface); --bs-pagination-border-color: var(--ui-border);
+  --bs-pagination-hover-color: var(--ui-text); --bs-pagination-hover-bg: var(--ui-hover); --bs-pagination-hover-border-color: var(--ui-border);
+  --bs-pagination-active-bg: var(--ui-accent); --bs-pagination-active-border-color: var(--ui-accent); --bs-pagination-active-color: var(--ui-on-accent);
+  --bs-pagination-disabled-bg: var(--ui-surface-2); --bs-pagination-disabled-color: var(--ui-text-4); --bs-pagination-disabled-border-color: var(--ui-border);
+}
+.spinner-border, .spinner-grow { color: var(--ui-accent); }
+.tooltip { --bs-tooltip-bg: var(--ui-text); --bs-tooltip-color: var(--ui-bg); --bs-tooltip-border-radius: var(--ui-radius-sm); }
+.popover { --bs-popover-bg: var(--ui-surface); --bs-popover-border-color: var(--ui-border); --bs-popover-header-bg: var(--ui-surface-2); --bs-popover-body-color: var(--ui-text-2); }
+.offcanvas { --bs-offcanvas-bg: var(--ui-surface); --bs-offcanvas-color: var(--ui-text-2); --bs-offcanvas-border-color: var(--ui-border); }
+hr { border-color: var(--ui-border); opacity: 1; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   REACT-TOASTIFY
+   ══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --toastify-color-light: var(--ui-surface);
+  --toastify-text-color-light: var(--ui-text);
+  --toastify-color-dark: var(--ui-surface);
+  --toastify-text-color-dark: var(--ui-text);
+  --toastify-color-info: var(--ui-info);
+  --toastify-color-success: var(--ui-success);
+  --toastify-color-warning: var(--ui-warning);
+  --toastify-color-error: var(--ui-danger);
+  --toastify-color-progress-light: var(--ui-accent);
+  --toastify-font-family: var(--ui-font-sans);
+  --toastify-toast-bd-radius: var(--ui-radius);
+}
+.Toastify__toast { border: 1px solid var(--ui-border); box-shadow: var(--ui-shadow-md); font-size: var(--ui-fs-base); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SWEETALERT2 — call sites should NOT pass background/color hex options;
+   these rules theme every popup.
+   ══════════════════════════════════════════════════════════════════════════ */
+.swal2-popup {
+  background: var(--ui-surface);
+  color: var(--ui-text-2);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-xl);
+  box-shadow: var(--ui-shadow-lg);
+  font-family: var(--ui-font-sans);
+}
+.swal2-title { color: var(--ui-text); font-family: var(--ui-font-display); font-weight: 800; letter-spacing: var(--ui-tracking-tight); font-size: var(--ui-fs-xl); }
+.swal2-html-container { color: var(--ui-text-2); font-size: var(--ui-fs-base); }
+.swal2-styled { border-radius: var(--ui-radius-sm) !important; font-weight: 600 !important; font-size: var(--ui-fs-base) !important; }
+.swal2-styled.swal2-confirm { background-color: var(--ui-accent); color: var(--ui-on-accent); }
+.swal2-styled.swal2-cancel { background-color: var(--ui-surface-2); color: var(--ui-text); border: 1px solid var(--ui-border-2); }
+.swal2-styled.swal2-deny { background-color: var(--ui-danger); }
+.swal2-styled:focus { box-shadow: var(--ui-ring) !important; }
+.swal2-container.swal2-backdrop-show { background: var(--ui-overlay); }
+.swal2-input, .swal2-textarea, .swal2-select {
+  background: var(--ui-surface); color: var(--ui-text); border: 1px solid var(--ui-border-2); border-radius: var(--ui-radius-sm);
+}
+.swal2-validation-message { background: var(--ui-surface-2); color: var(--ui-danger-text); }
+.swal2-timer-progress-bar { background: var(--ui-accent-soft-2); }

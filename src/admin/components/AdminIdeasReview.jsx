@@ -217,10 +217,10 @@ export default function AdminIdeasReview() {
               {/* Meta Author Strip Section */}
               <div className="d-flex align-items-center justify-content-between mb-3 pb-2 flex-wrap gap-2 ideas-card-meta-strip">
                 <div className="d-flex align-items-center gap-2">
-                  <span className={`badge bg-${getTagColorClass(idea.tag)} text-uppercase font-monospace ideas-flat-badge`} style={{ fontSize: '10px', letterSpacing: '0.3px' }}>
+                  <span className={`badge bg-${getTagColorClass(idea.tag)} text-uppercase font-monospace ideas-flat-badge`} style={{ fontSize: '11px', letterSpacing: '0.3px' }}>
                     {idea.tag}
                   </span>
-                  <span className="badge ideas-status-badge text-uppercase font-monospace" style={{ fontSize: '10px', letterSpacing: '0.3px' }}>
+                  <span className="badge ideas-status-badge text-uppercase font-monospace" style={{ fontSize: '11px', letterSpacing: '0.3px' }}>
                     {idea.status}
                   </span>
                   <span className="fw-bold small ideas-heading-text">{idea.userName}</span>
@@ -228,7 +228,7 @@ export default function AdminIdeasReview() {
                     · {new Date(idea.createdAt).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
                   </span>
                 </div>
-                <span className="badge ideas-id-badge font-monospace" style={{ fontSize: '9px' }}>ID: {idea._id}</span>
+                <span className="badge ideas-id-badge font-monospace" style={{ fontSize: '11px' }}>ID: {idea._id}</span>
               </div>
 
               {/* Main Concept Presentation Text Block */}
@@ -245,7 +245,7 @@ export default function AdminIdeasReview() {
 
                   <Col md={3}>
                     <Form.Group>
-                      <Form.Label className="small fw-bold ideas-muted-text font-monospace uppercase mb-1" style={{ fontSize: '10.5px' }}>Status</Form.Label>
+                      <Form.Label className="small fw-bold ideas-muted-text font-monospace uppercase mb-1" style={{ fontSize: '11px' }}>Status</Form.Label>
                       <Form.Select
                         size="sm"
                         value={statuses[idea._id] || 'submitted'}
@@ -263,7 +263,7 @@ export default function AdminIdeasReview() {
 
                   <Col md={5}>
                     <Form.Group>
-                      <Form.Label className="small fw-bold ideas-muted-text font-monospace uppercase mb-1" style={{ fontSize: '10.5px' }}>Curator reply</Form.Label>
+                      <Form.Label className="small fw-bold ideas-muted-text font-monospace uppercase mb-1" style={{ fontSize: '11px' }}>Curator reply</Form.Label>
                       <Form.Control
                         type="text"
                         placeholder="Leave guidance or notes here..."

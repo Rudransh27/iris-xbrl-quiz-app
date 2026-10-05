@@ -25,20 +25,26 @@ import Swal from 'sweetalert2';
 import { buildTagSuffix, buildLearnBackPath } from "../utils/tagReturnPath";
 import { withOrbitBridge } from "../utils/sandboxBridge";
 import "./Quiz.css";
+import { safeId, safeIdOrToken } from "../utils/safeNav";
 
-// 🔒 HTML module iframe sandbox. allow-scripts + allow-same-origin lets a
-// module's script run with Orbit's own origin (it can read the session
-// token from localStorage and call the API as the learner). Dropping
-// allow-same-origin isolates it, but nested SharePoint video embeds then run
-// with an opaque origin and may lose their Microsoft sign-in — so the strict
-// mode is opt-in until that is verified in a signed-in browser:
-//   VITE_STRICT_HTML_SANDBOX=true   (xbrl-quiz-app/.env.local)
-const HTML_MODULE_SANDBOX = import.meta.env.VITE_STRICT_HTML_SANDBOX === "true"
-  ? "allow-scripts allow-popups allow-forms"
-  : "allow-scripts allow-popups allow-forms allow-same-origin";
+// 🔒 HTML module iframe sandbox. With allow-same-origin a module's script
+// runs with Orbit's own origin (it could read the session token and call the
+// API as whoever is viewing it), so modules run WITHOUT it by default.
+// Sandbox flags also apply to frames nested inside the module, so an
+// embedded SharePoint video would lose its Microsoft sign-in — a superadmin
+// can mark such a module "trusted" (card content.sandboxTrusted; cleared
+// automatically if anyone else edits the HTML) to keep allow-same-origin.
+// VITE_STRICT_HTML_SANDBOX=true forces strict mode even for trusted modules.
+const STRICT_HTML_SANDBOX = "allow-scripts allow-popups allow-forms";
+const TRUSTED_HTML_SANDBOX = "allow-scripts allow-popups allow-forms allow-same-origin";
+const sandboxFor = (card) => (card?.content?.sandboxTrusted === true && import.meta.env.VITE_STRICT_HTML_SANDBOX !== "true"
+  ? TRUSTED_HTML_SANDBOX : STRICT_HTML_SANDBOX);
 
 const Quiz = () => {
-  const { moduleId, topicId } = useParams();
+  const params = useParams();
+  const moduleId = safeId(params.moduleId);
+  // Flat (express) modules open at /quiz/:moduleId/undefined.
+  const topicId = safeIdOrToken(params.topicId, "undefined");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -156,6 +162,22 @@ const Quiz = () => {
       if (!data || typeof data !== "object" || !currentCard?._id) return;
       const cardId = currentCard._id;
 
+      // A "server feedback" module asks whether an answer is right: record +
+      // grade it on the server, then reply to the module with the result.
+      if (data.fromOrbitBridge && data.type === "ORBIT_CHECK") {
+        if (typeof data.qid !== "string" || typeof data.chosen !== "string" || typeof data.id !== "string") return;
+        const reply = (result) => {
+          try { event.source.postMessage({ type: "ORBIT_CHECK_RESULT", id: data.id, result }, "*"); } catch { /* iframe gone */ }
+        };
+        enqueue(() => api.recordSandboxAnswer(cardId, data.qid, data.chosen)
+          .then((res) => {
+            if (res?.xpChange) applyAutoSaveXp(res.xpChange);
+            reply({ ok: true, isCorrect: !!res?.isCorrect, pending: !!res?.pending, correct: res?.correct || null });
+          })
+          .catch(() => reply({ ok: false })));
+        return;
+      }
+
       // One answer captured in-page by Orbit's bridge.
       if (data.fromOrbitBridge && data.type === "ORBIT_ANSWER") {
         if (typeof data.qid !== "string" || typeof data.chosen !== "string") return;
@@ -197,8 +219,6 @@ const Quiz = () => {
               text: `Score: ${backendResponse.score}/${backendResponse.maxScore}${pending}`,
               showConfirmButton: false,
               timer: 2600,
-              background: '#e3faf5',
-              color: '#0f6e56'
             });
           })
           .catch((e) => {
@@ -297,8 +317,6 @@ const Quiz = () => {
       text: 'Any unsaved progress in this current learning track will be lost.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#c8557c',
-      cancelButtonColor: '#8b8399',
       confirmButtonText: 'Yes, exit track',
       cancelButtonText: 'Cancel'
     }).then((res) => {
@@ -317,8 +335,6 @@ const Quiz = () => {
       text: `All progress, submitted answers, and XP earned in this ${resetScopeLabel.toLowerCase()} will be permanently erased, and you'll start over from Card 1. This cannot be undone.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#c8557c',
-      cancelButtonColor: '#8b8399',
       confirmButtonText: `Yes, reset ${resetScopeLabel.toLowerCase()}`,
       cancelButtonText: 'Cancel'
     }).then(async (res) => {
@@ -332,8 +348,6 @@ const Quiz = () => {
           title: 'Reset complete — starting fresh!',
           showConfirmButton: false,
           timer: 2200,
-          background: '#e3faf5',
-          color: '#0f6e56'
         });
       } catch (e) {
         console.error('Module reset failed:', e);
@@ -341,7 +355,6 @@ const Quiz = () => {
           icon: 'error',
           title: 'Reset failed',
           text: 'Something went wrong — please try again.',
-          confirmButtonColor: '#c8557c'
         });
       }
     });
@@ -349,7 +362,7 @@ const Quiz = () => {
 
   if (state.loading) {
     return (
-      <div className="cyber-loading-container font-monospace">
+      <div className="cyber-loading-container">
         <div className="cyber-spinner"></div>
         <span>COMPILING PAYLOAD NODES...</span>
       </div>
@@ -358,7 +371,7 @@ const Quiz = () => {
 
   if (!state.content || state.content.length === 0) {
     return (
-      <div className="no-modules-placeholder font-monospace text-center m-5">
+      <div className="no-modules-placeholder">
         ⚠️ [SYSTEM EXCEPTION]: Empty cluster tracks resolved.
       </div>
     );
@@ -418,7 +431,6 @@ const Quiz = () => {
           icon: 'warning',
           title: 'Challenge Pending!',
           text: 'Please navigate through the workspace, complete the final challenge step, and hit "Submit for AI Feedback" inside the simulation card first.',
-          confirmButtonColor: '#6f5fc0'
         });
         return;
       }
@@ -487,8 +499,6 @@ const Quiz = () => {
         text: 'Please solve the prerequisite interactive challenges first.',
         showConfirmButton: false,
         timer: 1800,
-        background: '#ffeef2',
-        color: '#c8557c'
       });
     }
   };
@@ -528,7 +538,7 @@ const Quiz = () => {
     };
 
     return (
-      <div className="html-sandbox-fullscreen-overlay bg-light position-fixed top-0 start-0 w-100 vh-100" style={{ zIndex: 9999, fontFamily: 'Plus Jakarta Sans' }}>
+      <div className="html-sandbox-fullscreen-overlay position-fixed top-0 start-0 w-100 vh-100">
         {/* Permanent top-right "Abort Mission" control — no hover tracking,
             no slide animation, always on screen and always clickable. */}
         <button
@@ -551,14 +561,14 @@ const Quiz = () => {
               <div className="eject-modal-actions">
                 <button
                   type="button"
-                  className="eject-modal-btn eject-modal-btn--stay"
+                  className="eject-modal-btn eject-modal-btn--stay ui-btn ui-btn--secondary ui-btn--lg"
                   onClick={() => setShowEjectModal(false)}
                 >
                   Hold Position! 🧑‍🚀
                 </button>
                 <button
                   type="button"
-                  className="eject-modal-btn eject-modal-btn--go"
+                  className="eject-modal-btn eject-modal-btn--go ui-btn ui-btn--primary ui-btn--lg"
                   onClick={handleConfirmEject}
                 >
                   Eject! 🪂
@@ -576,8 +586,7 @@ const Quiz = () => {
             title="Fullscreen Native Sandbox Execution Terminal"
             width="100%"
             height="100%"
-            style={{ border: "none" }}
-            sandbox={HTML_MODULE_SANDBOX}
+            sandbox={sandboxFor(currentCard)}
           />
         </div>
       </div>
@@ -588,7 +597,7 @@ const Quiz = () => {
   // Standard UI Rendering Architecture (Unmodified Backward-Compatible Pipeline)
   // =========================================================================
   return (
-    <div className="quiz-simulation-player custom-dashboard-layout-root global-viewport-lock" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+    <div className="quiz-simulation-player custom-dashboard-layout-root global-viewport-lock">
       <div className="quiz-ambient-mesh-grid"></div>
 
       <QuizPlayerHeader
@@ -611,15 +620,15 @@ const Quiz = () => {
       <div className="main-flexible-workspace-deck d-flex position-relative">
         
         <button 
-          className={`iris-drawer-toggle-trigger ${isSidebarOpen ? 'trigger-aside' : 'trigger-flush'}`}
+          className={`iris-drawer-toggle-trigger ui-btn ui-btn--secondary ui-btn--icon ui-btn--sm ${isSidebarOpen ? 'trigger-aside' : 'trigger-flush'}`}
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         >
           {isSidebarOpen ? <ListNested size={16} /> : <List size={16} />}
         </button>
 
-        <div className={`quiz-dynamic-sidebar-rails font-monospace ${isSidebarOpen ? 'drawer-expanded' : 'drawer-collapsed'}`}>
+        <div className={`quiz-dynamic-sidebar-rails ${isSidebarOpen ? 'drawer-expanded' : 'drawer-collapsed'}`}>
           <div className="sidebar-rails-header text-start">
-            <span className="sidebar-rails-header-label">Course Syllabus</span>
+            <span className="sidebar-rails-header-label ui-eyebrow ui-eyebrow--caps">Course Syllabus</span>
           </div>
           <div className="sidebar-scrollable-menu-nodes cb-sidebar-scroll-track">
             {(() => {
@@ -710,23 +719,18 @@ const Quiz = () => {
         <div className="dock-content-alignment">
           <div className="dock-left-wing">
             {state.currentIndex > 0 && (
-              <button className="dock-nav-btn prev-action-trigger" onClick={handlePrev}>
-                <ChevronLeft size={14} /> <span>Previous</span>
+              <button className="dock-nav-btn prev-action-trigger ui-btn ui-btn--secondary ui-btn--lg" onClick={handlePrev}>
+                <ChevronLeft size={16} /> <span>Previous</span>
               </button>
             )}
           </div>
           <div className="dock-right-wing">
             <button
-              className={`dock-nav-btn submit-action-trigger ${(state.answered || isPassiveNavCard || isCurrentCardReached) ? 'action-node-pulsing' : ''}`}
+              className={`dock-nav-btn submit-action-trigger ui-btn ui-btn--primary ui-btn--lg ${isHtmlSandboxCard ? 'submit-action-trigger--wide' : ''} ${(state.answered || isPassiveNavCard || isCurrentCardReached) ? 'action-node-pulsing' : ''}`}
               onClick={handleDockClick}
               disabled={isButtonDisabled}
-              style={{
-                background: isButtonDisabled ? '#cbd5e1' : 'linear-gradient(135deg, var(--orbit-lavender), var(--orbit-sky))',
-                cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
-                minWidth: isHtmlSandboxCard ? '280px' : 'auto'
-              }}
             >
-              <span>{buttonText}</span> <ChevronRight size={14} />
+              <span>{buttonText}</span> <ChevronRight size={16} />
             </button>
           </div>
         </div>

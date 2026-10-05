@@ -174,7 +174,7 @@ export default function AdminTopicForm({ modules = [], initialModuleId = '', sug
         </Form.Group>
 
         <div className="d-flex gap-2">
-          <Button type="submit" className="admin-btn-primary px-4 d-flex align-items-center justify-content-center" disabled={loading || validTopicModules.length === 0} style={{ backgroundColor: '#0f256e', borderColor: '#0f256e' }}>
+          <Button type="submit" className="admin-btn-primary px-4 d-flex align-items-center justify-content-center" disabled={loading || validTopicModules.length === 0} style={{ backgroundColor: 'var(--ui-accent)', borderColor: 'var(--ui-accent)' }}>
             {loading ? <Spinner animation="border" size="sm" /> : editData ? 'Apply Node Alterations' : 'Map Topic Node'}
           </Button>
           <Button type="button" variant="light" className="border px-4 fw-semibold btn-sm text-secondary" onClick={() => setActiveTab('overview')} disabled={loading} style={{ borderRadius: '6px' }}>
