@@ -32,10 +32,7 @@ export default function AccountSecurityModal({ onClose }) {
 
     setIsSubmitting(true);
     try {
-      const res = await api.changePassword(current, next);
-      // The server signs out every other session and hands this browser a
-      // fresh token, so keep it (the old one is no longer accepted).
-      if (res?.token) localStorage.setItem("token", res.token);
+      await api.changePassword(current, next);
       form.reset();
       setSuccess(true);
       setTimeout(onClose, 1400);

@@ -40,6 +40,11 @@ const TRUSTED_HTML_SANDBOX = "allow-scripts allow-popups allow-forms allow-same-
 const sandboxFor = (card) => (card?.content?.sandboxTrusted === true && import.meta.env.VITE_STRICT_HTML_SANDBOX !== "true"
   ? TRUSTED_HTML_SANDBOX : STRICT_HTML_SANDBOX);
 
+// The page HTML modules run in (see sandboxDoc below), and a counter that
+// gives each opened module its own frame.
+const MODULE_FRAME_URL = `${import.meta.env.BASE_URL}module-frame.html`;
+let moduleFrameSeq = 0;
+
 const Quiz = () => {
   const params = useParams();
   const moduleId = safeId(params.moduleId);
@@ -91,26 +96,37 @@ const Quiz = () => {
   // incoming postMessages can be checked against event.source.
   const sandboxIframeRef = useRef(null);
 
-  // 🎯 ROOT-CAUSE FIX: the blob URL used to be recreated inline on every
-  // render, so ANY unrelated re-render (e.g. the old hover-HUD state toggle)
-  // reassigned the iframe's src to a brand-new blob URL — which reloads the
-  // iframe from scratch and wipes whatever page/state the learner was on
-  // inside the sandbox. Memoizing it to only regenerate when the actual
-  // payload changes keeps the iframe mounted (and its internal state intact)
-  // across unrelated re-renders.
-  const sandboxBlobUrl = useMemo(() => {
+  // 🔒 The module runs in MODULE_FRAME_URL (public/module-frame.html), not a
+  // blob: URL — a blob: frame inherits the app's Content-Security-Policy,
+  // which would force the app to allow inline scripts; the frame page has
+  // its own policy (nginx). The frame says when it's listening, then gets the
+  // module's HTML: unchanged, plus Orbit's small bridge script (first-answer
+  // capture + exit containment — see utils/sandboxBridge.js).
+  // 🎯 Memoized on the payload: an unrelated re-render must never reload the
+  // iframe (that wipes whatever page/state the learner was on inside the
+  // module). A new payload gets a fresh frame — `id` is the iframe's key.
+  const sandboxDoc = useMemo(() => {
     if (!state.activeSandboxPayload) return null;
-    // The module's HTML is loaded unchanged, plus Orbit's small bridge script
-    // (first-answer capture + exit containment — see utils/sandboxBridge.js).
-    const blob = new Blob([withOrbitBridge(state.activeSandboxPayload)], { type: "text/html" });
-    return URL.createObjectURL(blob);
+    return { id: ++moduleFrameSeq, html: withOrbitBridge(state.activeSandboxPayload) };
   }, [state.activeSandboxPayload]);
 
+  const sentFrameRef = useRef(0);
   useEffect(() => {
-    return () => {
-      if (sandboxBlobUrl) URL.revokeObjectURL(sandboxBlobUrl);
+    if (!sandboxDoc) return undefined;
+    const handleFrameReady = (event) => {
+      const frameWindow = sandboxIframeRef.current?.contentWindow;
+      if (!frameWindow || event.source !== frameWindow) return;
+      if (event.data?.type !== "ORBIT_MODULE_FRAME_READY" || sentFrameRef.current === sandboxDoc.id) return;
+      sentFrameRef.current = sandboxDoc.id; // once per frame
+      // A frame sandboxed without allow-same-origin has an opaque origin
+      // ("null") that no targetOrigin can name, hence "*" — the receiver is
+      // checked above: the frame we mounted. Trusted modules get the origin.
+      frameWindow.postMessage({ type: "ORBIT_MODULE_HTML", html: sandboxDoc.html },
+        event.origin === "null" ? "*" : event.origin);
     };
-  }, [sandboxBlobUrl]);
+    window.addEventListener("message", handleFrameReady);
+    return () => window.removeEventListener("message", handleFrameReady);
+  }, [sandboxDoc]);
 
   // 🚀 "Abort Mission" cosmic exit flow: click the rocket → confirm modal →
   // liftoff micro-animation plays → navigate away once it's done.
@@ -154,7 +170,7 @@ const Quiz = () => {
     };
 
     const handleIframeMessageInterceptor = (event) => {
-      // 🔒 Sandbox iframes are Blob URLs, so event.origin is literally the string "null" —
+      // 🔒 Sandbox iframes have an opaque origin, so event.origin is literally the string "null" —
       // meaningless as an allowlist. Instead, trust only messages whose source window is
       // exactly the iframe we mounted, plus a shape-check on the payload.
       if (event.source !== sandboxIframeRef.current?.contentWindow) return;
@@ -581,8 +597,9 @@ const Quiz = () => {
         {/* Borderless Client Window Frame Viewport Area */}
         <div className="w-100 h-100 bg-white">
           <iframe
+            key={sandboxDoc?.id}
             ref={sandboxIframeRef}
-            src={sandboxBlobUrl}
+            src={MODULE_FRAME_URL}
             title="Fullscreen Native Sandbox Execution Terminal"
             width="100%"
             height="100%"
